@@ -17,9 +17,11 @@
 	title="View/Edit {character.name}"
 	class="card preset-filled-surface-100-900 border-surface-200-800 card-hover divide-surface-200-800 block divide-y overflow-hidden border-[1px] shadow-md hover:scale-101"
 >
-	<header>
-		<img src={character.profile.images[0]} class="w-full" alt="banner" />
-	</header>
+	{#if character.profile.images.length > 0}
+		<header>
+			<img src={character.profile.images[0]} class="w-full" alt="banner" />
+		</header>
+	{/if}
 	<article class="space-y-1 p-3">
 		<div>
 			<h3 class="h3">{character.name}</h3>

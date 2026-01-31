@@ -8,7 +8,6 @@
 
 	import type { Character, Guild } from '$lib/types';
 	import VtM from '$lib/components/characters/sheets/VtM.svelte';
-	import CharSheet from '$lib/components/characters/CharSheet.svelte';
 	import CharProfile from '$lib/components/characters/CharProfile.svelte';
 
 	let selectedTab = $state('sheet');

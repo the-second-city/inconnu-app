@@ -57,7 +57,7 @@ export interface Character {
 	health: string;
 	willpower: string;
 	humanity: number;
-	traits?: Trait[];
+	traits: Trait[];
 	potency?: number;
 	max_vitae?: number;
 	vitae?: number;
