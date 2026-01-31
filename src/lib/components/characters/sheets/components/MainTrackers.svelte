@@ -19,5 +19,7 @@
 		<Tracker bind:character track="health" editing={true} />
 		<Tracker bind:character track="willpower" editing={true} />
 	</div>
+	<!--
 	<Grounding bind:grounding={character.grounding} {editing} {allowsPathChange} />
+	-->
 </Card>

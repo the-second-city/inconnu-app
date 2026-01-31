@@ -14,7 +14,7 @@
 	interface ComponentProps {
 		name: string;
 		cat: string;
-		sub: string;
+		colNum: number;
 		traits: Trait[];
 		editing: boolean;
 		allowsSubtraits: boolean;
@@ -25,7 +25,7 @@
 	let {
 		name,
 		cat,
-		sub,
+		colNum,
 		traits = $bindable(),
 		editing,
 		allowsSubtraits,
@@ -33,11 +33,19 @@
 		plural = 'traits'
 	}: ComponentProps = $props();
 
+	const filteredTraits: Trait[] = traits.filter((trait: Trait) => trait.type === cat);
+	$inspect(filteredTraits);
+
+	const colLen = filteredTraits.length / 3;
+	const startIndex = colNum * colLen;
+	const endIndex = colNum * colLen + colLen;
+
 	let indices: number[] = $derived(
-		traits
+		filteredTraits
 			.map((trait: Trait, index: number) => ({ trait, index }))
-			.filter((item: IndexedTrait) => item.trait.category === cat && item.trait.subcategory === sub)
+			//.filter((item: IndexedTrait) => item.trait.type === cat) // && item.trait.subcategory === sub)
 			.map((item: IndexedTrait) => item.index)
+			.slice(startIndex, endIndex)
 	);
 
 	let newTraitName = $state('');
@@ -73,8 +81,8 @@
 	</h3>
 	{#if indices.length > 0}
 		<div class="flex flex-col gap-2">
-			{#each indices as index (traits[index].name)}
-				<TraitSelector bind:trait={traits[index]} {editing} {allowsSubtraits} />
+			{#each indices as index (filteredTraits[index].name)}
+				<TraitSelector bind:trait={filteredTraits[index]} {editing} {allowsSubtraits} />
 			{/each}
 		</div>
 	{:else if !editing}

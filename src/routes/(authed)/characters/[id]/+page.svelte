@@ -7,9 +7,9 @@
 	import { normalize } from '$lib';
 
 	import type { Character, Guild } from '$lib/types';
+	import VtM from '$lib/components/characters/sheets/VtM.svelte';
 	import CharSheet from '$lib/components/characters/CharSheet.svelte';
 	import CharProfile from '$lib/components/characters/CharProfile.svelte';
-	import CharNotes from '$lib/components/characters/CharNotes.svelte';
 
 	let selectedTab = $state('sheet');
 
@@ -49,7 +49,7 @@
 </script>
 
 <svelte:head>
-	<title>{character.name} | botch.lol</title>
+	<title>{character.name} | inconnu.app</title>
 </svelte:head>
 
 <div class="flex flex-wrap items-start justify-between gap-2">
@@ -60,22 +60,10 @@
 					<Avatar name={character.name} src={character.profile.images[0]} />
 				</div>
 			{/if}
-
-			{#if editing}
-				<input
-					type="text"
-					class="input h1 border"
-					class:text-error-500={!isValidCharName()}
-					class:border-error-500={!isValidCharName()}
-					bind:value={newName}
-					aria-label="Edit character name"
-				/>
-			{:else}
-				{character.name}
-			{/if}
+			{character.name}
 		</h1>
 
-		{#if guild && !editing}
+		{#if guild}
 			<div class="flex justify-end">
 				<h6 class="text-surface-800-200 flex items-center gap-4 italic">
 					{guild.name}
@@ -84,41 +72,13 @@
 			</div>
 		{/if}
 	</div>
-
-	<!-- Desktop edit buttons -->
-	<div class="hidden sm:block">
-		<!-- Remove this class to undo -->
-		{#if editing}
-			<div class="flex gap-2">
-				<button
-					class="btn preset-outlined-warning-500 hover:scale-105 hover:brightness-125 active:scale-95"
-					onclick={cancelEditing}
-				>
-					Cancel
-				</button>
-				<button
-					class="btn preset-filled-success-500 hover:scale-105 hover:brightness-125 active:scale-95"
-					onclick={saveChanges}
-				>
-					Save
-				</button>
-			</div>
-		{:else}
-			<button
-				class="btn preset-filled-secondary-500 hover:scale-105 hover:brightness-125 active:scale-95"
-				onclick={enterEditMode}
-			>
-				Edit <Pencil size={18} />
-			</button>
-		{/if}
-	</div>
 </div>
 
 <Tabs value={selectedTab} onValueChange={(e) => (selectedTab = e.value)}>
 	{#snippet list()}
 		<Tabs.Control value="sheet">Sheet</Tabs.Control>
 		<Tabs.Control value="profile">Profile</Tabs.Control>
-		<Tabs.Control value="notes">Notes</Tabs.Control>
+		<Tabs.Control value="experience">Experience</Tabs.Control>
 	{/snippet}
 	{#snippet content()}
 		<Tabs.Panel value="profile">
@@ -128,11 +88,13 @@
 		</Tabs.Panel>
 		<Tabs.Panel value="sheet">
 			{#key character}
-				<CharSheet bind:character {editing} />
+				<VtM bind:character {editing} />
 			{/key}
 		</Tabs.Panel>
-		<Tabs.Panel value="notes">
-			<CharNotes bind:character {editing} />
+		<Tabs.Panel value="experience">
+			{#key character}
+				Eventually
+			{/key}
 		</Tabs.Panel>
 	{/snippet}
 </Tabs>

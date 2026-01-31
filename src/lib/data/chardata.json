@@ -1,1914 +1,316 @@
 {
   "guilds": [
     {
-      "id": 826628660450689074,
-      "name": "Inconnu DEV",
-      "icon": "https://cdn.discordapp.com/icons/935219170176532580/f5b49ee9bf9614a1449405a913917b59.png"
-    },
-    {
-      "id": 123,
-      "name": "Transylvania by Night",
-      "icon": "https://cdn.discordapp.com/icons/407759960588419073/3a3c38ce9618bdcba1fb5588f9755e4d.png"
-    },
-    {
-      "id": 456,
-      "name": "The Fahrvergnügen Palace",
-      "icon": "https://cdn.discordapp.com/icons/1135765227036758066/60d1964203530a73475b73124bc55044.png"
+      "id": 1325660602579816579,
+      "name": "golden gatekeeping",
+      "icon": "https://cdn.discordapp.com/icons/1325660602579816579/a_b42502e5b69a7fc303147d2ab5072369.png"
     }
   ],
   "characters": [
     {
-      "_id": "67d36d4d95337f5b2a869871",
-      "_class_id": "Character.CofD.Mortal.Mummy",
-      "experience": {
-        "unspent": 0,
-        "lifetime": 0
-      },
-      "grounding": {
-        "path": "Memory",
-        "rating": 2
-      },
-      "guild": 123,
-      "health": "........",
-      "line": "cofd",
-      "macros": [],
-      "name": "Akhenaten",
-      "pillars": [
-        {
-          "name": "Ab",
-          "rating": 2,
-          "temporary": 2
-        },
-        {
-          "name": "Ba",
-          "rating": 0,
-          "temporary": 0
-        },
-        {
-          "name": "Ka",
-          "rating": 1,
-          "temporary": 1
-        },
-        {
-          "name": "Ren",
-          "rating": 2,
-          "temporary": 2
-        },
-        {
-          "name": "Sheut",
-          "rating": 2,
-          "temporary": 2
-        }
-      ],
-      "profile": {
-        "description": "He actually looks like a normal dude. He just really likes the mummy motif.",
-        "history": null,
-        "images": [
-          "https://pcs-dev.botch.lol/67d36d4d95337f5b2a869871/67d36f61791a06fe24a3fc11.webp"
-        ]
-      },
-      "sekhem": 10,
-      "splat": "mummy",
-      "traits": [
-        {
-          "name": "Intelligence",
-          "rating": 2,
-          "category": "attributes",
-          "subcategory": "mental",
-          "subtraits": []
-        },
-        {
-          "name": "Wits",
-          "rating": 5,
-          "category": "attributes",
-          "subcategory": "mental",
-          "subtraits": []
-        },
-        {
-          "name": "Resolve",
-          "rating": 3,
-          "category": "attributes",
-          "subcategory": "mental",
-          "subtraits": []
-        },
-        {
-          "name": "Strength",
-          "rating": 4,
-          "category": "attributes",
-          "subcategory": "physical",
-          "subtraits": []
-        },
-        {
-          "name": "Dexterity",
-          "rating": 4,
-          "category": "attributes",
-          "subcategory": "physical",
-          "subtraits": []
-        },
-        {
-          "name": "Stamina",
-          "rating": 5,
-          "category": "attributes",
-          "subcategory": "physical",
-          "subtraits": []
-        },
-        {
-          "name": "Presence",
-          "rating": 3,
-          "category": "attributes",
-          "subcategory": "social",
-          "subtraits": []
-        },
-        {
-          "name": "Manipulation",
-          "rating": 2,
-          "category": "attributes",
-          "subcategory": "social",
-          "subtraits": []
-        },
-        {
-          "name": "Composure",
-          "rating": 2,
-          "category": "attributes",
-          "subcategory": "social",
-          "subtraits": []
-        },
-        {
-          "name": "Academics",
-          "rating": 3,
-          "category": "skills",
-          "subcategory": "mental",
-          "subtraits": []
-        },
-        {
-          "name": "Computer",
-          "rating": 0,
-          "category": "skills",
-          "subcategory": "mental",
-          "subtraits": []
-        },
-        {
-          "name": "Crafts",
-          "rating": 2,
-          "category": "skills",
-          "subcategory": "mental",
-          "subtraits": []
-        },
-        {
-          "name": "Investigation",
-          "rating": 0,
-          "category": "skills",
-          "subcategory": "mental",
-          "subtraits": []
-        },
-        {
-          "name": "Medicine",
-          "rating": 0,
-          "category": "skills",
-          "subcategory": "mental",
-          "subtraits": []
-        },
-        {
-          "name": "Occult",
-          "rating": 3,
-          "category": "skills",
-          "subcategory": "mental",
-          "subtraits": []
-        },
-        {
-          "name": "Politics",
-          "rating": 0,
-          "category": "skills",
-          "subcategory": "mental",
-          "subtraits": []
-        },
-        {
-          "name": "Science",
-          "rating": 0,
-          "category": "skills",
-          "subcategory": "mental",
-          "subtraits": []
-        },
-        {
-          "name": "Athletics",
-          "rating": 2,
-          "category": "skills",
-          "subcategory": "physical",
-          "subtraits": []
-        },
-        {
-          "name": "Brawl",
-          "rating": 3,
-          "category": "skills",
-          "subcategory": "physical",
-          "subtraits": []
-        },
-        {
-          "name": "Drive",
-          "rating": 0,
-          "category": "skills",
-          "subcategory": "physical",
-          "subtraits": []
-        },
-        {
-          "name": "Firearms",
-          "rating": 0,
-          "category": "skills",
-          "subcategory": "physical",
-          "subtraits": []
-        },
-        {
-          "name": "Larceny",
-          "rating": 0,
-          "category": "skills",
-          "subcategory": "physical",
-          "subtraits": []
-        },
-        {
-          "name": "Stealth",
-          "rating": 2,
-          "category": "skills",
-          "subcategory": "physical",
-          "subtraits": []
-        },
-        {
-          "name": "Survival",
-          "rating": 0,
-          "category": "skills",
-          "subcategory": "physical",
-          "subtraits": []
-        },
-        {
-          "name": "Weaponry",
-          "rating": 4,
-          "category": "skills",
-          "subcategory": "physical",
-          "subtraits": []
-        },
-        {
-          "name": "Animal Ken",
-          "rating": 2,
-          "category": "skills",
-          "subcategory": "social",
-          "subtraits": []
-        },
-        {
-          "name": "Empathy",
-          "rating": 2,
-          "category": "skills",
-          "subcategory": "social",
-          "subtraits": []
-        },
-        {
-          "name": "Expression",
-          "rating": 1,
-          "category": "skills",
-          "subcategory": "social",
-          "subtraits": []
-        },
-        {
-          "name": "Intimidation",
-          "rating": 0,
-          "category": "skills",
-          "subcategory": "social",
-          "subtraits": []
-        },
-        {
-          "name": "Persuasion",
-          "rating": 0,
-          "category": "skills",
-          "subcategory": "social",
-          "subtraits": []
-        },
-        {
-          "name": "Socialize",
-          "rating": 0,
-          "category": "skills",
-          "subcategory": "social",
-          "subtraits": []
-        },
-        {
-          "name": "Streetwise",
-          "rating": 1,
-          "category": "skills",
-          "subcategory": "social",
-          "subtraits": []
-        },
-        {
-          "name": "Subterfuge",
-          "rating": 2,
-          "category": "skills",
-          "subcategory": "social",
-          "subtraits": []
-        }
-      ],
+      "_id": "680d32cbc0bf6151dbd5004e",
+      "guild": 1325660602579816579,
       "user": 229736753676681230,
-      "willpower": "....."
-    },
-    {
-      "_id": "67d36ced95337f5b2a86986f",
-      "_class_id": "Character.CofD.Mortal",
-      "experience": {
-        "unspent": 0,
-        "lifetime": 0
-      },
-      "grounding": {
-        "path": "Integrity",
-        "rating": 4
-      },
-      "guild": 826628660450689074,
-      "health": "......",
-      "line": "cofd",
-      "macros": [],
-      "name": "Eric Dougherty",
-      "profile": {
-        "description": null,
-        "history": null,
-        "images": [
-          "https://pcs-dev.botch.lol/67d36ced95337f5b2a86986f/67d36f9c791a06fe24a3fc12.webp"
-        ]
-      },
-      "splat": "mortal",
-      "traits": [
-        {
-          "name": "Intelligence",
-          "rating": 4,
-          "category": "attributes",
-          "subcategory": "mental",
-          "subtraits": []
-        },
-        {
-          "name": "Wits",
-          "rating": 3,
-          "category": "attributes",
-          "subcategory": "mental",
-          "subtraits": []
-        },
-        {
-          "name": "Resolve",
-          "rating": 1,
-          "category": "attributes",
-          "subcategory": "mental",
-          "subtraits": []
-        },
-        {
-          "name": "Strength",
-          "rating": 2,
-          "category": "attributes",
-          "subcategory": "physical",
-          "subtraits": []
-        },
-        {
-          "name": "Dexterity",
-          "rating": 1,
-          "category": "attributes",
-          "subcategory": "physical",
-          "subtraits": []
-        },
-        {
-          "name": "Stamina",
-          "rating": 2,
-          "category": "attributes",
-          "subcategory": "physical",
-          "subtraits": []
-        },
-        {
-          "name": "Presence",
-          "rating": 2,
-          "category": "attributes",
-          "subcategory": "social",
-          "subtraits": []
-        },
-        {
-          "name": "Manipulation",
-          "rating": 3,
-          "category": "attributes",
-          "subcategory": "social",
-          "subtraits": []
-        },
-        {
-          "name": "Composure",
-          "rating": 4,
-          "category": "attributes",
-          "subcategory": "social",
-          "subtraits": []
-        },
-        {
-          "name": "Academics",
-          "rating": 4,
-          "category": "skills",
-          "subcategory": "mental",
-          "subtraits": []
-        },
-        {
-          "name": "Computer",
-          "rating": 3,
-          "category": "skills",
-          "subcategory": "mental",
-          "subtraits": []
-        },
-        {
-          "name": "Crafts",
-          "rating": 1,
-          "category": "skills",
-          "subcategory": "mental",
-          "subtraits": []
-        },
-        {
-          "name": "Investigation",
-          "rating": 1,
-          "category": "skills",
-          "subcategory": "mental",
-          "subtraits": []
-        },
-        {
-          "name": "Medicine",
-          "rating": 1,
-          "category": "skills",
-          "subcategory": "mental",
-          "subtraits": []
-        },
-        {
-          "name": "Occult",
-          "rating": 2,
-          "category": "skills",
-          "subcategory": "mental",
-          "subtraits": []
-        },
-        {
-          "name": "Politics",
-          "rating": 0,
-          "category": "skills",
-          "subcategory": "mental",
-          "subtraits": []
-        },
-        {
-          "name": "Science",
-          "rating": 3,
-          "category": "skills",
-          "subcategory": "mental",
-          "subtraits": []
-        },
-        {
-          "name": "Athletics",
-          "rating": 0,
-          "category": "skills",
-          "subcategory": "physical",
-          "subtraits": []
-        },
-        {
-          "name": "Brawl",
-          "rating": 0,
-          "category": "skills",
-          "subcategory": "physical",
-          "subtraits": []
-        },
-        {
-          "name": "Drive",
-          "rating": 0,
-          "category": "skills",
-          "subcategory": "physical",
-          "subtraits": []
-        },
-        {
-          "name": "Firearms",
-          "rating": 0,
-          "category": "skills",
-          "subcategory": "physical",
-          "subtraits": []
-        },
-        {
-          "name": "Larceny",
-          "rating": 0,
-          "category": "skills",
-          "subcategory": "physical",
-          "subtraits": []
-        },
-        {
-          "name": "Stealth",
-          "rating": 1,
-          "category": "skills",
-          "subcategory": "physical",
-          "subtraits": []
-        },
-        {
-          "name": "Survival",
-          "rating": 1,
-          "category": "skills",
-          "subcategory": "physical",
-          "subtraits": []
-        },
-        {
-          "name": "Weaponry",
-          "rating": 0,
-          "category": "skills",
-          "subcategory": "physical",
-          "subtraits": []
-        },
-        {
-          "name": "Animal Ken",
-          "rating": 0,
-          "category": "skills",
-          "subcategory": "social",
-          "subtraits": []
-        },
-        {
-          "name": "Empathy",
-          "rating": 0,
-          "category": "skills",
-          "subcategory": "social",
-          "subtraits": []
-        },
-        {
-          "name": "Expression",
-          "rating": 0,
-          "category": "skills",
-          "subcategory": "social",
-          "subtraits": []
-        },
-        {
-          "name": "Intimidation",
-          "rating": 0,
-          "category": "skills",
-          "subcategory": "social",
-          "subtraits": []
-        },
-        {
-          "name": "Persuasion",
-          "rating": 2,
-          "category": "skills",
-          "subcategory": "social",
-          "subtraits": []
-        },
-        {
-          "name": "Socialize",
-          "rating": 2,
-          "category": "skills",
-          "subcategory": "social",
-          "subtraits": []
-        },
-        {
-          "name": "Streetwise",
-          "rating": 2,
-          "category": "skills",
-          "subcategory": "social",
-          "subtraits": []
-        },
-        {
-          "name": "Subterfuge",
-          "rating": 1,
-          "category": "skills",
-          "subcategory": "social",
-          "subtraits": []
-        }
-      ],
-      "user": 229736753676681230,
-      "willpower": "...."
-    },
-    {
-      "_id": "67d36b1358f6c00b763efcfd",
-      "_class_id": "Character.WoD.Mortal.Ghoul",
-      "experience": {
-        "unspent": 0,
-        "lifetime": 0
-      },
-      "grounding": {
-        "path": "Humanity",
-        "rating": 5
-      },
-      "guild": 456,
-      "health": ".......",
-      "line": "wod",
-      "macros": [],
-      "name": "Harold Manning",
-      "profile": {
-        "description": "Harold William Manning (January 9, 1909 – January 26, 2003) was an American long-distance runner. He held the American record in the men's 3000-meter steeplechase from 1934 to 1952 and briefly held the world best in 1936. He represented the United States in the steeplechase at the 1936 Summer Olympics, placing fifth.",
-        "history": null,
-        "images": [
-          "https://pcs-dev.botch.lol/67d36b1358f6c00b763efcfd/67d36bd2791a06fe24a3fc08.webp"
-        ]
-      },
-      "splat": "ghoul",
-      "advantages": [],
-      "traits": [
-        {
-          "name": "Strength",
-          "rating": 3,
-          "category": "attributes",
-          "subcategory": "physical",
-          "subtraits": []
-        },
-        {
-          "name": "Dexterity",
-          "rating": 2,
-          "category": "attributes",
-          "subcategory": "physical",
-          "subtraits": []
-        },
-        {
-          "name": "Stamina",
-          "rating": 3,
-          "category": "attributes",
-          "subcategory": "physical",
-          "subtraits": []
-        },
-        {
-          "name": "Perception",
-          "rating": 4,
-          "category": "attributes",
-          "subcategory": "mental",
-          "subtraits": []
-        },
-        {
-          "name": "Intelligence",
-          "rating": 3,
-          "category": "attributes",
-          "subcategory": "mental",
-          "subtraits": []
-        },
-        {
-          "name": "Wits",
-          "rating": 2,
-          "category": "attributes",
-          "subcategory": "mental",
-          "subtraits": []
-        },
-        {
-          "name": "Charisma",
-          "rating": 2,
-          "category": "attributes",
-          "subcategory": "social",
-          "subtraits": []
-        },
-        {
-          "name": "Manipulation",
-          "rating": 2,
-          "category": "attributes",
-          "subcategory": "social",
-          "subtraits": []
-        },
-        {
-          "name": "Appearance",
-          "rating": 2,
-          "category": "attributes",
-          "subcategory": "social",
-          "subtraits": []
-        },
-        {
-          "name": "Alertness",
-          "rating": 2,
-          "category": "abilities",
-          "subcategory": "talents",
-          "subtraits": []
-        },
-        {
-          "name": "Athletics",
-          "rating": 2,
-          "category": "abilities",
-          "subcategory": "talents",
-          "subtraits": []
-        },
-        {
-          "name": "Awareness",
-          "rating": 0,
-          "category": "abilities",
-          "subcategory": "talents",
-          "subtraits": []
-        },
-        {
-          "name": "Brawl",
-          "rating": 2,
-          "category": "abilities",
-          "subcategory": "talents",
-          "subtraits": []
-        },
-        {
-          "name": "Empathy",
-          "rating": 0,
-          "category": "abilities",
-          "subcategory": "talents",
-          "subtraits": []
-        },
-        {
-          "name": "Expression",
-          "rating": 1,
-          "category": "abilities",
-          "subcategory": "talents",
-          "subtraits": []
-        },
-        {
-          "name": "Intimidation",
-          "rating": 3,
-          "category": "abilities",
-          "subcategory": "talents",
-          "subtraits": []
-        },
-        {
-          "name": "Leadership",
-          "rating": 0,
-          "category": "abilities",
-          "subcategory": "talents",
-          "subtraits": []
-        },
-        {
-          "name": "Legerdemain",
-          "rating": 0,
-          "category": "abilities",
-          "subcategory": "talents",
-          "subtraits": []
-        },
-        {
-          "name": "Subterfuge",
-          "rating": 0,
-          "category": "abilities",
-          "subcategory": "talents",
-          "subtraits": []
-        },
-        {
-          "name": "Animal Ken",
-          "rating": 0,
-          "category": "abilities",
-          "subcategory": "skills",
-          "subtraits": []
-        },
-        {
-          "name": "Archery",
-          "rating": 0,
-          "category": "abilities",
-          "subcategory": "skills",
-          "subtraits": []
-        },
-        {
-          "name": "Commerce",
-          "rating": 0,
-          "category": "abilities",
-          "subcategory": "skills",
-          "subtraits": []
-        },
-        {
-          "name": "Crafts",
-          "rating": 0,
-          "category": "abilities",
-          "subcategory": "skills",
-          "subtraits": []
-        },
-        {
-          "name": "Etiquette",
-          "rating": 0,
-          "category": "abilities",
-          "subcategory": "skills",
-          "subtraits": []
-        },
-        {
-          "name": "Melee",
-          "rating": 1,
-          "category": "abilities",
-          "subcategory": "skills",
-          "subtraits": []
-        },
-        {
-          "name": "Performance",
-          "rating": 0,
-          "category": "abilities",
-          "subcategory": "skills",
-          "subtraits": []
-        },
-        {
-          "name": "Ride",
-          "rating": 0,
-          "category": "abilities",
-          "subcategory": "skills",
-          "subtraits": []
-        },
-        {
-          "name": "Stealth",
-          "rating": 2,
-          "category": "abilities",
-          "subcategory": "skills",
-          "subtraits": []
-        },
-        {
-          "name": "Survival",
-          "rating": 0,
-          "category": "abilities",
-          "subcategory": "skills",
-          "subtraits": []
-        },
-        {
-          "name": "Academics",
-          "rating": 0,
-          "category": "abilities",
-          "subcategory": "knowledges",
-          "subtraits": []
-        },
-        {
-          "name": "Enigmas",
-          "rating": 1,
-          "category": "abilities",
-          "subcategory": "knowledges",
-          "subtraits": []
-        },
-        {
-          "name": "Hearth Wisdom",
-          "rating": 0,
-          "category": "abilities",
-          "subcategory": "knowledges",
-          "subtraits": []
-        },
-        {
-          "name": "Investigation",
-          "rating": 0,
-          "category": "abilities",
-          "subcategory": "knowledges",
-          "subtraits": []
-        },
-        {
-          "name": "Law",
-          "rating": 0,
-          "category": "abilities",
-          "subcategory": "knowledges",
-          "subtraits": []
-        },
-        {
-          "name": "Medicine",
-          "rating": 0,
-          "category": "abilities",
-          "subcategory": "knowledges",
-          "subtraits": []
-        },
-        {
-          "name": "Occult",
-          "rating": 1,
-          "category": "abilities",
-          "subcategory": "knowledges",
-          "subtraits": []
-        },
-        {
-          "name": "Politics",
-          "rating": 0,
-          "category": "abilities",
-          "subcategory": "knowledges",
-          "subtraits": []
-        },
-        {
-          "name": "Seneschal",
-          "rating": 1,
-          "category": "abilities",
-          "subcategory": "knowledges",
-          "subtraits": []
-        },
-        {
-          "name": "Theology",
-          "rating": 0,
-          "category": "abilities",
-          "subcategory": "knowledges",
-          "subtraits": []
-        }
-      ],
-      "user": 229736753676681230,
-      "virtues": [
-        {
-          "name": "Conscience",
-          "rating": 2,
-          "category": "special",
-          "subcategory": "virtues",
-          "subtraits": []
-        },
-        {
-          "name": "SelfControl",
-          "rating": 2,
-          "category": "special",
-          "subcategory": "virtues",
-          "subtraits": []
-        },
-        {
-          "name": "Courage",
-          "rating": 4,
-          "category": "special",
-          "subcategory": "virtues",
-          "subtraits": []
-        }
-      ],
-      "willpower": ".....",
-      "max_bp": 2,
-      "blood_pool": 2
-    },
-    {
-      "_id": "677a011b8eb43555431b1640",
-      "_class_id": "Character.WoD.Mortal.Vampire",
-      "name": "John Wilcox",
-      "profile": {
-        "description": "Nobody's really sure why he went Spy vs. Spy, but he was good at it. Didn't recognize borders or boundaries. Good guy. Died well. Bit of a conspiracy theorist. Had a fondness for Malkavians.",
-        "history": "Many fledglings have a hard time adapting to reality. And then there's John. For years, he believed vampirism was a Soviet plot. He collected extensive data on the \"virus,\" plus the names and locations of every \"Russian spy\" he encountered.\n\nBefore he could send his data to the FBI, however, he encountered a Black Spiral Dancer. That's when he learned the horrific truth: this was no communist plot, and no government could save him.",
-        "images": [
-          "https://pcs-dev.botch.lol/677a011b8eb43555431b1640/677a01611efd206f4cadcca4.webp"
-        ]
-      },
-      "line": "wod",
+      "name": "Victoria Ransom",
       "splat": "vampire",
-      "experience": {
-        "unspent": 0,
-        "lifetime": 0
-      },
-      "guild": 0,
-      "user": 229736753676681230,
-      "health": "....//*",
-      "willpower": "...../",
-      "grounding": {
-        "path": "Humanity",
-        "rating": 8
-      },
-      "advantages": [
-        {
-          "name": "False Reflection",
-          "type": "merit",
-          "rating": 3
-        },
-        {
-          "name": "Long Fingers",
-          "type": "merit",
-          "rating": 1
-        },
-        {
-          "name": "Patagia",
-          "type": "merit",
-          "rating": 4
-        },
-        {
-          "name": "Permanent Fangs",
-          "type": "flaw",
-          "rating": 3
-        },
-        {
-          "name": "Phobia",
-          "type": "flaw",
-          "rating": 2
-        },
-        {
-          "name": "Rep",
-          "type": "merit",
-          "rating": 1
-        }
-      ],
+      "health": ".....",
+      "willpower": ".......",
+      "humanity": 6,
+      "potency": 1,
+      "stains": 0,
+      "hunger": 2,
       "traits": [
         {
-          "name": "Strength",
-          "rating": 4,
-          "category": "attributes",
-          "subcategory": "physical",
+          "name": "Academics",
+          "rating": 1,
+          "type": "skill",
+          "subtraits": [
+            "Business"
+          ]
+        },
+        {
+          "name": "AnimalKen",
+          "rating": 0,
+          "type": "skill",
           "subtraits": []
         },
         {
-          "name": "Dexterity",
-          "rating": 3,
-          "category": "attributes",
-          "subcategory": "physical",
-          "subtraits": []
-        },
-        {
-          "name": "Stamina",
-          "rating": 3,
-          "category": "attributes",
-          "subcategory": "physical",
-          "subtraits": []
-        },
-        {
-          "name": "Perception",
+          "name": "Athletics",
           "rating": 2,
-          "category": "attributes",
-          "subcategory": "mental",
+          "type": "skill",
           "subtraits": []
         },
         {
-          "name": "Intelligence",
-          "rating": 3,
-          "category": "attributes",
-          "subcategory": "mental",
+          "name": "Awareness",
+          "rating": 2,
+          "type": "skill",
           "subtraits": []
         },
         {
-          "name": "Wits",
-          "rating": 3,
-          "category": "attributes",
-          "subcategory": "mental",
+          "name": "Brawl",
+          "rating": 0,
+          "type": "skill",
           "subtraits": []
         },
         {
           "name": "Charisma",
           "rating": 2,
-          "category": "attributes",
-          "subcategory": "social",
+          "type": "attribute",
           "subtraits": []
         },
         {
-          "name": "Manipulation",
+          "name": "Composure",
           "rating": 3,
-          "category": "attributes",
-          "subcategory": "social",
+          "type": "attribute",
           "subtraits": []
         },
         {
-          "name": "Appearance",
+          "name": "Craft",
           "rating": 0,
-          "category": "attributes",
-          "subcategory": "social",
+          "type": "skill",
           "subtraits": []
         },
         {
-          "name": "Alertness",
-          "rating": 2,
-          "category": "abilities",
-          "subcategory": "talents",
-          "subtraits": []
-        },
-        {
-          "name": "Athletics",
+          "name": "Dexterity",
           "rating": 3,
-          "category": "abilities",
-          "subcategory": "talents",
+          "type": "attribute",
           "subtraits": []
         },
         {
-          "name": "Awareness",
-          "rating": 0,
-          "category": "abilities",
-          "subcategory": "talents",
-          "subtraits": []
-        },
-        {
-          "name": "Brawl",
-          "rating": 2,
-          "category": "abilities",
-          "subcategory": "talents",
-          "subtraits": []
-        },
-        {
-          "name": "Empathy",
+          "name": "Dominate",
           "rating": 1,
-          "category": "abilities",
-          "subcategory": "talents",
-          "subtraits": []
-        },
-        {
-          "name": "Expression",
-          "rating": 0,
-          "category": "abilities",
-          "subcategory": "talents",
-          "subtraits": []
-        },
-        {
-          "name": "Intimidation",
-          "rating": 0,
-          "category": "abilities",
-          "subcategory": "talents",
-          "subtraits": []
-        },
-        {
-          "name": "Leadership",
-          "rating": 0,
-          "category": "abilities",
-          "subcategory": "talents",
-          "subtraits": []
-        },
-        {
-          "name": "Streetwise",
-          "rating": 2,
-          "category": "abilities",
-          "subcategory": "talents",
-          "subtraits": []
-        },
-        {
-          "name": "Subterfuge",
-          "rating": 4,
-          "category": "abilities",
-          "subcategory": "talents",
-          "subtraits": []
-        },
-        {
-          "name": "Animal Ken",
-          "rating": 0,
-          "category": "abilities",
-          "subcategory": "skills",
-          "subtraits": []
-        },
-        {
-          "name": "Crafts",
-          "rating": 0,
-          "category": "abilities",
-          "subcategory": "skills",
-          "subtraits": []
+          "type": "discipline",
+          "subtraits": [
+            "CloudMemory"
+          ]
         },
         {
           "name": "Drive",
-          "rating": 1,
-          "category": "abilities",
-          "subcategory": "skills",
+          "rating": 0,
+          "type": "skill",
           "subtraits": []
         },
         {
           "name": "Etiquette",
-          "rating": 0,
-          "category": "abilities",
-          "subcategory": "skills",
-          "subtraits": []
-        },
-        {
-          "name": "Firearms",
-          "rating": 0,
-          "category": "abilities",
-          "subcategory": "skills",
-          "subtraits": []
-        },
-        {
-          "name": "Larceny",
           "rating": 2,
-          "category": "abilities",
-          "subcategory": "skills",
-          "subtraits": []
-        },
-        {
-          "name": "Melee",
-          "rating": 2,
-          "category": "abilities",
-          "subcategory": "skills",
-          "subtraits": []
-        },
-        {
-          "name": "Performance",
-          "rating": 3,
-          "category": "abilities",
-          "subcategory": "skills",
-          "subtraits": []
-        },
-        {
-          "name": "Stealth",
-          "rating": 4,
-          "category": "abilities",
-          "subcategory": "skills",
-          "subtraits": []
-        },
-        {
-          "name": "Survival",
-          "rating": 1,
-          "category": "abilities",
-          "subcategory": "skills",
-          "subtraits": []
-        },
-        {
-          "name": "Academics",
-          "rating": 1,
-          "category": "abilities",
-          "subcategory": "knowledges",
-          "subtraits": []
-        },
-        {
-          "name": "Computer",
-          "rating": 0,
-          "category": "abilities",
-          "subcategory": "knowledges",
+          "type": "skill",
           "subtraits": []
         },
         {
           "name": "Finance",
           "rating": 1,
-          "category": "abilities",
-          "subcategory": "knowledges",
+          "type": "skill",
+          "subtraits": []
+        },
+        {
+          "name": "Firearms",
+          "rating": 2,
+          "type": "skill",
+          "subtraits": []
+        },
+        {
+          "name": "Insight",
+          "rating": 1,
+          "type": "skill",
+          "subtraits": []
+        },
+        {
+          "name": "Intelligence",
+          "rating": 3,
+          "type": "attribute",
+          "subtraits": []
+        },
+        {
+          "name": "Intimidation",
+          "rating": 3,
+          "type": "skill",
           "subtraits": []
         },
         {
           "name": "Investigation",
           "rating": 0,
-          "category": "abilities",
-          "subcategory": "knowledges",
+          "type": "skill",
           "subtraits": []
         },
         {
-          "name": "Law",
+          "name": "Larceny",
+          "rating": 1,
+          "type": "skill",
+          "subtraits": []
+        },
+        {
+          "name": "Leadership",
           "rating": 0,
-          "category": "abilities",
-          "subcategory": "knowledges",
+          "type": "skill",
+          "subtraits": []
+        },
+        {
+          "name": "Manipulation",
+          "rating": 2,
+          "type": "attribute",
           "subtraits": []
         },
         {
           "name": "Medicine",
+          "rating": 0,
+          "type": "skill",
+          "subtraits": []
+        },
+        {
+          "name": "Melee",
           "rating": 2,
-          "category": "abilities",
-          "subcategory": "knowledges",
+          "type": "skill",
+          "subtraits": []
+        },
+        {
+          "name": "Oblivion",
+          "rating": 1,
+          "type": "discipline",
+          "subtraits": [
+            "ShadowCloak"
+          ]
+        },
+        {
+          "name": "ObviousPredator",
+          "rating": 1,
+          "type": "custom",
           "subtraits": []
         },
         {
           "name": "Occult",
+          "rating": 0,
+          "type": "skill",
+          "subtraits": []
+        },
+        {
+          "name": "Performance",
+          "rating": 0,
+          "type": "skill",
+          "subtraits": []
+        },
+        {
+          "name": "Persuasion",
           "rating": 2,
-          "category": "abilities",
-          "subcategory": "knowledges",
+          "type": "skill",
           "subtraits": []
         },
         {
           "name": "Politics",
           "rating": 0,
-          "category": "abilities",
-          "subcategory": "knowledges",
-          "subtraits": []
-        },
-        {
-          "name": "Science",
-          "rating": 3,
-          "category": "abilities",
-          "subcategory": "knowledges",
-          "subtraits": []
-        },
-        {
-          "name": "Technology",
-          "rating": 0,
-          "category": "abilities",
-          "subcategory": "knowledges",
-          "subtraits": []
-        },
-        {
-          "name": "Animalism",
-          "rating": 1,
-          "category": "advantages",
-          "subcategory": "disciplines",
-          "subtraits": []
-        },
-        {
-          "name": "Obfuscate",
-          "rating": 5,
-          "category": "advantages",
-          "subcategory": "disciplines",
+          "type": "skill",
           "subtraits": []
         },
         {
           "name": "Potence",
-          "rating": 1,
-          "category": "advantages",
-          "subcategory": "disciplines",
-          "subtraits": []
-        }
-      ],
-      "macros": [
-        {
-          "name": "hunt",
-          "pool": [
-            3
-          ],
-          "keys": [
-            3
-          ],
-          "target": 6,
-          "rote": false,
-          "hunt": false,
-          "comment": null
-        }
-      ],
-      "virtues": [
-        {
-          "name": "Conscience",
-          "rating": 4,
-          "category": "special",
-          "subcategory": "virtues",
-          "subtraits": []
-        },
-        {
-          "name": "SelfControl",
-          "rating": 4,
-          "category": "special",
-          "subcategory": "virtues",
-          "subtraits": []
-        },
-        {
-          "name": "Courage",
           "rating": 2,
-          "category": "special",
-          "subcategory": "virtues",
-          "subtraits": []
-        }
-      ],
-      "generation": 13,
-      "max_bp": 10,
-      "blood_pool": 7
-    },
-    {
-      "_id": "67d36c7a95337f5b2a86986d",
-      "_class_id": "Character.CofD.Mortal.Vampire",
-      "blood_potency": 3,
-      "experience": {
-        "unspent": 0,
-        "lifetime": 0
-      },
-      "grounding": {
-        "path": "Humanity",
-        "rating": 5
-      },
-      "guild": 123,
-      "health": ".....//x*",
-      "line": "cofd",
-      "macros": [],
-      "max_vitae": 12,
-      "name": "Nadea Theron",
-      "profile": {
-        "description": "A lilin who doesn't have time for you. Likes shucking corn. Wait, that's not corn.",
-        "history": null,
-        "images": [
-          "https://pcs-dev.botch.lol/67d36c7a95337f5b2a86986d/67d36d86791a06fe24a3fc0a.webp",
-          "https://pcs-dev.botch.lol/67d36c7a95337f5b2a86986d/67d36d97791a06fe24a3fc0b.webp",
-          "https://pcs-dev.botch.lol/67d36c7a95337f5b2a86986d/67d36daf791a06fe24a3fc0c.webp",
-          "https://pcs-dev.botch.lol/67d36c7a95337f5b2a86986d/67d36dc1791a06fe24a3fc0d.webp",
-          "https://pcs-dev.botch.lol/67d36c7a95337f5b2a86986d/67d36de4791a06fe24a3fc0e.webp",
-          "https://pcs-dev.botch.lol/67d36c7a95337f5b2a86986d/67d36df6791a06fe24a3fc0f.webp",
-          "https://pcs-dev.botch.lol/67d36c7a95337f5b2a86986d/67d36e19791a06fe24a3fc10.webp"
-        ]
-      },
-      "splat": "vampire",
-      "traits": [
-        {
-          "name": "Intelligence",
-          "rating": 4,
-          "category": "attributes",
-          "subcategory": "mental",
-          "subtraits": []
-        },
-        {
-          "name": "Wits",
-          "rating": 3,
-          "category": "attributes",
-          "subcategory": "mental",
-          "subtraits": []
+          "type": "discipline",
+          "subtraits": [
+            "Prowess",
+            "SoaringLeap"
+          ]
         },
         {
           "name": "Resolve",
           "rating": 4,
-          "category": "attributes",
-          "subcategory": "mental",
-          "subtraits": []
-        },
-        {
-          "name": "Strength",
-          "rating": 4,
-          "category": "attributes",
-          "subcategory": "physical",
-          "subtraits": []
-        },
-        {
-          "name": "Dexterity",
-          "rating": 3,
-          "category": "attributes",
-          "subcategory": "physical",
-          "subtraits": []
-        },
-        {
-          "name": "Stamina",
-          "rating": 3,
-          "category": "attributes",
-          "subcategory": "physical",
-          "subtraits": []
-        },
-        {
-          "name": "Presence",
-          "rating": 2,
-          "category": "attributes",
-          "subcategory": "social",
-          "subtraits": []
-        },
-        {
-          "name": "Manipulation",
-          "rating": 4,
-          "category": "attributes",
-          "subcategory": "social",
-          "subtraits": []
-        },
-        {
-          "name": "Composure",
-          "rating": 4,
-          "category": "attributes",
-          "subcategory": "social",
-          "subtraits": []
-        },
-        {
-          "name": "Academics",
-          "rating": 2,
-          "category": "skills",
-          "subcategory": "mental",
-          "subtraits": []
-        },
-        {
-          "name": "Computer",
-          "rating": 0,
-          "category": "skills",
-          "subcategory": "mental",
-          "subtraits": []
-        },
-        {
-          "name": "Crafts",
-          "rating": 0,
-          "category": "skills",
-          "subcategory": "mental",
-          "subtraits": []
-        },
-        {
-          "name": "Investigation",
-          "rating": 3,
-          "category": "skills",
-          "subcategory": "mental",
-          "subtraits": []
-        },
-        {
-          "name": "Medicine",
-          "rating": 3,
-          "category": "skills",
-          "subcategory": "mental",
-          "subtraits": []
-        },
-        {
-          "name": "Occult",
-          "rating": 4,
-          "category": "skills",
-          "subcategory": "mental",
-          "subtraits": [
-            "Bahari",
-            "Grave Rituals"
-          ]
-        },
-        {
-          "name": "Politics",
-          "rating": 0,
-          "category": "skills",
-          "subcategory": "mental",
+          "type": "attribute",
           "subtraits": []
         },
         {
           "name": "Science",
-          "rating": 2,
-          "category": "skills",
-          "subcategory": "mental",
-          "subtraits": []
-        },
-        {
-          "name": "Athletics",
-          "rating": 3,
-          "category": "skills",
-          "subcategory": "physical",
-          "subtraits": []
-        },
-        {
-          "name": "Brawl",
-          "rating": 4,
-          "category": "skills",
-          "subcategory": "physical",
-          "subtraits": [
-            "Grappling"
-          ]
-        },
-        {
-          "name": "Drive",
-          "rating": 2,
-          "category": "skills",
-          "subcategory": "physical",
-          "subtraits": []
-        },
-        {
-          "name": "Firearms",
-          "rating": 2,
-          "category": "skills",
-          "subcategory": "physical",
-          "subtraits": []
-        },
-        {
-          "name": "Larceny",
           "rating": 0,
-          "category": "skills",
-          "subcategory": "physical",
-          "subtraits": []
-        },
-        {
-          "name": "Stealth",
-          "rating": 1,
-          "category": "skills",
-          "subcategory": "physical",
-          "subtraits": []
-        },
-        {
-          "name": "Survival",
-          "rating": 0,
-          "category": "skills",
-          "subcategory": "physical",
-          "subtraits": []
-        },
-        {
-          "name": "Weaponry",
-          "rating": 0,
-          "category": "skills",
-          "subcategory": "physical",
-          "subtraits": []
-        },
-        {
-          "name": "Animal Ken",
-          "rating": 0,
-          "category": "skills",
-          "subcategory": "social",
-          "subtraits": []
-        },
-        {
-          "name": "Empathy",
-          "rating": 2,
-          "category": "skills",
-          "subcategory": "social",
-          "subtraits": []
-        },
-        {
-          "name": "Expression",
-          "rating": 0,
-          "category": "skills",
-          "subcategory": "social",
-          "subtraits": []
-        },
-        {
-          "name": "Intimidation",
-          "rating": 3,
-          "category": "skills",
-          "subcategory": "social",
-          "subtraits": []
-        },
-        {
-          "name": "Persuasion",
-          "rating": 1,
-          "category": "skills",
-          "subcategory": "social",
-          "subtraits": []
-        },
-        {
-          "name": "Socialize",
-          "rating": 0,
-          "category": "skills",
-          "subcategory": "social",
-          "subtraits": []
-        },
-        {
-          "name": "Streetwise",
-          "rating": 1,
-          "category": "skills",
-          "subcategory": "social",
-          "subtraits": []
-        },
-        {
-          "name": "Subterfuge",
-          "rating": 3,
-          "category": "skills",
-          "subcategory": "social",
-          "subtraits": []
-        },
-        {
-          "name": "Auspex",
-          "rating": 2,
-          "category": "special",
-          "subcategory": "disciplines",
-          "subtraits": []
-        },
-        {
-          "name": "Celerity",
-          "rating": 4,
-          "category": "special",
-          "subcategory": "disciplines",
-          "subtraits": []
-        },
-        {
-          "name": "Obfuscate",
-          "rating": 1,
-          "category": "special",
-          "subcategory": "disciplines",
-          "subtraits": []
-        }
-      ],
-      "user": 229736753676681230,
-      "vitae": 12,
-      "willpower": "......//"
-    },
-    {
-      "_id": "67d36b6d58f6c00b763efcff",
-      "_class_id": "Character.WoD.Mortal",
-      "experience": {
-        "unspent": 0,
-        "lifetime": 0
-      },
-      "grounding": {
-        "path": "Humanity",
-        "rating": 6
-      },
-      "guild": 826628660450689074,
-      "health": ".......",
-      "line": "wod",
-      "macros": [],
-      "name": "Samantha Cunningham",
-      "profile": {
-        "description": "What's in a name? Whatever it is, Samantha probably isn't hers.",
-        "history": null,
-        "images": [
-          "https://pcs-dev.botch.lol/67d36b6d58f6c00b763efcff/67d36bef791a06fe24a3fc09.webp",
-          "https://pcs-dev.botch.lol/67d36b6d58f6c00b763efcff/67d371bd791a06fe24a3fc13.webp"
-        ]
-      },
-      "splat": "mortal",
-      "advantages": [],
-      "traits": [
-        {
-          "name": "Strength",
-          "rating": 1,
-          "category": "attributes",
-          "subcategory": "physical",
-          "subtraits": []
-        },
-        {
-          "name": "Dexterity",
-          "rating": 2,
-          "category": "attributes",
-          "subcategory": "physical",
+          "type": "skill",
           "subtraits": []
         },
         {
           "name": "Stamina",
           "rating": 2,
-          "category": "attributes",
-          "subcategory": "physical",
-          "subtraits": []
-        },
-        {
-          "name": "Perception",
-          "rating": 2,
-          "category": "attributes",
-          "subcategory": "mental",
-          "subtraits": []
-        },
-        {
-          "name": "Intelligence",
-          "rating": 2,
-          "category": "attributes",
-          "subcategory": "mental",
-          "subtraits": []
-        },
-        {
-          "name": "Wits",
-          "rating": 3,
-          "category": "attributes",
-          "subcategory": "mental",
-          "subtraits": []
-        },
-        {
-          "name": "Charisma",
-          "rating": 2,
-          "category": "attributes",
-          "subcategory": "social",
-          "subtraits": []
-        },
-        {
-          "name": "Manipulation",
-          "rating": 4,
-          "category": "attributes",
-          "subcategory": "social",
-          "subtraits": []
-        },
-        {
-          "name": "Appearance",
-          "rating": 5,
-          "category": "attributes",
-          "subcategory": "social",
-          "subtraits": []
-        },
-        {
-          "name": "Alertness",
-          "rating": 2,
-          "category": "abilities",
-          "subcategory": "talents",
-          "subtraits": []
-        },
-        {
-          "name": "Athletics",
-          "rating": 0,
-          "category": "abilities",
-          "subcategory": "talents",
-          "subtraits": []
-        },
-        {
-          "name": "Awareness",
-          "rating": 0,
-          "category": "abilities",
-          "subcategory": "talents",
-          "subtraits": []
-        },
-        {
-          "name": "Brawl",
-          "rating": 0,
-          "category": "abilities",
-          "subcategory": "talents",
-          "subtraits": []
-        },
-        {
-          "name": "Empathy",
-          "rating": 3,
-          "category": "abilities",
-          "subcategory": "talents",
-          "subtraits": []
-        },
-        {
-          "name": "Expression",
-          "rating": 2,
-          "category": "abilities",
-          "subcategory": "talents",
-          "subtraits": []
-        },
-        {
-          "name": "Intimidation",
-          "rating": 0,
-          "category": "abilities",
-          "subcategory": "talents",
-          "subtraits": []
-        },
-        {
-          "name": "Leadership",
-          "rating": 0,
-          "category": "abilities",
-          "subcategory": "talents",
-          "subtraits": []
-        },
-        {
-          "name": "Streetwise",
-          "rating": 1,
-          "category": "abilities",
-          "subcategory": "talents",
-          "subtraits": []
-        },
-        {
-          "name": "Subterfuge",
-          "rating": 3,
-          "category": "abilities",
-          "subcategory": "talents",
-          "subtraits": []
-        },
-        {
-          "name": "Animal Ken",
-          "rating": 0,
-          "category": "abilities",
-          "subcategory": "skills",
-          "subtraits": []
-        },
-        {
-          "name": "Crafts",
-          "rating": 0,
-          "category": "abilities",
-          "subcategory": "skills",
-          "subtraits": []
-        },
-        {
-          "name": "Drive",
-          "rating": 0,
-          "category": "abilities",
-          "subcategory": "skills",
-          "subtraits": []
-        },
-        {
-          "name": "Etiquette",
-          "rating": 2,
-          "category": "abilities",
-          "subcategory": "skills",
-          "subtraits": []
-        },
-        {
-          "name": "Firearms",
-          "rating": 0,
-          "category": "abilities",
-          "subcategory": "skills",
-          "subtraits": []
-        },
-        {
-          "name": "Larceny",
-          "rating": 0,
-          "category": "abilities",
-          "subcategory": "skills",
-          "subtraits": []
-        },
-        {
-          "name": "Melee",
-          "rating": 0,
-          "category": "abilities",
-          "subcategory": "skills",
-          "subtraits": []
-        },
-        {
-          "name": "Performance",
-          "rating": 3,
-          "category": "abilities",
-          "subcategory": "skills",
+          "type": "attribute",
           "subtraits": []
         },
         {
           "name": "Stealth",
-          "rating": 0,
-          "category": "abilities",
-          "subcategory": "skills",
+          "rating": 3,
+          "type": "skill",
+          "subtraits": [
+            "Stakeouts"
+          ]
+        },
+        {
+          "name": "Streetwise",
+          "rating": 1,
+          "type": "skill",
           "subtraits": []
+        },
+        {
+          "name": "Strength",
+          "rating": 1,
+          "type": "attribute",
+          "subtraits": []
+        },
+        {
+          "name": "Stunning",
+          "rating": 2,
+          "type": "custom",
+          "subtraits": []
+        },
+        {
+          "name": "Subterfuge",
+          "rating": 2,
+          "type": "skill",
+          "subtraits": [
+            "Belonging"
+          ]
         },
         {
           "name": "Survival",
-          "rating": 0,
-          "category": "abilities",
-          "subcategory": "skills",
-          "subtraits": []
-        },
-        {
-          "name": "Academics",
           "rating": 1,
-          "category": "abilities",
-          "subcategory": "knowledges",
-          "subtraits": []
-        },
-        {
-          "name": "Computer",
-          "rating": 0,
-          "category": "abilities",
-          "subcategory": "knowledges",
-          "subtraits": []
-        },
-        {
-          "name": "Finance",
-          "rating": 1,
-          "category": "abilities",
-          "subcategory": "knowledges",
-          "subtraits": []
-        },
-        {
-          "name": "Investigation",
-          "rating": 3,
-          "category": "abilities",
-          "subcategory": "knowledges",
-          "subtraits": []
-        },
-        {
-          "name": "Law",
-          "rating": 0,
-          "category": "abilities",
-          "subcategory": "knowledges",
-          "subtraits": []
-        },
-        {
-          "name": "Medicine",
-          "rating": 0,
-          "category": "abilities",
-          "subcategory": "knowledges",
-          "subtraits": []
-        },
-        {
-          "name": "Occult",
-          "rating": 1,
-          "category": "abilities",
-          "subcategory": "knowledges",
-          "subtraits": []
-        },
-        {
-          "name": "Politics",
-          "rating": 0,
-          "category": "abilities",
-          "subcategory": "knowledges",
-          "subtraits": []
-        },
-        {
-          "name": "Science",
-          "rating": 0,
-          "category": "abilities",
-          "subcategory": "knowledges",
+          "type": "skill",
           "subtraits": []
         },
         {
           "name": "Technology",
-          "rating": 0,
-          "category": "abilities",
-          "subcategory": "knowledges",
-          "subtraits": []
-        }
-      ],
-      "user": 229736753676681230,
-      "virtues": [
-        {
-          "name": "Conscience",
           "rating": 1,
-          "category": "special",
-          "subcategory": "virtues",
+          "type": "skill",
           "subtraits": []
         },
         {
-          "name": "SelfControl",
-          "rating": 5,
-          "category": "special",
-          "subcategory": "virtues",
-          "subtraits": []
-        },
-        {
-          "name": "Courage",
+          "name": "Wits",
           "rating": 2,
-          "category": "special",
-          "subcategory": "virtues",
+          "type": "attribute",
           "subtraits": []
         }
       ],
-      "willpower": "...."
+      "profile": {
+        "biography": "",
+        "description": "Haughty, disdainful, and vain, new acquaintances can be excused for mistaking Victoria for a Toreador\u2014until they see her in the mirror. Though her beauty is fit for the artisan's brush, she often takes company with the Lepers. Green eyes cold and calculating, she seems to be waiting for something. Just what that is, though, is anyone's guess.",
+        "images": [
+          "https://pcs.inconnu.app/680d32cbc0bf6151dbd5004e/680d344b6a9c2a1df8ef7ea2.webp"
+        ]
+      },
+      "convictions": [
+        "Justice Demands Retribution.",
+        "The Weak Deserve Their Fate.",
+        "Always Think of the Long Term."
+      ],
+      "header": {
+        "blush": 1,
+        "location": "Recording Studio, Room 212",
+        "merits": "Stunning",
+        "flaws": "Obvious Predator",
+        "temp": ""
+      },
+      "macros": [],
+      "experience": {
+        "current": 0,
+        "total": 0,
+        "log": []
+      },
+      "log": {
+        "created": "2025-04-26 19:23:55.724000",
+        "awaken": 1,
+        "rouse": 2,
+        "blush": 1
+      }
     }
   ]
 }

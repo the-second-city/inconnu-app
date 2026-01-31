@@ -1,4 +1,3 @@
-export type GameLine = 'cofd' | 'wod';
 export type Splat = 'mortal' | 'vampire' | 'ghoul';
 
 export type AdvantageType = 'merit' | 'flaw';
@@ -18,8 +17,7 @@ export interface Guild {
 export type Trait = {
 	name: string;
 	rating: number;
-	category: string;
-	subcategory: string;
+	type: string;
 	subtraits: string[];
 };
 
@@ -43,31 +41,24 @@ type Macro = {
 
 export interface Character {
 	_id: string;
-	_class_id: string;
 	name: string;
+	guild: number;
+	user: number;
+	splat: Splat;
 	profile: {
 		description: string | null;
 		history: string | null;
 		images: string[];
 	};
-	line: GameLine;
-	splat: Splat;
 	experience?: {
-		unspent: number;
-		lifetime: number;
+		current: number;
+		total: number;
 	};
-	guild: number;
-	user: number;
 	health: string;
 	willpower: string;
-	grounding: Grounding;
+	humanity: number;
 	traits?: Trait[];
-	macros?: Macro[];
-	notes?: string[];
-	virtues?: Trait[];
-	advantages?: Advantage[];
-	generation?: number;
-	blood_potency?: number;
+	potency?: number;
 	max_vitae?: number;
 	vitae?: number;
 	max_bp?: number;

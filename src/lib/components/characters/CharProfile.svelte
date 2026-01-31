@@ -25,7 +25,7 @@
 
 	let activeModalIndex = $state<number | null>(null);
 
-	let splatIcon = `/images/${character.line}/${character.splat}-logo.png`;
+	let splatIcon = `/images/wod/${character.splat}-logo.png`;
 </script>
 
 <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">

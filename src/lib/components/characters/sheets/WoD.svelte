@@ -3,11 +3,9 @@
 
 	import type { Character } from '$lib/types';
 
-	import Advantages from './components/wod/Advantages.svelte';
 	import MainTrackers from './components/MainTrackers.svelte';
 	import TraitColumn from './components/TraitColumn.svelte';
 	import TraitSection from './components/TraitSection.svelte';
-	import Virtues from './components/wod/Virtues.svelte';
 
 	interface ComponentProps {
 		character: Character;
@@ -26,16 +24,16 @@
 <div class="flex flex-col gap-3">
 	<TraitSection
 		title="Attributes"
-		cat="attributes"
+		cat="attribute"
 		subs={['physical', 'social', 'mental']}
 		bind:traits={character.traits!}
 		{editing}
 		allowsSubtraits={true}
 	/>
 	<TraitSection
-		title="Abilities"
-		cat="abilities"
-		subs={['talents', 'skills', 'knowledges']}
+		title="Skills"
+		cat="skill"
+		subs={['physical', 'social', 'mental']}
 		bind:traits={character.traits!}
 		{editing}
 		allowsSubtraits={true}
@@ -61,24 +59,5 @@
 				{/if}
 			</div>
 		</div>
-	</div>
-
-	<h2 class="h2 text-2xl uppercase">Advantages</h2>
-	<div class="flex flex-wrap justify-between gap-3">
-		<Advantages bind:advantages={character.advantages!} {editing} />
-		<TraitColumn
-			name="Backgrounds"
-			cat="advantages"
-			sub="backgrounds"
-			plural="backgrounds"
-			bind:traits={character.traits!}
-			{editing}
-			addable={true}
-			allowsSubtraits={false}
-		/>
-		<Virtues bind:virtues={character.virtues!} {editing} />
-		{#if extraAdvantages}
-			{@render extraAdvantages()}
-		{/if}
 	</div>
 </div>

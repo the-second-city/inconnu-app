@@ -15,7 +15,9 @@
 
 <WoD bind:character {editing}>
 	{#snippet trackers()}
+		<!--
 		<Vampirism bind:character {editing} />
+		-->
 	{/snippet}
 
 	{#snippet extraAdvantages()}

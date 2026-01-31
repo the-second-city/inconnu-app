@@ -15,7 +15,7 @@
 
 {#snippet docs()}
 	<NavButton
-		href="https://botch.lol"
+		href="https://docs.inconnu.app"
 		title="Read the docs"
 		color="preset-filled-surface-500"
 		full={true}
@@ -27,7 +27,7 @@
 
 {#snippet github()}
 	<NavButton
-		href="https://github.com/tiltowait/botch"
+		href="https://github.com/tiltowait/inconnu"
 		title="View on GitHub"
 		color="preset-outlined-surface-800-200"
 		full={true}
@@ -38,7 +38,7 @@
 
 {#snippet patreon()}
 	<NavButton
-		href="https://patreon.com/tiltowait/botch"
+		href="https://patreon.com/tiltowait"
 		title="Become a patron"
 		color="preset-outlined-success-500"
 		full={true}
@@ -60,8 +60,8 @@
 
 <header class="bg-surface-50-950 flex items-center justify-between p-4 shadow-md">
 	<a href="/" class="anchor text-primary-500 flex items-center gap-2 text-3xl font-bold">
-		<img src="/favicon.png" alt="botch.lol icon" class="h-[1em] w-auto" />
-		botch.lol
+		<img src="/favicon.png" alt="Inconnu icon" class="h-[1em] w-auto" />
+		Inconnu
 	</a>
 
 	<!-- Desktop menu -->
