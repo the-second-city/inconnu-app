@@ -59,6 +59,8 @@ export interface Character {
 	humanity: number;
 	traits: Trait[];
 	potency?: number;
+	generation?: number;
+	blood_potency?: number;
 	max_vitae?: number;
 	vitae?: number;
 	max_bp?: number;

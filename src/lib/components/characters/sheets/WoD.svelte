@@ -44,10 +44,9 @@
 			<TraitColumn
 				name="Custom Traits"
 				cat="custom"
-				sub="custom"
+				colNum={0}
 				bind:traits={character.traits!}
 				{editing}
-				addable={true}
 				allowsSubtraits={true}
 			/>
 		</div>

@@ -22,8 +22,8 @@
 	$inspect(filteredTraits);
 
 	const colLen = filteredTraits.length / 3;
-	const startIndex = colNum * colLen;
-	const endIndex = colNum * colLen + colLen;
+	let startIndex = $derived(colNum * colLen);
+	let endIndex = $derived(colNum * colLen + colLen);
 
 	let indices: number[] = $derived(
 		filteredTraits

@@ -1,8 +1,8 @@
 import { error } from '@sveltejs/kit';
-import type { PageLoad } from '../$types';
+import type { PageServerLoad } from './$types';
 import type { UserCharacters, Guild } from '$lib/types';
 
-export const load: PageLoad = async ({ fetch, params }) => {
+export const load: PageServerLoad = async ({ fetch, params }) => {
 	const response = await fetch('/api');
 	const userCharacters: UserCharacters = await response.json();
 

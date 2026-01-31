@@ -24,11 +24,9 @@
 		<TraitColumn
 			name="Disciplines"
 			cat="advantages"
-			sub="disciplines"
-			plural="disciplines"
+			colNum={0}
 			bind:traits={character.traits!}
 			{editing}
-			addable={true}
 			allowsSubtraits={false}
 		/>
 	{/snippet}
