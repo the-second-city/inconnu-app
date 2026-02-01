@@ -26,9 +26,9 @@
 	let history = $state('');
 	let submitting = $state(false);
 
-	// Reset blood potency when switching between vampire/thinblood
+	// Reset blood potency when switching between vampire/thin-blood
 	$effect(() => {
-		if (splat === 'thinblood' && blood_potency > 2) {
+		if (splat === 'thin-blood' && blood_potency > 2) {
 			blood_potency = 2;
 		} else if (splat === 'vampire' && blood_potency < 1) {
 			blood_potency = 1;
@@ -40,7 +40,7 @@
 
 	// Format splat names for display
 	const formatSplat = (str: string) => {
-		if (str === 'thinblood') return 'Thin-Blood';
+		if (str === 'thin-blood') return 'Thin-Blood';
 		return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
 	};
 	const splatOptions = $derived(data.splats.map(formatSplat));
@@ -99,7 +99,7 @@
 			health: parseInt(health),
 			willpower: parseInt(willpower),
 			humanity: parseInt(humanity),
-			blood_potency: splat === 'vampire' || splat === 'thinblood' ? blood_potency : 0,
+			blood_potency: splat === 'vampire' || splat === 'thin-blood' ? blood_potency : 0,
 			convictions: [conviction1, conviction2, conviction3],
 			biography: description,
 			history,
@@ -315,7 +315,7 @@
 				editing={true}
 			/>
 
-			{#if splat === 'vampire' || splat === 'thinblood'}
+			{#if splat === 'vampire' || splat === 'thin-blood'}
 				<div class="mt-3">
 					<Card>
 						<h3 class="h3 -mt-1 mb-2 text-center text-xl font-semibold uppercase">
@@ -324,8 +324,8 @@
 						<div class="flex justify-center">
 							<RatingSelector
 								bind:rating={blood_potency}
-								min={splat === 'thinblood' ? 0 : 1}
-								max={splat === 'thinblood' ? 2 : 10}
+								min={splat === 'thin-blood' ? 0 : 1}
+								max={splat === 'thin-blood' ? 2 : 10}
 								showLabel={false}
 								editing={true}
 								allowsSubtraits={false}

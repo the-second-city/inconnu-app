@@ -1,4 +1,4 @@
-export type Splat = 'mortal' | 'vampire' | 'ghoul';
+export type Splat = 'mortal' | 'vampire' | 'ghoul' | 'thin-blood';
 
 export type AdvantageType = 'merit' | 'flaw';
 
