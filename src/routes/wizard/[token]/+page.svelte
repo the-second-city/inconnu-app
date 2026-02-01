@@ -9,6 +9,9 @@
 	let traits = $state<Trait[]>(data.traits);
 	let name = $state('');
 	let splat = $state('');
+	let health = $state('');
+	let willpower = $state('');
+	let humanity = $state('7');
 
 	const title = $derived(`Create a Character on ${data.guild.name}`);
 
@@ -16,6 +19,9 @@
 	const titleCase = (str: string) =>
 		str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
 	const splatOptions = $derived(data.splats.map(titleCase));
+	const healthOptions = Array.from({ length: 17 }, (_, i) => `${i + 4}`);
+	const willpowerOptions = Array.from({ length: 9 }, (_, i) => `${i + 2}`);
+	const humanityOptions = Array.from({ length: 10 }, (_, i) => `${i + 1}`);
 
 	const labelClass = 'mb-2 block text-lg uppercase tracking-wide';
 	const inputClass = 'input input-bordered mb-3 block w-full border px-4 py-3 leading-tight';
@@ -39,7 +45,7 @@
 
 <form>
 		<div class="-mx-3 mb-6 flex flex-wrap">
-			<div class="mb-6 w-full px-3 md:mb-0">
+			<div class="w-full px-3">
 				<label class={labelClass} for="character-name">Character name</label>
 				<input
 					bind:value={name}
@@ -47,9 +53,43 @@
 					id="character-name"
 					type="text"
 					maxlength="37"
-					placeholder="John Wilcox"
+					placeholder="Nadea Theron"
 				/>
+			</div>
 
+			<!-- Health -->
+			<div class="w-full px-3 md:w-1/2">
+				<Selector
+					label="Health"
+					options={healthOptions}
+					bind:value={health}
+					id="health"
+					placeholder="Select Health rating"
+				/>
+			</div>
+			<!-- Willpower -->
+			<div class="w-full px-3 md:w-1/2">
+				<Selector
+					label="Willpower"
+					options={willpowerOptions}
+					bind:value={willpower}
+					id="willpower"
+					placeholder="Select Willpower rating"
+				/>
+			</div>
+
+			<!-- Humanity -->
+			<div class="w-full px-3">
+				<Selector
+					label="Humanity"
+					options={humanityOptions}
+					bind:value={humanity}
+					id="humanity"
+				/>
+			</div>
+
+			<!-- Character type -->
+			<div class="w-full px-3">
 				<Selector
 					label="Character type"
 					options={splatOptions}
