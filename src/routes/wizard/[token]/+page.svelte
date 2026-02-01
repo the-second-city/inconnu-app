@@ -214,10 +214,11 @@
 		<!-- Group 2: Convictions -->
 		<div class="-mx-3 flex flex-wrap">
 			<div class="w-full px-3">
-				<label class={labelClass}>Convictions</label>
+				<label class={labelClass} for="conviction-1">Convictions</label>
 				<input
 					bind:value={conviction1}
 					class="{inputClass} {conviction1Error ? 'border-error-500' : ''}"
+					id="conviction-1"
 					type="text"
 					maxlength="200"
 					placeholder="First conviction"
