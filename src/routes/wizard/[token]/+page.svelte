@@ -135,15 +135,15 @@
 					</Card>
 				</div>
 			{/if}
-		{/if}
 
-		<div class="mt-6">
-			<button
-				type="submit"
-				class="btn preset-filled-primary-500 hover:brightness-110"
-				disabled={!isFormValid}
-			>
-				Create Character
-			</button>
-		</div>
+			<div class="mt-6">
+				<button
+					type="submit"
+					class="btn preset-filled-primary-500 hover:brightness-110 w-full"
+					disabled={!isFormValid}
+				>
+					Create Character
+				</button>
+			</div>
+		{/if}
 	</form>
