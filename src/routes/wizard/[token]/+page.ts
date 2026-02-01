@@ -1,6 +1,11 @@
 import { error } from '@sveltejs/kit';
 import type { PageLoad } from './$types';
-import type { Trait } from '$lib/types';
+import type { Trait, Guild } from '$lib/types';
+
+interface WizardData {
+	guild: Pick<Guild, 'name' | 'icon'>;
+	traits: Trait[];
+}
 
 export const load: PageLoad = async ({ params, fetch }) => {
 	const { token } = params;
@@ -15,11 +20,11 @@ export const load: PageLoad = async ({ params, fetch }) => {
 			error(response.status, 'Failed to load wizard data');
 		}
 
-		const traits: Trait[] = await response.json();
+		const data: WizardData = await response.json();
 
 		return {
-			traits,
-			title: 'Create a Character'
+			guild: data.guild,
+			traits: data.traits
 		};
 	} catch (err) {
 		error(500, 'Failed to load wizard');
