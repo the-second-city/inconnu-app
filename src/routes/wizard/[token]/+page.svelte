@@ -17,6 +17,7 @@
 	let blood_potency = $state(1);
 
 	const title = $derived(`Create a Character on ${data.guild.name}`);
+	const characterType = $derived(data.spc ? 'New SPC' : 'New character');
 
 	// Format splat names for display
 	const formatSplat = (str: string) => {
@@ -42,7 +43,7 @@
 
 <div class="flex flex-wrap items-start justify-between gap-2">
 	<div>
-		<h1 class="h1 uppercase tracking-wide">New character</h1>
+		<h1 class="h1 uppercase tracking-wide">{characterType}</h1>
 		<div class="flex justify-end">
 			<h6 class="text-surface-800-200 flex items-center gap-4 italic">
 				{data.guild.name}

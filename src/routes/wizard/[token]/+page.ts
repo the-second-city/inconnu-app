@@ -3,6 +3,7 @@ import type { PageLoad } from './$types';
 import type { Trait, Guild } from '$lib/types';
 
 interface WizardData {
+	spc: boolean;
 	guild: Pick<Guild, 'name' | 'icon'>;
 	splats: string[];
 	traits: Trait[];
@@ -24,6 +25,7 @@ export const load: PageLoad = async ({ params, fetch }) => {
 		const data: WizardData = await response.json();
 
 		return {
+			spc: data.spc,
 			guild: data.guild,
 			splats: data.splats,
 			traits: data.traits
