@@ -4,6 +4,7 @@ import type { Trait, Guild } from '$lib/types';
 
 interface WizardData {
 	guild: Pick<Guild, 'name' | 'icon'>;
+	splats: string[];
 	traits: Trait[];
 }
 
@@ -24,6 +25,7 @@ export const load: PageLoad = async ({ params, fetch }) => {
 
 		return {
 			guild: data.guild,
+			splats: data.splats,
 			traits: data.traits
 		};
 	} catch (err) {
