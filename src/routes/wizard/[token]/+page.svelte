@@ -5,8 +5,12 @@
 
 	let { data }: { data: PageData } = $props();
 	let traits = $state<Trait[]>(data.traits);
+	let name = $state('');
 
 	const title = $derived(`Create a Character on ${data.guild.name}`);
+
+	const labelClass = 'mb-2 block text-lg uppercase tracking-wide';
+	const inputClass = 'input input-bordered mb-3 block w-full border px-4 py-3 leading-tight';
 </script>
 
 <svelte:head>
@@ -32,13 +36,29 @@
 		</div>
 	</div>
 
-	<!-- Temporary mock character object for TraitSheet -->
-	<TraitSheet
-		character={{ traits, _id: '', name: '', guild: 0, user: 0, splat: 'vampire', profile: { description: null, history: null, images: [] }, health: '', willpower: '', humanity: 0 }}
-		editing={true}
-	/>
+	<form>
+		<div class="-mx-3 mb-6 flex flex-wrap">
+			<div class="mb-6 w-full px-3 md:mb-0">
+				<label class={labelClass} for="character-name">Character name</label>
+				<input
+					bind:value={name}
+					class={inputClass}
+					id="character-name"
+					type="text"
+					maxlength="37"
+					placeholder="John Wilcox"
+				/>
+			</div>
+		</div>
 
-	<div class="mt-6">
-		<button class="btn preset-filled-primary-500">Create Character</button>
-	</div>
+		<!-- Temporary mock character object for TraitSheet -->
+		<TraitSheet
+			character={{ traits, _id: '', name: '', guild: 0, user: 0, splat: 'vampire', profile: { description: null, history: null, images: [] }, health: '', willpower: '', humanity: 0 }}
+			editing={true}
+		/>
+
+		<div class="mt-6">
+			<button type="submit" class="btn preset-filled-primary-500">Create Character</button>
+		</div>
+	</form>
 </div>
