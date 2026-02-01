@@ -17,8 +17,6 @@
 		Conscience: 'Conviction',
 		Conviction: 'Conscience'
 	};
-
-	$inspect(virtues);
 </script>
 
 {#snippet selector(virtue: Trait)}

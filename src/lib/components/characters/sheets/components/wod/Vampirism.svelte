@@ -26,7 +26,6 @@
 			character.blood_pool = Math.min(newMax, character.blood_pool ?? 0);
 		}
 	});
-	$inspect(character.generation, character.blood_pool, character.max_bp);
 </script>
 
 <Card>

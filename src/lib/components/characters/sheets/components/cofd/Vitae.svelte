@@ -31,8 +31,6 @@
 			character.vitae = Math.min(maxVitae, character.vitae ?? 0);
 		}
 	});
-
-	$inspect(character.blood_potency, character.max_vitae);
 </script>
 
 <Card alignment="center">

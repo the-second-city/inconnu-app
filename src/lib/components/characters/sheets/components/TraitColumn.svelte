@@ -19,7 +19,6 @@
 		$props();
 
 	const filteredTraits: Trait[] = traits.filter((trait: Trait) => trait.type === cat);
-	$inspect(filteredTraits);
 
 	// If colNum is undefined, show all traits (single column mode)
 	// Otherwise, divide into 3 columns for multi-column layouts

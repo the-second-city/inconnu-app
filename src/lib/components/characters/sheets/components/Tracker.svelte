@@ -117,8 +117,6 @@
 	function decPermanent() {
 		trackArray.shift();
 	}
-
-	$inspect(character[track]);
 </script>
 
 {trackLabel}

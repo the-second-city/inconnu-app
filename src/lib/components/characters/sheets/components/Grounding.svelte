@@ -20,7 +20,6 @@
 			grounding.path = normalizedPathName;
 		}
 	});
-	$inspect(grounding.path, grounding.rating);
 </script>
 
 <div class="mt-3 flex flex-col items-center gap-2">
