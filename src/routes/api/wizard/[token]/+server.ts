@@ -45,7 +45,7 @@ export const POST: RequestHandler = async ({ params, request }) => {
 	try {
 		const payload = await request.json();
 
-		const response = await fetch(`${INCONNU_API_URL}/character/create/${token}`, {
+		const response = await fetch(`${INCONNU_API_URL}/characters/wizard/${token}`, {
 			method: 'POST',
 			headers: {
 				'Content-Type': 'application/json',
