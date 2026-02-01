@@ -125,7 +125,9 @@
 </div>
 
 <form onsubmit={handleSubmit}>
-		<div class="-mx-3 mb-6 flex flex-wrap">
+	<div class="mb-6 flex flex-col gap-9">
+		<!-- Group 1: Basics -->
+		<div class="-mx-3 flex flex-wrap">
 			<div class="w-full px-3">
 				<label class={labelClass} for="character-name">Name</label>
 				<input
@@ -171,8 +173,10 @@
 					id="humanity"
 				/>
 			</div>
+		</div>
 
-			<!-- Convictions -->
+		<!-- Group 2: Convictions -->
+		<div class="-mx-3 flex flex-wrap">
 			<div class="w-full px-3">
 				<label class={labelClass}>Convictions</label>
 				<input
@@ -197,8 +201,10 @@
 					placeholder="Third conviction"
 				/>
 			</div>
+		</div>
 
-			<!-- Description -->
+		<!-- Group 3: Biography -->
+		<div class="-mx-3 flex flex-wrap">
 			<div class="w-full px-3">
 				<label class={labelClass} for="description">Description</label>
 				<textarea
@@ -210,7 +216,6 @@
 				></textarea>
 			</div>
 
-			<!-- History -->
 			<div class="w-full px-3">
 				<label class={labelClass} for="history">History</label>
 				<textarea
@@ -221,8 +226,10 @@
 					placeholder="Your character's background and history..."
 				></textarea>
 			</div>
+		</div>
 
-			<!-- Character type -->
+		<!-- Group 4: Template -->
+		<div class="-mx-3 flex flex-wrap">
 			<div class="w-full px-3">
 				<Selector
 					label="Template"
@@ -233,6 +240,7 @@
 				/>
 			</div>
 		</div>
+	</div>
 
 		{#if splat !== ''}
 			<!-- Temporary mock character object for TraitSheet -->
