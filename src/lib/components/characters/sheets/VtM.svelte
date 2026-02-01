@@ -1,7 +1,7 @@
 <script lang="ts">
 	import type { Character } from '$lib/types';
 
-	import WoD from './WoD.svelte';
+	import CharSheet from './CharSheet.svelte';
 	import TraitColumn from './components/TraitColumn.svelte';
 	import Vampirism from './components/wod/Vampirism.svelte';
 
@@ -13,7 +13,7 @@
 	let { character = $bindable(), editing }: ComponentProps = $props();
 </script>
 
-<WoD bind:character {editing}>
+<CharSheet bind:character {editing}>
 	{#snippet trackers()}
 		<!--
 		<Vampirism bind:character {editing} />
@@ -30,4 +30,4 @@
 			allowsSubtraits={false}
 		/>
 	{/snippet}
-</WoD>
+</CharSheet>
