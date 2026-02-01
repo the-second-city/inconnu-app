@@ -111,7 +111,7 @@
 				const errorData = await response
 					.json()
 					.catch(() => ({ message: 'Failed to create character.' }));
-				alert(errorData.message || 'Failed to create character');
+				alert(errorData.message);
 				return;
 			}
 

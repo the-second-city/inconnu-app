@@ -19,7 +19,7 @@ export const GET: RequestHandler = async ({ params }) => {
 	try {
 		const response = await fetch(`${INCONNU_API_URL}/wizard/${token}`, {
 			headers: {
-				'Authorization': `Bearer ${API_KEY}`
+				Authorization: `Bearer ${API_KEY}`
 			}
 		});
 
@@ -51,14 +51,14 @@ export const POST: RequestHandler = async ({ params, request }) => {
 			method: 'POST',
 			headers: {
 				'Content-Type': 'application/json',
-				'Authorization': `Bearer ${API_KEY}`
+				Authorization: `Bearer ${API_KEY}`
 			},
 			body: JSON.stringify(payload)
 		});
 
 		if (!response.ok) {
 			const errorData = await response.json().catch(() => ({}));
-			error(response.status, errorData.message || 'Failed to create character');
+			error(response.status, errorData.message || 'Failed to create character.');
 		}
 
 		const data = await response.json();
