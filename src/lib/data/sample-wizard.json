@@ -1,0 +1,218 @@
+[
+  {
+    "name": "Strength",
+    "rating": 1,
+    "type": "attribute",
+    "subtraits": []
+  },
+  {
+    "name": "Dexterity",
+    "rating": 1,
+    "type": "attribute",
+    "subtraits": []
+  },
+  {
+    "name": "Stamina",
+    "rating": 1,
+    "type": "attribute",
+    "subtraits": []
+  },
+  {
+    "name": "Charisma",
+    "rating": 1,
+    "type": "attribute",
+    "subtraits": []
+  },
+  {
+    "name": "Manipulation",
+    "rating": 1,
+    "type": "attribute",
+    "subtraits": []
+  },
+  {
+    "name": "Composure",
+    "rating": 1,
+    "type": "attribute",
+    "subtraits": []
+  },
+  {
+    "name": "Intelligence",
+    "rating": 1,
+    "type": "attribute",
+    "subtraits": []
+  },
+  {
+    "name": "Wits",
+    "rating": 1,
+    "type": "attribute",
+    "subtraits": []
+  },
+  {
+    "name": "Resolve",
+    "rating": 1,
+    "type": "attribute",
+    "subtraits": []
+  },
+  {
+    "name": "Athletics",
+    "rating": 0,
+    "type": "skill",
+    "subtraits": []
+  },
+  {
+    "name": "Brawl",
+    "rating": 0,
+    "type": "skill",
+    "subtraits": []
+  },
+  {
+    "name": "Craft",
+    "rating": 0,
+    "type": "skill",
+    "subtraits": []
+  },
+  {
+    "name": "Drive",
+    "rating": 0,
+    "type": "skill",
+    "subtraits": []
+  },
+  {
+    "name": "Firearms",
+    "rating": 0,
+    "type": "skill",
+    "subtraits": []
+  },
+  {
+    "name": "Larceny",
+    "rating": 0,
+    "type": "skill",
+    "subtraits": []
+  },
+  {
+    "name": "Melee",
+    "rating": 0,
+    "type": "skill",
+    "subtraits": []
+  },
+  {
+    "name": "Stealth",
+    "rating": 0,
+    "type": "skill",
+    "subtraits": []
+  },
+  {
+    "name": "Survival",
+    "rating": 0,
+    "type": "skill",
+    "subtraits": []
+  },
+  {
+    "name": "AnimalKen",
+    "rating": 0,
+    "type": "skill",
+    "subtraits": []
+  },
+  {
+    "name": "Etiquette",
+    "rating": 0,
+    "type": "skill",
+    "subtraits": []
+  },
+  {
+    "name": "Insight",
+    "rating": 0,
+    "type": "skill",
+    "subtraits": []
+  },
+  {
+    "name": "Intimidation",
+    "rating": 0,
+    "type": "skill",
+    "subtraits": []
+  },
+  {
+    "name": "Leadership",
+    "rating": 0,
+    "type": "skill",
+    "subtraits": []
+  },
+  {
+    "name": "Performance",
+    "rating": 0,
+    "type": "skill",
+    "subtraits": []
+  },
+  {
+    "name": "Persuasion",
+    "rating": 0,
+    "type": "skill",
+    "subtraits": []
+  },
+  {
+    "name": "Streetwise",
+    "rating": 0,
+    "type": "skill",
+    "subtraits": []
+  },
+  {
+    "name": "Subterfuge",
+    "rating": 0,
+    "type": "skill",
+    "subtraits": []
+  },
+  {
+    "name": "Academics",
+    "rating": 0,
+    "type": "skill",
+    "subtraits": []
+  },
+  {
+    "name": "Awareness",
+    "rating": 0,
+    "type": "skill",
+    "subtraits": []
+  },
+  {
+    "name": "Finance",
+    "rating": 0,
+    "type": "skill",
+    "subtraits": []
+  },
+  {
+    "name": "Investigation",
+    "rating": 0,
+    "type": "skill",
+    "subtraits": []
+  },
+  {
+    "name": "Medicine",
+    "rating": 0,
+    "type": "skill",
+    "subtraits": []
+  },
+  {
+    "name": "Occult",
+    "rating": 0,
+    "type": "skill",
+    "subtraits": []
+  },
+  {
+    "name": "Politics",
+    "rating": 0,
+    "type": "skill",
+    "subtraits": []
+  },
+  {
+    "name": "Science",
+    "rating": 0,
+    "type": "skill",
+    "subtraits": []
+  },
+  {
+    "name": "Technology",
+    "rating": 0,
+    "type": "skill",
+    "subtraits": []
+  }
+]
