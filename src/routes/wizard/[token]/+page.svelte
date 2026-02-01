@@ -26,6 +26,15 @@
 	let history = $state('');
 	let submitting = $state(false);
 
+	// Reset blood potency when switching between vampire/thinblood
+	$effect(() => {
+		if (splat === 'thinblood' && blood_potency > 2) {
+			blood_potency = 2;
+		} else if (splat === 'vampire' && blood_potency < 1) {
+			blood_potency = 1;
+		}
+	});
+
 	const title = $derived(`New Character on ${data.guild.name}`);
 	const characterType = $derived(data.spc ? 'New SPC' : 'New character');
 
@@ -98,9 +107,6 @@
 		};
 
 		try {
-			// TODO: Remove this delay after testing
-			await new Promise((resolve) => setTimeout(resolve, 1000));
-
 			const response = await fetch(`/api/wizard/${data.token}`, {
 				method: 'POST',
 				headers: { 'Content-Type': 'application/json' },
@@ -148,7 +154,7 @@
 		<div class="flex justify-end">
 			<h6 class="text-surface-800-200 flex items-center gap-4 italic">
 				{data.guild.name}
-				<Avatar src={data.guild.icon} name={data.guild.name} size="size-6" />
+				<Avatar src={data.guild.icon ?? undefined} name={data.guild.name} size="size-6" />
 			</h6>
 		</div>
 	</div>
