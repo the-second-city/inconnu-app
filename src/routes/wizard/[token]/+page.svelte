@@ -8,6 +8,7 @@
 	import Card from '$lib/components/Card.svelte';
 	import Selector from '$lib/components/Selector.svelte';
 	import { creationInfoStore } from '$lib/stores/CreationStore';
+	import { normalize } from '$lib';
 
 	let { data }: { data: PageData } = $props();
 	let traits = $state<Trait[]>(data.traits);
@@ -31,8 +32,25 @@
 	const willpowerOptions = Array.from({ length: 9 }, (_, i) => `${i + 2}`);
 	const humanityOptions = Array.from({ length: 10 }, (_, i) => `${i + 1}`);
 
+	// Character name validation
+	const normalizedName = $derived(normalize(name));
+	const isValidCharacterName = $derived.by(() => {
+		if (!normalizedName) return false;
+		if (normalizedName.length > 30) return false;
+		return /^([^\W]|[-_\s'])+$/.test(normalizedName);
+	});
+	const nameError = $derived.by(() => {
+		if (name.length === 0) return null; // Don't show error for empty field
+		if (!normalizedName) return 'Name cannot be empty';
+		if (normalizedName.length > 30) return 'Name must be 30 characters or less';
+		if (!/^([^\W]|[-_\s'])+$/.test(normalizedName)) {
+			return 'Name can only contain letters, numbers, spaces, hyphens, underscores, and apostrophes';
+		}
+		return null;
+	});
+
 	const isFormValid = $derived(
-		name.trim() !== '' && health !== '' && willpower !== '' && splat !== ''
+		isValidCharacterName && health !== '' && willpower !== '' && splat !== ''
 	);
 
 	async function handleSubmit(event: SubmitEvent) {
@@ -104,12 +122,15 @@
 				<label class={labelClass} for="character-name">Name</label>
 				<input
 					bind:value={name}
-					class={inputClass}
+					class="{inputClass} {nameError ? 'border-error-500' : ''}"
 					id="character-name"
 					type="text"
 					maxlength="37"
 					placeholder="Nadea Theron"
 				/>
+				{#if nameError}
+					<p class="text-error-500 mt-1 mb-2 text-sm">{nameError}</p>
+				{/if}
 			</div>
 
 			<!-- Health -->
