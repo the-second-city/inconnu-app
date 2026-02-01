@@ -24,7 +24,7 @@
 	let description = $state('');
 	let history = $state('');
 
-	const title = $derived(`Create a Character on ${data.guild.name}`);
+	const title = $derived(`New Character on ${data.guild.name}`);
 	const characterType = $derived(data.spc ? 'New SPC' : 'New character');
 
 	// Format splat names for display
