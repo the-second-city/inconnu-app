@@ -29,7 +29,7 @@
 	{#if characterInfo}
 		<div class="mb-6 flex justify-center">
 			<div>
-				<h1 class="h1 text-center">{characterInfo.characterName}</h1>
+				<h1 class="h1 text-center">{characterInfo.character_name}</h1>
 				<h4 class="h4 text-center">HAS BEEN CREATED</h4>
 			</div>
 		</div>
@@ -37,7 +37,7 @@
 		<hr class="mb-6 opacity-50" />
 
 		<div class="mb-6 flex flex-col gap-3">
-			<a href="/characters/{characterInfo.characterId}" class="btn preset-filled-primary-500">
+			<a href="/characters/{characterInfo.character_id}" class="btn preset-filled-primary-500">
 				View now
 				<span class="text-sm opacity-75">(requires sign-in)</span>
 			</a>
@@ -54,8 +54,8 @@
 
 		<div class="mt-6 flex justify-end">
 			<h6 class="text-surface-800-200 flex items-center gap-4 italic">
-				{characterInfo.guildName}
-				<Avatar src={characterInfo.guildIcon} name={characterInfo.guildName} size="size-6" />
+				{characterInfo.guild_name}
+				<Avatar src={characterInfo.guild_icon ?? undefined} name={characterInfo.guild_name} size="size-6" />
 			</h6>
 		</div>
 	{:else}
