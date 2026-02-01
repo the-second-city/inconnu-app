@@ -86,7 +86,7 @@
 						<Markdown content={character.profile.history} />
 					{:else}
 						<span class="text-surface-300 italic">
-							{character.name}'s past is shrouded in mystery...
+							{character.name}'s past is shrouded in mystery ...
 						</span>
 					{/if}
 				</p>

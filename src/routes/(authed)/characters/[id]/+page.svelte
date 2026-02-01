@@ -66,7 +66,7 @@
 			<div class="flex justify-end">
 				<h6 class="text-surface-800-200 flex items-center gap-4 italic">
 					{guild.name}
-					<Avatar src={guild.icon} name={guild.name} size="size-6" />
+					<Avatar src={guild.icon ?? undefined} name={guild.name} size="size-6" />
 				</h6>
 			</div>
 		{/if}
@@ -77,7 +77,9 @@
 	{#snippet list()}
 		<Tabs.Control value="sheet">Sheet</Tabs.Control>
 		<Tabs.Control value="profile">Profile</Tabs.Control>
+		<!--
 		<Tabs.Control value="experience">Experience</Tabs.Control>
+		-->
 	{/snippet}
 	{#snippet content()}
 		<Tabs.Panel value="profile">
@@ -90,11 +92,13 @@
 				<CharacterSheet bind:character />
 			{/key}
 		</Tabs.Panel>
+		<!--
 		<Tabs.Panel value="experience">
 			{#key character}
 				Eventually
 			{/key}
 		</Tabs.Panel>
+		-->
 	{/snippet}
 </Tabs>
 
