@@ -34,21 +34,25 @@ export const POST: RequestHandler = async ({ params, request }) => {
 	try {
 		const payload = await request.json();
 
-		const response = await fetch(`${INCONNU_API_URL}/character/create/${token}`, {
-			method: 'POST',
-			headers: {
-				'Content-Type': 'application/json'
-			},
-			body: JSON.stringify(payload)
-		});
+		// TEMPORARY: Spoof success response for testing
+		return json({ id: '680d32cbc0bf6151dbd5004e' }, { status: 201 });
 
-		if (!response.ok) {
-			const errorData = await response.json().catch(() => ({}));
-			error(response.status, errorData.message || 'Failed to create character');
-		}
+		// TODO: Uncomment when ready to test with real API
+		// const response = await fetch(`${INCONNU_API_URL}/character/create/${token}`, {
+		// 	method: 'POST',
+		// 	headers: {
+		// 		'Content-Type': 'application/json'
+		// 	},
+		// 	body: JSON.stringify(payload)
+		// });
 
-		const data = await response.json();
-		return json(data);
+		// if (!response.ok) {
+		// 	const errorData = await response.json().catch(() => ({}));
+		// 	error(response.status, errorData.message || 'Failed to create character');
+		// }
+
+		// const data = await response.json();
+		// return json(data);
 	} catch (err) {
 		if (err instanceof Error && 'status' in err) {
 			throw err; // Re-throw SvelteKit errors

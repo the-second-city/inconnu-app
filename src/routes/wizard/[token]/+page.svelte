@@ -1,11 +1,13 @@
 <script lang="ts">
 	import type { PageData } from './$types';
 	import type { Trait } from '$lib/types';
+	import { goto } from '$app/navigation';
 	import { Avatar } from '@skeletonlabs/skeleton-svelte';
 	import TraitSheet from '$lib/components/characters/sheets/TraitSheet.svelte';
 	import RatingSelector from '$lib/components/characters/sheets/components/RatingSelector.svelte';
 	import Card from '$lib/components/Card.svelte';
 	import Selector from '$lib/components/Selector.svelte';
+	import { creationInfoStore } from '$lib/stores/CreationStore';
 
 	let { data }: { data: PageData } = $props();
 	let traits = $state<Trait[]>(data.traits);
@@ -59,9 +61,17 @@
 				return;
 			}
 
-			// TODO: Handle success (redirect or show success message)
 			const result = await response.json();
-			console.log('Character created:', result);
+
+			// Store character info and redirect to success page
+			creationInfoStore.set({
+				characterId: result.id,
+				guildName: data.guild.name,
+				guildIcon: data.guild.icon,
+				characterName: name.trim()
+			});
+
+			goto('/wizard/success');
 		} catch (error) {
 			alert('An unexpected error occurred. Please try again.');
 			console.error('Error creating character:', error);
