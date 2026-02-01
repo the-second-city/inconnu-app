@@ -9,7 +9,7 @@
 	interface ComponentProps {
 		name: string;
 		cat: string;
-		colNum: number;
+		colNum?: number;
 		traits: Trait[];
 		editing: boolean;
 		allowsSubtraits: boolean;
@@ -21,16 +21,20 @@
 	const filteredTraits: Trait[] = traits.filter((trait: Trait) => trait.type === cat);
 	$inspect(filteredTraits);
 
-	const colLen = filteredTraits.length / 3;
-	let startIndex = $derived(colNum * colLen);
-	let endIndex = $derived(colNum * colLen + colLen);
+	// If colNum is undefined, show all traits (single column mode)
+	// Otherwise, divide into 3 columns for multi-column layouts
+	let indices: number[] = $derived.by(() => {
+		const allIndices = filteredTraits.map((_, index) => index);
 
-	let indices: number[] = $derived(
-		filteredTraits
-			.map((trait: Trait, index: number) => ({ trait, index }))
-			.map((item: IndexedTrait) => item.index)
-			.slice(startIndex, endIndex)
-	);
+		if (colNum === undefined) {
+			return allIndices;
+		}
+
+		const colLen = filteredTraits.length / 3;
+		const startIndex = Math.floor(colNum * colLen);
+		const endIndex = Math.floor(colNum * colLen + colLen);
+		return allIndices.slice(startIndex, endIndex);
+	});
 </script>
 
 <Card>

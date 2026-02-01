@@ -7,7 +7,7 @@
 	import { normalize } from '$lib';
 
 	import type { Character, Guild } from '$lib/types';
-	import VtM from '$lib/components/characters/sheets/VtM.svelte';
+	import CharacterSheet from './CharacterSheet.svelte';
 	import CharProfile from '$lib/components/characters/CharProfile.svelte';
 
 	let selectedTab = $state('sheet');
@@ -87,7 +87,7 @@
 		</Tabs.Panel>
 		<Tabs.Panel value="sheet">
 			{#key character}
-				<VtM bind:character {editing} />
+				<CharacterSheet bind:character />
 			{/key}
 		</Tabs.Panel>
 		<Tabs.Panel value="experience">
