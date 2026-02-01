@@ -1,8 +1,6 @@
 import { error } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
-import type { UserCharacters, Guild } from '$lib/types';
 import { API_KEY, INCONNU_API_URL } from '$env/static/private';
-import charData from '$lib/data/chardata.json';
 
 export const load: PageServerLoad = async ({ params, parent }) => {
 	const { session } = await parent();
@@ -13,27 +11,6 @@ export const load: PageServerLoad = async ({ params, parent }) => {
 
 	const discordUserId = session.user.id;
 
-	// For now, return sample data
-	const userCharacters: UserCharacters = charData;
-
-	for (const character of userCharacters.characters) {
-		let characterGuild: Guild | null = null;
-		if (character._id === params.id) {
-			// Find the guild
-			for (const guild of userCharacters.guilds) {
-				if (guild.id === character.guild) {
-					characterGuild = guild;
-					break;
-				}
-			}
-			return {
-				guild: characterGuild,
-				character
-			};
-		}
-	}
-
-	// TODO: Uncomment when ready to use real API
 	try {
 		const response = await fetch(`${INCONNU_API_URL}/characters/${params.id}`, {
 			headers: {

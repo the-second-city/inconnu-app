@@ -1,7 +1,6 @@
 import { json, error } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
 import { API_KEY, INCONNU_API_URL } from '$env/static/private';
-import charData from '$lib/data/chardata.json';
 
 export const GET: RequestHandler = async ({ locals }) => {
 	const session = await locals.auth();
@@ -12,10 +11,6 @@ export const GET: RequestHandler = async ({ locals }) => {
 
 	const discordUserId = session.user.id;
 
-	// For now, return sample data
-	return json(charData);
-
-	// TODO: Uncomment when ready to use real API
 	try {
 		const response = await fetch(`${INCONNU_API_URL}/characters`, {
 			headers: {
