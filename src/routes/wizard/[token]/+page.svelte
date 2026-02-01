@@ -23,6 +23,10 @@
 	const willpowerOptions = Array.from({ length: 9 }, (_, i) => `${i + 2}`);
 	const humanityOptions = Array.from({ length: 10 }, (_, i) => `${i + 1}`);
 
+	const isFormValid = $derived(
+		name.trim() !== '' && health !== '' && willpower !== '' && splat !== ''
+	);
+
 	const labelClass = 'mb-2 block text-lg uppercase tracking-wide';
 	const inputClass = 'input input-bordered mb-3 block w-full border px-4 py-3 leading-tight';
 </script>
@@ -109,6 +113,12 @@
 		{/if}
 
 		<div class="mt-6">
-			<button type="submit" class="btn preset-filled-primary-500">Create Character</button>
+			<button
+				type="submit"
+				class="btn preset-filled-primary-500 hover:brightness-110"
+				disabled={!isFormValid}
+			>
+				Create Character
+			</button>
 		</div>
 	</form>
