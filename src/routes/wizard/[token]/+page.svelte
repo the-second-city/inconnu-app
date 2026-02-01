@@ -173,9 +173,11 @@
 					type="text"
 					maxlength="37"
 					placeholder="Nadea Theron"
+					aria-required="true"
+					aria-describedby={nameError ? 'name-error' : undefined}
 				/>
 				{#if nameError}
-					<p class="text-error-500 mt-1 mb-2 text-sm">{nameError}</p>
+					<p id="name-error" class="text-error-500 mt-1 mb-2 text-sm">{nameError}</p>
 				{/if}
 			</div>
 
@@ -187,6 +189,7 @@
 					bind:value={health}
 					id="health"
 					placeholder="Select Health rating"
+					required={true}
 				/>
 			</div>
 			<!-- Willpower -->
@@ -197,6 +200,7 @@
 					bind:value={willpower}
 					id="willpower"
 					placeholder="Select Willpower rating"
+					required={true}
 				/>
 			</div>
 
@@ -222,9 +226,10 @@
 					type="text"
 					maxlength="200"
 					placeholder="First conviction"
+					aria-describedby={conviction1Error ? 'conviction-1-error' : undefined}
 				/>
 				{#if conviction1Error}
-					<p class="text-error-500 mt-1 mb-2 text-sm">{conviction1Error}</p>
+					<p id="conviction-1-error" class="text-error-500 mt-1 mb-2 text-sm">{conviction1Error}</p>
 				{/if}
 				<input
 					bind:value={conviction2}
@@ -232,9 +237,11 @@
 					type="text"
 					maxlength="200"
 					placeholder="Second conviction"
+					aria-label="Second conviction"
+					aria-describedby={conviction2Error ? 'conviction-2-error' : undefined}
 				/>
 				{#if conviction2Error}
-					<p class="text-error-500 mt-1 mb-2 text-sm">{conviction2Error}</p>
+					<p id="conviction-2-error" class="text-error-500 mt-1 mb-2 text-sm">{conviction2Error}</p>
 				{/if}
 				<input
 					bind:value={conviction3}
@@ -242,9 +249,11 @@
 					type="text"
 					maxlength="200"
 					placeholder="Third conviction"
+					aria-label="Third conviction"
+					aria-describedby={conviction3Error ? 'conviction-3-error' : undefined}
 				/>
 				{#if conviction3Error}
-					<p class="text-error-500 mt-1 mb-2 text-sm">{conviction3Error}</p>
+					<p id="conviction-3-error" class="text-error-500 mt-1 mb-2 text-sm">{conviction3Error}</p>
 				{/if}
 			</div>
 		</div>
@@ -260,9 +269,10 @@
 					rows="4"
 					maxlength="1024"
 					placeholder="Describe your character..."
+					aria-describedby={descriptionError ? 'description-error' : undefined}
 				></textarea>
 				{#if descriptionError}
-					<p class="text-error-500 mt-1 mb-2 text-sm">{descriptionError}</p>
+					<p id="description-error" class="text-error-500 mt-1 mb-2 text-sm">{descriptionError}</p>
 				{/if}
 			</div>
 
@@ -275,9 +285,10 @@
 					rows="4"
 					maxlength="1024"
 					placeholder="Your character's background and history..."
+					aria-describedby={historyError ? 'history-error' : undefined}
 				></textarea>
 				{#if historyError}
-					<p class="text-error-500 mt-1 mb-2 text-sm">{historyError}</p>
+					<p id="history-error" class="text-error-500 mt-1 mb-2 text-sm">{historyError}</p>
 				{/if}
 			</div>
 		</div>
@@ -291,6 +302,7 @@
 					bind:value={splat}
 					id="character-type"
 					placeholder="Select a character type"
+					required={true}
 				/>
 			</div>
 		</div>
@@ -328,12 +340,20 @@
 					type="submit"
 					class="btn preset-filled-primary-500 hover:brightness-110 w-full flex items-center justify-center gap-2"
 					disabled={!isFormValid}
+					aria-busy={submitting}
 				>
 					{#if submitting}
-						<Loader2 class="animate-spin" size={20} />
+						<Loader2 class="animate-spin" size={20} aria-hidden="true" />
 					{/if}
 					{submitting ? 'Creating...' : submitLabel}
 				</button>
+			</div>
+
+			<!-- Screen reader announcements -->
+			<div class="sr-only" aria-live="polite" aria-atomic="true">
+				{#if submitting}
+					Creating character, please wait...
+				{/if}
 			</div>
 		{/if}
 	</form>

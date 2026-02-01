@@ -5,9 +5,17 @@
 		value: string;
 		id: string;
 		placeholder?: string;
+		required?: boolean;
 	}
 
-	let { label, options, value = $bindable(), id, placeholder }: ComponentProps = $props();
+	let {
+		label,
+		options,
+		value = $bindable(),
+		id,
+		placeholder,
+		required = false
+	}: ComponentProps = $props();
 
 	const labelClass = 'mb-2 block text-lg uppercase tracking-wide';
 	const selectClass =
@@ -17,7 +25,7 @@
 <label class={labelClass} for={id}>
 	{label}
 </label>
-<select {id} bind:value class={selectClass}>
+<select {id} bind:value class={selectClass} aria-required={required}>
 	{#if placeholder}
 		<option value="" disabled selected>{placeholder}</option>
 	{/if}
