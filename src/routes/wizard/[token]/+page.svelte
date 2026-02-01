@@ -3,6 +3,8 @@
 	import type { Trait } from '$lib/types';
 	import { Avatar } from '@skeletonlabs/skeleton-svelte';
 	import TraitSheet from '$lib/components/characters/sheets/TraitSheet.svelte';
+	import RatingSelector from '$lib/components/characters/sheets/components/RatingSelector.svelte';
+	import Card from '$lib/components/Card.svelte';
 	import Selector from '$lib/components/Selector.svelte';
 
 	let { data }: { data: PageData } = $props();
@@ -12,6 +14,7 @@
 	let health = $state('');
 	let willpower = $state('');
 	let humanity = $state('7');
+	let blood_potency = $state(1);
 
 	const title = $derived(`Create a Character on ${data.guild.name}`);
 
@@ -110,6 +113,26 @@
 				character={{ traits, _id: '', name: '', guild: 0, user: 0, splat: 'vampire', profile: { description: null, history: null, images: [] }, health: '', willpower: '', humanity: 0 }}
 				editing={true}
 			/>
+
+			{#if splat === 'vampire'}
+				<div class="mt-3">
+					<Card>
+						<h3 class="h3 -mt-1 mb-2 text-center text-xl font-semibold uppercase">
+							Blood Potency
+						</h3>
+						<div class="flex justify-center">
+							<RatingSelector
+								bind:rating={blood_potency}
+								min={1}
+								max={10}
+								showLabel={false}
+								editing={true}
+								allowsSubtraits={false}
+							/>
+						</div>
+					</Card>
+				</div>
+			{/if}
 		{/if}
 
 		<div class="mt-6">
