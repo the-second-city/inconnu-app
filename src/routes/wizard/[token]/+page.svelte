@@ -33,6 +33,41 @@
 		name.trim() !== '' && health !== '' && willpower !== '' && splat !== ''
 	);
 
+	async function handleSubmit(event: SubmitEvent) {
+		event.preventDefault();
+
+		const payload = {
+			name: name.trim(),
+			splat,
+			health: parseInt(health),
+			willpower: parseInt(willpower),
+			humanity: parseInt(humanity),
+			blood_potency: splat === 'vampire' ? blood_potency : 0,
+			traits
+		};
+
+		try {
+			const response = await fetch(`/api/wizard/${data.token}`, {
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify(payload)
+			});
+
+			if (!response.ok) {
+				const errorData = await response.json().catch(() => ({ message: 'Failed to create character.' }));
+				alert(errorData.message || 'Failed to create character');
+				return;
+			}
+
+			// TODO: Handle success (redirect or show success message)
+			const result = await response.json();
+			console.log('Character created:', result);
+		} catch (error) {
+			alert('An unexpected error occurred. Please try again.');
+			console.error('Error creating character:', error);
+		}
+	}
+
 	const labelClass = 'mb-2 block text-lg uppercase tracking-wide';
 	const inputClass = 'input input-bordered mb-3 block w-full border px-4 py-3 leading-tight';
 </script>
@@ -53,7 +88,7 @@
 	</div>
 </div>
 
-<form>
+<form onsubmit={handleSubmit}>
 		<div class="-mx-3 mb-6 flex flex-wrap">
 			<div class="w-full px-3">
 				<label class={labelClass} for="character-name">Name</label>

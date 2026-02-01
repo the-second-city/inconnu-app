@@ -25,6 +25,7 @@ export const load: PageLoad = async ({ params, fetch }) => {
 		const data: WizardData = await response.json();
 
 		return {
+			token,
 			spc: data.spc,
 			guild: data.guild,
 			splats: data.splats,
