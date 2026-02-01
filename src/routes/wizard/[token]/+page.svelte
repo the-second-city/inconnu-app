@@ -60,7 +60,7 @@
 		event.preventDefault();
 
 		const payload = {
-			name: name.trim(),
+			name: normalizedName,
 			splat,
 			health: parseInt(health),
 			willpower: parseInt(willpower),
@@ -90,7 +90,7 @@
 				characterId: result.id,
 				guildName: data.guild.name,
 				guildIcon: data.guild.icon,
-				characterName: name.trim()
+				characterName: normalizedName
 			});
 
 			goto('/wizard/success');
