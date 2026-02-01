@@ -90,7 +90,7 @@
 </script>
 
 <svelte:head>
-	<title>Characters | botch.lol</title>
+	<title>Characters | inconnu.app</title>
 </svelte:head>
 
 <h1 class="h1">Your Characters</h1>

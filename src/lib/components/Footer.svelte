@@ -19,10 +19,10 @@
 			</a>
 		</span>
 		<span>
-			<a class="anchor" href="https://github.com/tiltowait/botch" title="View on GitHub">GitHub</a>
+			<a class="anchor" href="https://github.com/tiltowait/inconnu" title="View on GitHub">GitHub</a>
 		</span>
 		<span>
-			<a class="anchor" href="https://botch.lol/privacy-policy" title="Privacy Policy">
+			<a class="anchor" href="https://docs.inconnu.app/privacy-policy" title="Privacy Policy">
 				Privacy Policy
 			</a>
 		</span>

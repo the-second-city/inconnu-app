@@ -11,21 +11,21 @@
 </script>
 
 <svelte:head>
-	<title>botch.lol | Discord bots for WoD and CofD</title>
-	<meta property="og:title" content="Botch & Beat" />
+	<title>inconnu.app | Discord bot for V5</title>
+	<meta property="og:title" content="Inconnu" />
 	<meta
 		property="og:description"
-		content="Discord bots for World of Darkness and Chronicles of Darkness. Full character sheets. Smart rolls. Profiles. Images. More."
+		content="Discord bot for Vampire: The Masquerade 5th Edition. Character sheets. Smart rolls. Profiles. Images. More."
 	/>
 	<meta property="og:image" content="/favicon.png" />
 </svelte:head>
 
-<img src="/images/hero.webp" alt="Botch & Beat" />
+<img src="/images/hero.webp" alt="Inconnu" />
 
 <h1 class="h1 text-primary-500">Smart rolls for the supernaturally challenged</h1>
 
 <p>
-	<strong>Botch &amp; Beat</strong> are Discord dice bots for World of Darkness and Chronicles of Darkness
+	<strong>Inconnu</strong> is a Discord dice bot for <em>Vampire: The Masequerade 5th Edition</em>
 	featuring full character management, character sheets, smart rolls, macros, and more! Click the links
 	below to get started.
 </p>
@@ -33,7 +33,7 @@
 <div class="mt-10 flex flex-wrap items-center justify-center gap-4">
 	<a
 		class="btn preset-filled-surface-500 hover:brightness-125"
-		href="https://botch.lol"
+		href="https://docs.inconnu.app"
 		title="Read the docs"
 		target="_blank"
 	>

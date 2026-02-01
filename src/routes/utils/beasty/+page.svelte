@@ -42,7 +42,7 @@
 </script>
 
 <svelte:head>
-	<title>Beasty | botch.lol</title>
+	<title>Beasty | inconnu.app</title>
 	<meta property="og:title" content="Beasty" />
 	<meta property="og:description" content="A tool for formatting Discord text to Beast talk." />
 	<meta property="og:image" content="/favicon.png" />
