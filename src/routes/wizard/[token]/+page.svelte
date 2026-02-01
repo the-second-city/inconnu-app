@@ -55,7 +55,7 @@
 <form>
 		<div class="-mx-3 mb-6 flex flex-wrap">
 			<div class="w-full px-3">
-				<label class={labelClass} for="character-name">Character name</label>
+				<label class={labelClass} for="character-name">Name</label>
 				<input
 					bind:value={name}
 					class={inputClass}
@@ -100,7 +100,7 @@
 			<!-- Character type -->
 			<div class="w-full px-3">
 				<Selector
-					label="Character type"
+					label="Template"
 					options={splatOptions}
 					bind:value={splat}
 					id="character-type"
