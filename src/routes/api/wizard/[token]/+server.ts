@@ -1,9 +1,7 @@
 import { json, error } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
-import { API_KEY } from '$env/static/private';
+import { API_KEY, INCONNU_API_URL } from '$env/static/private';
 import wizardData from '$lib/data/sample-wizard.json';
-
-const INCONNU_API_URL = 'https://inconnu.app';
 
 export const GET: RequestHandler = async ({ params }) => {
 	const { token } = params;

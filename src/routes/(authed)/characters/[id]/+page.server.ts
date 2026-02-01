@@ -1,10 +1,8 @@
 import { error } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
 import type { UserCharacters, Guild } from '$lib/types';
-import { API_KEY } from '$env/static/private';
+import { API_KEY, INCONNU_API_URL } from '$env/static/private';
 import charData from '$lib/data/chardata.json';
-
-const INCONNU_API_URL = 'https://inconnu.app';
 
 export const load: PageServerLoad = async ({ params, parent }) => {
 	const { session } = await parent();
