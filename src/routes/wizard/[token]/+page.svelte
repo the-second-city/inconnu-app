@@ -3,6 +3,7 @@
 	import type { Trait } from '$lib/types';
 	import { goto } from '$app/navigation';
 	import { Avatar } from '@skeletonlabs/skeleton-svelte';
+	import { Loader2 } from '@lucide/svelte';
 	import TraitSheet from '$lib/components/characters/sheets/TraitSheet.svelte';
 	import RatingSelector from '$lib/components/characters/sheets/components/RatingSelector.svelte';
 	import Card from '$lib/components/Card.svelte';
@@ -23,6 +24,7 @@
 	let conviction3 = $state('');
 	let description = $state('');
 	let history = $state('');
+	let submitting = $state(false);
 
 	const title = $derived(`New Character on ${data.guild.name}`);
 	const characterType = $derived(data.spc ? 'New SPC' : 'New character');
@@ -54,12 +56,31 @@
 		return null;
 	});
 
+	// Conviction validation
+	const conviction1Error = $derived(conviction1.length > 200 ? 'Maximum 200 characters' : null);
+	const conviction2Error = $derived(conviction2.length > 200 ? 'Maximum 200 characters' : null);
+	const conviction3Error = $derived(conviction3.length > 200 ? 'Maximum 200 characters' : null);
+
+	// Biography validation
+	const descriptionError = $derived(description.length > 1024 ? 'Maximum 1024 characters' : null);
+	const historyError = $derived(history.length > 1024 ? 'Maximum 1024 characters' : null);
+
 	const isFormValid = $derived(
-		isValidCharacterName && health !== '' && willpower !== '' && splat !== ''
+		isValidCharacterName &&
+			health !== '' &&
+			willpower !== '' &&
+			splat !== '' &&
+			!conviction1Error &&
+			!conviction2Error &&
+			!conviction3Error &&
+			!descriptionError &&
+			!historyError &&
+			!submitting
 	);
 
 	async function handleSubmit(event: SubmitEvent) {
 		event.preventDefault();
+		submitting = true;
 
 		const payload = {
 			name: normalizedName,
@@ -67,7 +88,7 @@
 			health: parseInt(health),
 			willpower: parseInt(willpower),
 			humanity: parseInt(humanity),
-			blood_potency: splat === 'vampire' ? blood_potency : 0,
+			blood_potency: splat === 'vampire' || splat === 'thinblood' ? blood_potency : 0,
 			convictions: [conviction1, conviction2, conviction3],
 			biography: description,
 			history,
@@ -75,6 +96,9 @@
 		};
 
 		try {
+			// TODO: Remove this delay after testing
+			await new Promise((resolve) => setTimeout(resolve, 1000));
+
 			const response = await fetch(`/api/wizard/${data.token}`, {
 				method: 'POST',
 				headers: { 'Content-Type': 'application/json' },
@@ -82,7 +106,9 @@
 			});
 
 			if (!response.ok) {
-				const errorData = await response.json().catch(() => ({ message: 'Failed to create character.' }));
+				const errorData = await response
+					.json()
+					.catch(() => ({ message: 'Failed to create character.' }));
 				alert(errorData.message || 'Failed to create character');
 				return;
 			}
@@ -101,6 +127,8 @@
 		} catch (error) {
 			alert('An unexpected error occurred. Please try again.');
 			console.error('Error creating character:', error);
+		} finally {
+			submitting = false;
 		}
 	}
 
@@ -181,25 +209,34 @@
 				<label class={labelClass}>Convictions</label>
 				<input
 					bind:value={conviction1}
-					class={inputClass}
+					class="{inputClass} {conviction1Error ? 'border-error-500' : ''}"
 					type="text"
 					maxlength="200"
 					placeholder="First conviction"
 				/>
+				{#if conviction1Error}
+					<p class="text-error-500 mt-1 mb-2 text-sm">{conviction1Error}</p>
+				{/if}
 				<input
 					bind:value={conviction2}
-					class={inputClass}
+					class="{inputClass} {conviction2Error ? 'border-error-500' : ''}"
 					type="text"
 					maxlength="200"
 					placeholder="Second conviction"
 				/>
+				{#if conviction2Error}
+					<p class="text-error-500 mt-1 mb-2 text-sm">{conviction2Error}</p>
+				{/if}
 				<input
 					bind:value={conviction3}
-					class={inputClass}
+					class="{inputClass} {conviction3Error ? 'border-error-500' : ''}"
 					type="text"
 					maxlength="200"
 					placeholder="Third conviction"
 				/>
+				{#if conviction3Error}
+					<p class="text-error-500 mt-1 mb-2 text-sm">{conviction3Error}</p>
+				{/if}
 			</div>
 		</div>
 
@@ -209,22 +246,30 @@
 				<label class={labelClass} for="description">Description</label>
 				<textarea
 					bind:value={description}
-					class={inputClass}
+					class="{inputClass} {descriptionError ? 'border-error-500' : ''}"
 					id="description"
 					rows="4"
+					maxlength="1024"
 					placeholder="Describe your character..."
 				></textarea>
+				{#if descriptionError}
+					<p class="text-error-500 mt-1 mb-2 text-sm">{descriptionError}</p>
+				{/if}
 			</div>
 
 			<div class="w-full px-3">
 				<label class={labelClass} for="history">History</label>
 				<textarea
 					bind:value={history}
-					class={inputClass}
+					class="{inputClass} {historyError ? 'border-error-500' : ''}"
 					id="history"
 					rows="4"
+					maxlength="1024"
 					placeholder="Your character's background and history..."
 				></textarea>
+				{#if historyError}
+					<p class="text-error-500 mt-1 mb-2 text-sm">{historyError}</p>
+				{/if}
 			</div>
 		</div>
 
@@ -249,7 +294,7 @@
 				editing={true}
 			/>
 
-			{#if splat === 'vampire'}
+			{#if splat === 'vampire' || splat === 'thinblood'}
 				<div class="mt-3">
 					<Card>
 						<h3 class="h3 -mt-1 mb-2 text-center text-xl font-semibold uppercase">
@@ -258,8 +303,8 @@
 						<div class="flex justify-center">
 							<RatingSelector
 								bind:rating={blood_potency}
-								min={1}
-								max={10}
+								min={splat === 'thinblood' ? 0 : 1}
+								max={splat === 'thinblood' ? 2 : 10}
 								showLabel={false}
 								editing={true}
 								allowsSubtraits={false}
@@ -272,10 +317,13 @@
 			<div class="mt-6">
 				<button
 					type="submit"
-					class="btn preset-filled-primary-500 hover:brightness-110 w-full"
+					class="btn preset-filled-primary-500 hover:brightness-110 w-full flex items-center justify-center gap-2"
 					disabled={!isFormValid}
 				>
-					Create Character
+					{#if submitting}
+						<Loader2 class="animate-spin" size={20} />
+					{/if}
+					{submitting ? 'Creating...' : 'Create Character'}
 				</button>
 			</div>
 		{/if}
