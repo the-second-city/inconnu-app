@@ -21,6 +21,8 @@
 	let conviction1 = $state('');
 	let conviction2 = $state('');
 	let conviction3 = $state('');
+	let description = $state('');
+	let history = $state('');
 
 	const title = $derived(`Create a Character on ${data.guild.name}`);
 	const characterType = $derived(data.spc ? 'New SPC' : 'New character');
@@ -67,6 +69,8 @@
 			humanity: parseInt(humanity),
 			blood_potency: splat === 'vampire' ? blood_potency : 0,
 			convictions: [conviction1, conviction2, conviction3],
+			biography: description,
+			history,
 			traits
 		};
 
@@ -192,6 +196,30 @@
 					maxlength="200"
 					placeholder="Third conviction"
 				/>
+			</div>
+
+			<!-- Description -->
+			<div class="w-full px-3">
+				<label class={labelClass} for="description">Description</label>
+				<textarea
+					bind:value={description}
+					class={inputClass}
+					id="description"
+					rows="4"
+					placeholder="Describe your character..."
+				></textarea>
+			</div>
+
+			<!-- History -->
+			<div class="w-full px-3">
+				<label class={labelClass} for="history">History</label>
+				<textarea
+					bind:value={history}
+					class={inputClass}
+					id="history"
+					rows="4"
+					placeholder="Your character's background and history..."
+				></textarea>
 			</div>
 
 			<!-- Character type -->
