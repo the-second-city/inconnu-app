@@ -28,6 +28,7 @@
 
 	let showSubtraits = $state(false);
 	let enablePopover = $derived((allowsSubtraits && editing) || subtraits.length > 0);
+	let hoveredRating = $state<number | null>(null);
 
 	let newSubtrait = $state('');
 	let normalizedNewSubtrait = $derived(normalize(newSubtrait));
@@ -145,7 +146,7 @@
 			{name}
 		{/if}
 	{/if}
-	<div class="flex flex-wrap gap-2">
+	<div class="flex flex-wrap gap-2" onmouseleave={() => (hoveredRating = null)}>
 		{#if editing}
 			{#each circles as circleRating}
 				<button
@@ -153,7 +154,9 @@
 					class="rating-circle"
 					class:selected={circleRating <= rating}
 					class:editable={editing}
+					class:hovered={hoveredRating !== null && circleRating <= hoveredRating && circleRating > rating}
 					onclick={() => handleRatingChange(circleRating)}
+					onmouseenter={() => (hoveredRating = circleRating)}
 					aria-label="{name}: {circleRating} dots"
 				></button>
 			{/each}
@@ -184,8 +187,10 @@
 		border-color: var(--color-secondary-500) !important;
 	}
 
-	.rating-circle.editable:hover {
+	.rating-circle.hovered {
+		background-color: var(--color-secondary-500) !important;
 		border-color: var(--color-secondary-500) !important;
+		opacity: 0.5;
 	}
 
 	.rating-circle.editable:focus {
