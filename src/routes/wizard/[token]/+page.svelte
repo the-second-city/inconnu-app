@@ -18,10 +18,12 @@
 
 	const title = $derived(`Create a Character on ${data.guild.name}`);
 
-	// Title-case the splats for display
-	const titleCase = (str: string) =>
-		str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
-	const splatOptions = $derived(data.splats.map(titleCase));
+	// Format splat names for display
+	const formatSplat = (str: string) => {
+		if (str === 'thinblood') return 'Thin-Blood';
+		return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
+	};
+	const splatOptions = $derived(data.splats.map(formatSplat));
 	const healthOptions = Array.from({ length: 17 }, (_, i) => `${i + 4}`);
 	const willpowerOptions = Array.from({ length: 9 }, (_, i) => `${i + 2}`);
 	const humanityOptions = Array.from({ length: 10 }, (_, i) => `${i + 1}`);

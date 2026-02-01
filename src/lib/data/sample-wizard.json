@@ -3,7 +3,12 @@
     "name": "golden gatekeeping",
     "icon": "https://cdn.discordapp.com/icons/1325660602579816579/a_b42502e5b69a7fc303147d2ab5072369.png"
   },
-  "splats": ["vampire", "mortal", "ghoul"],
+  "splats": [
+    "vampire",
+    "mortal",
+    "ghoul",
+    "thinblood"
+  ],
   "traits": [
     {
       "name": "Strength",
