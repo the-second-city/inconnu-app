@@ -1,5 +1,6 @@
 import { json, error } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
+import { API_KEY } from '$env/static/private';
 import wizardData from '$lib/data/sample-wizard.json';
 
 const INCONNU_API_URL = 'https://inconnu.app';
@@ -7,21 +8,33 @@ const INCONNU_API_URL = 'https://inconnu.app';
 export const GET: RequestHandler = async ({ params }) => {
 	const { token } = params;
 
-	// TODO: Validate token and fetch from Inconnu bot
-	// const response = await fetch(`${INCONNU_API_URL}/wizard/${token}`);
-	// if (!response.ok) {
-	//   error(response.status, 'Wizard session not found or expired');
-	// }
-	// const data = await response.json();
-
-	// For now, just return sample data
-	// In production, this will validate the token with the bot
-	// and return 404 if expired/invalid
 	if (!token) {
 		error(400, 'Token is required');
 	}
 
+	// For now, return sample data
 	return json(wizardData);
+
+	// TODO: Uncomment when ready to use real API
+	try {
+		const response = await fetch(`${INCONNU_API_URL}/wizard/${token}`, {
+			headers: {
+				'Authorization': `Bearer ${API_KEY}`
+			}
+		});
+
+		if (!response.ok) {
+			error(response.status, 'Wizard session not found or expired');
+		}
+
+		const data = await response.json();
+		return json(data);
+	} catch (err) {
+		if (err instanceof Error && 'status' in err) {
+			throw err;
+		}
+		error(500, 'Failed to load wizard data');
+	}
 };
 
 export const POST: RequestHandler = async ({ params, request }) => {
@@ -37,7 +50,8 @@ export const POST: RequestHandler = async ({ params, request }) => {
 		const response = await fetch(`${INCONNU_API_URL}/character/create/${token}`, {
 			method: 'POST',
 			headers: {
-				'Content-Type': 'application/json'
+				'Content-Type': 'application/json',
+				'Authorization': `Bearer ${API_KEY}`
 			},
 			body: JSON.stringify(payload)
 		});
