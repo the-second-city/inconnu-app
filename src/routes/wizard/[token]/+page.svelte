@@ -78,6 +78,8 @@
 			!submitting
 	);
 
+	const submitLabel = $derived(isFormValid ? `Create ${normalizedName}` : 'Fill out the form first');
+
 	async function handleSubmit(event: SubmitEvent) {
 		event.preventDefault();
 		submitting = true;
@@ -323,7 +325,7 @@
 					{#if submitting}
 						<Loader2 class="animate-spin" size={20} />
 					{/if}
-					{submitting ? 'Creating...' : 'Create Character'}
+					{submitting ? 'Creating...' : submitLabel}
 				</button>
 			</div>
 		{/if}
