@@ -18,6 +18,9 @@
 	let willpower = $state('');
 	let humanity = $state('7');
 	let blood_potency = $state(1);
+	let conviction1 = $state('');
+	let conviction2 = $state('');
+	let conviction3 = $state('');
 
 	const title = $derived(`Create a Character on ${data.guild.name}`);
 	const characterType = $derived(data.spc ? 'New SPC' : 'New character');
@@ -63,6 +66,7 @@
 			willpower: parseInt(willpower),
 			humanity: parseInt(humanity),
 			blood_potency: splat === 'vampire' ? blood_potency : 0,
+			convictions: [conviction1, conviction2, conviction3],
 			traits
 		};
 
@@ -161,6 +165,32 @@
 					options={humanityOptions}
 					bind:value={humanity}
 					id="humanity"
+				/>
+			</div>
+
+			<!-- Convictions -->
+			<div class="w-full px-3">
+				<label class={labelClass}>Convictions</label>
+				<input
+					bind:value={conviction1}
+					class={inputClass}
+					type="text"
+					maxlength="200"
+					placeholder="First conviction"
+				/>
+				<input
+					bind:value={conviction2}
+					class={inputClass}
+					type="text"
+					maxlength="200"
+					placeholder="Second conviction"
+				/>
+				<input
+					bind:value={conviction3}
+					class={inputClass}
+					type="text"
+					maxlength="200"
+					placeholder="Third conviction"
 				/>
 			</div>
 

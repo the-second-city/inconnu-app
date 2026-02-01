@@ -11,7 +11,7 @@ export type Advantage = {
 export interface Guild {
 	id: number;
 	name: string;
-	icon?: string;
+	icon: string | null;
 }
 
 export type Trait = {
