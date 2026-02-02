@@ -69,7 +69,7 @@
 
 	let invalidSubtrait = $derived(normalizedNewSubtrait.length > 0 && !isValidSubtrait());
 
-	const circles: number[] = Array.from({ length: max }, (_, i) => i + 1);
+	const circles = $derived(Array.from({ length: max }, (_, i) => i + 1));
 </script>
 
 <div class="flex flex-wrap items-center justify-between">

@@ -26,12 +26,17 @@
 	let history = $state('');
 	let submitting = $state(false);
 
-	// Reset blood potency when switching between vampire/thin-blood
+	let previousSplat = $state('');
+
+	// Reset blood potency to defaults when switching splat types
 	$effect(() => {
-		if (splat === 'thin-blood' && blood_potency > 2) {
-			blood_potency = 2;
-		} else if (splat === 'vampire' && blood_potency < 1) {
-			blood_potency = 1;
+		if (splat !== previousSplat) {
+			if (splat === 'thin-blood') {
+				blood_potency = 0;
+			} else if (splat === 'vampire') {
+				blood_potency = 1;
+			}
+			previousSplat = splat;
 		}
 	});
 
