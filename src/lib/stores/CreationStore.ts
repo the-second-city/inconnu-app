@@ -1,9 +1,9 @@
 import { writable } from 'svelte/store';
+import type { Guild } from '$lib/types';
 
 export interface CreationInfo {
 	character_id: string;
-	guild_name: string;
-	guild_icon: string | null;
+	guild: Guild;
 	character_name: string;
 }
 

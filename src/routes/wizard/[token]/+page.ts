@@ -4,7 +4,7 @@ import type { Trait, Guild } from '$lib/types';
 
 interface WizardData {
 	spc: boolean;
-	guild: Pick<Guild, 'name' | 'icon'>;
+	guild: Guild;
 	splats: string[];
 	traits: Trait[];
 }

@@ -54,8 +54,8 @@
 
 		<div class="mt-6 flex justify-end">
 			<h6 class="text-surface-800-200 flex items-center gap-4 italic">
-				{characterInfo.guild_name}
-				<Avatar src={characterInfo.guild_icon ?? undefined} name={characterInfo.guild_name} size="size-6" />
+				{characterInfo.guild.name}
+				<Avatar src={characterInfo.guild.icon ?? undefined} name={characterInfo.guild.name} size="size-6" />
 			</h6>
 		</div>
 	{:else}
