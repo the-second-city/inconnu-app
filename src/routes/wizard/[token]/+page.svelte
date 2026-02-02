@@ -310,7 +310,7 @@
 		{#if splat !== ''}
 			<!-- Temporary mock character object for TraitSheet -->
 			<TraitSheet
-				character={{ traits, _id: '', name: '', guild: 0, user: 0, splat: 'vampire', profile: { description: null, history: null, images: [] }, health: '', willpower: '', humanity: 0 }}
+				character={{ traits, _id: '', name: '', guild: 0, user: 0, splat: 'vampire', profile: { description: null, biography: null, images: [] }, health: '', willpower: '', humanity: 0 }}
 				editing={true}
 			/>
 

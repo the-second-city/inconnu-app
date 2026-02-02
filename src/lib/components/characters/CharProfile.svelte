@@ -78,12 +78,12 @@
 					{#if editing}
 						<textarea
 							class="textarea border"
-							bind:value={character.profile.history}
+							bind:value={character.profile.biography}
 							rows="4"
 							maxlength="1500"
 						></textarea>
-					{:else if character.profile.history}
-						<Markdown content={character.profile.history} />
+					{:else if character.profile.biography}
+						<Markdown content={character.profile.biography} />
 					{:else}
 						<span class="text-surface-300 italic">
 							{character.name}'s past is shrouded in mystery ...

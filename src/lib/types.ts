@@ -47,7 +47,7 @@ export interface Character {
 	splat: Splat;
 	profile: {
 		description: string | null;
-		history: string | null;
+		biography: string | null;
 		images: string[];
 	};
 	experience?: {
