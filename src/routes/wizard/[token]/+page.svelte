@@ -125,9 +125,9 @@
 
 			// Store character info and redirect to success page
 			creationInfoStore.set({
-				character_id: result.id,
-				guild: data.guild,
-				character_name: normalizedName
+				character_id: result.character_id,
+				guild: result.guild,
+				character_name: result.character_name
 			});
 
 			goto('/wizard/success');
