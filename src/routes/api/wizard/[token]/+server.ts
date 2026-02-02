@@ -11,11 +11,11 @@ export const GET: RequestHandler = async ({ params }) => {
 	}
 
 	// For now, return sample data
-	return json(wizardData);
+	// return json(wizardData);
 
 	// TODO: Uncomment when ready to use real API
 	try {
-		const response = await fetch(`${INCONNU_API_URL}/wizard/${token}`, {
+		const response = await fetch(`${INCONNU_API_URL}/characters/wizard/${token}`, {
 			headers: {
 				Authorization: `Bearer ${API_KEY}`
 			}

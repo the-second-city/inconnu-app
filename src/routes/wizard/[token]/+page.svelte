@@ -101,8 +101,8 @@
 			humanity: parseInt(humanity),
 			blood_potency: splat === 'vampire' || splat === 'thin-blood' ? blood_potency : 0,
 			convictions: [conviction1, conviction2, conviction3],
-			biography: description,
-			history,
+			biography: history,
+			description,
 			traits
 		};
 
