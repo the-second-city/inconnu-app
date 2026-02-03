@@ -3,7 +3,7 @@
 
 	import Card from '$lib/components/Card.svelte';
 	import Tracker from './Tracker.svelte';
-	import Grounding from './Grounding.svelte';
+	import Humanity from './Humanity.svelte';
 
 	interface ComponentProps {
 		character: Character;
@@ -18,8 +18,6 @@
 	<div class="grid grid-cols-[100px_1fr] gap-2">
 		<Tracker bind:character track="health" editing={true} />
 		<Tracker bind:character track="willpower" editing={true} />
+		<Humanity bind:character editing={true} />
 	</div>
-	<!--
-	<Grounding bind:grounding={character.grounding} {editing} {allowsPathChange} />
-	-->
 </Card>
