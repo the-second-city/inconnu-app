@@ -17,7 +17,7 @@
 
 <div class="mt-8 flex w-full justify-center">
 	<div class="flex flex-col items-center gap-8 text-center">
-		<p class="text-3xl">Well, you botched that one.</p>
+		<p class="text-3xl">Who do you think you are?</p>
 		<SignIn provider="discord" options={{ redirectTo: returnUrl }}>
 			<span
 				slot="submitButton"
