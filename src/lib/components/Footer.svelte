@@ -19,7 +19,8 @@
 			</a>
 		</span>
 		<span>
-			<a class="anchor" href="https://github.com/tiltowait/inconnu" title="View on GitHub">GitHub</a>
+			<a class="anchor" href="https://github.com/tiltowait/inconnu" title="View on GitHub">GitHub</a
+			>
 		</span>
 		<span>
 			<a class="anchor" href="https://docs.inconnu.app/privacy-policy" title="Privacy Policy">

@@ -18,13 +18,13 @@
 	<hr />
 
 	<p class="mb-4">
-		The Character Wizard is a web-based tool for creating new characters for Vampire: The
-		Masquerade 5th Edition. To access the wizard, you need to generate a unique link from Discord.
+		The Character Wizard is a web-based tool for creating new characters for Vampire: The Masquerade
+		5th Edition. To access the wizard, you need to generate a unique link from Discord.
 	</p>
 
 	<div class="card preset-tonal p-4">
 		<h3 class="h3 mb-2">Getting Started</h3>
-		<ol class="list-decimal list-outside ml-6 space-y-2 pl-2">
+		<ol class="ml-6 list-outside list-decimal space-y-2 pl-2">
 			<li>Open Discord and navigate to your game server</li>
 			<li>
 				Type the command: <code class="code">/character wizard</code>
@@ -37,8 +37,8 @@
 
 	<div>
 		<p class="mb-2">
-			<strong>Note:</strong> Wizard links are temporary and expire after 20 minutes. Each link is
-			unique and can only be used once.
+			<strong>Note:</strong> Wizard links are temporary and expire after 20 minutes. Each link is unique
+			and can only be used once.
 		</p>
 	</div>
 

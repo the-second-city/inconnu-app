@@ -92,7 +92,9 @@
 			!submitting
 	);
 
-	const submitLabel = $derived(isFormValid ? `Create ${normalizedName}` : 'Fill out the form first');
+	const submitLabel = $derived(
+		isFormValid ? `Create ${normalizedName}` : 'Fill out the form first'
+	);
 
 	async function handleSubmit(event: SubmitEvent) {
 		event.preventDefault();
@@ -160,7 +162,7 @@
 
 <div class="flex flex-wrap items-start justify-between gap-2">
 	<div>
-		<h1 class="h1 uppercase tracking-wide">{characterType}</h1>
+		<h1 class="h1 tracking-wide uppercase">{characterType}</h1>
 		<div class="flex justify-end">
 			<h6 class="text-surface-800-200 flex items-center gap-4 italic">
 				{data.guild.name}
@@ -216,12 +218,7 @@
 
 			<!-- Humanity -->
 			<div class="w-full px-3">
-				<Selector
-					label="Humanity"
-					options={humanityOptions}
-					bind:value={humanity}
-					id="humanity"
-				/>
+				<Selector label="Humanity" options={humanityOptions} bind:value={humanity} id="humanity" />
 			</div>
 		</div>
 
@@ -318,52 +315,61 @@
 		</div>
 	</div>
 
-		{#if splat !== ''}
-			<!-- Temporary mock character object for TraitSheet -->
-			<TraitSheet
-				character={{ traits, _id: '', name: '', guild: 0, user: 0, splat: 'vampire', profile: { description: null, biography: null, images: [] }, health: '', willpower: '', humanity: 0 }}
-				editing={true}
-			/>
+	{#if splat !== ''}
+		<!-- Temporary mock character object for TraitSheet -->
+		<TraitSheet
+			character={{
+				traits,
+				_id: '',
+				name: '',
+				guild: 0,
+				user: 0,
+				splat: 'vampire',
+				profile: { description: null, biography: null, images: [] },
+				health: '',
+				willpower: '',
+				humanity: 0
+			}}
+			editing={true}
+		/>
 
-			{#if splat === 'vampire' || splat === 'thin-blood'}
-				<div class="mt-3">
-					<Card>
-						<h3 class="h3 -mt-1 mb-2 text-center text-xl font-semibold uppercase">
-							Blood Potency
-						</h3>
-						<div class="flex justify-center">
-							<RatingSelector
-								bind:rating={blood_potency}
-								min={splat === 'thin-blood' ? 0 : 1}
-								max={splat === 'thin-blood' ? 2 : 10}
-								showLabel={false}
-								editing={true}
-								allowsSubtraits={false}
-							/>
-						</div>
-					</Card>
-				</div>
-			{/if}
-
-			<div class="mt-6">
-				<button
-					type="submit"
-					class="btn preset-filled-primary-500 hover:brightness-110 w-full flex items-center justify-center gap-2"
-					disabled={!isFormValid}
-					aria-busy={submitting}
-				>
-					{#if submitting}
-						<Loader2 class="animate-spin" size={20} aria-hidden="true" />
-					{/if}
-					{submitting ? 'Creating...' : submitLabel}
-				</button>
-			</div>
-
-			<!-- Screen reader announcements -->
-			<div class="sr-only" aria-live="polite" aria-atomic="true">
-				{#if submitting}
-					Creating character, please wait...
-				{/if}
+		{#if splat === 'vampire' || splat === 'thin-blood'}
+			<div class="mt-3">
+				<Card>
+					<h3 class="h3 -mt-1 mb-2 text-center text-xl font-semibold uppercase">Blood Potency</h3>
+					<div class="flex justify-center">
+						<RatingSelector
+							bind:rating={blood_potency}
+							min={splat === 'thin-blood' ? 0 : 1}
+							max={splat === 'thin-blood' ? 2 : 10}
+							showLabel={false}
+							editing={true}
+							allowsSubtraits={false}
+						/>
+					</div>
+				</Card>
 			</div>
 		{/if}
-	</form>
+
+		<div class="mt-6">
+			<button
+				type="submit"
+				class="btn preset-filled-primary-500 flex w-full items-center justify-center gap-2 hover:brightness-110"
+				disabled={!isFormValid}
+				aria-busy={submitting}
+			>
+				{#if submitting}
+					<Loader2 class="animate-spin" size={20} aria-hidden="true" />
+				{/if}
+				{submitting ? 'Creating...' : submitLabel}
+			</button>
+		</div>
+
+		<!-- Screen reader announcements -->
+		<div class="sr-only" aria-live="polite" aria-atomic="true">
+			{#if submitting}
+				Creating character, please wait...
+			{/if}
+		</div>
+	{/if}
+</form>

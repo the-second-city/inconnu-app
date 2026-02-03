@@ -1,1275 +1,1228 @@
 [
-  {
-    "_id": "61465a1c44ea557a7650ccef",
-    "guild": 882411164468932609,
-    "user": 229736753676681230,
-    "name": "Nadea",
-    "splat": "vampire",
-    "humanity": 7,
-    "stains": 1,
-    "health": "........",
-    "willpower": "...../x",
-    "hunger": 3,
-    "potency": 2,
-    "traits": [
-      {
-        "name": "Academics",
-        "rating": 2,
-        "type": "skill",
-        "subtraits": []
-      },
-      {
-        "name": "AnimalKen",
-        "rating": 0,
-        "type": "skill",
-        "subtraits": []
-      },
-      {
-        "name": "Athletics",
-        "rating": 2,
-        "type": "skill",
-        "subtraits": []
-      },
-      {
-        "name": "Awareness",
-        "rating": 1,
-        "type": "skill",
-        "subtraits": []
-      },
-      {
-        "name": "Brawl",
-        "rating": 3,
-        "type": "skill",
-        "subtraits": []
-      },
-      {
-        "name": "Charisma",
-        "rating": 1,
-        "type": "attribute",
-        "subtraits": []
-      },
-      {
-        "name": "Composure",
-        "rating": 2,
-        "type": "attribute",
-        "subtraits": []
-      },
-      {
-        "name": "Conga",
-        "rating": 2,
-        "type": "custom",
-        "subtraits": []
-      },
-      {
-        "name": "Craft",
-        "rating": 0,
-        "type": "skill",
-        "subtraits": []
-      },
-      {
-        "name": "Dexterity",
-        "rating": 2,
-        "type": "attribute",
-        "subtraits": []
-      },
-      {
-        "name": "Dominate",
-        "rating": 3,
-        "type": "discipline",
-        "subtraits": []
-      },
-      {
-        "name": "Drive",
-        "rating": 0,
-        "type": "skill",
-        "subtraits": []
-      },
-      {
-        "name": "Etiquette",
-        "rating": 1,
-        "type": "skill",
-        "subtraits": []
-      },
-      {
-        "name": "Finance",
-        "rating": 0,
-        "type": "skill",
-        "subtraits": []
-      },
-      {
-        "name": "Firearms",
-        "rating": 0,
-        "type": "skill",
-        "subtraits": []
-      },
-      {
-        "name": "Insight",
-        "rating": 4,
-        "type": "skill",
-        "subtraits": []
-      },
-      {
-        "name": "Intelligence",
-        "rating": 3,
-        "type": "attribute",
-        "subtraits": []
-      },
-      {
-        "name": "Intimidation",
-        "rating": 2,
-        "type": "skill",
-        "subtraits": []
-      },
-      {
-        "name": "Investigation",
-        "rating": 2,
-        "type": "skill",
-        "subtraits": []
-      },
-      {
-        "name": "Larceny",
-        "rating": 1,
-        "type": "skill",
-        "subtraits": []
-      },
-      {
-        "name": "Leadership",
-        "rating": 0,
-        "type": "skill",
-        "subtraits": []
-      },
-      {
-        "name": "Manipulation",
-        "rating": 2,
-        "type": "attribute",
-        "subtraits": []
-      },
-      {
-        "name": "Medicine",
-        "rating": 3,
-        "type": "skill",
-        "subtraits": []
-      },
-      {
-        "name": "Melee",
-        "rating": 0,
-        "type": "skill",
-        "subtraits": []
-      },
-      {
-        "name": "Occult",
-        "rating": 3,
-        "type": "skill",
-        "subtraits": []
-      },
-      {
-        "name": "Performance",
-        "rating": 0,
-        "type": "skill",
-        "subtraits": []
-      },
-      {
-        "name": "Persuasion",
-        "rating": 0,
-        "type": "skill",
-        "subtraits": []
-      },
-      {
-        "name": "Politics",
-        "rating": 0,
-        "type": "skill",
-        "subtraits": []
-      },
-      {
-        "name": "Resolve",
-        "rating": 4,
-        "type": "attribute",
-        "subtraits": []
-      },
-      {
-        "name": "Science",
-        "rating": 2,
-        "type": "skill",
-        "subtraits": []
-      },
-      {
-        "name": "Spec",
-        "rating": 1,
-        "type": "custom",
-        "subtraits": []
-      },
-      {
-        "name": "Stamina",
-        "rating": 3,
-        "type": "attribute",
-        "subtraits": []
-      },
-      {
-        "name": "Stealth",
-        "rating": 1,
-        "type": "skill",
-        "subtraits": []
-      },
-      {
-        "name": "Streetwise",
-        "rating": 1,
-        "type": "skill",
-        "subtraits": []
-      },
-      {
-        "name": "Strength",
-        "rating": 3,
-        "type": "attribute",
-        "subtraits": []
-      },
-      {
-        "name": "Subterfuge",
-        "rating": 1,
-        "type": "skill",
-        "subtraits": []
-      },
-      {
-        "name": "Surgery",
-        "rating": 1,
-        "type": "custom",
-        "subtraits": []
-      },
-      {
-        "name": "Survival",
-        "rating": 0,
-        "type": "skill",
-        "subtraits": []
-      },
-      {
-        "name": "Technology",
-        "rating": 0,
-        "type": "skill",
-        "subtraits": []
-      },
-      {
-        "name": "Vicissitude",
-        "rating": 1,
-        "type": "discipline",
-        "subtraits": []
-      },
-      {
-        "name": "Wits",
-        "rating": 3,
-        "type": "attribute",
-        "subtraits": []
-      }
-    ],
-    "macros": [
-      {
-        "name": "hunt",
-        "pool": [
-          "Resolve",
-          "+",
-          "Medicine"
-        ],
-        "hunger": true,
-        "difficulty": 3,
-        "rouses": 0,
-        "reroll_rouses": false,
-        "staining": "show",
-        "hunt": false,
-        "comment": null
-      },
-      {
-        "name": "test",
-        "pool": [
-          "Wits",
-          "+",
-          "Awareness"
-        ],
-        "hunger": true,
-        "difficulty": 0,
-        "rouses": 0,
-        "reroll_rouses": false,
-        "staining": "show",
-        "hunt": false,
-        "comment": null
-      }
-    ],
-    "experience": {
-      "current": 32,
-      "total": 150,
-      "log": []
-    },
-    "log": {
-      "hunger": 9,
-      "willpower_superficial": 15,
-      "health_superficial": 1,
-      "rouse": 50,
-      "health_aggravated": 8,
-      "awaken": 3,
-      "slake": 6,
-      "frenzy": 5,
-      "willpower_aggravated": 5,
-      "stains": 1
-    },
-    "convictions": [
-      "Never get in the way of a painful lesson.",
-      "",
-      ""
-    ],
-    "profile": {
-      "biography": "",
-      "description": "",
-      "images": []
-    }
-  },
-  {
-    "_id": "6427120989b29e04b247117a",
-    "guild": 935219170176532580,
-    "user": 229736753676681230,
-    "name": "Billy",
-    "splat": "vampire",
-    "health": ".....",
-    "willpower": "...../",
-    "humanity": 4,
-    "potency": 1,
-    "stains": 0,
-    "hunger": 1,
-    "traits": [
-      {
-        "name": "B",
-        "rating": 2,
-        "type": "custom",
-        "subtraits": []
-      },
-      {
-        "name": "Brawl",
-        "rating": 2,
-        "type": "skill",
-        "subtraits": [
-          "Kindred"
-        ]
-      },
-      {
-        "name": "bro",
-        "rating": 5,
-        "type": "custom",
-        "subtraits": []
-      },
-      {
-        "name": "spam",
-        "rating": 3,
-        "type": "custom",
-        "subtraits": []
-      },
-      {
-        "name": "Strength",
-        "rating": 3,
-        "type": "attribute",
-        "subtraits": []
-      },
-      {
-        "name": "test",
-        "rating": 4,
-        "type": "custom",
-        "subtraits": []
-      }
-    ],
-    "profile": {
-      "biography": "",
-      "description": "",
-      "images": [
-        "https://pcs.inconnu.app/6427120989b29e04b247117a/651a24ac02fbef0ff89155c5.webp",
-        "https://pcs.inconnu.app/6427120989b29e04b247117a/65f3522ece6de7e558eda76f.webp"
-      ]
-    },
-    "convictions": [],
-    "header": {
-      "blush": 1,
-      "location": "Somewhere",
-      "merits": "",
-      "flaws": "",
-      "temp": ""
-    },
-    "macros": [
-      {
-        "name": "hunt",
-        "pool": [
-          "Strength",
-          "+",
-          "Brawl"
-        ],
-        "hunger": true,
-        "difficulty": 2,
-        "rouses": 0,
-        "reroll_rouses": false,
-        "staining": "show",
-        "hunt": true,
-        "comment": null
-      },
-      {
-        "name": "punch",
-        "pool": [
-          "Strength",
-          "+",
-          "Brawl"
-        ],
-        "hunger": true,
-        "difficulty": 0,
-        "rouses": 0,
-        "reroll_rouses": false,
-        "staining": "show",
-        "hunt": false,
-        "comment": null
-      }
-    ],
-    "experience": {
-      "current": 10,
-      "total": 15,
-      "log": [
-        {
-          "event": "award_lifetime",
-          "amount": 15,
-          "reason": "Demo award",
-          "admin": 229736753676681230,
-          "date": "2025-02-12 03:56:25.901000"
-        },
-        {
-          "event": "deduct_unspent",
-          "amount": -5,
-          "reason": "Dominate 1",
-          "admin": 229736753676681230,
-          "date": "2025-02-12 03:56:45.849000"
-        }
-      ]
-    },
-    "log": {
-      "created": "2023-03-31 17:02:01.223000",
-      "rouse": 1,
-      "willpower_superficial": 1,
-      "slake": 1
-    }
-  },
-  {
-    "_id": "671c2cd244e14611864b1154",
-    "guild": 826628660450689074,
-    "user": 229736753676681230,
-    "name": "Jonah",
-    "splat": "vampire",
-    "health": "......",
-    "willpower": "...//",
-    "humanity": 5,
-    "potency": 3,
-    "stains": 0,
-    "hunger": 1,
-    "traits": [
-      {
-        "name": "Academics",
-        "rating": 0,
-        "type": "skill",
-        "subtraits": []
-      },
-      {
-        "name": "Animalism",
-        "rating": 3,
-        "type": "discipline",
-        "subtraits": []
-      },
-      {
-        "name": "AnimalKen",
-        "rating": 1,
-        "type": "skill",
-        "subtraits": []
-      },
-      {
-        "name": "Athletics",
-        "rating": 2,
-        "type": "skill",
-        "subtraits": []
-      },
-      {
-        "name": "Auspex",
-        "rating": 1,
-        "type": "discipline",
-        "subtraits": []
-      },
-      {
-        "name": "Awareness",
-        "rating": 3,
-        "type": "skill",
-        "subtraits": []
-      },
-      {
-        "name": "Brawl",
-        "rating": 4,
-        "type": "skill",
-        "subtraits": []
-      },
-      {
-        "name": "Charisma",
-        "rating": 1,
-        "type": "attribute",
-        "subtraits": []
-      },
-      {
-        "name": "Composure",
-        "rating": 2,
-        "type": "attribute",
-        "subtraits": []
-      },
-      {
-        "name": "Craft",
-        "rating": 0,
-        "type": "skill",
-        "subtraits": []
-      },
-      {
-        "name": "Dexterity",
-        "rating": 2,
-        "type": "attribute",
-        "subtraits": []
-      },
-      {
-        "name": "Drive",
-        "rating": 0,
-        "type": "skill",
-        "subtraits": []
-      },
-      {
-        "name": "Etiquette",
-        "rating": 1,
-        "type": "skill",
-        "subtraits": []
-      },
-      {
-        "name": "Finance",
-        "rating": 0,
-        "type": "skill",
-        "subtraits": []
-      },
-      {
-        "name": "Firearms",
-        "rating": 0,
-        "type": "skill",
-        "subtraits": []
-      },
-      {
-        "name": "Fortitude",
-        "rating": 1,
-        "type": "discipline",
-        "subtraits": []
-      },
-      {
-        "name": "Humans",
-        "rating": 2,
-        "type": "custom",
-        "subtraits": []
-      },
-      {
-        "name": "Insight",
-        "rating": 1,
-        "type": "skill",
-        "subtraits": []
-      },
-      {
-        "name": "Intelligence",
-        "rating": 2,
-        "type": "attribute",
-        "subtraits": []
-      },
-      {
-        "name": "Intimidation",
-        "rating": 2,
-        "type": "skill",
-        "subtraits": []
-      },
-      {
-        "name": "Investigation",
-        "rating": 1,
-        "type": "skill",
-        "subtraits": []
-      },
-      {
-        "name": "Larceny",
-        "rating": 0,
-        "type": "skill",
-        "subtraits": []
-      },
-      {
-        "name": "Leadership",
-        "rating": 1,
-        "type": "skill",
-        "subtraits": []
-      },
-      {
-        "name": "Looks",
-        "rating": 1,
-        "type": "custom",
-        "subtraits": []
-      },
-      {
-        "name": "Manipulation",
-        "rating": 3,
-        "type": "attribute",
-        "subtraits": []
-      },
-      {
-        "name": "Medicine",
-        "rating": 0,
-        "type": "skill",
-        "subtraits": []
-      },
-      {
-        "name": "Melee",
-        "rating": 0,
-        "type": "skill",
-        "subtraits": []
-      },
-      {
-        "name": "Occult",
-        "rating": 3,
-        "type": "skill",
-        "subtraits": [
-          "Noddism"
-        ]
-      },
-      {
-        "name": "Performance",
-        "rating": 0,
-        "type": "skill",
-        "subtraits": []
-      },
-      {
-        "name": "Persuasion",
-        "rating": 1,
-        "type": "skill",
-        "subtraits": []
-      },
-      {
-        "name": "Politics",
-        "rating": 1,
-        "type": "skill",
-        "subtraits": []
-      },
-      {
-        "name": "Protean",
-        "rating": 2,
-        "type": "discipline",
-        "subtraits": []
-      },
-      {
-        "name": "Resolve",
-        "rating": 3,
-        "type": "attribute",
-        "subtraits": []
-      },
-      {
-        "name": "Science",
-        "rating": 0,
-        "type": "skill",
-        "subtraits": []
-      },
-      {
-        "name": "Stamina",
-        "rating": 3,
-        "type": "attribute",
-        "subtraits": []
-      },
-      {
-        "name": "Stealth",
-        "rating": 3,
-        "type": "skill",
-        "subtraits": []
-      },
-      {
-        "name": "Streetwise",
-        "rating": 1,
-        "type": "skill",
-        "subtraits": []
-      },
-      {
-        "name": "Strength",
-        "rating": 4,
-        "type": "attribute",
-        "subtraits": []
-      },
-      {
-        "name": "Subterfuge",
-        "rating": 2,
-        "type": "skill",
-        "subtraits": []
-      },
-      {
-        "name": "Survival",
-        "rating": 4,
-        "type": "skill",
-        "subtraits": [
-          "Tracking"
-        ]
-      },
-      {
-        "name": "Technology",
-        "rating": 0,
-        "type": "skill",
-        "subtraits": []
-      },
-      {
-        "name": "Wits",
-        "rating": 3,
-        "type": "attribute",
-        "subtraits": []
-      }
-    ],
-    "profile": {
-      "biography": "",
-      "description": "",
-      "images": [
-        "https://pcs.inconnu.app/66a15653acef54ca2df49f87/66a16042f0f8cae02e9d40f2.webp"
-      ]
-    },
-    "convictions": [
-      "Testing one's ability to survive is a gift.",
-      "Show no mercy to those with nothing to offer.",
-      "Anything is allowed in the pursuit of Gehenna."
-    ],
-    "header": {
-      "blush": 1,
-      "location": "Alley outside of a diner in Simon's Town",
-      "merits": "Beautiful",
-      "flaws": "Obvious Predator: -1 die to put human's at ease. Humanity 5: -1 die to most social interactions with humans.",
-      "temp": "English Accent. Inch long nails that come to a sharp point."
-    },
-    "macros": [
-      {
-        "name": "Sleep",
-        "pool": [
-          "Wits",
-          "+",
-          "Survival"
-        ],
-        "hunger": true,
-        "difficulty": 3,
-        "rouses": 0,
-        "reroll_rouses": false,
-        "staining": "show",
-        "hunt": false,
-        "comment": "No Haven roll"
-      }
-    ],
-    "experience": {
-      "current": 0,
-      "total": 118,
-      "log": [
-        {
-          "event": "award_lifetime",
-          "amount": 6,
-          "reason": "Weekly XP 20240724/30",
-          "admin": 377840923779792897,
-          "date": "2024-07-31 19:51:15.132000"
-        },
-        {
-          "event": "award_lifetime",
-          "amount": 5,
-          "reason": "Weekly XP",
-          "admin": 377840923779792897,
-          "date": "2024-08-07 16:40:29.723000"
-        },
-        {
-          "event": "award_lifetime",
-          "amount": 35,
-          "reason": "Ancilla Starting Experience",
-          "admin": 377840923779792897,
-          "date": "2024-08-07 17:10:54.776000"
-        },
-        {
-          "event": "award_lifetime",
-          "amount": 29,
-          "reason": "Character Retirement Experience",
-          "admin": 377840923779792897,
-          "date": "2024-08-07 17:11:14.774000"
-        },
-        {
-          "event": "deduct_unspent",
-          "amount": -3,
-          "reason": "CC - Etiquette 1",
-          "admin": 377840923779792897,
-          "date": "2024-08-07 17:11:43.331000"
-        },
-        {
-          "event": "deduct_unspent",
-          "amount": -3,
-          "reason": "CC - Leadership 1",
-          "admin": 377840923779792897,
-          "date": "2024-08-07 17:11:57.813000"
-        },
-        {
-          "event": "deduct_unspent",
-          "amount": -3,
-          "reason": "CC - Persuasion 1",
-          "admin": 377840923779792897,
-          "date": "2024-08-07 17:12:12.366000"
-        },
-        {
-          "event": "deduct_unspent",
-          "amount": -3,
-          "reason": "CC - Streetwise 1",
-          "admin": 377840923779792897,
-          "date": "2024-08-07 17:12:21.978000"
-        },
-        {
-          "event": "deduct_unspent",
-          "amount": -3,
-          "reason": "CC - Investigation 1",
-          "admin": 377840923779792897,
-          "date": "2024-08-07 17:12:33.352000"
-        },
-        {
-          "event": "deduct_unspent",
-          "amount": -3,
-          "reason": "CC - Politics 1",
-          "admin": 377840923779792897,
-          "date": "2024-08-07 17:12:43.071000"
-        },
-        {
-          "event": "deduct_unspent",
-          "amount": -10,
-          "reason": "CC - Protean 2: Feral Weapons",
-          "admin": 377840923779792897,
-          "date": "2024-08-07 17:12:56.686000"
-        },
-        {
-          "event": "deduct_unspent",
-          "amount": -3,
-          "reason": "CC - Xaviar LS 1",
-          "admin": 377840923779792897,
-          "date": "2024-08-07 17:13:11.554000"
-        },
-        {
-          "event": "deduct_unspent",
-          "amount": -6,
-          "reason": "CC - Xaviar LS 2",
-          "admin": 377840923779792897,
-          "date": "2024-08-07 17:13:22.286000"
-        },
-        {
-          "event": "deduct_unspent",
-          "amount": -12,
-          "reason": "CC - Xaviar LS 4",
-          "admin": 377840923779792897,
-          "date": "2024-08-07 17:13:34.929000"
-        },
-        {
-          "event": "deduct_unspent",
-          "amount": -9,
-          "reason": "CC - Rudi LS 3",
-          "admin": 377840923779792897,
-          "date": "2024-08-07 17:13:49.518000"
-        },
-        {
-          "event": "deduct_unspent",
-          "amount": -6,
-          "reason": "CC - Status 2",
-          "admin": 377840923779792897,
-          "date": "2024-08-07 17:14:08.342000"
-        },
-        {
-          "event": "award_lifetime",
-          "amount": 6,
-          "reason": "Weekly XP",
-          "admin": 377840923779792897,
-          "date": "2024-08-14 19:37:04.953000"
-        },
-        {
-          "event": "award_lifetime",
-          "amount": 5,
-          "reason": "Weekly XP",
-          "admin": 377840923779792897,
-          "date": "2024-08-21 17:19:45.088000"
-        },
-        {
-          "event": "award_lifetime",
-          "amount": 5,
-          "reason": "Weekly XP",
-          "admin": 377840923779792897,
-          "date": "2024-08-28 16:11:21.435000"
-        },
-        {
-          "event": "award_lifetime",
-          "amount": 6,
-          "reason": "Weekly XP",
-          "admin": 377840923779792897,
-          "date": "2024-09-04 16:12:19.851000"
-        },
-        {
-          "event": "award_lifetime",
-          "amount": 6,
-          "reason": "Weekly Experience",
-          "admin": 377840923779792897,
-          "date": "2024-09-12 09:14:12.502000"
-        },
-        {
-          "event": "award_lifetime",
-          "amount": 15,
-          "reason": "Timeskip XP - September 2024",
-          "admin": 377840923779792897,
-          "date": "2024-09-13 18:28:06.941000"
-        },
-        {
-          "event": "deduct_unspent",
-          "amount": -15,
-          "reason": "Wits 3",
-          "admin": 808714130382651473,
-          "date": "2024-09-19 21:12:12.363000"
-        },
-        {
-          "event": "deduct_unspent",
-          "amount": -6,
-          "reason": "Athletics 2",
-          "admin": 808714130382651473,
-          "date": "2024-09-19 21:12:27.424000"
-        },
-        {
-          "event": "deduct_unspent",
-          "amount": -9,
-          "reason": "Stealth 3",
-          "admin": 808714130382651473,
-          "date": "2024-09-19 21:12:44.300000"
-        },
-        {
-          "event": "deduct_unspent",
-          "amount": -12,
-          "reason": "Survival 4",
-          "admin": 808714130382651473,
-          "date": "2024-09-19 21:13:00.651000"
-        },
-        {
-          "event": "deduct_unspent",
-          "amount": -7,
-          "reason": "Auspex 1",
-          "admin": 808714130382651473,
-          "date": "2024-09-19 21:13:17.925000"
-        },
-        {
-          "event": "deduct_unspent",
-          "amount": -5,
-          "reason": "Fortitude 1",
-          "admin": 808714130382651473,
-          "date": "2024-09-19 21:13:32.568000"
-        }
-      ]
-    },
-    "log": {
-      "created": "2024-07-24 19:30:27.202000",
-      "awaken": 10,
-      "rouse": 54,
-      "blush": 9,
-      "willpower_superficial": 19,
-      "slake": 24,
-      "health_aggravated": 3,
-      "health_superficial": 10,
-      "stains": 3,
-      "remorse": 1
-    }
-  },
-  {
-    "_id": "680d32cbc0bf6151dbd5004e",
-    "guild": 1325660602579816579,
-    "user": 229736753676681230,
-    "name": "Victoria Ransom",
-    "splat": "vampire",
-    "health": ".....",
-    "willpower": ".......",
-    "humanity": 6,
-    "potency": 1,
-    "stains": 0,
-    "hunger": 2,
-    "traits": [
-      {
-        "name": "Academics",
-        "rating": 1,
-        "type": "skill",
-        "subtraits": [
-          "Business"
-        ]
-      },
-      {
-        "name": "AnimalKen",
-        "rating": 0,
-        "type": "skill",
-        "subtraits": []
-      },
-      {
-        "name": "Athletics",
-        "rating": 2,
-        "type": "skill",
-        "subtraits": []
-      },
-      {
-        "name": "Awareness",
-        "rating": 2,
-        "type": "skill",
-        "subtraits": []
-      },
-      {
-        "name": "Brawl",
-        "rating": 0,
-        "type": "skill",
-        "subtraits": []
-      },
-      {
-        "name": "Charisma",
-        "rating": 2,
-        "type": "attribute",
-        "subtraits": []
-      },
-      {
-        "name": "Composure",
-        "rating": 3,
-        "type": "attribute",
-        "subtraits": []
-      },
-      {
-        "name": "Craft",
-        "rating": 0,
-        "type": "skill",
-        "subtraits": []
-      },
-      {
-        "name": "Dexterity",
-        "rating": 3,
-        "type": "attribute",
-        "subtraits": []
-      },
-      {
-        "name": "Dominate",
-        "rating": 1,
-        "type": "discipline",
-        "subtraits": [
-          "CloudMemory"
-        ]
-      },
-      {
-        "name": "Drive",
-        "rating": 0,
-        "type": "skill",
-        "subtraits": []
-      },
-      {
-        "name": "Etiquette",
-        "rating": 2,
-        "type": "skill",
-        "subtraits": []
-      },
-      {
-        "name": "Finance",
-        "rating": 1,
-        "type": "skill",
-        "subtraits": []
-      },
-      {
-        "name": "Firearms",
-        "rating": 2,
-        "type": "skill",
-        "subtraits": []
-      },
-      {
-        "name": "Insight",
-        "rating": 1,
-        "type": "skill",
-        "subtraits": []
-      },
-      {
-        "name": "Intelligence",
-        "rating": 3,
-        "type": "attribute",
-        "subtraits": []
-      },
-      {
-        "name": "Intimidation",
-        "rating": 3,
-        "type": "skill",
-        "subtraits": []
-      },
-      {
-        "name": "Investigation",
-        "rating": 0,
-        "type": "skill",
-        "subtraits": []
-      },
-      {
-        "name": "Larceny",
-        "rating": 1,
-        "type": "skill",
-        "subtraits": []
-      },
-      {
-        "name": "Leadership",
-        "rating": 0,
-        "type": "skill",
-        "subtraits": []
-      },
-      {
-        "name": "Manipulation",
-        "rating": 2,
-        "type": "attribute",
-        "subtraits": []
-      },
-      {
-        "name": "Medicine",
-        "rating": 0,
-        "type": "skill",
-        "subtraits": []
-      },
-      {
-        "name": "Melee",
-        "rating": 2,
-        "type": "skill",
-        "subtraits": []
-      },
-      {
-        "name": "Oblivion",
-        "rating": 1,
-        "type": "discipline",
-        "subtraits": [
-          "ShadowCloak"
-        ]
-      },
-      {
-        "name": "ObviousPredator",
-        "rating": 1,
-        "type": "custom",
-        "subtraits": []
-      },
-      {
-        "name": "Occult",
-        "rating": 0,
-        "type": "skill",
-        "subtraits": []
-      },
-      {
-        "name": "Performance",
-        "rating": 0,
-        "type": "skill",
-        "subtraits": []
-      },
-      {
-        "name": "Persuasion",
-        "rating": 2,
-        "type": "skill",
-        "subtraits": []
-      },
-      {
-        "name": "Politics",
-        "rating": 0,
-        "type": "skill",
-        "subtraits": []
-      },
-      {
-        "name": "Potence",
-        "rating": 2,
-        "type": "discipline",
-        "subtraits": [
-          "Prowess",
-          "SoaringLeap"
-        ]
-      },
-      {
-        "name": "Resolve",
-        "rating": 4,
-        "type": "attribute",
-        "subtraits": []
-      },
-      {
-        "name": "Science",
-        "rating": 0,
-        "type": "skill",
-        "subtraits": []
-      },
-      {
-        "name": "Stamina",
-        "rating": 2,
-        "type": "attribute",
-        "subtraits": []
-      },
-      {
-        "name": "Stealth",
-        "rating": 3,
-        "type": "skill",
-        "subtraits": [
-          "Stakeouts"
-        ]
-      },
-      {
-        "name": "Streetwise",
-        "rating": 1,
-        "type": "skill",
-        "subtraits": []
-      },
-      {
-        "name": "Strength",
-        "rating": 1,
-        "type": "attribute",
-        "subtraits": []
-      },
-      {
-        "name": "Stunning",
-        "rating": 2,
-        "type": "custom",
-        "subtraits": []
-      },
-      {
-        "name": "Subterfuge",
-        "rating": 2,
-        "type": "skill",
-        "subtraits": [
-          "Belonging"
-        ]
-      },
-      {
-        "name": "Survival",
-        "rating": 1,
-        "type": "skill",
-        "subtraits": []
-      },
-      {
-        "name": "Technology",
-        "rating": 1,
-        "type": "skill",
-        "subtraits": []
-      },
-      {
-        "name": "Wits",
-        "rating": 2,
-        "type": "attribute",
-        "subtraits": []
-      }
-    ],
-    "profile": {
-      "biography": "",
-      "description": "Haughty, disdainful, and vain, new acquaintances can be excused for mistaking Victoria for a Toreador\u2014until they see her in the mirror. Though her beauty is fit for the artisan's brush, she often takes company with the Lepers. Green eyes cold and calculating, she seems to be waiting for something. Just what that is, though, is anyone's guess.",
-      "images": [
-        "https://pcs.inconnu.app/680d32cbc0bf6151dbd5004e/680d344b6a9c2a1df8ef7ea2.webp"
-      ]
-    },
-    "convictions": [
-      "Justice Demands Retribution.",
-      "The Weak Deserve Their Fate.",
-      "Always Think of the Long Term."
-    ],
-    "header": {
-      "blush": 1,
-      "location": "Recording Studio, Room 212",
-      "merits": "Stunning",
-      "flaws": "Obvious Predator",
-      "temp": ""
-    },
-    "macros": [],
-    "experience": {
-      "current": 0,
-      "total": 0,
-      "log": []
-    },
-    "log": {
-      "created": "2025-04-26 19:23:55.724000",
-      "awaken": 1,
-      "rouse": 2,
-      "blush": 1
-    }
-  }
+	{
+		"_id": "61465a1c44ea557a7650ccef",
+		"guild": 882411164468932609,
+		"user": 229736753676681230,
+		"name": "Nadea",
+		"splat": "vampire",
+		"humanity": 7,
+		"stains": 1,
+		"health": "........",
+		"willpower": "...../x",
+		"hunger": 3,
+		"potency": 2,
+		"traits": [
+			{
+				"name": "Academics",
+				"rating": 2,
+				"type": "skill",
+				"subtraits": []
+			},
+			{
+				"name": "AnimalKen",
+				"rating": 0,
+				"type": "skill",
+				"subtraits": []
+			},
+			{
+				"name": "Athletics",
+				"rating": 2,
+				"type": "skill",
+				"subtraits": []
+			},
+			{
+				"name": "Awareness",
+				"rating": 1,
+				"type": "skill",
+				"subtraits": []
+			},
+			{
+				"name": "Brawl",
+				"rating": 3,
+				"type": "skill",
+				"subtraits": []
+			},
+			{
+				"name": "Charisma",
+				"rating": 1,
+				"type": "attribute",
+				"subtraits": []
+			},
+			{
+				"name": "Composure",
+				"rating": 2,
+				"type": "attribute",
+				"subtraits": []
+			},
+			{
+				"name": "Conga",
+				"rating": 2,
+				"type": "custom",
+				"subtraits": []
+			},
+			{
+				"name": "Craft",
+				"rating": 0,
+				"type": "skill",
+				"subtraits": []
+			},
+			{
+				"name": "Dexterity",
+				"rating": 2,
+				"type": "attribute",
+				"subtraits": []
+			},
+			{
+				"name": "Dominate",
+				"rating": 3,
+				"type": "discipline",
+				"subtraits": []
+			},
+			{
+				"name": "Drive",
+				"rating": 0,
+				"type": "skill",
+				"subtraits": []
+			},
+			{
+				"name": "Etiquette",
+				"rating": 1,
+				"type": "skill",
+				"subtraits": []
+			},
+			{
+				"name": "Finance",
+				"rating": 0,
+				"type": "skill",
+				"subtraits": []
+			},
+			{
+				"name": "Firearms",
+				"rating": 0,
+				"type": "skill",
+				"subtraits": []
+			},
+			{
+				"name": "Insight",
+				"rating": 4,
+				"type": "skill",
+				"subtraits": []
+			},
+			{
+				"name": "Intelligence",
+				"rating": 3,
+				"type": "attribute",
+				"subtraits": []
+			},
+			{
+				"name": "Intimidation",
+				"rating": 2,
+				"type": "skill",
+				"subtraits": []
+			},
+			{
+				"name": "Investigation",
+				"rating": 2,
+				"type": "skill",
+				"subtraits": []
+			},
+			{
+				"name": "Larceny",
+				"rating": 1,
+				"type": "skill",
+				"subtraits": []
+			},
+			{
+				"name": "Leadership",
+				"rating": 0,
+				"type": "skill",
+				"subtraits": []
+			},
+			{
+				"name": "Manipulation",
+				"rating": 2,
+				"type": "attribute",
+				"subtraits": []
+			},
+			{
+				"name": "Medicine",
+				"rating": 3,
+				"type": "skill",
+				"subtraits": []
+			},
+			{
+				"name": "Melee",
+				"rating": 0,
+				"type": "skill",
+				"subtraits": []
+			},
+			{
+				"name": "Occult",
+				"rating": 3,
+				"type": "skill",
+				"subtraits": []
+			},
+			{
+				"name": "Performance",
+				"rating": 0,
+				"type": "skill",
+				"subtraits": []
+			},
+			{
+				"name": "Persuasion",
+				"rating": 0,
+				"type": "skill",
+				"subtraits": []
+			},
+			{
+				"name": "Politics",
+				"rating": 0,
+				"type": "skill",
+				"subtraits": []
+			},
+			{
+				"name": "Resolve",
+				"rating": 4,
+				"type": "attribute",
+				"subtraits": []
+			},
+			{
+				"name": "Science",
+				"rating": 2,
+				"type": "skill",
+				"subtraits": []
+			},
+			{
+				"name": "Spec",
+				"rating": 1,
+				"type": "custom",
+				"subtraits": []
+			},
+			{
+				"name": "Stamina",
+				"rating": 3,
+				"type": "attribute",
+				"subtraits": []
+			},
+			{
+				"name": "Stealth",
+				"rating": 1,
+				"type": "skill",
+				"subtraits": []
+			},
+			{
+				"name": "Streetwise",
+				"rating": 1,
+				"type": "skill",
+				"subtraits": []
+			},
+			{
+				"name": "Strength",
+				"rating": 3,
+				"type": "attribute",
+				"subtraits": []
+			},
+			{
+				"name": "Subterfuge",
+				"rating": 1,
+				"type": "skill",
+				"subtraits": []
+			},
+			{
+				"name": "Surgery",
+				"rating": 1,
+				"type": "custom",
+				"subtraits": []
+			},
+			{
+				"name": "Survival",
+				"rating": 0,
+				"type": "skill",
+				"subtraits": []
+			},
+			{
+				"name": "Technology",
+				"rating": 0,
+				"type": "skill",
+				"subtraits": []
+			},
+			{
+				"name": "Vicissitude",
+				"rating": 1,
+				"type": "discipline",
+				"subtraits": []
+			},
+			{
+				"name": "Wits",
+				"rating": 3,
+				"type": "attribute",
+				"subtraits": []
+			}
+		],
+		"macros": [
+			{
+				"name": "hunt",
+				"pool": ["Resolve", "+", "Medicine"],
+				"hunger": true,
+				"difficulty": 3,
+				"rouses": 0,
+				"reroll_rouses": false,
+				"staining": "show",
+				"hunt": false,
+				"comment": null
+			},
+			{
+				"name": "test",
+				"pool": ["Wits", "+", "Awareness"],
+				"hunger": true,
+				"difficulty": 0,
+				"rouses": 0,
+				"reroll_rouses": false,
+				"staining": "show",
+				"hunt": false,
+				"comment": null
+			}
+		],
+		"experience": {
+			"current": 32,
+			"total": 150,
+			"log": []
+		},
+		"log": {
+			"hunger": 9,
+			"willpower_superficial": 15,
+			"health_superficial": 1,
+			"rouse": 50,
+			"health_aggravated": 8,
+			"awaken": 3,
+			"slake": 6,
+			"frenzy": 5,
+			"willpower_aggravated": 5,
+			"stains": 1
+		},
+		"convictions": ["Never get in the way of a painful lesson.", "", ""],
+		"profile": {
+			"biography": "",
+			"description": "",
+			"images": []
+		}
+	},
+	{
+		"_id": "6427120989b29e04b247117a",
+		"guild": 935219170176532580,
+		"user": 229736753676681230,
+		"name": "Billy",
+		"splat": "vampire",
+		"health": ".....",
+		"willpower": "...../",
+		"humanity": 4,
+		"potency": 1,
+		"stains": 0,
+		"hunger": 1,
+		"traits": [
+			{
+				"name": "B",
+				"rating": 2,
+				"type": "custom",
+				"subtraits": []
+			},
+			{
+				"name": "Brawl",
+				"rating": 2,
+				"type": "skill",
+				"subtraits": ["Kindred"]
+			},
+			{
+				"name": "bro",
+				"rating": 5,
+				"type": "custom",
+				"subtraits": []
+			},
+			{
+				"name": "spam",
+				"rating": 3,
+				"type": "custom",
+				"subtraits": []
+			},
+			{
+				"name": "Strength",
+				"rating": 3,
+				"type": "attribute",
+				"subtraits": []
+			},
+			{
+				"name": "test",
+				"rating": 4,
+				"type": "custom",
+				"subtraits": []
+			}
+		],
+		"profile": {
+			"biography": "",
+			"description": "",
+			"images": [
+				"https://pcs.inconnu.app/6427120989b29e04b247117a/651a24ac02fbef0ff89155c5.webp",
+				"https://pcs.inconnu.app/6427120989b29e04b247117a/65f3522ece6de7e558eda76f.webp"
+			]
+		},
+		"convictions": [],
+		"header": {
+			"blush": 1,
+			"location": "Somewhere",
+			"merits": "",
+			"flaws": "",
+			"temp": ""
+		},
+		"macros": [
+			{
+				"name": "hunt",
+				"pool": ["Strength", "+", "Brawl"],
+				"hunger": true,
+				"difficulty": 2,
+				"rouses": 0,
+				"reroll_rouses": false,
+				"staining": "show",
+				"hunt": true,
+				"comment": null
+			},
+			{
+				"name": "punch",
+				"pool": ["Strength", "+", "Brawl"],
+				"hunger": true,
+				"difficulty": 0,
+				"rouses": 0,
+				"reroll_rouses": false,
+				"staining": "show",
+				"hunt": false,
+				"comment": null
+			}
+		],
+		"experience": {
+			"current": 10,
+			"total": 15,
+			"log": [
+				{
+					"event": "award_lifetime",
+					"amount": 15,
+					"reason": "Demo award",
+					"admin": 229736753676681230,
+					"date": "2025-02-12 03:56:25.901000"
+				},
+				{
+					"event": "deduct_unspent",
+					"amount": -5,
+					"reason": "Dominate 1",
+					"admin": 229736753676681230,
+					"date": "2025-02-12 03:56:45.849000"
+				}
+			]
+		},
+		"log": {
+			"created": "2023-03-31 17:02:01.223000",
+			"rouse": 1,
+			"willpower_superficial": 1,
+			"slake": 1
+		}
+	},
+	{
+		"_id": "671c2cd244e14611864b1154",
+		"guild": 826628660450689074,
+		"user": 229736753676681230,
+		"name": "Jonah",
+		"splat": "vampire",
+		"health": "......",
+		"willpower": "...//",
+		"humanity": 5,
+		"potency": 3,
+		"stains": 0,
+		"hunger": 1,
+		"traits": [
+			{
+				"name": "Academics",
+				"rating": 0,
+				"type": "skill",
+				"subtraits": []
+			},
+			{
+				"name": "Animalism",
+				"rating": 3,
+				"type": "discipline",
+				"subtraits": []
+			},
+			{
+				"name": "AnimalKen",
+				"rating": 1,
+				"type": "skill",
+				"subtraits": []
+			},
+			{
+				"name": "Athletics",
+				"rating": 2,
+				"type": "skill",
+				"subtraits": []
+			},
+			{
+				"name": "Auspex",
+				"rating": 1,
+				"type": "discipline",
+				"subtraits": []
+			},
+			{
+				"name": "Awareness",
+				"rating": 3,
+				"type": "skill",
+				"subtraits": []
+			},
+			{
+				"name": "Brawl",
+				"rating": 4,
+				"type": "skill",
+				"subtraits": []
+			},
+			{
+				"name": "Charisma",
+				"rating": 1,
+				"type": "attribute",
+				"subtraits": []
+			},
+			{
+				"name": "Composure",
+				"rating": 2,
+				"type": "attribute",
+				"subtraits": []
+			},
+			{
+				"name": "Craft",
+				"rating": 0,
+				"type": "skill",
+				"subtraits": []
+			},
+			{
+				"name": "Dexterity",
+				"rating": 2,
+				"type": "attribute",
+				"subtraits": []
+			},
+			{
+				"name": "Drive",
+				"rating": 0,
+				"type": "skill",
+				"subtraits": []
+			},
+			{
+				"name": "Etiquette",
+				"rating": 1,
+				"type": "skill",
+				"subtraits": []
+			},
+			{
+				"name": "Finance",
+				"rating": 0,
+				"type": "skill",
+				"subtraits": []
+			},
+			{
+				"name": "Firearms",
+				"rating": 0,
+				"type": "skill",
+				"subtraits": []
+			},
+			{
+				"name": "Fortitude",
+				"rating": 1,
+				"type": "discipline",
+				"subtraits": []
+			},
+			{
+				"name": "Humans",
+				"rating": 2,
+				"type": "custom",
+				"subtraits": []
+			},
+			{
+				"name": "Insight",
+				"rating": 1,
+				"type": "skill",
+				"subtraits": []
+			},
+			{
+				"name": "Intelligence",
+				"rating": 2,
+				"type": "attribute",
+				"subtraits": []
+			},
+			{
+				"name": "Intimidation",
+				"rating": 2,
+				"type": "skill",
+				"subtraits": []
+			},
+			{
+				"name": "Investigation",
+				"rating": 1,
+				"type": "skill",
+				"subtraits": []
+			},
+			{
+				"name": "Larceny",
+				"rating": 0,
+				"type": "skill",
+				"subtraits": []
+			},
+			{
+				"name": "Leadership",
+				"rating": 1,
+				"type": "skill",
+				"subtraits": []
+			},
+			{
+				"name": "Looks",
+				"rating": 1,
+				"type": "custom",
+				"subtraits": []
+			},
+			{
+				"name": "Manipulation",
+				"rating": 3,
+				"type": "attribute",
+				"subtraits": []
+			},
+			{
+				"name": "Medicine",
+				"rating": 0,
+				"type": "skill",
+				"subtraits": []
+			},
+			{
+				"name": "Melee",
+				"rating": 0,
+				"type": "skill",
+				"subtraits": []
+			},
+			{
+				"name": "Occult",
+				"rating": 3,
+				"type": "skill",
+				"subtraits": ["Noddism"]
+			},
+			{
+				"name": "Performance",
+				"rating": 0,
+				"type": "skill",
+				"subtraits": []
+			},
+			{
+				"name": "Persuasion",
+				"rating": 1,
+				"type": "skill",
+				"subtraits": []
+			},
+			{
+				"name": "Politics",
+				"rating": 1,
+				"type": "skill",
+				"subtraits": []
+			},
+			{
+				"name": "Protean",
+				"rating": 2,
+				"type": "discipline",
+				"subtraits": []
+			},
+			{
+				"name": "Resolve",
+				"rating": 3,
+				"type": "attribute",
+				"subtraits": []
+			},
+			{
+				"name": "Science",
+				"rating": 0,
+				"type": "skill",
+				"subtraits": []
+			},
+			{
+				"name": "Stamina",
+				"rating": 3,
+				"type": "attribute",
+				"subtraits": []
+			},
+			{
+				"name": "Stealth",
+				"rating": 3,
+				"type": "skill",
+				"subtraits": []
+			},
+			{
+				"name": "Streetwise",
+				"rating": 1,
+				"type": "skill",
+				"subtraits": []
+			},
+			{
+				"name": "Strength",
+				"rating": 4,
+				"type": "attribute",
+				"subtraits": []
+			},
+			{
+				"name": "Subterfuge",
+				"rating": 2,
+				"type": "skill",
+				"subtraits": []
+			},
+			{
+				"name": "Survival",
+				"rating": 4,
+				"type": "skill",
+				"subtraits": ["Tracking"]
+			},
+			{
+				"name": "Technology",
+				"rating": 0,
+				"type": "skill",
+				"subtraits": []
+			},
+			{
+				"name": "Wits",
+				"rating": 3,
+				"type": "attribute",
+				"subtraits": []
+			}
+		],
+		"profile": {
+			"biography": "",
+			"description": "",
+			"images": ["https://pcs.inconnu.app/66a15653acef54ca2df49f87/66a16042f0f8cae02e9d40f2.webp"]
+		},
+		"convictions": [
+			"Testing one's ability to survive is a gift.",
+			"Show no mercy to those with nothing to offer.",
+			"Anything is allowed in the pursuit of Gehenna."
+		],
+		"header": {
+			"blush": 1,
+			"location": "Alley outside of a diner in Simon's Town",
+			"merits": "Beautiful",
+			"flaws": "Obvious Predator: -1 die to put human's at ease. Humanity 5: -1 die to most social interactions with humans.",
+			"temp": "English Accent. Inch long nails that come to a sharp point."
+		},
+		"macros": [
+			{
+				"name": "Sleep",
+				"pool": ["Wits", "+", "Survival"],
+				"hunger": true,
+				"difficulty": 3,
+				"rouses": 0,
+				"reroll_rouses": false,
+				"staining": "show",
+				"hunt": false,
+				"comment": "No Haven roll"
+			}
+		],
+		"experience": {
+			"current": 0,
+			"total": 118,
+			"log": [
+				{
+					"event": "award_lifetime",
+					"amount": 6,
+					"reason": "Weekly XP 20240724/30",
+					"admin": 377840923779792897,
+					"date": "2024-07-31 19:51:15.132000"
+				},
+				{
+					"event": "award_lifetime",
+					"amount": 5,
+					"reason": "Weekly XP",
+					"admin": 377840923779792897,
+					"date": "2024-08-07 16:40:29.723000"
+				},
+				{
+					"event": "award_lifetime",
+					"amount": 35,
+					"reason": "Ancilla Starting Experience",
+					"admin": 377840923779792897,
+					"date": "2024-08-07 17:10:54.776000"
+				},
+				{
+					"event": "award_lifetime",
+					"amount": 29,
+					"reason": "Character Retirement Experience",
+					"admin": 377840923779792897,
+					"date": "2024-08-07 17:11:14.774000"
+				},
+				{
+					"event": "deduct_unspent",
+					"amount": -3,
+					"reason": "CC - Etiquette 1",
+					"admin": 377840923779792897,
+					"date": "2024-08-07 17:11:43.331000"
+				},
+				{
+					"event": "deduct_unspent",
+					"amount": -3,
+					"reason": "CC - Leadership 1",
+					"admin": 377840923779792897,
+					"date": "2024-08-07 17:11:57.813000"
+				},
+				{
+					"event": "deduct_unspent",
+					"amount": -3,
+					"reason": "CC - Persuasion 1",
+					"admin": 377840923779792897,
+					"date": "2024-08-07 17:12:12.366000"
+				},
+				{
+					"event": "deduct_unspent",
+					"amount": -3,
+					"reason": "CC - Streetwise 1",
+					"admin": 377840923779792897,
+					"date": "2024-08-07 17:12:21.978000"
+				},
+				{
+					"event": "deduct_unspent",
+					"amount": -3,
+					"reason": "CC - Investigation 1",
+					"admin": 377840923779792897,
+					"date": "2024-08-07 17:12:33.352000"
+				},
+				{
+					"event": "deduct_unspent",
+					"amount": -3,
+					"reason": "CC - Politics 1",
+					"admin": 377840923779792897,
+					"date": "2024-08-07 17:12:43.071000"
+				},
+				{
+					"event": "deduct_unspent",
+					"amount": -10,
+					"reason": "CC - Protean 2: Feral Weapons",
+					"admin": 377840923779792897,
+					"date": "2024-08-07 17:12:56.686000"
+				},
+				{
+					"event": "deduct_unspent",
+					"amount": -3,
+					"reason": "CC - Xaviar LS 1",
+					"admin": 377840923779792897,
+					"date": "2024-08-07 17:13:11.554000"
+				},
+				{
+					"event": "deduct_unspent",
+					"amount": -6,
+					"reason": "CC - Xaviar LS 2",
+					"admin": 377840923779792897,
+					"date": "2024-08-07 17:13:22.286000"
+				},
+				{
+					"event": "deduct_unspent",
+					"amount": -12,
+					"reason": "CC - Xaviar LS 4",
+					"admin": 377840923779792897,
+					"date": "2024-08-07 17:13:34.929000"
+				},
+				{
+					"event": "deduct_unspent",
+					"amount": -9,
+					"reason": "CC - Rudi LS 3",
+					"admin": 377840923779792897,
+					"date": "2024-08-07 17:13:49.518000"
+				},
+				{
+					"event": "deduct_unspent",
+					"amount": -6,
+					"reason": "CC - Status 2",
+					"admin": 377840923779792897,
+					"date": "2024-08-07 17:14:08.342000"
+				},
+				{
+					"event": "award_lifetime",
+					"amount": 6,
+					"reason": "Weekly XP",
+					"admin": 377840923779792897,
+					"date": "2024-08-14 19:37:04.953000"
+				},
+				{
+					"event": "award_lifetime",
+					"amount": 5,
+					"reason": "Weekly XP",
+					"admin": 377840923779792897,
+					"date": "2024-08-21 17:19:45.088000"
+				},
+				{
+					"event": "award_lifetime",
+					"amount": 5,
+					"reason": "Weekly XP",
+					"admin": 377840923779792897,
+					"date": "2024-08-28 16:11:21.435000"
+				},
+				{
+					"event": "award_lifetime",
+					"amount": 6,
+					"reason": "Weekly XP",
+					"admin": 377840923779792897,
+					"date": "2024-09-04 16:12:19.851000"
+				},
+				{
+					"event": "award_lifetime",
+					"amount": 6,
+					"reason": "Weekly Experience",
+					"admin": 377840923779792897,
+					"date": "2024-09-12 09:14:12.502000"
+				},
+				{
+					"event": "award_lifetime",
+					"amount": 15,
+					"reason": "Timeskip XP - September 2024",
+					"admin": 377840923779792897,
+					"date": "2024-09-13 18:28:06.941000"
+				},
+				{
+					"event": "deduct_unspent",
+					"amount": -15,
+					"reason": "Wits 3",
+					"admin": 808714130382651473,
+					"date": "2024-09-19 21:12:12.363000"
+				},
+				{
+					"event": "deduct_unspent",
+					"amount": -6,
+					"reason": "Athletics 2",
+					"admin": 808714130382651473,
+					"date": "2024-09-19 21:12:27.424000"
+				},
+				{
+					"event": "deduct_unspent",
+					"amount": -9,
+					"reason": "Stealth 3",
+					"admin": 808714130382651473,
+					"date": "2024-09-19 21:12:44.300000"
+				},
+				{
+					"event": "deduct_unspent",
+					"amount": -12,
+					"reason": "Survival 4",
+					"admin": 808714130382651473,
+					"date": "2024-09-19 21:13:00.651000"
+				},
+				{
+					"event": "deduct_unspent",
+					"amount": -7,
+					"reason": "Auspex 1",
+					"admin": 808714130382651473,
+					"date": "2024-09-19 21:13:17.925000"
+				},
+				{
+					"event": "deduct_unspent",
+					"amount": -5,
+					"reason": "Fortitude 1",
+					"admin": 808714130382651473,
+					"date": "2024-09-19 21:13:32.568000"
+				}
+			]
+		},
+		"log": {
+			"created": "2024-07-24 19:30:27.202000",
+			"awaken": 10,
+			"rouse": 54,
+			"blush": 9,
+			"willpower_superficial": 19,
+			"slake": 24,
+			"health_aggravated": 3,
+			"health_superficial": 10,
+			"stains": 3,
+			"remorse": 1
+		}
+	},
+	{
+		"_id": "680d32cbc0bf6151dbd5004e",
+		"guild": 1325660602579816579,
+		"user": 229736753676681230,
+		"name": "Victoria Ransom",
+		"splat": "vampire",
+		"health": ".....",
+		"willpower": ".......",
+		"humanity": 6,
+		"potency": 1,
+		"stains": 0,
+		"hunger": 2,
+		"traits": [
+			{
+				"name": "Academics",
+				"rating": 1,
+				"type": "skill",
+				"subtraits": ["Business"]
+			},
+			{
+				"name": "AnimalKen",
+				"rating": 0,
+				"type": "skill",
+				"subtraits": []
+			},
+			{
+				"name": "Athletics",
+				"rating": 2,
+				"type": "skill",
+				"subtraits": []
+			},
+			{
+				"name": "Awareness",
+				"rating": 2,
+				"type": "skill",
+				"subtraits": []
+			},
+			{
+				"name": "Brawl",
+				"rating": 0,
+				"type": "skill",
+				"subtraits": []
+			},
+			{
+				"name": "Charisma",
+				"rating": 2,
+				"type": "attribute",
+				"subtraits": []
+			},
+			{
+				"name": "Composure",
+				"rating": 3,
+				"type": "attribute",
+				"subtraits": []
+			},
+			{
+				"name": "Craft",
+				"rating": 0,
+				"type": "skill",
+				"subtraits": []
+			},
+			{
+				"name": "Dexterity",
+				"rating": 3,
+				"type": "attribute",
+				"subtraits": []
+			},
+			{
+				"name": "Dominate",
+				"rating": 1,
+				"type": "discipline",
+				"subtraits": ["CloudMemory"]
+			},
+			{
+				"name": "Drive",
+				"rating": 0,
+				"type": "skill",
+				"subtraits": []
+			},
+			{
+				"name": "Etiquette",
+				"rating": 2,
+				"type": "skill",
+				"subtraits": []
+			},
+			{
+				"name": "Finance",
+				"rating": 1,
+				"type": "skill",
+				"subtraits": []
+			},
+			{
+				"name": "Firearms",
+				"rating": 2,
+				"type": "skill",
+				"subtraits": []
+			},
+			{
+				"name": "Insight",
+				"rating": 1,
+				"type": "skill",
+				"subtraits": []
+			},
+			{
+				"name": "Intelligence",
+				"rating": 3,
+				"type": "attribute",
+				"subtraits": []
+			},
+			{
+				"name": "Intimidation",
+				"rating": 3,
+				"type": "skill",
+				"subtraits": []
+			},
+			{
+				"name": "Investigation",
+				"rating": 0,
+				"type": "skill",
+				"subtraits": []
+			},
+			{
+				"name": "Larceny",
+				"rating": 1,
+				"type": "skill",
+				"subtraits": []
+			},
+			{
+				"name": "Leadership",
+				"rating": 0,
+				"type": "skill",
+				"subtraits": []
+			},
+			{
+				"name": "Manipulation",
+				"rating": 2,
+				"type": "attribute",
+				"subtraits": []
+			},
+			{
+				"name": "Medicine",
+				"rating": 0,
+				"type": "skill",
+				"subtraits": []
+			},
+			{
+				"name": "Melee",
+				"rating": 2,
+				"type": "skill",
+				"subtraits": []
+			},
+			{
+				"name": "Oblivion",
+				"rating": 1,
+				"type": "discipline",
+				"subtraits": ["ShadowCloak"]
+			},
+			{
+				"name": "ObviousPredator",
+				"rating": 1,
+				"type": "custom",
+				"subtraits": []
+			},
+			{
+				"name": "Occult",
+				"rating": 0,
+				"type": "skill",
+				"subtraits": []
+			},
+			{
+				"name": "Performance",
+				"rating": 0,
+				"type": "skill",
+				"subtraits": []
+			},
+			{
+				"name": "Persuasion",
+				"rating": 2,
+				"type": "skill",
+				"subtraits": []
+			},
+			{
+				"name": "Politics",
+				"rating": 0,
+				"type": "skill",
+				"subtraits": []
+			},
+			{
+				"name": "Potence",
+				"rating": 2,
+				"type": "discipline",
+				"subtraits": ["Prowess", "SoaringLeap"]
+			},
+			{
+				"name": "Resolve",
+				"rating": 4,
+				"type": "attribute",
+				"subtraits": []
+			},
+			{
+				"name": "Science",
+				"rating": 0,
+				"type": "skill",
+				"subtraits": []
+			},
+			{
+				"name": "Stamina",
+				"rating": 2,
+				"type": "attribute",
+				"subtraits": []
+			},
+			{
+				"name": "Stealth",
+				"rating": 3,
+				"type": "skill",
+				"subtraits": ["Stakeouts"]
+			},
+			{
+				"name": "Streetwise",
+				"rating": 1,
+				"type": "skill",
+				"subtraits": []
+			},
+			{
+				"name": "Strength",
+				"rating": 1,
+				"type": "attribute",
+				"subtraits": []
+			},
+			{
+				"name": "Stunning",
+				"rating": 2,
+				"type": "custom",
+				"subtraits": []
+			},
+			{
+				"name": "Subterfuge",
+				"rating": 2,
+				"type": "skill",
+				"subtraits": ["Belonging"]
+			},
+			{
+				"name": "Survival",
+				"rating": 1,
+				"type": "skill",
+				"subtraits": []
+			},
+			{
+				"name": "Technology",
+				"rating": 1,
+				"type": "skill",
+				"subtraits": []
+			},
+			{
+				"name": "Wits",
+				"rating": 2,
+				"type": "attribute",
+				"subtraits": []
+			}
+		],
+		"profile": {
+			"biography": "",
+			"description": "Haughty, disdainful, and vain, new acquaintances can be excused for mistaking Victoria for a Toreador\u2014until they see her in the mirror. Though her beauty is fit for the artisan's brush, she often takes company with the Lepers. Green eyes cold and calculating, she seems to be waiting for something. Just what that is, though, is anyone's guess.",
+			"images": ["https://pcs.inconnu.app/680d32cbc0bf6151dbd5004e/680d344b6a9c2a1df8ef7ea2.webp"]
+		},
+		"convictions": [
+			"Justice Demands Retribution.",
+			"The Weak Deserve Their Fate.",
+			"Always Think of the Long Term."
+		],
+		"header": {
+			"blush": 1,
+			"location": "Recording Studio, Room 212",
+			"merits": "Stunning",
+			"flaws": "Obvious Predator",
+			"temp": ""
+		},
+		"macros": [],
+		"experience": {
+			"current": 0,
+			"total": 0,
+			"log": []
+		},
+		"log": {
+			"created": "2025-04-26 19:23:55.724000",
+			"awaken": 1,
+			"rouse": 2,
+			"blush": 1
+		}
+	}
 ]

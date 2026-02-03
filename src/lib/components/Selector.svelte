@@ -18,8 +18,7 @@
 	}: ComponentProps = $props();
 
 	const labelClass = 'mb-2 block text-lg uppercase tracking-wide';
-	const selectClass =
-		'input input-bordered mb-3 block w-full border px-4 py-3 leading-tight';
+	const selectClass = 'input input-bordered mb-3 block w-full border px-4 py-3 leading-tight';
 </script>
 
 <label class={labelClass} for={id}>

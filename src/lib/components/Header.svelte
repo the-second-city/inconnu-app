@@ -59,7 +59,11 @@
 {/snippet}
 
 <header class="bg-surface-50-950 flex items-center justify-between p-4 shadow-md">
-	<a href="/" class="anchor text-primary-500 flex items-center gap-2 text-3xl font-bold" style="font-family: Avenir, Montserrat, Corbel, 'URW Gothic', source-sans-pro, sans-serif;">
+	<a
+		href="/"
+		class="anchor text-primary-500 flex items-center gap-2 text-3xl font-bold"
+		style="font-family: Avenir, Montserrat, Corbel, 'URW Gothic', source-sans-pro, sans-serif;"
+	>
 		<img src="/favicon.png" alt="Inconnu icon" class="h-[1em] w-auto" />
 		Inconnu
 	</a>

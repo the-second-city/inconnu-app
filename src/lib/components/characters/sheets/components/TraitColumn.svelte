@@ -14,8 +14,14 @@
 		allowsSubtraits: boolean;
 	}
 
-	let { name, cat, colNum, traits = $bindable(), editing, allowsSubtraits }: ComponentProps =
-		$props();
+	let {
+		name,
+		cat,
+		colNum,
+		traits = $bindable(),
+		editing,
+		allowsSubtraits
+	}: ComponentProps = $props();
 
 	// Get the defined trait order for this category/subcategory (if it exists)
 	const orderedTraitNames = $derived(getTraitOrder(cat, name));

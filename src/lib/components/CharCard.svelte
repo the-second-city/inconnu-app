@@ -23,7 +23,9 @@
 		{#if character.profile.images.length > 0}
 			<img src={character.profile.images[0]} class="w-full" alt="banner" />
 		{:else}
-			<div class="bg-gradient-to-br from-surface-700 to-surface-900 flex items-center justify-center h-48">
+			<div
+				class="from-surface-700 to-surface-900 flex h-48 items-center justify-center bg-gradient-to-br"
+			>
 				<img src="/images/wod/vampire-logo.png" alt="Inconnu icon" class="h-40 w-40 opacity-20" />
 			</div>
 		{/if}

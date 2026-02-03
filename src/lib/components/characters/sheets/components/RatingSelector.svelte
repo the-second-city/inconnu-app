@@ -152,7 +152,9 @@
 					class="rating-circle"
 					class:selected={circleRating <= rating}
 					class:editable={editing}
-					class:hovered={hoveredRating !== null && circleRating <= hoveredRating && circleRating > rating}
+					class:hovered={hoveredRating !== null &&
+						circleRating <= hoveredRating &&
+						circleRating > rating}
 					onclick={() => handleRatingChange(circleRating)}
 					onmouseenter={() => (hoveredRating = circleRating)}
 					aria-label="{name}: {circleRating} dots"

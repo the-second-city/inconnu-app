@@ -1,316 +1,301 @@
 {
-  "guilds": [
-    {
-      "id": 1325660602579816579,
-      "name": "golden gatekeeping",
-      "icon": "https://cdn.discordapp.com/icons/1325660602579816579/a_b42502e5b69a7fc303147d2ab5072369.png"
-    }
-  ],
-  "characters": [
-    {
-      "_id": "680d32cbc0bf6151dbd5004e",
-      "guild": 1325660602579816579,
-      "user": 229736753676681230,
-      "name": "Victoria Ransom",
-      "splat": "vampire",
-      "health": ".....",
-      "willpower": ".......",
-      "humanity": 6,
-      "potency": 1,
-      "stains": 0,
-      "hunger": 2,
-      "traits": [
-        {
-          "name": "Academics",
-          "rating": 1,
-          "type": "skill",
-          "subtraits": [
-            "Business"
-          ]
-        },
-        {
-          "name": "AnimalKen",
-          "rating": 0,
-          "type": "skill",
-          "subtraits": []
-        },
-        {
-          "name": "Athletics",
-          "rating": 2,
-          "type": "skill",
-          "subtraits": []
-        },
-        {
-          "name": "Awareness",
-          "rating": 2,
-          "type": "skill",
-          "subtraits": []
-        },
-        {
-          "name": "Brawl",
-          "rating": 0,
-          "type": "skill",
-          "subtraits": []
-        },
-        {
-          "name": "Charisma",
-          "rating": 2,
-          "type": "attribute",
-          "subtraits": []
-        },
-        {
-          "name": "Composure",
-          "rating": 3,
-          "type": "attribute",
-          "subtraits": []
-        },
-        {
-          "name": "Craft",
-          "rating": 0,
-          "type": "skill",
-          "subtraits": []
-        },
-        {
-          "name": "Dexterity",
-          "rating": 3,
-          "type": "attribute",
-          "subtraits": []
-        },
-        {
-          "name": "Dominate",
-          "rating": 1,
-          "type": "discipline",
-          "subtraits": [
-            "CloudMemory"
-          ]
-        },
-        {
-          "name": "Drive",
-          "rating": 0,
-          "type": "skill",
-          "subtraits": []
-        },
-        {
-          "name": "Etiquette",
-          "rating": 2,
-          "type": "skill",
-          "subtraits": []
-        },
-        {
-          "name": "Finance",
-          "rating": 1,
-          "type": "skill",
-          "subtraits": []
-        },
-        {
-          "name": "Firearms",
-          "rating": 2,
-          "type": "skill",
-          "subtraits": []
-        },
-        {
-          "name": "Insight",
-          "rating": 1,
-          "type": "skill",
-          "subtraits": []
-        },
-        {
-          "name": "Intelligence",
-          "rating": 3,
-          "type": "attribute",
-          "subtraits": []
-        },
-        {
-          "name": "Intimidation",
-          "rating": 3,
-          "type": "skill",
-          "subtraits": []
-        },
-        {
-          "name": "Investigation",
-          "rating": 0,
-          "type": "skill",
-          "subtraits": []
-        },
-        {
-          "name": "Larceny",
-          "rating": 1,
-          "type": "skill",
-          "subtraits": []
-        },
-        {
-          "name": "Leadership",
-          "rating": 0,
-          "type": "skill",
-          "subtraits": []
-        },
-        {
-          "name": "Manipulation",
-          "rating": 2,
-          "type": "attribute",
-          "subtraits": []
-        },
-        {
-          "name": "Medicine",
-          "rating": 0,
-          "type": "skill",
-          "subtraits": []
-        },
-        {
-          "name": "Melee",
-          "rating": 2,
-          "type": "skill",
-          "subtraits": []
-        },
-        {
-          "name": "Oblivion",
-          "rating": 1,
-          "type": "discipline",
-          "subtraits": [
-            "ShadowCloak"
-          ]
-        },
-        {
-          "name": "ObviousPredator",
-          "rating": 1,
-          "type": "custom",
-          "subtraits": []
-        },
-        {
-          "name": "Occult",
-          "rating": 0,
-          "type": "skill",
-          "subtraits": []
-        },
-        {
-          "name": "Performance",
-          "rating": 0,
-          "type": "skill",
-          "subtraits": []
-        },
-        {
-          "name": "Persuasion",
-          "rating": 2,
-          "type": "skill",
-          "subtraits": []
-        },
-        {
-          "name": "Politics",
-          "rating": 0,
-          "type": "skill",
-          "subtraits": []
-        },
-        {
-          "name": "Potence",
-          "rating": 2,
-          "type": "discipline",
-          "subtraits": [
-            "Prowess",
-            "SoaringLeap"
-          ]
-        },
-        {
-          "name": "Resolve",
-          "rating": 4,
-          "type": "attribute",
-          "subtraits": []
-        },
-        {
-          "name": "Science",
-          "rating": 0,
-          "type": "skill",
-          "subtraits": []
-        },
-        {
-          "name": "Stamina",
-          "rating": 2,
-          "type": "attribute",
-          "subtraits": []
-        },
-        {
-          "name": "Stealth",
-          "rating": 3,
-          "type": "skill",
-          "subtraits": [
-            "Stakeouts"
-          ]
-        },
-        {
-          "name": "Streetwise",
-          "rating": 1,
-          "type": "skill",
-          "subtraits": []
-        },
-        {
-          "name": "Strength",
-          "rating": 1,
-          "type": "attribute",
-          "subtraits": []
-        },
-        {
-          "name": "Stunning",
-          "rating": 2,
-          "type": "custom",
-          "subtraits": []
-        },
-        {
-          "name": "Subterfuge",
-          "rating": 2,
-          "type": "skill",
-          "subtraits": [
-            "Belonging"
-          ]
-        },
-        {
-          "name": "Survival",
-          "rating": 1,
-          "type": "skill",
-          "subtraits": []
-        },
-        {
-          "name": "Technology",
-          "rating": 1,
-          "type": "skill",
-          "subtraits": []
-        },
-        {
-          "name": "Wits",
-          "rating": 2,
-          "type": "attribute",
-          "subtraits": []
-        }
-      ],
-      "profile": {
-        "biography": "",
-        "description": "Haughty, disdainful, and vain, new acquaintances can be excused for mistaking Victoria for a Toreador\u2014until they see her in the mirror. Though her beauty is fit for the artisan's brush, she often takes company with the Lepers. Green eyes cold and calculating, she seems to be waiting for something. Just what that is, though, is anyone's guess.",
-        "images": [
-          "https://pcs.inconnu.app/680d32cbc0bf6151dbd5004e/680d344b6a9c2a1df8ef7ea2.webp"
-        ]
-      },
-      "convictions": [
-        "Justice Demands Retribution.",
-        "The Weak Deserve Their Fate.",
-        "Always Think of the Long Term."
-      ],
-      "header": {
-        "blush": 1,
-        "location": "Recording Studio, Room 212",
-        "merits": "Stunning",
-        "flaws": "Obvious Predator",
-        "temp": ""
-      },
-      "macros": [],
-      "experience": {
-        "current": 0,
-        "total": 0,
-        "log": []
-      },
-      "log": {
-        "created": "2025-04-26 19:23:55.724000",
-        "awaken": 1,
-        "rouse": 2,
-        "blush": 1
-      }
-    }
-  ]
+	"guilds": [
+		{
+			"id": 1325660602579816579,
+			"name": "golden gatekeeping",
+			"icon": "https://cdn.discordapp.com/icons/1325660602579816579/a_b42502e5b69a7fc303147d2ab5072369.png"
+		}
+	],
+	"characters": [
+		{
+			"_id": "680d32cbc0bf6151dbd5004e",
+			"guild": 1325660602579816579,
+			"user": 229736753676681230,
+			"name": "Victoria Ransom",
+			"splat": "vampire",
+			"health": ".....",
+			"willpower": ".......",
+			"humanity": 6,
+			"potency": 1,
+			"stains": 0,
+			"hunger": 2,
+			"traits": [
+				{
+					"name": "Academics",
+					"rating": 1,
+					"type": "skill",
+					"subtraits": ["Business"]
+				},
+				{
+					"name": "AnimalKen",
+					"rating": 0,
+					"type": "skill",
+					"subtraits": []
+				},
+				{
+					"name": "Athletics",
+					"rating": 2,
+					"type": "skill",
+					"subtraits": []
+				},
+				{
+					"name": "Awareness",
+					"rating": 2,
+					"type": "skill",
+					"subtraits": []
+				},
+				{
+					"name": "Brawl",
+					"rating": 0,
+					"type": "skill",
+					"subtraits": []
+				},
+				{
+					"name": "Charisma",
+					"rating": 2,
+					"type": "attribute",
+					"subtraits": []
+				},
+				{
+					"name": "Composure",
+					"rating": 3,
+					"type": "attribute",
+					"subtraits": []
+				},
+				{
+					"name": "Craft",
+					"rating": 0,
+					"type": "skill",
+					"subtraits": []
+				},
+				{
+					"name": "Dexterity",
+					"rating": 3,
+					"type": "attribute",
+					"subtraits": []
+				},
+				{
+					"name": "Dominate",
+					"rating": 1,
+					"type": "discipline",
+					"subtraits": ["CloudMemory"]
+				},
+				{
+					"name": "Drive",
+					"rating": 0,
+					"type": "skill",
+					"subtraits": []
+				},
+				{
+					"name": "Etiquette",
+					"rating": 2,
+					"type": "skill",
+					"subtraits": []
+				},
+				{
+					"name": "Finance",
+					"rating": 1,
+					"type": "skill",
+					"subtraits": []
+				},
+				{
+					"name": "Firearms",
+					"rating": 2,
+					"type": "skill",
+					"subtraits": []
+				},
+				{
+					"name": "Insight",
+					"rating": 1,
+					"type": "skill",
+					"subtraits": []
+				},
+				{
+					"name": "Intelligence",
+					"rating": 3,
+					"type": "attribute",
+					"subtraits": []
+				},
+				{
+					"name": "Intimidation",
+					"rating": 3,
+					"type": "skill",
+					"subtraits": []
+				},
+				{
+					"name": "Investigation",
+					"rating": 0,
+					"type": "skill",
+					"subtraits": []
+				},
+				{
+					"name": "Larceny",
+					"rating": 1,
+					"type": "skill",
+					"subtraits": []
+				},
+				{
+					"name": "Leadership",
+					"rating": 0,
+					"type": "skill",
+					"subtraits": []
+				},
+				{
+					"name": "Manipulation",
+					"rating": 2,
+					"type": "attribute",
+					"subtraits": []
+				},
+				{
+					"name": "Medicine",
+					"rating": 0,
+					"type": "skill",
+					"subtraits": []
+				},
+				{
+					"name": "Melee",
+					"rating": 2,
+					"type": "skill",
+					"subtraits": []
+				},
+				{
+					"name": "Oblivion",
+					"rating": 1,
+					"type": "discipline",
+					"subtraits": ["ShadowCloak"]
+				},
+				{
+					"name": "ObviousPredator",
+					"rating": 1,
+					"type": "custom",
+					"subtraits": []
+				},
+				{
+					"name": "Occult",
+					"rating": 0,
+					"type": "skill",
+					"subtraits": []
+				},
+				{
+					"name": "Performance",
+					"rating": 0,
+					"type": "skill",
+					"subtraits": []
+				},
+				{
+					"name": "Persuasion",
+					"rating": 2,
+					"type": "skill",
+					"subtraits": []
+				},
+				{
+					"name": "Politics",
+					"rating": 0,
+					"type": "skill",
+					"subtraits": []
+				},
+				{
+					"name": "Potence",
+					"rating": 2,
+					"type": "discipline",
+					"subtraits": ["Prowess", "SoaringLeap"]
+				},
+				{
+					"name": "Resolve",
+					"rating": 4,
+					"type": "attribute",
+					"subtraits": []
+				},
+				{
+					"name": "Science",
+					"rating": 0,
+					"type": "skill",
+					"subtraits": []
+				},
+				{
+					"name": "Stamina",
+					"rating": 2,
+					"type": "attribute",
+					"subtraits": []
+				},
+				{
+					"name": "Stealth",
+					"rating": 3,
+					"type": "skill",
+					"subtraits": ["Stakeouts"]
+				},
+				{
+					"name": "Streetwise",
+					"rating": 1,
+					"type": "skill",
+					"subtraits": []
+				},
+				{
+					"name": "Strength",
+					"rating": 1,
+					"type": "attribute",
+					"subtraits": []
+				},
+				{
+					"name": "Stunning",
+					"rating": 2,
+					"type": "custom",
+					"subtraits": []
+				},
+				{
+					"name": "Subterfuge",
+					"rating": 2,
+					"type": "skill",
+					"subtraits": ["Belonging"]
+				},
+				{
+					"name": "Survival",
+					"rating": 1,
+					"type": "skill",
+					"subtraits": []
+				},
+				{
+					"name": "Technology",
+					"rating": 1,
+					"type": "skill",
+					"subtraits": []
+				},
+				{
+					"name": "Wits",
+					"rating": 2,
+					"type": "attribute",
+					"subtraits": []
+				}
+			],
+			"profile": {
+				"biography": "",
+				"description": "Haughty, disdainful, and vain, new acquaintances can be excused for mistaking Victoria for a Toreador\u2014until they see her in the mirror. Though her beauty is fit for the artisan's brush, she often takes company with the Lepers. Green eyes cold and calculating, she seems to be waiting for something. Just what that is, though, is anyone's guess.",
+				"images": ["https://pcs.inconnu.app/680d32cbc0bf6151dbd5004e/680d344b6a9c2a1df8ef7ea2.webp"]
+			},
+			"convictions": [
+				"Justice Demands Retribution.",
+				"The Weak Deserve Their Fate.",
+				"Always Think of the Long Term."
+			],
+			"header": {
+				"blush": 1,
+				"location": "Recording Studio, Room 212",
+				"merits": "Stunning",
+				"flaws": "Obvious Predator",
+				"temp": ""
+			},
+			"macros": [],
+			"experience": {
+				"current": 0,
+				"total": 0,
+				"log": []
+			},
+			"log": {
+				"created": "2025-04-26 19:23:55.724000",
+				"awaken": 1,
+				"rouse": 2,
+				"blush": 1
+			}
+		}
+	]
 }
