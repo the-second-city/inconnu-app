@@ -13,9 +13,10 @@
 </script>
 
 <div class="flex flex-col gap-3">
+	<MainTrackers bind:character editing={false} allowsPathChange={true} />
+
 	<TraitSheet bind:character editing={false} />
 
-	<MainTrackers bind:character editing={false} allowsPathChange={true} />
 	<!--
 	<Vampirism bind:character editing={false} />
 	-->
