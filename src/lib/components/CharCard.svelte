@@ -19,11 +19,15 @@
 	title="View/Edit {character.name}"
 	class="card preset-filled-surface-100-900 border-surface-200-800 card-hover divide-surface-200-800 block divide-y overflow-hidden border-[1px] shadow-md hover:scale-101"
 >
-	{#if character.profile.images.length > 0}
-		<header>
+	<header>
+		{#if character.profile.images.length > 0}
 			<img src={character.profile.images[0]} class="w-full" alt="banner" />
-		</header>
-	{/if}
+		{:else}
+			<div class="bg-gradient-to-br from-surface-700 to-surface-900 flex items-center justify-center h-48">
+				<img src="/images/wod/vampire-logo.png" alt="Inconnu icon" class="h-40 w-40 opacity-20" />
+			</div>
+		{/if}
+	</header>
 	<article class="space-y-1 p-3">
 		<div>
 			<h3 class="h3">{character.name}</h3>
