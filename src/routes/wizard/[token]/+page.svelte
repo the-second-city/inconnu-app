@@ -150,6 +150,12 @@
 
 <svelte:head>
 	<title>{title} | inconnu.app</title>
+	<meta property="og:title" content={title} />
+	<meta
+		property="og:description"
+		content="Create a new character for Vampire: The Masquerade 5th Edition using Inconnu's character wizard."
+	/>
+	<meta property="og:image" content="/favicon.png" />
 </svelte:head>
 
 <div class="flex flex-wrap items-start justify-between gap-2">
