@@ -1,3 +1,7 @@
+<svelte:head>
+	<title>Character Not Found | inconnu.app</title>
+</svelte:head>
+
 <div class="flex min-h-[50vh] flex-col items-center justify-center">
 	<h1
 		class="text-primary-500 m-0 overflow-hidden text-center text-[12rem] leading-none font-black tracking-tighter md:text-[25rem]"

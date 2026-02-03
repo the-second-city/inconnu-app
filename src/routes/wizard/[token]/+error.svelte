@@ -1,3 +1,7 @@
+<svelte:head>
+	<title>Session Not Found | inconnu.app</title>
+</svelte:head>
+
 <div class="flex min-h-[50vh] flex-col items-center justify-center gap-4 px-4">
 	<h1 class="text-primary-500 h1 text-center font-black leading-none tracking-tighter">
 		The Sun Has Risen
