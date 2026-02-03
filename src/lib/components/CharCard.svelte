@@ -1,6 +1,8 @@
 <script lang="ts">
 	import { Avatar } from '@skeletonlabs/skeleton-svelte';
 	import { EyeOff } from '@lucide/svelte';
+	import { marked } from 'marked';
+	import DOMPurify from 'isomorphic-dompurify';
 
 	import type { Character, Guild } from '$lib/types';
 
@@ -28,7 +30,7 @@
 		</div>
 		<p class="line-clamp-4 opacity-60">
 			{#if character.profile.description}
-				{character.profile.description}
+				{@html marked.parse(DOMPurify.sanitize(character.profile.description))}
 			{:else}
 				<em>{character.name} is a total mystery ...</em>
 			{/if}
@@ -43,7 +45,7 @@
 			{/if}
 		</small>
 		{#if guild !== null}
-			<Avatar src={guild.icon} name="{guild.name} icon" size="size-6" />
+			<Avatar src={guild.icon ?? undefined} name="{guild.name} icon" size="size-6" />
 		{:else}
 			<Avatar name="icon" size="size-6">
 				<EyeOff size={18} />
