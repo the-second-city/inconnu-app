@@ -19,7 +19,7 @@
 
 <div class="flex flex-col gap-3">
 	{#if isVampire}
-		<div class="grid grid-cols-2 gap-3 items-stretch">
+		<div class="grid grid-cols-1 md:grid-cols-2 gap-3 items-stretch">
 			<MainTrackers bind:character editing={false} allowsPathChange={true} />
 			<BloodTrackers {character} />
 		</div>
