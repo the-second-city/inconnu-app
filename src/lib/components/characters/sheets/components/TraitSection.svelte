@@ -30,7 +30,7 @@
 	{#if title}
 		<h2 class="h2 text-2xl uppercase">{title}</h2>
 	{/if}
-	<div class="flex flex-wrap items-center justify-between gap-3">
+	<div class="flex flex-col sm:flex-row sm:flex-wrap items-stretch sm:items-center justify-between gap-3">
 		{#each subs as sub, i}
 			<TraitColumn name={sub} {cat} colNum={i} bind:traits {editing} {allowsSubtraits} />
 		{/each}
