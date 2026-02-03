@@ -3,6 +3,7 @@
 
 	import TraitSheet from '$lib/components/characters/sheets/TraitSheet.svelte';
 	import MainTrackers from '$lib/components/characters/sheets/components/MainTrackers.svelte';
+	import BloodTrackers from '$lib/components/characters/sheets/components/BloodTrackers.svelte';
 	import Vampirism from '$lib/components/characters/sheets/components/wod/Vampirism.svelte';
 
 	interface ComponentProps {
@@ -10,10 +11,21 @@
 	}
 
 	let { character = $bindable() }: ComponentProps = $props();
+
+	const isVampire = $derived(
+		character.splat === 'vampire' || character.splat === 'thin-blood'
+	);
 </script>
 
 <div class="flex flex-col gap-3">
-	<MainTrackers bind:character editing={false} allowsPathChange={true} />
+	{#if isVampire}
+		<div class="grid grid-cols-2 gap-3 items-stretch">
+			<MainTrackers bind:character editing={false} allowsPathChange={true} />
+			<BloodTrackers {character} />
+		</div>
+	{:else}
+		<MainTrackers bind:character editing={false} allowsPathChange={true} />
+	{/if}
 
 	<TraitSheet bind:character editing={false} />
 

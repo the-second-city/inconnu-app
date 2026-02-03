@@ -14,8 +14,8 @@
 	let { character = $bindable(), editing, allowsPathChange }: ComponentProps = $props();
 </script>
 
-<Card alignment="center">
-	<div class="grid grid-cols-[100px_1fr] gap-2">
+<Card alignment="center" extraClasses="px-2 h-full justify-center">
+	<div class="grid grid-cols-[120px_1fr] gap-2">
 		<Tracker bind:character track="health" editing={true} />
 		<Tracker bind:character track="willpower" editing={true} />
 		<Humanity bind:character editing={true} />

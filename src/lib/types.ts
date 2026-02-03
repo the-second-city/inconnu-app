@@ -60,6 +60,7 @@ export interface Character {
 	stains: number;
 	traits: Trait[];
 	potency?: number;
+	hunger?: number;
 	generation?: number;
 	blood_potency?: number;
 	max_vitae?: number;
