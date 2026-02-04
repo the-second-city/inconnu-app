@@ -28,6 +28,24 @@
 			</a>
 		</span>
 	</div>
+
+	<div class="mt-4 text-center">
+		<small
+			>Portions of the materials are the copyrights and trademarks of Paradox Interactive AB, and
+			are used with permission. All rights reserved. For more information please visit <a
+				href="https://worldofdarkness.com"
+				class="anchor"
+				title="World of Darkness">worldofdarkness.com</a
+			>. <strong>Inconnu</strong> is not official World of Darkness content.
+		</small>
+		<img
+			src="/images/darkpack_logo2.webp"
+			width="60"
+			height="60"
+			alt="Dark Pack logo"
+			class="mx-auto mt-2"
+		/>
+	</div>
 </footer>
 
 <style>
