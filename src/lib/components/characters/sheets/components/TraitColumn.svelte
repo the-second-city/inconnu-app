@@ -62,16 +62,19 @@
 
 	let newTraitName = $state('');
 	let normalizedTrait = $derived(normalize(newTraitName));
-	let invalidTrait = $derived.by(() => {
-		if (normalizedTrait.length === 0) return true;
-		if (!isValidTraitName(normalizedTrait)) return true;
+	let traitError = $derived.by(() => {
+		if (normalizedTrait.length === 0) return null;
+		if (normalizedTrait.length > 20) return 'Maximum 20 characters';
+		if (!isValidTraitName(normalizedTrait)) return 'Letters, spaces, and underscores only';
 
 		const lowercased = normalizedTrait.toLowerCase();
 		const isDuplicate = orderedIndices.some(
 			(index) => traits[index].name.toLowerCase() === lowercased
 		);
-		return isDuplicate;
+		if (isDuplicate) return 'Trait already exists';
+		return null;
 	});
+	let invalidTrait = $derived(normalizedTrait.length === 0 || traitError !== null);
 
 	function addTrait() {
 		let trait: Trait = {
@@ -107,9 +110,10 @@
 				bind:value={newTraitName}
 				onkeydown={(e) => e.key === 'Enter' && addTrait()}
 				placeholder="Add new ..."
-				class="input w-52 border"
-				class:text-error-500={invalidTrait}
-				class:border-error-500={invalidTrait}
+				class="input min-w-0 flex-1 border"
+				class:text-error-500={traitError}
+				class:border-error-500={traitError}
+				aria-describedby={traitError ? 'trait-error' : undefined}
 				transition:fade={{ duration: 100 }}
 			/>
 			<button
@@ -121,5 +125,8 @@
 				<CirclePlus />
 			</button>
 		</div>
+		{#if traitError}
+			<p id="trait-error" class="text-error-500 mt-1 text-sm">{traitError}</p>
+		{/if}
 	{/if}
 </Card>

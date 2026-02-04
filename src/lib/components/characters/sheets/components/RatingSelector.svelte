@@ -67,7 +67,17 @@
 		subtraits.splice(index, 1);
 	}
 
-	let invalidSubtrait = $derived(normalizedNewSubtrait.length > 0 && !isValidSubtrait());
+	let subtraitError = $derived.by(() => {
+		if (normalizedNewSubtrait.length === 0) return null;
+		if (normalizedNewSubtrait.length > 20) return 'Maximum 20 characters';
+		if (!isValidTraitName(normalizedNewSubtrait)) return 'Letters, spaces, and underscores only';
+		const isDuplicate = subtraits.some(
+			(existing: string) => existing.toLowerCase() === normalizedNewSubtrait.toLowerCase()
+		);
+		if (isDuplicate) return 'Specialty already exists';
+		return null;
+	});
+	let invalidSubtrait = $derived(subtraitError !== null);
 
 	const circles = $derived(Array.from({ length: max }, (_, i) => i + 1));
 </script>
@@ -126,16 +136,20 @@
 									class="input border"
 									class:text-error-500={invalidSubtrait}
 									class:border-error-500={invalidSubtrait}
+									aria-describedby={subtraitError ? 'subtrait-error' : undefined}
 								/>
 								<button
 									class="btn preset-filled-secondary-500"
 									onclick={handleAddSubtrait}
 									disabled={!isValidSubtrait()}
-									aria-label="Add spcialty"
+									aria-label="Add specialty"
 								>
 									<CirclePlus />
 								</button>
 							</div>
+							{#if subtraitError}
+								<p id="subtrait-error" class="text-error-500 mt-1 text-sm">{subtraitError}</p>
+							{/if}
 						{/if}
 					</div>
 				{/snippet}
