@@ -1,5 +1,10 @@
 <script lang="ts">
+	import { fade } from 'svelte/transition';
+
+	import { CirclePlus } from '@lucide/svelte';
+
 	import type { Trait } from '$lib/types';
+	import { isValidTraitName, normalize } from '$lib';
 	import { getTraitOrder } from '$lib/data/trait-order';
 
 	import Card from '$lib/components/Card.svelte';
@@ -12,6 +17,8 @@
 		traits: Trait[];
 		editing: boolean;
 		allowsSubtraits: boolean;
+		addable?: boolean;
+		plural?: string;
 	}
 
 	let {
@@ -20,7 +27,9 @@
 		colNum,
 		traits = $bindable(),
 		editing,
-		allowsSubtraits
+		allowsSubtraits,
+		addable = false,
+		plural = 'traits'
 	}: ComponentProps = $props();
 
 	// Get the defined trait order for this category/subcategory (if it exists)
@@ -50,6 +59,32 @@
 		// Otherwise, return indices in original order (for custom traits, disciplines, etc.)
 		return categoryTraits.map((item) => item.index);
 	});
+
+	let newTraitName = $state('');
+	let normalizedTrait = $derived(normalize(newTraitName));
+	let invalidTrait = $derived.by(() => {
+		if (normalizedTrait.length === 0) return true;
+		if (!isValidTraitName(normalizedTrait)) return true;
+
+		const lowercased = normalizedTrait.toLowerCase();
+		const isDuplicate = orderedIndices.some(
+			(index) => traits[index].name.toLowerCase() === lowercased
+		);
+		return isDuplicate;
+	});
+
+	function addTrait() {
+		let trait: Trait = {
+			name: normalizedTrait,
+			rating: 1,
+			type: cat,
+			subtraits: []
+		};
+		traits.push(trait);
+		traits.sort((a, b) => a.name.localeCompare(b.name, undefined, { sensitivity: 'base' }));
+		newTraitName = '';
+		console.log(trait);
+	}
 </script>
 
 <Card>
@@ -64,5 +99,27 @@
 		</div>
 	{:else if !editing}
 		<p class="opacity-60"><em>No traits in this category.</em></p>
+	{/if}
+	{#if editing && addable}
+		<div class="mt-3 flex items-stretch gap-2">
+			<input
+				type="text"
+				bind:value={newTraitName}
+				onkeydown={(e) => e.key === 'Enter' && addTrait()}
+				placeholder="Add new ..."
+				class="input w-52 border"
+				class:text-error-500={invalidTrait}
+				class:border-error-500={invalidTrait}
+				transition:fade={{ duration: 100 }}
+			/>
+			<button
+				class="btn preset-filled-secondary-500"
+				onclick={addTrait}
+				disabled={invalidTrait}
+				aria-label="Add trait"
+			>
+				<CirclePlus />
+			</button>
+		</div>
 	{/if}
 </Card>

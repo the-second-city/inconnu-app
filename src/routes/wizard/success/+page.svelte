@@ -7,7 +7,6 @@
 	import type { CreationInfo } from '$lib/stores/CreationStore';
 
 	let characterInfo = $state<CreationInfo | null>(null);
-	$inspect(characterInfo);
 
 	onMount(() => {
 		const unsubscribe = creationInfoStore.subscribe((value) => {
