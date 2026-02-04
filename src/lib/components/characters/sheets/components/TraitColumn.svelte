@@ -17,6 +17,7 @@
 		editing: boolean;
 		allowsSubtraits: boolean;
 		addable?: boolean;
+		addLabel?: string | null;
 	}
 
 	let {
@@ -25,8 +26,13 @@
 		traits = $bindable(),
 		editing,
 		allowsSubtraits,
-		addable = false
+		addable = false,
+		addLabel = null
 	}: ComponentProps = $props();
+
+	const placeholder = $derived(
+		`Add new ${addLabel ?? cat.charAt(0).toUpperCase() + cat.slice(1)} ...`
+	);
 
 	// Get the defined trait order for this category/subcategory (if it exists)
 	const orderedTraitNames = $derived(getTraitOrder(cat, name));
@@ -105,7 +111,7 @@
 				type="text"
 				bind:value={newTraitName}
 				onkeydown={(e) => e.key === 'Enter' && addTrait()}
-				placeholder="Add new ..."
+				{placeholder}
 				class="input min-w-0 flex-1 border"
 				class:text-error-500={traitError}
 				class:border-error-500={traitError}

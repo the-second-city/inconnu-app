@@ -127,12 +127,12 @@
 							{/each}
 						{/if}
 						{#if editing}
-							<div class="flex items-center gap-2">
+							<div class="flex items-stretch gap-2">
 								<input
 									type="text"
 									bind:value={newSubtrait}
 									onkeydown={(e) => e.key === 'Enter' && handleAddSubtrait()}
-									placeholder="Add new specialty ..."
+									placeholder="Add new Specialty ..."
 									class="input border"
 									class:text-error-500={invalidSubtrait}
 									class:border-error-500={invalidSubtrait}

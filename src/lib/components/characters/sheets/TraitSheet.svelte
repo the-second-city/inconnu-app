@@ -52,6 +52,7 @@
 				bind:traits={character.traits}
 				{editing}
 				addable={true}
+				addLabel="Custom Trait"
 				allowsSubtraits={true}
 			/>
 		</div>
