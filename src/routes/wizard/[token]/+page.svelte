@@ -351,6 +351,14 @@
 			</div>
 		{/if}
 
+		<div class="mt-3 px-4 text-center">
+			<small>
+				To accommodate potential house rules, this wizard lets you create "invalid" characters. If
+				you're unsure of how to build a character, read the fourth chapter of V5 core, starting on
+				p.133.
+			</small>
+		</div>
+
 		<div class="mt-6">
 			<button
 				type="submit"
