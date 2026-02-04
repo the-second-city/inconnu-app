@@ -13,23 +13,19 @@
 	interface ComponentProps {
 		name: string;
 		cat: string;
-		colNum?: number;
 		traits: Trait[];
 		editing: boolean;
 		allowsSubtraits: boolean;
 		addable?: boolean;
-		plural?: string;
 	}
 
 	let {
 		name,
 		cat,
-		colNum,
 		traits = $bindable(),
 		editing,
 		allowsSubtraits,
-		addable = false,
-		plural = 'traits'
+		addable = false
 	}: ComponentProps = $props();
 
 	// Get the defined trait order for this category/subcategory (if it exists)

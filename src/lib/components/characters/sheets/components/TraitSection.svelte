@@ -32,7 +32,7 @@
 	{/if}
 	<div class="flex flex-col sm:flex-row sm:flex-wrap items-stretch sm:items-center justify-between gap-3">
 		{#each subs as sub, i}
-			<TraitColumn name={sub} {cat} colNum={i} bind:traits {editing} {allowsSubtraits} />
+			<TraitColumn name={sub} {cat} bind:traits {editing} {allowsSubtraits} />
 		{/each}
 	</div>
 {:else}
@@ -41,7 +41,7 @@
 		<h2 class="h2 text-2xl uppercase">{title}</h2>
 		<div class="flex flex-col gap-3">
 			{#each subs as sub, i}
-				<TraitColumn name={sub} {cat} colNum={i} bind:traits {editing} {allowsSubtraits} />
+				<TraitColumn name={sub} {cat} bind:traits {editing} {allowsSubtraits} />
 			{/each}
 		</div>
 	</div>
