@@ -1,6 +1,6 @@
 <script lang="ts">
 	import type { PageData } from './$types';
-	import type { Trait } from '$lib/types';
+	import type { Trait, Splat } from '$lib/types';
 	import { goto } from '$app/navigation';
 	import { Avatar } from '@skeletonlabs/skeleton-svelte';
 	import { Loader2 } from '@lucide/svelte';
@@ -28,13 +28,16 @@
 
 	let previousSplat = $state('');
 
-	// Reset blood potency to defaults when switching splat types
+	// Reset blood potency and clear disciplines when switching splat types
 	$effect(() => {
 		if (splat !== previousSplat) {
 			if (splat === 'thin-blood') {
 				blood_potency = 0;
 			} else if (splat === 'vampire') {
 				blood_potency = 1;
+			}
+			if (splat === 'mortal') {
+				traits = traits.filter((t) => t.type !== 'discipline');
 			}
 			previousSplat = splat;
 		}
@@ -324,11 +327,12 @@
 				name: '',
 				guild: 0,
 				user: 0,
-				splat: 'vampire',
+				splat: splat as Splat,
 				profile: { description: null, biography: null, images: [] },
 				health: '',
 				willpower: '',
-				humanity: 0
+				humanity: 0,
+				stains: 0
 			}}
 			editing={true}
 		/>

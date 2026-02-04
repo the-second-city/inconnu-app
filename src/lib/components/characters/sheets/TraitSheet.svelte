@@ -35,14 +35,16 @@
 	{#if hasDisciplines || hasCustomTraits || editing}
 		<h2 class="h2 text-2xl uppercase">Advantages</h2>
 		<div class="flex gap-3">
-			<TraitColumn
-				name="Disciplines"
-				cat="discipline"
-				bind:traits={character.traits}
-				{editing}
-				addable={true}
-				allowsSubtraits={true}
-			/>
+			{#if character.splat != 'mortal'}
+				<TraitColumn
+					name="Disciplines"
+					cat="discipline"
+					bind:traits={character.traits}
+					{editing}
+					addable={true}
+					allowsSubtraits={true}
+				/>
+			{/if}
 
 			<TraitColumn
 				name="Custom Traits"
