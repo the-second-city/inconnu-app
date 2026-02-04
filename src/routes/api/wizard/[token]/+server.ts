@@ -65,6 +65,6 @@ export const POST: RequestHandler = async ({ params, request }) => {
 		if (err instanceof Error && 'status' in err) {
 			throw err; // Re-throw SvelteKit errors
 		}
-		error(500, 'Failed to create character');
+		error(500, 'Failed to create character.');
 	}
 };

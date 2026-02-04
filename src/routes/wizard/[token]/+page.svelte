@@ -126,8 +126,14 @@
 			if (!response.ok) {
 				const errorData = await response
 					.json()
-					.catch(() => ({ message: 'Failed to create character.' }));
-				alert(errorData.message);
+					.catch(() => null);
+				let message = 'Failed to create character.';
+				if (errorData?.detail && Array.isArray(errorData.detail)) {
+					message = errorData.detail.map((e: { msg: string }) => e.msg).join('\n');
+				} else if (errorData?.message) {
+					message = errorData.message;
+				}
+				alert(message);
 				return;
 			}
 
