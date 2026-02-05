@@ -18,7 +18,9 @@
 	<hr class="border-surface-400" />
 
 	<p class="mb-4">
-		The Character Wizard is a web-based tool for creating new characters for Vampire: The Masquerade
+		The Character Wizard is a web-based tool for creating new characters for <em
+			>Vampire: The Masquerade</em
+		>
 		5th Edition. To access the wizard, you need to generate a unique link from Discord.
 	</p>
 
