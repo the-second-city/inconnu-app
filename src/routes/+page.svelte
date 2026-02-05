@@ -1,7 +1,6 @@
 <script lang="ts">
 	import { page } from '$app/state';
 
-	import { Avatar } from '@skeletonlabs/skeleton-svelte';
 	import {
 		ExternalLink,
 		LogIn,
@@ -11,12 +10,7 @@
 		HelpCircle,
 		XCircle
 	} from '@lucide/svelte';
-	import { SignIn } from '@auth/sveltekit/components';
 	import Ankh from '$lib/components/Ankh.svelte';
-
-	const user = page.data.session?.user;
-	const userName = user?.name ?? '';
-	const userImage = user?.image ?? '';
 </script>
 
 <svelte:head>
@@ -92,10 +86,8 @@
 				</li>
 			</ul>
 		</div>
-		<div
-			class="bg-surface-800 text-muted order-2 flex aspect-video items-center justify-center rounded-lg"
-		>
-			Image
+		<div class="order-2">
+			<img src="/images/hero/for-players.webp" alt="Inconnu website showing character sheet" />
 		</div>
 	</div>
 
@@ -103,10 +95,8 @@
 
 	<!-- For Storytellers -->
 	<div class="grid items-center gap-8 md:grid-cols-2">
-		<div
-			class="bg-surface-800 text-muted order-2 flex aspect-video items-center justify-center rounded-lg md:order-1"
-		>
-			Image
+		<div class="md:order-1">
+			<img src="/images/hero/discord-demo.webp" alt="Discord showcase" />
 		</div>
 		<div class="order-1 md:order-2">
 			<h2 class="h2 mb-4">For Storytellers</h2>
@@ -141,10 +131,8 @@
 				> can upload unlimited character images and send Discord messages as their characters with Roleposts.
 			</p>
 		</div>
-		<div
-			class="bg-surface-800 text-muted flex aspect-[3/4] w-full items-center justify-center rounded-lg md:w-48 md:shrink-0"
-		>
-			Image
+		<div>
+			<img src="/images/hero/rolepost.webp" alt="Phone showing a Rolepost" />
 		</div>
 	</div>
 </section>
