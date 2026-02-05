@@ -55,23 +55,6 @@
 				Get Inconnu
 				<img class="size-6" src="/images/inconnu_logo.webp" alt="Inconnu logo" />
 			</a>
-			{#if user}
-				<a
-					class="btn preset-filled-secondary-500 hover:brightness-125"
-					href="/characters"
-					title="View your characters"
-				>
-					View Your Characters
-					<Avatar src={userImage} name={userName} size="size-6" />
-				</a>
-			{:else}
-				<SignIn provider="discord" options={{ redirectTo: '/characters' }}>
-					<span slot="submitButton" class="btn preset-filled-secondary-500 hover:brightness-125">
-						<LogIn size={18} />
-						Sign in to Discord
-					</span>
-				</SignIn>
-			{/if}
 			<a
 				class="btn text-white hover:brightness-125"
 				style="background-color: #5865F2;"

@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { slide } from 'svelte/transition';
 
-	import { Castle, ChevronDown, ExternalLink, Github, Orbit, Users } from '@lucide/svelte';
+	import { Castle, ChevronDown, Github, Orbit, ScrollText, Users } from '@lucide/svelte';
 	import { Popover } from '@skeletonlabs/skeleton-svelte';
 
 	import DiscordButton from '$lib/components/DiscordButton.svelte';
@@ -21,7 +21,7 @@
 		full={true}
 		target="_blank"
 	>
-		Docs <ExternalLink size={18} />
+		Docs <ScrollText size={18} />
 	</NavButton>
 {/snippet}
 
@@ -76,6 +76,14 @@
 		<NavLink href="/utils" title="Random utilities">
 			Utilities <Orbit size={18} />
 		</NavLink>
+		<a
+			class="flex items-center gap-2 px-2 py-2 hover:shadow-[0_1px_0_0_currentColor] hover:brightness-125"
+			href="https://docs.inconnu.app"
+			title="Read the docs"
+			target="_blank"
+		>
+			Docs <ScrollText size={18} />
+		</a>
 
 		<DiscordButton full={false} />
 
