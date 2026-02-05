@@ -84,7 +84,12 @@
 	{#snippet content()}
 		<Tabs.Panel value="profile">
 			{#key character}
-				<CharProfile bind:character {editing} />
+				<CharProfile
+					name={character.name}
+					bind:profile={character.profile}
+					splat={character.splat}
+					{editing}
+				/>
 			{/key}
 		</Tabs.Panel>
 		<Tabs.Panel value="sheet">

@@ -39,17 +39,19 @@ type Macro = {
 	comment: string | null;
 };
 
+export interface Profile {
+	description: string | null;
+	biography: string | null;
+	images: string[];
+}
+
 export interface Character {
 	_id: string;
 	name: string;
 	guild: number;
 	user: number;
 	splat: Splat;
-	profile: {
-		description: string | null;
-		biography: string | null;
-		images: string[];
-	};
+	profile: Profile;
 	experience?: {
 		current: number;
 		total: number;

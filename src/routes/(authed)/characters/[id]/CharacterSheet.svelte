@@ -25,7 +25,7 @@
 		<MainTrackers bind:character editing={false} allowsPathChange={true} />
 	{/if}
 
-	<TraitSheet bind:character editing={false} />
+	<TraitSheet bind:traits={character.traits} splat={character.splat} editing={false} />
 
 	<!--
 	<Vampirism bind:character editing={false} />

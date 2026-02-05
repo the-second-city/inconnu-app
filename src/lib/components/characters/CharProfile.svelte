@@ -2,20 +2,22 @@
 	import { Modal } from '@skeletonlabs/skeleton-svelte';
 	import { Eye, Skull } from '@lucide/svelte';
 
-	import type { Character } from '$lib/types';
+	import type { Profile, Splat } from '$lib/types';
 	import Markdown from '$lib/components/Markdown.svelte';
 
 	interface ComponentProps {
-		character: Character;
+		name: string;
+		profile: Profile;
+		splat: Splat;
 		editing: boolean;
 	}
 
-	let { character = $bindable(), editing }: ComponentProps = $props();
+	let { name, profile = $bindable(), splat, editing }: ComponentProps = $props();
 	let galleryClasses = $derived.by(() => {
 		let classes: string;
-		if (character.profile.images.length == 1) {
+		if (profile.images.length == 1) {
 			classes = 'grid grid-cols-1';
-		} else if (character.profile.images.length == 2) {
+		} else if (profile.images.length == 2) {
 			classes = 'grid grid-cols-2 gap-2';
 		} else {
 			classes = 'grid grid-cols-2 gap-2 sm:grid-cols-3';
@@ -25,7 +27,7 @@
 
 	let activeModalIndex = $state<number | null>(null);
 
-	let splatIcon = `/images/wod/${character.splat}-logo.png`;
+	let splatIcon = `/images/wod/${splat}-logo.png`;
 </script>
 
 <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
@@ -35,7 +37,7 @@
 	>
 		<img
 			src={splatIcon}
-			alt={character.splat}
+			alt={splat}
 			class="absolute left-1/2 -z-10 mt-13 h-auto w-auto max-w-[150px] -translate-x-1/2 opacity-15 mix-blend-multiply"
 			aria-hidden="true"
 		/>
@@ -52,15 +54,15 @@
 					{#if editing}
 						<textarea
 							class="textarea border"
-							bind:value={character.profile.description}
+							bind:value={profile.description}
 							rows="4"
 							maxlength="1500"
 						></textarea>
-					{:else if character.profile.description}
-						<Markdown content={character.profile.description} />
+					{:else if profile.description}
+						<Markdown content={profile.description} />
 					{:else}
 						<span class="text-surface-500 italic">
-							{character.name}'s appearance is an enigma...
+							{name}'s appearance is an enigma...
 						</span>
 					{/if}
 				</p>
@@ -78,15 +80,15 @@
 					{#if editing}
 						<textarea
 							class="textarea border"
-							bind:value={character.profile.biography}
+							bind:value={profile.biography}
 							rows="4"
 							maxlength="1500"
 						></textarea>
-					{:else if character.profile.biography}
-						<Markdown content={character.profile.biography} />
+					{:else if profile.biography}
+						<Markdown content={profile.biography} />
 					{:else}
 						<span class="text-surface-300 italic">
-							{character.name}'s past is shrouded in mystery ...
+							{name}'s past is shrouded in mystery ...
 						</span>
 					{/if}
 				</p>
@@ -97,8 +99,8 @@
 
 	<!-- Image gallery -->
 	<div class={galleryClasses}>
-		{#each character.profile.images as image, i}
-			{@const alt = `${character.name} - Image ${i + 1}`}
+		{#each profile.images as image, i}
+			{@const alt = `${name} - Image ${i + 1}`}
 			<Modal
 				open={activeModalIndex === i}
 				onOpenChange={(e) => {

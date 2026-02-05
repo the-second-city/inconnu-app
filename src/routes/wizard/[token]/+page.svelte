@@ -325,23 +325,7 @@
 	</div>
 
 	{#if splat !== ''}
-		<!-- Temporary mock character object for TraitSheet -->
-		<TraitSheet
-			character={{
-				traits,
-				_id: '',
-				name: '',
-				guild: 0,
-				user: 0,
-				splat: splat as Splat,
-				profile: { description: null, biography: null, images: [] },
-				health: '',
-				willpower: '',
-				humanity: 0,
-				stains: 0
-			}}
-			editing={true}
-		/>
+		<TraitSheet bind:traits splat={splat as Splat} editing={true} />
 
 		{#if splat === 'vampire' || splat === 'thin-blood'}
 			<div class="mt-3">
