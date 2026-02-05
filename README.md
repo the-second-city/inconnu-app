@@ -1,38 +1,50 @@
-# sv
+# inconnu-app
 
-Everything you need to build a Svelte project, powered by [`sv`](https://github.com/sveltejs/cli).
+The web counterpart to [Inconnu](https://github.com/tiltowait/inconnu), a Discord dice bot for *Vampire: The Masquerade 5th Edition*. Built in SvelteKit.
 
-## Creating a project
+## Features
 
-If you're seeing this, you've probably already done this step. Congrats!
+### Current
 
-```bash
-# create a new project in the current directory
-npx sv create
+* Landing page advertising **Inconnu* (`/`)
+* Character creation wizard (`/wizard/[token]`)
+* Personal character viewer (`/characters/[id]`)
+* Miscellaneous utils (`/utils`)
 
-# create a new project in my-app
-npx sv create my-app
-```
+### Planned
 
-## Developing
+* View other characters on servers you share
+* View character profiles via direct link ([like this](https://inconnu.app/profile/680d32cbc0bf6151dbd5004e), but much nicer-looking)
+* **STs:** View your players' full sheets
+* **STs:** View Rolepost changelogs
 
-Once you've created a project and installed dependencies with `npm install` (or `pnpm install` or `yarn`), start a development server:
+### Maybe
 
-```bash
+* Update your characters' traits, profiles
+* View, edit, & create macros
+* View XP logs (surprisingly tricky)
+
+### Not planned
+
+* Character image uploads
+
+## Setup
+
+### Env vars
+
+* `AUTH_SECRET`: Run `npx auth`
+* `AUTH_DISCORD_ID`: Bot client ID
+* `AUTH_DISCORD_SECRET`: Bot OAuth2 secret
+* `DATABASE_URL`: local.db
+* `API_KEY`: Inconnu API key
+* `INCONNU_API_URL`: http://localhost:8000
+
+### Run
+
+1. Get [https://github.com/tiltowait/inconnu](Inconnu) running
+2. Run the following commands
+
+```sh
+npm i
 npm run dev
-
-# or start the server and open the app in a new browser tab
-npm run dev -- --open
 ```
-
-## Building
-
-To create a production version of your app:
-
-```bash
-npm run build
-```
-
-You can preview the production build with `npm run preview`.
-
-> To deploy your app, you may need to install an [adapter](https://svelte.dev/docs/kit/adapters) for your target environment.
