@@ -1,13 +1,14 @@
 <script lang="ts">
 	import { page } from '$app/state';
 
-	import { Avatar, Tabs } from '@skeletonlabs/skeleton-svelte';
+	import { Tabs } from '@skeletonlabs/skeleton-svelte';
 	import { Ban, Check, Pencil } from '@lucide/svelte';
 
 	import { normalize } from '$lib';
 
 	import type { Character, Guild } from '$lib/types';
 	import CharacterSheet from './CharacterSheet.svelte';
+	import CharHeader from '$lib/components/characters/CharHeader.svelte';
 	import CharProfile from '$lib/components/characters/CharProfile.svelte';
 
 	let selectedTab = $state('sheet');
@@ -51,27 +52,7 @@
 	<title>{character.name} | inconnu.app</title>
 </svelte:head>
 
-<div class="flex flex-wrap items-start justify-between gap-2">
-	<div class="relative">
-		<h1 class="h1 flex items-center gap-4">
-			{#if character.profile.images.length > 0}
-				<div class="ring-primary-500 rounded-full ring-2">
-					<Avatar name={character.name} src={character.profile.images[0]} />
-				</div>
-			{/if}
-			{character.name}
-		</h1>
-
-		{#if guild}
-			<div class="flex justify-end">
-				<h6 class="text-surface-800-200 flex items-center gap-4 italic">
-					{guild.name}
-					<Avatar src={guild.icon ?? undefined} name={guild.name} size="size-6" />
-				</h6>
-			</div>
-		{/if}
-	</div>
-</div>
+<CharHeader name={character.name} images={character.profile.images} {guild} />
 
 <Tabs value={selectedTab} onValueChange={(e) => (selectedTab = e.value)}>
 	{#snippet list()}
