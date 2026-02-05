@@ -6,9 +6,11 @@
 	 * Clicking one of the character cards leads to the character
 	 * manager.
 	 *
-	 * @see /characters/[id] - Individual character manager
+	 * @see /characters/[id] - Individual character viewer
 	 */
 	import { page } from '$app/state';
+
+	import { Plus } from '@lucide/svelte';
 
 	import type { Character, Guild } from '$lib/types';
 	import CharCard from '$lib/components/CharCard.svelte';
@@ -95,11 +97,25 @@
 
 <h1 class="h1">Your Characters</h1>
 
-<div class="columns-1 gap-3 md:columns-2 lg:columns-3 xl:columns-4">
-	{#each organizedCharacters as character}
-		{@const guild = guildForChar(character)}
-		<div class="mb-3 break-inside-avoid">
-			<CharCard {character} {guild} />
-		</div>
-	{/each}
+{#if characters.length > 0}
+	<div class="columns-1 gap-3 md:columns-2 lg:columns-3 xl:columns-4">
+		{#each organizedCharacters as character}
+			{@const guild = guildForChar(character)}
+			<div class="mb-3 break-inside-avoid">
+				<CharCard {character} {guild} />
+			</div>
+		{/each}
+	</div>
+{:else}
+	<p class="text-center">You have no characters. Click the button below to get started.</p>
+{/if}
+
+<div class="mt-8 flex justify-center">
+	<a
+		href="/wizard"
+		class="btn preset-filled-primary-500 text-lg font-semibold hover:brightness-125"
+	>
+		<Plus size={24} />
+		Create a Character
+	</a>
 </div>

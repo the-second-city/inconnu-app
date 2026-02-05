@@ -15,7 +15,7 @@
 
 <div class="flex flex-col gap-6">
 	<h1 class="h1">Character Wizard</h1>
-	<hr />
+	<hr class="border-surface-400" />
 
 	<p class="mb-4">
 		The Character Wizard is a web-based tool for creating new characters for Vampire: The Masquerade
