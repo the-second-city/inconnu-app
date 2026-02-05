@@ -63,7 +63,7 @@
 	</div>
 </div>
 
-<section class="mx-auto mt-10 max-w-4xl space-y-12">
+<section class="mx-auto mt-10 max-w-4xl space-y-8">
 	<!-- For Players -->
 	<div class="grid items-center gap-8 md:grid-cols-2">
 		<div class="order-1">
@@ -119,7 +119,7 @@
 	</div>
 
 	<!-- Premium -->
-	<div class="card preset-tonal-secondary flex flex-col items-center gap-6 p-8 md:flex-row">
+	<div class="card preset-glass-secondary flex flex-col items-center gap-6 p-8 md:flex-row">
 		<div class="text-center md:text-left">
 			<h2 class="h2 text-secondary-300 mb-3">Premium Features</h2>
 			<p class="text-lg">
@@ -277,3 +277,11 @@
 		</div>
 	</div>
 </section>
+
+<style>
+	.preset-glass-secondary {
+		background: color-mix(in oklab, var(--color-secondary-500) 40%, transparent);
+		box-shadow: 0 0px 30px color-mix(in oklab, var(--color-secondary-500) 50%, transparent) inset;
+		backdrop-filter: blur(16px);
+	}
+</style>
