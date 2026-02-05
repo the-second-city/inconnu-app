@@ -6,17 +6,18 @@ The web counterpart to [Inconnu](https://github.com/tiltowait/inconnu), a Discor
 
 ### Current
 
-* Landing page advertising **Inconnu* (`/`)
+* Landing page (`/`) (anything resembling ad copy is an accomplishment for me)
 * Character creation wizard (`/wizard/[token]`)
 * Personal character viewer (`/characters/[id]`)
 * Miscellaneous utils (`/utils`)
 
 ### Planned
 
-* View other characters on servers you share
-* View character profiles via direct link ([like this](https://inconnu.app/profile/680d32cbc0bf6151dbd5004e), but much nicer-looking)
-* **STs:** View your players' full sheets
-* **STs:** View Rolepost changelogs
+- [ ] View other characters on servers you share
+- [ ] View character profiles via direct link ([like this](https://inconnu.app/profile/680d32cbc0bf6151dbd5004e), but much nicer-looking)
+- [ ] **STs:** View your players' full sheets
+- [ ] **STs:** View Rolepost changelogs
+- [ ] Port over https://docs.inconnu.app
 
 ### Maybe
 
