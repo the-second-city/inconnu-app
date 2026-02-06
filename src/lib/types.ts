@@ -9,7 +9,7 @@ export type Advantage = {
 };
 
 export interface Guild {
-	id: number;
+	id: string;
 	name: string;
 	icon: string | null;
 }
@@ -48,7 +48,7 @@ export interface Profile {
 export interface Character {
 	_id: string;
 	name: string;
-	guild: number;
+	guild: string;
 	user: number;
 	splat: Splat;
 	profile: Profile;
@@ -87,7 +87,7 @@ export interface BaseProfile {
 }
 
 export interface OwnerData {
-	id: number;
+	id: string;
 	name: string;
 	icon: string | null;
 }

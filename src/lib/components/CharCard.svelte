@@ -16,8 +16,8 @@
 	// Handle both Character (_id) and BaseProfile (id)
 	const characterId = 'id' in character ? character.id : character._id;
 
-	// Handle both Character (guild: number) and BaseProfile (guild: Guild)
-	const guildId = typeof character.guild === 'number' ? character.guild : character.guild.id;
+	// Handle both Character (guild: string) and BaseProfile (guild: Guild)
+	const guildId = typeof character.guild === 'string' ? character.guild : character.guild.id;
 </script>
 
 <a
