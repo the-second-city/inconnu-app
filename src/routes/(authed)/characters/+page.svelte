@@ -99,7 +99,7 @@
 <h1 class="h1">Your Characters</h1>
 
 {#if characters.length > 0}
-	<div class="columns-1 gap-3 md:columns-2 lg:columns-3 xl:columns-4">
+	<div class="columns-1 gap-3 md:columns-2 lg:columns-3">
 		{#each organizedCharacters as character}
 			{@const guild = guildForChar(character)}
 			<div class="mb-3 break-inside-avoid">

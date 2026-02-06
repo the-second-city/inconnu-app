@@ -34,7 +34,7 @@
 		<div>
 			<h3 class="h3">{character.name}</h3>
 		</div>
-		<p class="line-clamp-4 opacity-60">
+		<p class="line-clamp-4 text-sm opacity-60">
 			{#if character.profile.description}
 				{@html marked.parse(DOMPurify.sanitize(character.profile.description))}
 			{:else}
