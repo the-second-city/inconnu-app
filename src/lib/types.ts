@@ -83,4 +83,5 @@ export interface BaseProfile {
 	name: string;
 	splat: Splat;
 	profile: Profile;
+	spc: boolean;
 }
