@@ -1,6 +1,4 @@
 <script lang="ts">
-	import { page } from '$app/state';
-
 	import { Tabs } from '@skeletonlabs/skeleton-svelte';
 	import { Ban, Check, Pencil } from '@lucide/svelte';
 
@@ -11,11 +9,14 @@
 	import CharHeader from '$lib/components/characters/CharHeader.svelte';
 	import CharProfile from '$lib/components/characters/CharProfile.svelte';
 
+	interface ComponentProps {
+		character: Character;
+		guild: Guild;
+	}
+
+	let { character = $bindable(), guild }: ComponentProps = $props();
+
 	let selectedTab = $state('sheet');
-
-	const guild: Guild | null = page.data.guild;
-
-	let character = $state(page.data.character);
 	let copy: Character | null = null;
 	let editing = $state(false);
 
@@ -26,7 +27,7 @@
 	};
 	const cancelEditing = () => {
 		editing = false;
-		character = copy;
+		character = copy!;
 		copy = null;
 	};
 	const saveChanges = () => {

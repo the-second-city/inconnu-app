@@ -15,10 +15,13 @@
 
 	// Handle both Character (_id) and BaseProfile (id)
 	const characterId = 'id' in character ? character.id : character._id;
+
+	// Handle both Character (guild: number) and BaseProfile (guild: Guild)
+	const guildId = typeof character.guild === 'string' ? character.guild : character.guild.id;
 </script>
 
 <a
-	href="/characters/{characterId}"
+	href="/characters/guild/{guildId}/{characterId}"
 	title="View/Edit {character.name}"
 	class="card preset-filled-surface-100-900 border-surface-200-800 card-hover divide-surface-200-800 block divide-y overflow-hidden border-[1px] shadow-md hover:scale-101"
 >

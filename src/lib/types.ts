@@ -96,3 +96,10 @@ export interface ProfileWithOwner {
 	character: BaseProfile;
 	owner_data: OwnerData | null;
 }
+
+export interface AuthorizedCharacter {
+	guild: Guild;
+	owner: OwnerData | null;
+	character: Character | null;
+	profile: BaseProfile | null;
+}

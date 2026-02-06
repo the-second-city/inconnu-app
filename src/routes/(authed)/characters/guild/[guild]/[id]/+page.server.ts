@@ -1,7 +1,7 @@
 import { error } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
 import { API_KEY, INCONNU_API_URL } from '$env/static/private';
-import type { ProfileWithOwner } from '$lib/types';
+import type { AuthorizedCharacter } from '$lib/types';
 
 export const load: PageServerLoad = async ({ params, parent }) => {
 	const { session } = await parent();
@@ -11,14 +11,9 @@ export const load: PageServerLoad = async ({ params, parent }) => {
 	}
 
 	const discordUserId = session.user.id;
-	const { id } = params;
-
-	if (!id) {
-		error(400, 'Guild ID is required');
-	}
 
 	try {
-		const response = await fetch(`${INCONNU_API_URL}/characters/guild/${id}`, {
+		const response = await fetch(`${INCONNU_API_URL}/characters/${params.id}`, {
 			headers: {
 				Authorization: `Bearer ${API_KEY}`,
 				'X-Discord-User-ID': discordUserId
@@ -26,18 +21,15 @@ export const load: PageServerLoad = async ({ params, parent }) => {
 		});
 
 		if (!response.ok) {
-			if (response.status === 404) {
-				error(404, 'Guild not found');
-			}
-			error(response.status, 'Failed to load guild characters');
+			error(response.status, 'Character not found or access denied');
 		}
 
-		const profiles: ProfileWithOwner[] = await response.json();
-		return { profiles };
+		const authorizedCharacter: AuthorizedCharacter = await response.json();
+		return { authorizedCharacter };
 	} catch (err) {
 		if (err instanceof Error && 'status' in err) {
 			throw err; // Re-throw SvelteKit errors
 		}
-		error(500, 'Failed to load guild characters');
+		error(500, 'Failed to load character');
 	}
 };
