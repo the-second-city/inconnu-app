@@ -75,3 +75,12 @@ export interface UserCharacters {
 	guilds: Guild[];
 	characters: Character[];
 }
+
+export interface BaseProfile {
+	id: string;
+	guild: Guild;
+	user: number;
+	name: string;
+	splat: Splat;
+	profile: Profile;
+}
