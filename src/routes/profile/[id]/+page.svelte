@@ -15,5 +15,10 @@
 <CharHeader name={profile.name} images={profile.profile.images} guild={profile.guild} />
 
 <div class="container mx-auto mt-8">
-	<CharProfile name={profile.name} profile={profile.profile} splat={profile.splat} editing={false} />
+	<CharProfile
+		name={profile.name}
+		profile={profile.profile}
+		splat={profile.splat}
+		editing={false}
+	/>
 </div>
