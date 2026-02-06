@@ -14,6 +14,8 @@
 
 	import type { Character, Guild } from '$lib/types';
 	import CharCard from '$lib/components/CharCard.svelte';
+	import GuildCard from './GuildCard.svelte';
+	import CharacterGrid from './CharacterGrid.svelte';
 
 	const guilds: Guild[] = page.data.guilds;
 	// const characters: Character[] = [];
@@ -96,17 +98,23 @@
 	<title>Characters | inconnu.app</title>
 </svelte:head>
 
+{#if guilds.length > 0}
+	<div class="mb-8 flex flex-wrap gap-3">
+		{#each guilds as guild}
+			<GuildCard {guild} />
+		{/each}
+	</div>
+{/if}
+
 <h1 class="h1">Your Characters</h1>
 
 {#if characters.length > 0}
-	<div class="columns-1 gap-3 md:columns-2 lg:columns-3">
-		{#each organizedCharacters as character}
-			{@const guild = guildForChar(character)}
-			<div class="mb-3 break-inside-avoid">
-				<CharCard {character} {guild} />
-			</div>
-		{/each}
-	</div>
+	<CharacterGrid items={organizedCharacters}>
+		{#snippet children(character: Character)}
+			{@const owner = guildForChar(character)}
+			<CharCard {character} {owner} />
+		{/snippet}
+	</CharacterGrid>
 
 	<div class="mt-8 flex justify-center">
 		<a

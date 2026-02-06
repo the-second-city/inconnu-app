@@ -4,18 +4,21 @@
 	import { marked } from 'marked';
 	import DOMPurify from 'isomorphic-dompurify';
 
-	import type { Character, Guild } from '$lib/types';
+	import type { Character, BaseProfile, Guild } from '$lib/types';
 
 	interface ComponentProps {
-		character: Character;
-		guild: Guild | null;
+		character: Character | BaseProfile;
+		owner: Guild | null;
 	}
 
-	let { character, guild }: ComponentProps = $props();
+	let { character, owner }: ComponentProps = $props();
+
+	// Handle both Character (_id) and BaseProfile (id)
+	const characterId = 'id' in character ? character.id : character._id;
 </script>
 
 <a
-	href="/characters/{character._id}"
+	href="/characters/{characterId}"
 	title="View/Edit {character.name}"
 	class="card preset-filled-surface-100-900 border-surface-200-800 card-hover divide-surface-200-800 block divide-y overflow-hidden border-[1px] shadow-md hover:scale-101"
 >
@@ -44,14 +47,14 @@
 	</article>
 	<footer class="bg-surface-50-950/50 flex items-center justify-end gap-2 px-4 py-2">
 		<small class="opacity-60">
-			{#if guild !== null}
-				{guild.name}
+			{#if owner !== null}
+				{owner.name}
 			{:else}
 				<em>Unknown</em>
 			{/if}
 		</small>
-		{#if guild !== null}
-			<Avatar src={guild.icon ?? undefined} name="{guild.name} icon" size="size-6" />
+		{#if owner !== null}
+			<Avatar src={owner.icon ?? undefined} name="{owner.name} icon" size="size-6" />
 		{:else}
 			<Avatar name="icon" size="size-6">
 				<EyeOff size={18} />

@@ -85,3 +85,14 @@ export interface BaseProfile {
 	profile: Profile;
 	spc: boolean;
 }
+
+export interface OwnerData {
+	id: number;
+	name: string;
+	icon: string | null;
+}
+
+export interface ProfileWithOwner {
+	character: BaseProfile;
+	owner_data: OwnerData | null;
+}
