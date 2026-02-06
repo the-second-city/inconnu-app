@@ -37,7 +37,7 @@
 				href="https://worldofdarkness.com"
 				class="anchor"
 				title="World of Darkness">worldofdarkness.com</a
-			>. <strong>Inconnu</strong> is not official World of Darkness content.
+			>. <br /><strong>Inconnu</strong> is not official World of Darkness content.
 		</small>
 		<img
 			src="/images/darkpack_logo2.webp"
