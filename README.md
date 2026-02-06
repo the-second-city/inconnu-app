@@ -11,11 +11,11 @@ The web counterpart to [Inconnu](https://github.com/tiltowait/inconnu), a Discor
 * Personal character viewer (`/characters/[id]`)
 * Miscellaneous utils (`/utils`)
 * View character profiles via direct link ([like this](https://inconnu.app/profile/680d32cbc0bf6151dbd5004e))
+* Browse other characters on servers you share (profiles only)
+* **STs:** View your players' full sheets
 
 ### Planned
 
-- [ ] View other characters on servers you share
-- [ ] **STs:** View your players' full sheets
 - [ ] **STs:** View Rolepost changelogs
 - [ ] Port over https://docs.inconnu.app
 
