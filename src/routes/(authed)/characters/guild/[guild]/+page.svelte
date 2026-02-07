@@ -23,6 +23,7 @@
 		{guild.name}
 	</h1>
 </div>
+<hr class="border-surface-500 mx-auto mb-5" />
 
 <CharacterGrid {characters} emptyMessage="{guild.name} has no characters.">
 	{#snippet children(data: CharacterData)}

@@ -33,6 +33,8 @@
 
 <h1 class="h1">Your Characters</h1>
 
+<hr class="border-surface-500 mx-auto mb-5" />
+
 <CharacterGrid {characters} emptyMessage="You haven't created any characters yet.">
 	{#snippet children(data: CharacterData)}
 		<CharCard {data} showOwner={false} />
