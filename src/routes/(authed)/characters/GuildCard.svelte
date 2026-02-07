@@ -13,6 +13,7 @@
 	href="/characters/guild/{guild.id}"
 	title="View {guild.name} characters"
 	class="card preset-filled-surface-400-600 border-surface-200-800 card-hover flex items-center gap-4 overflow-hidden rounded-full border-[1px] px-4 py-3 shadow-md hover:scale-101"
+	data-sveltekit-preload-data="off"
 >
 	<Avatar src={guild.icon ?? undefined} name="{guild.name} icon" size="size-10" />
 	<h3 class="h4 flex-1">{guild.name}</h3>

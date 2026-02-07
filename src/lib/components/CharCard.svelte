@@ -70,6 +70,7 @@
 	class="{baseCardClasses} card-hover hover:scale-101 {hasProfileContent(data.character.profile)
 		? ''
 		: 'opacity-65'}"
+	data-sveltekit-preload-data="off"
 >
 	{@render cardContent()}
 </a>
