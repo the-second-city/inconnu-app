@@ -61,7 +61,7 @@
 		<small class="opacity-60">{footerLabel}</small>
 		{#if footerIcon !== null}
 			<Avatar src={footerIcon} name="{footerLabel} icon" size="size-6" />
-		{:else}
+		{:else if !data.spc}
 			<Avatar name="icon" size="size-6">
 				<EyeOff size={18} />
 			</Avatar>
