@@ -33,7 +33,7 @@
 
 <h1 class="h1">Your Characters</h1>
 
-<CharacterGrid {characters} emptyMessage="You haven't created any charcters yet.">
+<CharacterGrid {characters} emptyMessage="You haven't created any characters yet.">
 	{#snippet children(data: CharacterData)}
 		<CharCard {data} showOwner={false} />
 	{/snippet}
