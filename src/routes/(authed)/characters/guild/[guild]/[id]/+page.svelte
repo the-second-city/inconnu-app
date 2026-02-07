@@ -11,15 +11,18 @@
 	let character = $state(
 		characterData.type === 'full' ? (characterData.character as Character) : null
 	);
+
+	const backUrl = `/characters/guild/${characterData.guild.id}`;
 </script>
 
 {#if character}
-	<CharacterPage bind:character guild={characterData.guild} />
+	<CharacterPage bind:character guild={characterData.guild} {backUrl} />
 {:else}
 	<CharHeader
 		name={characterData.character.name}
 		images={characterData.character.profile.images}
 		guild={characterData.guild}
+		{backUrl}
 	/>
 
 	<div class="container mx-auto mt-8">

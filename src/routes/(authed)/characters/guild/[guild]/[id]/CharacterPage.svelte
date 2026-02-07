@@ -12,9 +12,10 @@
 	interface ComponentProps {
 		character: Character;
 		guild: Guild;
+		backUrl?: string;
 	}
 
-	let { character = $bindable(), guild }: ComponentProps = $props();
+	let { character = $bindable(), guild, backUrl }: ComponentProps = $props();
 
 	let selectedTab = $state('sheet');
 	let copy: Character | null = null;
@@ -53,7 +54,7 @@
 	<title>{character.name} | inconnu.app</title>
 </svelte:head>
 
-<CharHeader name={character.name} images={character.profile.images} {guild} />
+<CharHeader name={character.name} images={character.profile.images} {guild} {backUrl} />
 
 <Tabs value={selectedTab} onValueChange={(e) => (selectedTab = e.value)}>
 	{#snippet list()}
