@@ -1,7 +1,6 @@
 import { json, error } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
 import { API_KEY, INCONNU_API_URL } from '$env/static/private';
-import wizardData from '$lib/data/sample-wizard.json';
 
 export const GET: RequestHandler = async ({ params }) => {
 	const { token } = params;
@@ -10,10 +9,6 @@ export const GET: RequestHandler = async ({ params }) => {
 		error(400, 'Token is required');
 	}
 
-	// For now, return sample data
-	// return json(wizardData);
-
-	// TODO: Uncomment when ready to use real API
 	try {
 		const response = await fetch(`${INCONNU_API_URL}/characters/wizard/${token}`, {
 			headers: {
