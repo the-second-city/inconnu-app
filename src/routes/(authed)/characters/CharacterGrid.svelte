@@ -1,12 +1,45 @@
-<script lang="ts" generics="T">
+<script lang="ts">
 	import type { Snippet } from 'svelte';
+	import type { CharacterData } from '$lib/types';
+	import { hasProfileContent } from '$lib';
 
-	interface ComponentProps<T> {
-		items: T[];
-		children: Snippet<[T]>;
+	interface ComponentProps {
+		items: CharacterData[];
+		children: Snippet<[CharacterData]>;
 	}
 
-	let { items, children }: ComponentProps<T> = $props();
+	let { items, children }: ComponentProps = $props();
+
+	/**
+	 * Sort characters by:
+	 * 1. Has images (highest priority)
+	 * 2. Has any profile content
+	 * 3. Alphabetically
+	 */
+	const sortCharacters = (chars: CharacterData[]): CharacterData[] => {
+		return [...chars].sort((a, b) => {
+			const aHasImages = a.character.profile.images.length > 0;
+			const bHasImages = b.character.profile.images.length > 0;
+
+			// Characters with images come first
+			if (aHasImages !== bHasImages) {
+				return aHasImages ? -1 : 1;
+			}
+
+			const aHasProfile = hasProfileContent(a.character.profile);
+			const bHasProfile = hasProfileContent(b.character.profile);
+
+			// Then characters with any profile content
+			if (aHasProfile !== bHasProfile) {
+				return aHasProfile ? -1 : 1;
+			}
+
+			// Finally, sort alphabetically (case-insensitive)
+			return a.character.name.localeCompare(b.character.name, undefined, {
+				sensitivity: 'base'
+			});
+		});
+	};
 
 	/**
 	 * Reorder an array so a columnar masonry layout will display in row orientation.
@@ -16,11 +49,11 @@
 	 *   1  2  3
 	 *   4  5  6
 	 */
-	const reorderForRowOrientation = <T,>(items: T[], columns: number): T[] => {
+	const reorderForRowOrientation = (items: CharacterData[], columns: number): CharacterData[] => {
 		if (columns <= 0 || items.length === 0) return items;
 
 		const rows = Math.ceil(items.length / columns);
-		const result: T[] = [];
+		const result: CharacterData[] = [];
 
 		for (let col = 0; col < columns; col++) {
 			for (let row = 0; row < rows; row++) {
@@ -35,7 +68,8 @@
 	};
 
 	let columnCount = $state(1);
-	let organizedItems = $derived(reorderForRowOrientation(items, columnCount));
+	const sortedItems = $derived(sortCharacters(items));
+	let organizedItems = $derived(reorderForRowOrientation(sortedItems, columnCount));
 
 	$effect(() => {
 		if (typeof window === 'undefined') return;
