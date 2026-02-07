@@ -61,7 +61,7 @@
 					{:else if profile.description}
 						<Markdown content={profile.description} />
 					{:else}
-						<span class="text-surface-500 italic">
+						<span class="text-surface-300 italic">
 							{name}'s appearance is an enigma...
 						</span>
 					{/if}
