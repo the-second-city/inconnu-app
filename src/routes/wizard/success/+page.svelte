@@ -37,7 +37,10 @@
 		<hr class="mb-6 opacity-50" />
 
 		<div class="mb-6 flex flex-col gap-3">
-			<a href="/characters/{characterInfo.character_id}" class="btn preset-filled-primary-500">
+			<a
+				href="/characters/guild/{characterInfo.guild.id}/{characterInfo.character_id}"
+				class="btn preset-filled-primary-500"
+			>
 				View now
 				<span class="text-sm opacity-75">(requires sign-in)</span>
 			</a>
