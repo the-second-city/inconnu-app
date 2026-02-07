@@ -32,6 +32,9 @@ export const load: PageLoad = async ({ params, fetch }) => {
 			traits: data.traits
 		};
 	} catch (err) {
+		if (err instanceof Error && 'status' in err) {
+			throw err; // Re-throw SvelteKit errors
+		}
 		error(500, 'Failed to load wizard');
 	}
 };
