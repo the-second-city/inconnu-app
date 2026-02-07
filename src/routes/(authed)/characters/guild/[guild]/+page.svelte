@@ -2,14 +2,14 @@
 	import { page } from '$app/state';
 	import { Avatar } from '@skeletonlabs/skeleton-svelte';
 	import { ChevronLeft } from '@lucide/svelte';
-	import type { ProfileWithOwner } from '$lib/types';
+	import type { CharacterData } from '$lib/types';
 	import CharCard from '$lib/components/CharCard.svelte';
 	import CharacterGrid from '../../CharacterGrid.svelte';
 
-	const profiles: ProfileWithOwner[] = page.data.profiles;
+	const characters: CharacterData[] = page.data.characters;
 
-	// Extract guild info from first profile (they all share the same guild)
-	const guild = profiles.length > 0 ? profiles[0].character.guild : null;
+	// Extract guild info from first character (they all share the same guild)
+	const guild = characters.length > 0 ? characters[0].guild : null;
 </script>
 
 <svelte:head>
@@ -28,10 +28,10 @@
 	</div>
 {/if}
 
-{#if profiles.length > 0}
-	<CharacterGrid items={profiles}>
-		{#snippet children(profile: ProfileWithOwner)}
-			<CharCard character={profile.character} owner={profile.owner_data} />
+{#if characters.length > 0}
+	<CharacterGrid items={characters}>
+		{#snippet children(data: CharacterData)}
+			<CharCard {data} showOwner={true} />
 		{/snippet}
 	</CharacterGrid>
 {:else}

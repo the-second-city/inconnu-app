@@ -1,7 +1,7 @@
 import { error } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
 import { API_KEY, INCONNU_API_URL } from '$env/static/private';
-import type { AuthorizedCharacter } from '$lib/types';
+import type { CharacterData } from '$lib/types';
 
 export const load: PageServerLoad = async ({ params, parent }) => {
 	const { session } = await parent();
@@ -24,8 +24,8 @@ export const load: PageServerLoad = async ({ params, parent }) => {
 			error(response.status, 'Character not found or access denied');
 		}
 
-		const authorizedCharacter: AuthorizedCharacter = await response.json();
-		return { authorizedCharacter };
+		const characterData: CharacterData = await response.json();
+		return { characterData };
 	} catch (err) {
 		if (err instanceof Error && 'status' in err) {
 			throw err; // Re-throw SvelteKit errors

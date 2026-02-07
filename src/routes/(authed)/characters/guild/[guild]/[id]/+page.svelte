@@ -1,33 +1,32 @@
 <script lang="ts">
-	import { error } from '@sveltejs/kit';
 	import { page } from '$app/state';
-	import type { AuthorizedCharacter } from '$lib/types';
+	import type { CharacterData, Character } from '$lib/types';
 	import CharacterPage from './CharacterPage.svelte';
 	import CharHeader from '$lib/components/characters/CharHeader.svelte';
 	import CharProfile from '$lib/components/characters/CharProfile.svelte';
 
-	const authorizedCharacter: AuthorizedCharacter = page.data.authorizedCharacter;
+	const characterData: CharacterData = page.data.characterData;
 
-	// If we have neither character nor profile, throw 404
-	if (!authorizedCharacter.character && !authorizedCharacter.profile) {
-		error(404, 'Character not found');
-	}
+	// Type assertion - when type is 'full', character is definitely Character
+	let character = $state(
+		characterData.type === 'full' ? (characterData.character as Character) : null
+	);
 </script>
 
-{#if authorizedCharacter.character}
-	<CharacterPage bind:character={authorizedCharacter.character} guild={authorizedCharacter.guild} />
-{:else if authorizedCharacter.profile}
+{#if character}
+	<CharacterPage bind:character guild={characterData.guild} />
+{:else}
 	<CharHeader
-		name={authorizedCharacter.profile.name}
-		images={authorizedCharacter.profile.profile.images}
-		guild={authorizedCharacter.profile.guild}
+		name={characterData.character.name}
+		images={characterData.character.profile.images}
+		guild={characterData.guild}
 	/>
 
 	<div class="container mx-auto mt-8">
 		<CharProfile
-			name={authorizedCharacter.profile.name}
-			profile={authorizedCharacter.profile.profile}
-			splat={authorizedCharacter.profile.splat}
+			name={characterData.character.name}
+			profile={characterData.character.profile}
+			splat={characterData.character.splat}
 			editing={false}
 		/>
 	</div>

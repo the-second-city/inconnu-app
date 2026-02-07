@@ -1,24 +1,28 @@
 <script lang="ts">
 	import { page } from '$app/state';
-	import type { BaseProfile } from '$lib/types';
+	import type { CharacterData } from '$lib/types';
 
 	import CharHeader from '$lib/components/characters/CharHeader.svelte';
 	import CharProfile from '$lib/components/characters/CharProfile.svelte';
 
-	const profile: BaseProfile = page.data.profile;
+	const characterData: CharacterData = page.data.characterData;
 </script>
 
 <svelte:head>
-	<title>{profile.name} | inconnu.app</title>
+	<title>{characterData.character.name} | inconnu.app</title>
 </svelte:head>
 
-<CharHeader name={profile.name} images={profile.profile.images} guild={profile.guild} />
+<CharHeader
+	name={characterData.character.name}
+	images={characterData.character.profile.images}
+	guild={characterData.guild}
+/>
 
 <div class="container mx-auto mt-8">
 	<CharProfile
-		name={profile.name}
-		profile={profile.profile}
-		splat={profile.splat}
+		name={characterData.character.name}
+		profile={characterData.character.profile}
+		splat={characterData.character.splat}
 		editing={false}
 	/>
 </div>

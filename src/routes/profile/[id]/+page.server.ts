@@ -1,7 +1,7 @@
 import { error } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
 import { API_KEY, INCONNU_API_URL } from '$env/static/private';
-import type { BaseProfile } from '$lib/types';
+import type { CharacterData } from '$lib/types';
 
 export const load: PageServerLoad = async ({ params }) => {
 	const { id } = params;
@@ -24,8 +24,8 @@ export const load: PageServerLoad = async ({ params }) => {
 			error(response.status, 'Failed to load character profile');
 		}
 
-		const profile: BaseProfile = await response.json();
-		return { profile };
+		const characterData: CharacterData = await response.json();
+		return { characterData };
 	} catch (err) {
 		if (err instanceof Error && 'status' in err) {
 			throw err; // Re-throw SvelteKit errors

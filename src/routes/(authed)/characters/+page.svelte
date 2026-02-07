@@ -12,29 +12,13 @@
 
 	import { Plus } from '@lucide/svelte';
 
-	import type { Character, Guild } from '$lib/types';
+	import type { CharacterData, Guild } from '$lib/types';
 	import CharCard from '$lib/components/CharCard.svelte';
 	import GuildCard from './GuildCard.svelte';
 	import CharacterGrid from './CharacterGrid.svelte';
 
 	const guilds: Guild[] = page.data.guilds;
-	// const characters: Character[] = [];
-	const characters: Character[] = page.data.characters;
-
-	/**
-	 * Retrieves the Guild a Character belongs to.
-	 *
-	 * @param character - The Character of interest.
-	 * @returns The character's Guild, if found.
-	 */
-	const guildForChar = (character: Character): Guild | null => {
-		for (const guild of guilds) {
-			if (guild.id == character.guild) {
-				return guild;
-			}
-		}
-		return null;
-	};
+	const characters: CharacterData[] = page.data.characters;
 
 	/**
 	 * Reorder an array so a columnar grid will display in row
@@ -110,9 +94,8 @@
 
 {#if characters.length > 0}
 	<CharacterGrid items={organizedCharacters}>
-		{#snippet children(character: Character)}
-			{@const owner = guildForChar(character)}
-			<CharCard {character} {owner} />
+		{#snippet children(data: CharacterData)}
+			<CharCard {data} showOwner={false} />
 		{/snippet}
 	</CharacterGrid>
 

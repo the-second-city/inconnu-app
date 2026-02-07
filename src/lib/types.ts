@@ -49,7 +49,7 @@ export interface Character {
 	_id: string;
 	name: string;
 	guild: string;
-	user: number;
+	user: string;
 	splat: Splat;
 	profile: Profile;
 	experience?: {
@@ -71,19 +71,12 @@ export interface Character {
 	blood_pool?: number;
 }
 
-export interface UserCharacters {
-	guilds: Guild[];
-	characters: Character[];
-}
-
-export interface BaseProfile {
+export interface PublicCharacter {
 	id: string;
-	guild: Guild;
-	user: number;
+	user: string;
 	name: string;
 	splat: Splat;
 	profile: Profile;
-	spc: boolean;
 }
 
 export interface OwnerData {
@@ -92,14 +85,15 @@ export interface OwnerData {
 	icon: string | null;
 }
 
-export interface ProfileWithOwner {
-	character: BaseProfile;
-	owner_data: OwnerData | null;
-}
-
-export interface AuthorizedCharacter {
+export interface CharacterData {
 	guild: Guild;
 	owner: OwnerData | null;
-	character: Character | null;
-	profile: BaseProfile | null;
+	character: Character | PublicCharacter;
+	spc: boolean;
+	type: 'full' | 'public';
+}
+
+export interface AuthorizedUserChars {
+	guilds: Guild[];
+	characters: CharacterData[];
 }

@@ -1,9 +1,9 @@
 import type { PageLoad } from './$types';
-import type { UserCharacters } from '$lib/types';
+import type { AuthorizedUserChars } from '$lib/types';
 
 export const load: PageLoad = async ({ fetch }) => {
 	const response = await fetch('/api');
-	const userCharacters: UserCharacters = await response.json();
+	const userCharacters: AuthorizedUserChars = await response.json();
 
 	return {
 		guilds: userCharacters.guilds,
