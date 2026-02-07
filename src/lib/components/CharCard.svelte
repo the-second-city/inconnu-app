@@ -5,6 +5,7 @@
 	import DOMPurify from 'isomorphic-dompurify';
 
 	import type { CharacterData, Character, PublicCharacter } from '$lib/types';
+	import { hasProfileContent } from '$lib';
 
 	interface ComponentProps {
 		data: CharacterData;
@@ -27,22 +28,16 @@
 	);
 
 	const footerIcon = $derived(showOwner ? (data.owner?.icon ?? null) : data.guild.icon);
+
+	// Base card classes shared between link and div versions
+	const baseCardClasses =
+		'card preset-filled-surface-200-800 border-surface-300-700 divide-surface-300-700 block divide-y overflow-hidden border-[1px] shadow-md';
 </script>
 
-<a
-	href="/characters/guild/{guildId}/{characterId}"
-	title="View/Edit {data.character.name}"
-	class="card preset-filled-surface-100-900 border-surface-200-800 card-hover divide-surface-200-800 block divide-y overflow-hidden border-[1px] shadow-md hover:scale-101"
->
+{#snippet cardContent()}
 	<header>
 		{#if data.character.profile.images.length > 0}
 			<img src={data.character.profile.images[0]} class="w-full" alt="banner" />
-		{:else}
-			<div
-				class="from-surface-700 to-surface-900 flex h-48 items-center justify-center bg-gradient-to-br"
-			>
-				<img src="/images/wod/vampire-logo.png" alt="Inconnu icon" class="h-40 w-40 opacity-20" />
-			</div>
 		{/if}
 	</header>
 	<article class="space-y-1 p-3">
@@ -67,4 +62,18 @@
 			</Avatar>
 		{/if}
 	</footer>
-</a>
+{/snippet}
+
+{#if hasProfileContent(data.character.profile)}
+	<a
+		href="/characters/guild/{guildId}/{characterId}"
+		title="View/Edit {data.character.name}"
+		class="{baseCardClasses} card-hover hover:scale-101"
+	>
+		{@render cardContent()}
+	</a>
+{:else}
+	<div class="{baseCardClasses} opacity-60">
+		{@render cardContent()}
+	</div>
+{/if}
