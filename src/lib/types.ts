@@ -97,3 +97,8 @@ export interface AuthorizedUserChars {
 	guilds: Guild[];
 	characters: CharacterData[];
 }
+
+export interface GuildChars {
+	guild: Guild;
+	characters: CharacterData[];
+}

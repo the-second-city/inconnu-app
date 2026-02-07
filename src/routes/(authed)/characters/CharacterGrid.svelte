@@ -1,14 +1,18 @@
 <script lang="ts">
 	import type { Snippet } from 'svelte';
+
+	import { Plus } from '@lucide/svelte';
+
 	import type { CharacterData } from '$lib/types';
 	import { hasProfileContent } from '$lib';
 
 	interface ComponentProps {
-		items: CharacterData[];
+		characters: CharacterData[];
 		children: Snippet<[CharacterData]>;
+		emptyMessage: string;
 	}
 
-	let { items, children }: ComponentProps = $props();
+	let { characters, children, emptyMessage }: ComponentProps = $props();
 
 	/**
 	 * Sort characters by:
@@ -68,7 +72,7 @@
 	};
 
 	let columnCount = $state(1);
-	const sortedItems = $derived(sortCharacters(items));
+	const sortedItems = $derived(sortCharacters(characters));
 	let organizedItems = $derived(reorderForRowOrientation(sortedItems, columnCount));
 
 	$effect(() => {
@@ -88,10 +92,34 @@
 	});
 </script>
 
-<div class="columns-1 gap-3 md:columns-2 lg:columns-3 xl:columns-4">
-	{#each organizedItems as item}
-		<div class="mb-3 break-inside-avoid">
-			{@render children(item)}
-		</div>
-	{/each}
-</div>
+{#if characters.length > 0}
+	<div class="columns-1 gap-3 md:columns-2 lg:columns-3 xl:columns-4">
+		{#each organizedItems as item}
+			<div class="mb-3 break-inside-avoid">
+				{@render children(item)}
+			</div>
+		{/each}
+	</div>
+
+	<div class="mt-8 flex justify-center">
+		<a
+			href="/wizard"
+			class="btn preset-filled-primary-500 text-lg font-semibold hover:brightness-125"
+		>
+			<Plus size={24} />
+			Embrace a Character
+		</a>
+	</div>
+{:else}
+	<div class="card preset-tonal mx-auto mt-12 max-w-md p-8 text-center">
+		<p class="text-surface-100">Your coterie awaits ...</p>
+		<p class="text-xl">{emptyMessage}</p>
+		<a
+			href="/wizard"
+			class="btn preset-filled-primary-500 mt-6 text-lg font-semibold hover:brightness-125"
+		>
+			<Plus size={24} />
+			Embrace Your First Character
+		</a>
+	</div>
+{/if}
