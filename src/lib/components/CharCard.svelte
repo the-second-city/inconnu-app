@@ -64,16 +64,12 @@
 	</footer>
 {/snippet}
 
-{#if hasProfileContent(data.character.profile)}
-	<a
-		href="/characters/guild/{guildId}/{characterId}"
-		title="View/Edit {data.character.name}"
-		class="{baseCardClasses} card-hover hover:scale-101"
-	>
-		{@render cardContent()}
-	</a>
-{:else}
-	<div class="{baseCardClasses} opacity-60">
-		{@render cardContent()}
-	</div>
-{/if}
+<a
+	href="/characters/guild/{guildId}/{characterId}"
+	title="View/Edit {data.character.name}"
+	class="{baseCardClasses} card-hover hover:scale-101 {hasProfileContent(data.character.profile)
+		? ''
+		: 'opacity-65'}"
+>
+	{@render cardContent()}
+</a>
