@@ -16,6 +16,8 @@
 	name={characterData.character.name}
 	images={characterData.character.profile.images}
 	guild={characterData.guild}
+	owner={characterData.owner}
+	spc={characterData.spc}
 />
 
 <div class="container mx-auto mt-8">

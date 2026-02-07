@@ -16,12 +16,20 @@
 </script>
 
 {#if character}
-	<CharacterPage bind:character guild={characterData.guild} {backUrl} />
+	<CharacterPage
+		bind:character
+		guild={characterData.guild}
+		owner={characterData.owner}
+		spc={characterData.spc}
+		{backUrl}
+	/>
 {:else}
 	<CharHeader
 		name={characterData.character.name}
 		images={characterData.character.profile.images}
 		guild={characterData.guild}
+		owner={characterData.owner}
+		spc={characterData.spc}
 		{backUrl}
 	/>
 

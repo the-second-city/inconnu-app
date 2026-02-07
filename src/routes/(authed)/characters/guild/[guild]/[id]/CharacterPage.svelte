@@ -4,7 +4,7 @@
 
 	import { normalize } from '$lib';
 
-	import type { Character, Guild } from '$lib/types';
+	import type { Character, Guild, OwnerData } from '$lib/types';
 	import CharacterSheet from './CharacterSheet.svelte';
 	import CharHeader from '$lib/components/characters/CharHeader.svelte';
 	import CharProfile from '$lib/components/characters/CharProfile.svelte';
@@ -12,10 +12,12 @@
 	interface ComponentProps {
 		character: Character;
 		guild: Guild;
+		owner?: OwnerData | null;
+		spc?: boolean;
 		backUrl?: string;
 	}
 
-	let { character = $bindable(), guild, backUrl }: ComponentProps = $props();
+	let { character = $bindable(), guild, owner, spc = false, backUrl }: ComponentProps = $props();
 
 	let selectedTab = $state('sheet');
 	let copy: Character | null = null;
@@ -54,7 +56,14 @@
 	<title>{character.name} | inconnu.app</title>
 </svelte:head>
 
-<CharHeader name={character.name} images={character.profile.images} {guild} {backUrl} />
+<CharHeader
+	name={character.name}
+	images={character.profile.images}
+	{guild}
+	{owner}
+	{spc}
+	{backUrl}
+/>
 
 <Tabs value={selectedTab} onValueChange={(e) => (selectedTab = e.value)}>
 	{#snippet list()}

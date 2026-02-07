@@ -79,9 +79,12 @@
 	let invalidTrait = $derived(normalizedTrait.length === 0 || traitError !== null);
 
 	function addTrait() {
+		// Skills default to 0, attributes to 1
+		const defaultRating = cat === 'skill' ? 0 : 1;
+
 		let trait: Trait = {
 			name: normalizedTrait,
-			rating: 1,
+			rating: defaultRating,
 			type: cat,
 			subtraits: []
 		};
