@@ -1,0 +1,13 @@
+# Inconnu App - Robots Exclusion Protocol
+# Character data should not be indexed by search engines
+
+User-agent: *
+Disallow: /characters
+Disallow: /profile
+
+# Allow public pages
+Allow: /
+Allow: /signin
+Allow: /signout
+Allow: /utils
+Allow: /wizard
