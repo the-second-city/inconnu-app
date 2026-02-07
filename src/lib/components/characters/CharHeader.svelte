@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { page } from '$app/state';
 	import { Avatar } from '@skeletonlabs/skeleton-svelte';
 	import { ChevronLeft } from '@lucide/svelte';
 
@@ -15,11 +16,19 @@
 
 	let { name, images, guild, owner, spc = false, backUrl }: ComponentProps = $props();
 
+	const currentUserId = $derived(page.data.session?.user?.id);
+
 	const metadata = $derived.by(() => {
-		const items: { name: string; icon: string | null; isSpc?: boolean }[] = [];
+		const items: { name: string; icon: string | null; badge?: boolean }[] = [];
 		if (guild) items.push({ name: guild.name, icon: guild.icon });
-		if (owner) items.push({ name: owner.name, icon: owner.icon });
-		if (spc) items.push({ name: 'SPC', icon: null, isSpc: true });
+		if (owner) {
+			if (owner.id === currentUserId) {
+				items.push({ name: 'You', icon: null, badge: true });
+			} else {
+				items.push({ name: owner.name, icon: owner.icon });
+			}
+		}
+		if (spc) items.push({ name: 'SPC', icon: null, badge: true });
 		return items;
 	});
 </script>
@@ -44,8 +53,8 @@
 			<div class="flex justify-end">
 				<h6 class="text-surface-800-200 flex items-center gap-3 italic">
 					{#each metadata as item, i}
-						{#if i > 0 && !item.isSpc}<span class="opacity-60">•</span>{/if}
-						{#if item.isSpc}
+						{#if i > 0 && !item.badge}<span class="opacity-60">•</span>{/if}
+						{#if item.badge}
 							<span class="badge preset-filled-surface-500 text-xs uppercase">{item.name}</span>
 						{:else}
 							{item.name}
