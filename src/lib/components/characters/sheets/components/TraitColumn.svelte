@@ -88,7 +88,6 @@
 		traits.push(trait);
 		traits.sort((a, b) => a.name.localeCompare(b.name, undefined, { sensitivity: 'base' }));
 		newTraitName = '';
-		console.log(trait);
 	}
 </script>
 
