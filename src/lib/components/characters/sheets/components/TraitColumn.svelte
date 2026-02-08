@@ -67,7 +67,7 @@
 	let traitError = $derived.by(() => {
 		if (normalizedTrait.length === 0) return null;
 		if (normalizedTrait.length > 20) return 'Maximum 20 characters';
-		if (!isValidTraitName(normalizedTrait)) return 'Letters, spaces, and underscores only';
+		if (!isValidTraitName(normalizedTrait)) return 'Letters and underscores only';
 
 		const lowercased = normalizedTrait.toLowerCase();
 		const isDuplicate = orderedIndices.some(

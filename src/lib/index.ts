@@ -5,7 +5,7 @@ import type { Profile } from './types';
 export const isValidTraitName = (name: string): boolean => {
 	if (name.length === 0) return false;
 
-	const validPattern = /^[A-Za-z_ ]+$/;
+	const validPattern = /^[A-Za-z_]+$/;
 	return validPattern.test(name);
 };
 
