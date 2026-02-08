@@ -12,6 +12,9 @@
 		renderer: {
 			image() {
 				return ''; // Disable image rendering
+			},
+			link({ text }) {
+				return text;
 			}
 		}
 	});
