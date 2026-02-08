@@ -47,6 +47,8 @@
 		<p class="line-clamp-4 text-sm opacity-60">
 			{#if data.character.profile.description}
 				{@html marked.parse(DOMPurify.sanitize(data.character.profile.description))}
+			{:else if data.character.profile.biography}
+				{@html marked.parse(DOMPurify.sanitize(data.character.profile.biography))}
 			{:else}
 				<em>{data.character.name} is a total mystery ...</em>
 			{/if}
