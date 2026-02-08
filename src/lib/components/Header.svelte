@@ -99,7 +99,6 @@
 			{/snippet}
 			{#snippet content()}
 				<div class="flex flex-col gap-2">
-					{@render docs()}
 					{@render discord()}
 					{@render github()}
 					{@render patreon()}
