@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { slide } from 'svelte/transition';
 
-	import { Castle, ChevronDown, Github, Orbit, ScrollText, Users } from '@lucide/svelte';
+	import { ChevronDown, Github, Orbit, ScrollText, Users } from '@lucide/svelte';
 	import { Popover } from '@skeletonlabs/skeleton-svelte';
 
 	import DiscordButton from '$lib/components/DiscordButton.svelte';
@@ -54,7 +54,7 @@
 		color="preset-outlined-secondary-500"
 		full={true}
 	>
-		The Second City <Castle size={18} />
+		The Second City <img src="/images/discord-logo.svg" class="size-6" alt="Discord logo" />
 	</NavButton>
 {/snippet}
 
