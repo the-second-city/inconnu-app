@@ -27,6 +27,13 @@
 	<div class="card preset-tonal p-4">
 		<h3 class="h3 mb-2">Getting Started</h3>
 		<ol class="ml-6 list-outside list-decimal space-y-2 pl-2">
+			<li>
+				<a
+					href="https://discord.com/oauth2/authorize?client_id=882409882119196704&permissions=537135104&scope=applications.commands+bot"
+					class="text-primary-500 underline hover:no-underline"
+					title="Install Inconnu on your server">Install Inconnu</a
+				>
+			</li>
 			<li>Open Discord and navigate to your game server</li>
 			<li>
 				Type the command: <code class="code">/character wizard</code>

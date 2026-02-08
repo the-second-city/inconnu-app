@@ -43,7 +43,7 @@
 			<a
 				class="btn preset-filled-surface-500 hover:brightness-125"
 				href="https://discord.com/oauth2/authorize?client_id=882409882119196704&permissions=537135104&scope=applications.commands+bot"
-				title="Read the docs"
+				title="Install Inconnu on your server"
 				target="_blank"
 			>
 				Get Inconnu
