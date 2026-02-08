@@ -1,10 +1,9 @@
 <script lang="ts">
 	import { Avatar } from '@skeletonlabs/skeleton-svelte';
 	import { EyeOff } from '@lucide/svelte';
-	import { marked } from 'marked';
-	import DOMPurify from 'isomorphic-dompurify';
 
 	import type { CharacterData, Character, PublicCharacter } from '$lib/types';
+	import Markdown from '$lib/components/Markdown.svelte';
 	import { hasProfileContent } from '$lib';
 
 	interface ComponentProps {
@@ -46,9 +45,9 @@
 		</div>
 		<p class="line-clamp-4 text-sm opacity-60">
 			{#if data.character.profile.description}
-				{@html marked.parse(DOMPurify.sanitize(data.character.profile.description))}
+				<Markdown content={data.character.profile.description} />
 			{:else if data.character.profile.biography}
-				{@html marked.parse(DOMPurify.sanitize(data.character.profile.biography))}
+				<Markdown content={data.character.profile.biography} />
 			{:else}
 				<em>{data.character.name} is a total mystery ...</em>
 			{/if}
