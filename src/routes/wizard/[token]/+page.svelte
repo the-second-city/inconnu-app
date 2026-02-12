@@ -31,10 +31,10 @@
 	// Reset blood potency and clear disciplines when switching splat types
 	$effect(() => {
 		if (splat !== previousSplat) {
-			if (splat === 'thin-blood') {
-				blood_potency = 0;
-			} else if (splat === 'vampire') {
+			if (splat === 'vampire') {
 				blood_potency = 1;
+			} else {
+				blood_potency = 0;
 			}
 			if (splat === 'mortal') {
 				traits = traits.filter((t) => t.type !== 'discipline');
