@@ -46,34 +46,30 @@
 	};
 
 	/**
-	 * Reorder an array so a columnar masonry layout will display in row orientation.
+	 * Distribute items into columns in row-oriented order.
+	 * Items are sorted by priority, then distributed left-to-right, top-to-bottom.
 	 *
-	 * Given [1, 2, 3, 4, 5, 6] with 3 columns, returns [1, 4, 2, 5, 3, 6]
-	 * so masonry columns display as:
-	 *   1  2  3
-	 *   4  5  6
+	 * Example with 6 items and 3 columns:
+	 *   Item 1  Item 2  Item 3
+	 *   Item 4  Item 5  Item 6
 	 */
-	const reorderForRowOrientation = (items: CharacterData[], columns: number): CharacterData[] => {
-		if (columns <= 0 || items.length === 0) return items;
+	const distributeIntoColumns = (items: CharacterData[], columns: number): CharacterData[][] => {
+		if (columns <= 0 || items.length === 0) return [items];
 
-		const rows = Math.ceil(items.length / columns);
-		const result: CharacterData[] = [];
+		const result: CharacterData[][] = Array.from({ length: columns }, () => []);
 
-		for (let col = 0; col < columns; col++) {
-			for (let row = 0; row < rows; row++) {
-				const index = row * columns + col;
-				if (index < items.length) {
-					result.push(items[index]);
-				}
-			}
-		}
+		// Distribute items in row-oriented order (left-to-right, top-to-bottom)
+		items.forEach((item, index) => {
+			const columnIndex = index % columns;
+			result[columnIndex].push(item);
+		});
 
 		return result;
 	};
 
 	let columnCount = $state(1);
 	const sortedItems = $derived(sortCharacters(characters));
-	let organizedItems = $derived(reorderForRowOrientation(sortedItems, columnCount));
+	const columnData = $derived(distributeIntoColumns(sortedItems, columnCount));
 
 	$effect(() => {
 		if (typeof window === 'undefined') return;
@@ -93,10 +89,12 @@
 </script>
 
 {#if characters.length > 0}
-	<div class="columns-1 gap-3 md:columns-2 lg:columns-3 xl:columns-4">
-		{#each organizedItems as item}
-			<div class="mb-3 break-inside-avoid">
-				{@render children(item)}
+	<div class="flex gap-3">
+		{#each columnData as column}
+			<div class="flex flex-1 flex-col gap-3">
+				{#each column as item}
+					{@render children(item)}
+				{/each}
 			</div>
 		{/each}
 	</div>
