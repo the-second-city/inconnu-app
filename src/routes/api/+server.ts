@@ -11,24 +11,17 @@ export const GET: RequestHandler = async ({ locals }) => {
 
 	const discordUserId = session.user.id;
 
-	try {
-		const response = await fetch(`${INCONNU_API_URL}/characters`, {
-			headers: {
-				Authorization: `Bearer ${API_KEY}`,
-				'X-Discord-User-ID': discordUserId
-			}
-		});
-
-		if (!response.ok) {
-			error(response.status, 'Failed to fetch characters');
+	const response = await fetch(`${INCONNU_API_URL}/characters`, {
+		headers: {
+			Authorization: `Bearer ${API_KEY}`,
+			'X-Discord-User-ID': discordUserId
 		}
+	});
 
-		const data = await response.json();
-		return json(data);
-	} catch (err) {
-		if (err instanceof Error && 'status' in err) {
-			throw err; // Re-throw SvelteKit errors
-		}
-		error(500, 'Failed to load characters');
+	if (!response.ok) {
+		error(response.status, 'Failed to fetch characters');
 	}
+
+	const data = await response.json();
+	return json(data);
 };

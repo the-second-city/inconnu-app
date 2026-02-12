@@ -10,26 +10,19 @@ export const load: PageServerLoad = async ({ params }) => {
 		error(400, 'Character ID is required');
 	}
 
-	try {
-		const response = await fetch(`${INCONNU_API_URL}/characters/profile/${id}`, {
-			headers: {
-				Authorization: `Bearer ${API_KEY}`
-			}
-		});
-
-		if (!response.ok) {
-			if (response.status === 404) {
-				error(404, 'Character profile not found');
-			}
-			error(response.status, 'Failed to load character profile');
+	const response = await fetch(`${INCONNU_API_URL}/characters/profile/${id}`, {
+		headers: {
+			Authorization: `Bearer ${API_KEY}`
 		}
+	});
 
-		const characterData: CharacterData = await response.json();
-		return { characterData };
-	} catch (err) {
-		if (err instanceof Error && 'status' in err) {
-			throw err; // Re-throw SvelteKit errors
+	if (!response.ok) {
+		if (response.status === 404) {
+			error(404, 'Character profile not found');
 		}
-		error(500, 'Failed to load character profile');
+		error(response.status, 'Failed to load character profile');
 	}
+
+	const characterData: CharacterData = await response.json();
+	return { characterData };
 };

@@ -4,34 +4,27 @@
 	const statusCode = $derived($page.status);
 	const isServiceUnavailable = $derived(statusCode === 503);
 	const isServerError = $derived(statusCode === 500);
-	const isNotFound = $derived(statusCode === 404);
 
 	const title = $derived(
 		isServiceUnavailable
 			? 'Service Starting | inconnu.app'
 			: isServerError
 				? 'Connection Error | inconnu.app'
-				: isNotFound
-					? 'Guild Not Found | inconnu.app'
-					: 'Error | inconnu.app'
+				: 'Characters Unavailable | inconnu.app'
 	);
 	const heading = $derived(
 		isServiceUnavailable
 			? 'Starting up'
 			: isServerError
 				? 'Connection error'
-				: isNotFound
-					? 'Guild not found'
-					: 'Something went wrong'
+				: 'Unable to load characters'
 	);
 	const message = $derived(
 		isServiceUnavailable
 			? 'Inconnu is still starting up. Please wait a moment and try again.'
 			: isServerError
 				? 'Unable to connect to bot. Please try again later.'
-				: isNotFound
-					? "This guild doesn't exist or you don't have access to it."
-					: $page.error?.message || 'An unexpected error occurred. Please try again later.'
+				: $page.error?.message || "We couldn't load your characters. Please try again later."
 	);
 </script>
 
@@ -53,9 +46,9 @@
 	<p class="mt-6 text-center text-xl">{message}</p>
 	<a
 		class="btn preset-outlined-primary-500 mt-4 text-xl hover:brightness-125"
-		href="/characters"
-		title="Go back to your characters"
+		href="/"
+		title="Go back to the home page"
 	>
-		Return to Characters
+		Return Home
 	</a>
 </div>

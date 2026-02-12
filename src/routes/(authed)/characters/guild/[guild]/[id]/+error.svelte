@@ -1,19 +1,56 @@
+<script lang="ts">
+	import { page } from '$app/stores';
+
+	const statusCode = $derived($page.status);
+	const isServiceUnavailable = $derived(statusCode === 503);
+	const isServerError = $derived(statusCode === 500);
+	const isNotFound = $derived(statusCode === 404);
+
+	const title = $derived(
+		isServiceUnavailable
+			? 'Service Starting | inconnu.app'
+			: isServerError
+				? 'Connection Error | inconnu.app'
+				: isNotFound
+					? 'Character Not Found | inconnu.app'
+					: 'Error | inconnu.app'
+	);
+	const heading = $derived(
+		isServiceUnavailable
+			? 'Starting up'
+			: isServerError
+				? 'Connection error'
+				: isNotFound
+					? 'Character not found'
+					: 'Something went wrong'
+	);
+	const message = $derived(
+		isServiceUnavailable
+			? 'Inconnu is still starting up. Please wait a moment and try again.'
+			: isServerError
+				? 'Unable to connect to bot. Please try again later.'
+				: isNotFound
+					? "Either it doesn't exist, or it belongs to someone else."
+					: $page.error?.message || 'An unexpected error occurred. Please try again later.'
+	);
+</script>
+
 <svelte:head>
-	<title>Character Not Found | inconnu.app</title>
+	<title>{title}</title>
 </svelte:head>
 
 <div class="flex min-h-[50vh] flex-col items-center justify-center">
 	<h1
 		class="text-primary-500 m-0 overflow-hidden text-center text-[12rem] leading-none font-black tracking-tighter md:text-[25rem]"
 	>
-		404
+		{statusCode}
 	</h1>
 	<h2
 		class="text-primary-500 -mt-5 overflow-hidden text-center text-[1.7rem] leading-none font-bold tracking-tight uppercase md:-mt-10 md:text-[3.2rem]"
 	>
-		Character not found
+		{heading}
 	</h2>
-	<p class="mt-6 text-center text-xl">Either it doesn't exist, or it belongs to someone else.</p>
+	<p class="mt-6 text-center text-xl">{message}</p>
 	<a
 		class="btn preset-outlined-primary-500 mt-4 text-xl hover:brightness-125"
 		href="/characters"
