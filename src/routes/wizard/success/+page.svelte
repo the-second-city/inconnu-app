@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { page } from '$app/state';
 	import { onMount } from 'svelte';
 	import { goto } from '$app/navigation';
 	import { Avatar } from '@skeletonlabs/skeleton-svelte';
@@ -7,6 +8,7 @@
 	import type { CreationInfo } from '$lib/stores/CreationStore';
 
 	let characterInfo = $state<CreationInfo | null>(null);
+	const showSignInWarning = $derived(page.data.session?.user?.id == null);
 
 	onMount(() => {
 		const unsubscribe = creationInfoStore.subscribe((value) => {
@@ -42,7 +44,9 @@
 				class="btn preset-filled-primary-500"
 			>
 				View now
-				<span class="text-sm opacity-75">(requires sign-in)</span>
+				{#if showSignInWarning}
+					<span class="text-sm opacity-75">(requires sign-in)</span>
+				{/if}
 			</a>
 			<a
 				href="https://docs.inconnu.app"
