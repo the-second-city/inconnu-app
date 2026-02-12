@@ -141,7 +141,8 @@
 			creationInfoStore.set({
 				character_id: result.character_id,
 				guild: result.guild,
-				character_name: result.character_name
+				character_name: result.character_name,
+				has_premium: result.has_premium
 			});
 
 			goto('/wizard/success');

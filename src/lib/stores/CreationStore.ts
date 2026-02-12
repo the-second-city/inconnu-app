@@ -5,6 +5,7 @@ export interface CreationInfo {
 	character_id: string;
 	guild: Guild;
 	character_name: string;
+	has_premium: boolean;
 }
 
 export const creationInfoStore = writable<CreationInfo | null>(null);

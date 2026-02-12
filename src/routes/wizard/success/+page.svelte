@@ -3,7 +3,7 @@
 	import { onMount } from 'svelte';
 	import { goto } from '$app/navigation';
 	import { Avatar } from '@skeletonlabs/skeleton-svelte';
-	import { ExternalLink } from '@lucide/svelte';
+	import { ExternalLink, Heart, Image, MessageSquare, Sparkles } from '@lucide/svelte';
 	import { creationInfoStore } from '$lib/stores/CreationStore';
 	import type { CreationInfo } from '$lib/stores/CreationStore';
 
@@ -73,3 +73,66 @@
 		<p>Loading character data...</p>
 	{/if}
 </div>
+
+{#if characterInfo != null}
+	<div class="card preset-tonal p-6">
+		{#if !characterInfo.has_premium}
+			<!-- Non-Patron Card -->
+			<div class="flex items-start gap-4">
+				<div class="text-primary-500 mt-1">
+					<Heart size={24} />
+				</div>
+				<div class="flex-1">
+					<h4 class="h4 mb-3">Support Inconnu</h4>
+					<p class="text-surface-900-100 mb-4">
+						Unlock premium features and help keep Inconnu running. Patrons get:
+					</p>
+					<ul class="mb-4 space-y-2 text-sm">
+						<li class="flex items-center gap-2">
+							<Image size={16} class="text-primary-500" />
+							<span>Custom character images</span>
+						</li>
+						<li class="flex items-center gap-2">
+							<MessageSquare size={16} class="text-primary-500" />
+							<span>Rolepost system for immersive storytelling</span>
+						</li>
+					</ul>
+					<a
+						href="https://patreon.com/tiltowait"
+						target="_blank"
+						rel="noopener noreferrer"
+						class="btn preset-filled-success-50-950 flex w-fit items-center gap-2"
+						title="Become a Patron"
+					>
+						<Heart size={16} />
+						Become a Patron
+					</a>
+				</div>
+			</div>
+		{:else}
+			<!-- Patron Card -->
+			<div class="flex items-start gap-4">
+				<div class="text-primary-500 mt-1">
+					<Sparkles size={24} />
+				</div>
+				<div class="flex-1">
+					<h4 class="h4 mb-3">Thank you, Patron!</h4>
+					<p class="text-surface-900-100 mb-4">
+						Your support keeps Inconnu alive. Here's what you can do:
+					</p>
+					<ul class="space-y-2 text-sm">
+						<li class="flex items-center gap-2">
+							<Image size={16} class="text-primary-500" />
+							<span><code class="text-xs">/character image upload</code> — Add custom images</span>
+						</li>
+						<li class="flex items-center gap-2">
+							<MessageSquare size={16} class="text-primary-500" />
+							<span><code class="text-xs">/post</code> — Create immersive Roleposts</span>
+						</li>
+					</ul>
+					<p class="text-surface-900-100 mt-4 text-sm italic">May your crits never be messy!</p>
+				</div>
+			</div>
+		{/if}
+	</div>
+{/if}
