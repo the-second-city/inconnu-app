@@ -1,0 +1,50 @@
+# We have to skip cloning due to FreeBSD differences.
+skip_clone: true
+when:
+  - branch: master
+    event: push
+  - event: manual
+  - event: pull_request
+
+steps:
+  - name: clone
+    image: sh
+    commands:
+      - git clone "$CI_REPO_CLONE_URL" .
+      - git checkout "$CI_COMMIT_SHA"
+
+  - name: install dependencies
+    image: sh
+    commands:
+      - npm ci
+
+  - name: build
+    image: sh
+    environment:
+      AUTH_SECRET:
+        from_server: AUTH_SECRET
+      AUTH_DISCORD_ID:
+        from_server: AUTH_DISCORD_ID
+      AUTH_DISCORD_SECRET:
+        from_server: AUTH_DISCORD_SECRET
+      DATABASE_URL:
+        from_server: DATABASE_URL
+      API_KEY:
+        from_server: API_KEY
+      INCONNU_API_URL:
+        from_server: INCONNU_API_URL
+    commands:
+      - envsubst < .env.template > .env
+      - npm run build
+
+  - name: copy-artifacts
+    image: sh
+    commands:
+      - mkdir -p /mnt/build-artifacts/${CI_REPO_NAME}
+      - rsync -a --delete --exclude '.git' . /mnt/build-artifacts/${CI_REPO_NAME}
+      - chmod 755 /mnt/build-artifacts/${CI_REPO_NAME}
+
+  - name: redeploy
+    image: sh
+    commands:
+      - ssh -tt inconnu-app
