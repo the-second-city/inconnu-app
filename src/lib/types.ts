@@ -12,6 +12,7 @@ export interface Guild {
 	id: string;
 	name: string;
 	icon: string | null;
+	count: number | null;
 }
 
 export type Trait = {

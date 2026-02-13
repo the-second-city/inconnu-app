@@ -16,4 +16,9 @@
 >
 	<Avatar src={guild.icon ?? undefined} name="{guild.name} icon" size="size-10" />
 	<h3 class="h4 flex-1">{guild.name}</h3>
+	{#if guild.count != null}
+		<span class="bg-surface-400 text-md flex size-7 items-center justify-center rounded-full">
+			{guild.count}
+		</span>
+	{/if}
 </a>
