@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { slide } from 'svelte/transition';
+	import { afterNavigate } from '$app/navigation';
 
 	import { ChevronDown, Github, Orbit, ScrollText, Users } from '@lucide/svelte';
 	import { Popover } from '@skeletonlabs/skeleton-svelte';
@@ -11,6 +12,10 @@
 
 	let isMenuOpen = $state(false);
 	let isMoreMenuOpen = $state(false);
+
+	afterNavigate(() => {
+		isMenuOpen = false;
+	});
 </script>
 
 {#snippet docs()}
