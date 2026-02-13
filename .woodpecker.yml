@@ -4,7 +4,6 @@ when:
   - branch: master
     event: push
   - event: manual
-  - event: pull_request
 
 steps:
   - name: clone
