@@ -76,7 +76,7 @@
 			</ul>
 		</div>
 		<div class="order-2">
-			<img src="/images/hero/for-players.webp" alt="Inconnu website showing character sheet" />
+			<img src="/images/hero/for-players.png" alt="Inconnu website showing character sheet" />
 		</div>
 	</div>
 
@@ -121,7 +121,7 @@
 			</p>
 		</div>
 		<div>
-			<img src="/images/hero/rolepost.webp" alt="Phone showing a Rolepost" />
+			<img src="/images/hero/rolepost.webp" alt="Phone showing a Rolepost" class="max-w-36" />
 		</div>
 	</div>
 </section>
