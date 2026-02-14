@@ -84,7 +84,7 @@
 
 	<!-- For Storytellers -->
 	<div class="grid items-center gap-8 md:grid-cols-2">
-		<div class="md:order-1">
+		<div class="order-2 md:order-1">
 			<img src="/images/hero/discord-demo.webp" alt="Discord showcase" />
 		</div>
 		<div class="order-1 md:order-2">
