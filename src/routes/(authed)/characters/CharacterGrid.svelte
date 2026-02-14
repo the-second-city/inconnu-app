@@ -9,10 +9,11 @@
 	interface ComponentProps {
 		characters: CharacterData[];
 		children: Snippet<[CharacterData]>;
+		maxColumns?: number;
 		emptyMessage: string;
 	}
 
-	let { characters, children, emptyMessage }: ComponentProps = $props();
+	let { characters, children, maxColumns = 4, emptyMessage }: ComponentProps = $props();
 
 	/**
 	 * Sort characters by:
@@ -75,10 +76,12 @@
 		if (typeof window === 'undefined') return;
 
 		const updateColumnCount = () => {
-			if (window.innerWidth >= 1280) columnCount = 4;
-			else if (window.innerWidth >= 1024) columnCount = 3;
-			else if (window.innerWidth >= 768) columnCount = 2;
-			else columnCount = 1;
+			let cols: number;
+			if (window.innerWidth >= 1280) cols = 4;
+			else if (window.innerWidth >= 1024) cols = 3;
+			else if (window.innerWidth >= 768) cols = 2;
+			else cols = 1;
+			columnCount = Math.min(cols, maxColumns);
 		};
 
 		updateColumnCount();

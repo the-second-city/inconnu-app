@@ -35,7 +35,7 @@
 
 <hr class="border-surface-500 mx-auto mb-5" />
 
-<CharacterGrid {characters} emptyMessage="You haven't created any characters yet.">
+<CharacterGrid {characters} maxColumns={3} emptyMessage="You haven't created any characters yet.">
 	{#snippet children(data: CharacterData)}
 		<CharCard {data} showOwner={false} />
 	{/snippet}
