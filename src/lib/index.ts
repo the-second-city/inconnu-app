@@ -17,6 +17,15 @@ export const insensitiveSort = (items: string[]) => {
 	items.sort((a, b) => a.localeCompare(b, undefined, { sensitivity: 'base' }));
 };
 
+/**
+ * Removes leading articles (The, A, An) from a string for sorting purposes.
+ * @param text - The text to process
+ * @returns The text with leading articles removed
+ */
+export const stripLeadingArticles = (text: string): string => {
+	return text.replace(/^(The|A|An)\s+/i, '');
+};
+
 export const hasProfileContent = (profile: Profile): boolean => {
 	return !!(
 		(profile.description && profile.description.trim()) ||
