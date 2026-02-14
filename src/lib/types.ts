@@ -103,3 +103,23 @@ export interface GuildChars {
 	guild: Guild;
 	characters: CharacterData[];
 }
+
+export interface CharData {
+	id: string;
+	name: string;
+}
+
+export interface PostHistoryEntry {
+	date: string;
+	content: string;
+}
+
+export interface Changelog {
+	guild: Guild;
+	poster: OwnerData | null;
+	channel: string;
+	character: CharData;
+	url: string | null;
+	history: PostHistoryEntry[];
+	deletion_date: string | null;
+}
