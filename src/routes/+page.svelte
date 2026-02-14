@@ -1,15 +1,4 @@
 <script lang="ts">
-	import { page } from '$app/state';
-
-	import {
-		ExternalLink,
-		LogIn,
-		Sparkles,
-		CheckCircle2,
-		Lightbulb,
-		HelpCircle,
-		XCircle
-	} from '@lucide/svelte';
 	import Ankh from '$lib/components/Ankh.svelte';
 </script>
 
