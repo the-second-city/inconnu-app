@@ -14,7 +14,9 @@
 
 	let { content }: ComponentProps = $props();
 
-	const parsed = $derived(DOMPurify.sanitize(marked.parse(content, { renderer }) as string));
+	const parsed = $derived(
+		DOMPurify.sanitize(marked.parse(content, { renderer, breaks: true }) as string)
+	);
 </script>
 
 {@html parsed}
