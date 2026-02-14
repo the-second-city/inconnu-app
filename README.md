@@ -16,8 +16,7 @@ The web counterpart to [Inconnu](https://github.com/tiltowait/inconnu), a Discor
 
 ### Planned
 
-- [ ] **STs:** View Rolepost changelogs
-- [ ] Port over https://docs.inconnu.app
+* **STs:** View Rolepost changelogs
 
 ### Maybe
 
@@ -28,6 +27,7 @@ The web counterpart to [Inconnu](https://github.com/tiltowait/inconnu), a Discor
 ### Not planned
 
 * Character image uploads
+* Port over https://docs.inconnu.app
 
 ## Setup
 
