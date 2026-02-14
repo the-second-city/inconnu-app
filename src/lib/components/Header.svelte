@@ -60,7 +60,7 @@
 		color="preset-outlined-secondary-500"
 		full={true}
 	>
-		The Second City <img src="/images/discord-logo.svg" class="size-6" alt="Discord logo" />
+		The Second City <img src="/images/logos/discord-logo.svg" class="size-6" alt="Discord logo" />
 	</NavButton>
 {/snippet}
 

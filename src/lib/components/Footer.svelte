@@ -40,7 +40,7 @@
 			>. <br /><strong>Inconnu</strong> is not official World of Darkness content.
 		</small>
 		<img
-			src="/images/darkpack_logo2.webp"
+			src="/images/logos/darkpack_logo2.webp"
 			width="60"
 			height="60"
 			alt="Dark Pack logo"

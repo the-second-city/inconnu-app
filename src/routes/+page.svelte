@@ -47,7 +47,7 @@
 				target="_blank"
 			>
 				Get Inconnu
-				<img class="size-6" src="/images/inconnu_logo.webp" alt="Inconnu logo" />
+				<img class="size-6" src="/images/logos/inconnu_logo.webp" alt="Inconnu logo" />
 			</a>
 			<a
 				class="btn text-white hover:brightness-125"
@@ -56,7 +56,7 @@
 				title="Join our Discord"
 				target="_blank"
 			>
-				<img src="/images/discord-logo.svg" alt="Discord logo" class="size-6" />
+				<img src="/images/logos/discord-logo.svg" alt="Discord logo" class="size-6" />
 				Discord
 			</a>
 		</div>
