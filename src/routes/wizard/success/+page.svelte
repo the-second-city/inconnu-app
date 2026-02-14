@@ -76,7 +76,7 @@
 
 {#if characterInfo != null}
 	<div class="card preset-tonal p-6">
-		{#if !characterInfo.has_premium}
+		{#if characterInfo.has_premium}
 			<!-- Non-Patron Card -->
 			<div class="flex items-start gap-4">
 				<div class="text-primary-500 mt-1">
@@ -104,7 +104,7 @@
 						class="btn preset-filled-success-50-950 flex w-fit items-center gap-2"
 						title="Become a Patron"
 					>
-						<Heart size={16} />
+						<img src="/images/logos/patreon.webp" class="size-4" alt="Patreon logo" />
 						Become a Patron
 					</a>
 				</div>

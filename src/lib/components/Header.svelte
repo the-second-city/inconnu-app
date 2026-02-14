@@ -49,6 +49,7 @@
 		full={true}
 	>
 		Patreon
+		<img src="/images/logos/patreon.webp" class="size-5" alt="Patreon logo" />
 	</NavButton>
 {/snippet}
 
