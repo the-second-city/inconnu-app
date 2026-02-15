@@ -1,10 +1,10 @@
 <script lang="ts">
-	import { page } from '$app/stores';
+	import { page } from '$app/state';
 
 	import ErrorPanel from '$lib/components/ErrorPanel.svelte';
 
 	const message = $derived(
-		$page.error?.message || "We couldn't load your characters. Please try again later."
+		page.error?.message || "We couldn't load your characters. Please try again later."
 	);
 </script>
 

@@ -1,8 +1,8 @@
 <script lang="ts">
-	import { page } from '$app/stores';
+	import { page } from '$app/state';
 	import { resolve } from '$app/paths';
 
-	const statusCode = $derived($page.status);
+	const statusCode = $derived(page.status);
 	const isServiceUnavailable = $derived(statusCode === 503);
 	const isServerError = $derived(statusCode === 500);
 	const isNotFound = $derived(statusCode === 404);
@@ -32,7 +32,7 @@
 				? 'Unable to connect to bot. Please try again later.'
 				: isNotFound
 					? "This character profile doesn't exist or is unavailable."
-					: $page.error?.message || 'An unexpected error occurred. Please try again later.'
+					: page.error?.message || 'An unexpected error occurred. Please try again later.'
 	);
 </script>
 

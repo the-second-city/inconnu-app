@@ -1,14 +1,14 @@
 <script lang="ts">
-	import { page } from '$app/stores';
+	import { page } from '$app/state';
 	import { resolve } from '$app/paths';
 
 	import ErrorPanel from '$lib/components/ErrorPanel.svelte';
 
-	const statusCode = $derived($page.status);
+	const statusCode = $derived(page.status);
 	const message = $derived(
 		statusCode === 422
 			? 'Invalid Rolepost ID'
-			: $page.error?.message || 'An unexpected error occurred.'
+			: page.error?.message || 'An unexpected error occurred.'
 	);
 </script>
 
