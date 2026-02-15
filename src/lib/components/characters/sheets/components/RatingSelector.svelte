@@ -109,7 +109,8 @@
 				{/snippet}
 				{#snippet content()}
 					<div class="flex flex-col gap-2">
-						<span class="badge text-base">Specialties</span>
+						<span class="badge text-surface-100 -mt-4 text-base">Specialties</span>
+						<hr class="text-surface-400 -mx-4 -mt-2" />
 						{#if subtraits.length > 0}
 							{#each subtraits as subtrait, i (subtrait)}
 								{@const buttonTitle = `Remove ${subtrait}`}
