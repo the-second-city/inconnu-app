@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { slide } from 'svelte/transition';
 	import { afterNavigate } from '$app/navigation';
+	import { resolve } from '$app/paths';
 
 	import { ChevronDown, Github, Orbit, ScrollText, Users } from '@lucide/svelte';
 	import { Popover } from '@skeletonlabs/skeleton-svelte';
@@ -66,7 +67,7 @@
 
 <header class="bg-surface-50-950 flex items-center justify-between p-4 shadow-md">
 	<a
-		href="/"
+		href={resolve('/')}
 		class="anchor text-primary-500 flex items-center gap-2 text-3xl font-bold"
 		style="font-family: Avenir, Montserrat, Corbel, 'URW Gothic', source-sans-pro, sans-serif;"
 	>

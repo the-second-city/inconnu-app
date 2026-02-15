@@ -1,3 +1,7 @@
+<script lang="ts">
+	import { resolve } from '$app/paths';
+</script>
+
 <svelte:head>
 	<title>Session Not Found | Inconnu</title>
 </svelte:head>
@@ -16,14 +20,14 @@
 	<div class="mt-3 flex gap-3">
 		<a
 			class="btn preset-outlined-primary-500 text-xl hover:brightness-125"
-			href="/wizard"
+			href={resolve('/wizard')}
 			title="View character creation instructions"
 		>
 			Start Over
 		</a>
 		<a
 			class="btn preset-outlined-secondary-500 text-xl hover:brightness-125"
-			href="/"
+			href={resolve('/')}
 			title="Go home"
 		>
 			Go Home

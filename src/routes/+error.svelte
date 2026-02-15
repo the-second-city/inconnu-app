@@ -1,3 +1,7 @@
+<script lang="ts">
+	import { resolve } from '$app/paths';
+</script>
+
 <svelte:head>
 	<title>Page Not Found | Inconnu</title>
 </svelte:head>
@@ -15,7 +19,7 @@
 	</h2>
 	<a
 		class="btn preset-outlined-primary-500 mt-4 text-xl hover:brightness-125"
-		href="/"
+		href={resolve('/')}
 		title="Go home"
 	>
 		Go Home

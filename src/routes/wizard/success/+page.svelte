@@ -2,6 +2,7 @@
 	import { page } from '$app/state';
 	import { onMount } from 'svelte';
 	import { goto } from '$app/navigation';
+	import { resolve } from '$app/paths';
 	import { Avatar } from '@skeletonlabs/skeleton-svelte';
 	import { ExternalLink, Heart, Image, MessageSquare, Sparkles } from '@lucide/svelte';
 	import { creationInfoStore } from '$lib/stores/CreationStore';
@@ -15,7 +16,7 @@
 			characterInfo = value;
 			if (!characterInfo) {
 				// If there's no character data, redirect to home
-				goto('/');
+				goto(resolve('/'));
 			}
 		});
 
@@ -40,7 +41,10 @@
 
 		<div class="mb-6 flex flex-col gap-3">
 			<a
-				href="/characters/guild/{characterInfo.guild.id}/{characterInfo.character_id}"
+				href={resolve('/characters/guild/[guild]/[id]', {
+					guild: characterInfo.guild.id,
+					id: characterInfo.character_id
+				})}
 				class="btn preset-filled-primary-500"
 			>
 				View now

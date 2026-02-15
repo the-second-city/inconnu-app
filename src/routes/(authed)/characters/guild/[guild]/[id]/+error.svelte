@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { page } from '$app/stores';
+	import { resolve } from '$app/paths';
 
 	const statusCode = $derived($page.status);
 	const isServiceUnavailable = $derived(statusCode === 503);
@@ -53,7 +54,7 @@
 	<p class="mt-6 text-center text-xl">{message}</p>
 	<a
 		class="btn preset-outlined-primary-500 mt-4 text-xl hover:brightness-125"
-		href="/characters"
+		href={resolve('/characters')}
 		title="Go back to the selection page"
 	>
 		Return to Selection

@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { Avatar } from '@skeletonlabs/skeleton-svelte';
 	import { EyeOff } from '@lucide/svelte';
+	import { resolve } from '$app/paths';
 
 	import type { CharacterData, Character, PublicCharacter } from '$lib/types';
 	import Markdown from '$lib/components/Markdown.svelte';
@@ -66,7 +67,7 @@
 {/snippet}
 
 <a
-	href="/characters/guild/{guildId}/{characterId}"
+	href={resolve('/characters/guild/[guild]/[id]', { guild: guildId, id: characterId })}
 	title="View/Edit {data.character.name}"
 	class="{baseCardClasses} card-hover hover:scale-101 {hasProfileContent(data.character.profile)
 		? ''

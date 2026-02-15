@@ -1,5 +1,6 @@
 <script lang="ts">
 	import type { Snippet } from 'svelte';
+	import { resolve } from '$app/paths';
 
 	import { Plus } from '@lucide/svelte';
 
@@ -104,7 +105,7 @@
 
 	<div class="mt-8 flex justify-center">
 		<a
-			href="/wizard"
+			href={resolve('/wizard')}
 			class="btn preset-filled-primary-500 text-lg font-semibold hover:brightness-125"
 		>
 			<Plus size={24} />
@@ -116,7 +117,7 @@
 		<p class="text-surface-100">Your coterie awaits ...</p>
 		<p class="text-xl">{emptyMessage}</p>
 		<a
-			href="/wizard"
+			href={resolve('/wizard')}
 			class="btn preset-filled-primary-500 mt-6 text-lg font-semibold hover:brightness-125"
 		>
 			<Plus size={24} />

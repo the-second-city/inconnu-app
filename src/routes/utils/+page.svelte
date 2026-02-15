@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { resolve } from '$app/paths';
 	import Card from '$lib/components/Card.svelte';
 </script>
 
@@ -23,7 +24,11 @@
 	A small but growing collection of random play aids for <em>Vampore: The Masquerade</em>.
 </p>
 
-<a class="block transition-transform hover:scale-101" href="/utils/beasty" title="Beasty">
+<a
+	class="block transition-transform hover:scale-101"
+	href={resolve('/utils/beasty')}
+	title="Beasty"
+>
 	<Card>
 		{@render heading('Beasty')}
 		<p>

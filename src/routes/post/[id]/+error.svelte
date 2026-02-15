@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { page } from '$app/stores';
+	import { resolve } from '$app/paths';
 
 	import ErrorPanel from '$lib/components/ErrorPanel.svelte';
 
@@ -27,7 +28,7 @@
 	</p>
 	<p class="text-center">
 		<a
-			href="/post/6370147493bf068e9fa108ec"
+			href={resolve('/post/6370147493bf068e9fa108ec')}
 			title="View an example"
 			class="btn preset-tonal-secondary text-xl hover:brightness-125">Example Changelog</a
 		>

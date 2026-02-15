@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { page } from '$app/state';
+	import { resolve } from '$app/paths';
 	import type { Snippet } from 'svelte';
 
 	interface ComponentProps {
@@ -15,7 +16,7 @@
 <a
 	class="flex items-center gap-2 px-2 py-2 hover:shadow-[0_1px_0_0_currentColor] hover:brightness-125"
 	class:active
-	{href}
+	href={resolve(href)}
 	{title}
 >
 	{@render children()}

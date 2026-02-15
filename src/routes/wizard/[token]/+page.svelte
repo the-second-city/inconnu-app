@@ -2,6 +2,7 @@
 	import type { PageData } from './$types';
 	import type { Trait, Splat } from '$lib/types';
 	import { goto } from '$app/navigation';
+	import { resolve } from '$app/paths';
 	import { Avatar } from '@skeletonlabs/skeleton-svelte';
 	import { Loader2 } from '@lucide/svelte';
 	import TraitSheet from '$lib/components/characters/sheets/TraitSheet.svelte';
@@ -145,7 +146,7 @@
 				has_premium: result.has_premium
 			});
 
-			goto('/wizard/success');
+			goto(resolve('/wizard/success'));
 		} catch (error) {
 			alert('An unexpected error occurred. Please try again.');
 			console.error('Error creating character:', error);

@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { page } from '$app/state';
+	import { resolve } from '$app/paths';
 	import { Avatar } from '@skeletonlabs/skeleton-svelte';
 	import { ChevronLeft } from '@lucide/svelte';
 
@@ -37,7 +38,7 @@
 	<div class="relative">
 		<h1 class="h1 flex items-center gap-4">
 			{#if backUrl}
-				<a href={backUrl} class="opacity-60 transition-opacity hover:opacity-100">
+				<a href={resolve(backUrl)} class="opacity-60 transition-opacity hover:opacity-100">
 					<ChevronLeft size={32} />
 				</a>
 			{/if}

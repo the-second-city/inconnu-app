@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { resolve } from '$app/paths';
 	import type { Snippet } from 'svelte';
 
 	interface ComponentProps {
@@ -26,7 +27,7 @@
 		{#if showHome}
 			<a
 				class="btn preset-outlined-primary-500 mt-4 text-xl hover:brightness-125"
-				href="/"
+				href={resolve('/')}
 				title="Go back to the home page"
 			>
 				Return Home

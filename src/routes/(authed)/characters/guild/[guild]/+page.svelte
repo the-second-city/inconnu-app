@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { page } from '$app/state';
+	import { resolve } from '$app/paths';
 	import { Avatar } from '@skeletonlabs/skeleton-svelte';
 	import { ChevronLeft } from '@lucide/svelte';
 	import type { CharacterData, Guild } from '$lib/types';
@@ -15,7 +16,7 @@
 </svelte:head>
 
 <div class="mb-4 flex items-center gap-2">
-	<a href="/characters" class="opacity-60 transition-opacity hover:opacity-100">
+	<a href={resolve('/characters')} class="opacity-60 transition-opacity hover:opacity-100">
 		<ChevronLeft size={32} />
 	</a>
 	<h1 class="h1 flex items-center gap-4">
