@@ -26,6 +26,21 @@ export const stripLeadingArticles = (text: string): string => {
 	return text.replace(/^(The|A|An)\s+/i, '');
 };
 
+/**
+ * Extracts the error detail from a FastAPI HTTPException response.
+ * @param response - The fetch Response object
+ * @param fallback - Default message if detail can't be extracted
+ * @returns The error detail string
+ */
+export const getErrorDetail = async (
+	response: Response,
+	fallback = 'An unexpected error occurred.'
+): Promise<string> => {
+	const data = await response.json().catch(() => null);
+	console.log(data);
+	return data?.detail ?? data?.message ?? fallback;
+};
+
 export const hasProfileContent = (profile: Profile): boolean => {
 	return !!(
 		(profile.description && profile.description.trim()) ||

@@ -1,54 +1,20 @@
 <script lang="ts">
 	import { page } from '$app/stores';
 
-	const statusCode = $derived($page.status);
-	const isServiceUnavailable = $derived(statusCode === 503);
-	const isServerError = $derived(statusCode === 500);
+	import ErrorPanel from '$lib/components/ErrorPanel.svelte';
 
-	const title = $derived(
-		isServiceUnavailable
-			? 'Service Starting | inconnu.app'
-			: isServerError
-				? 'Connection Error | inconnu.app'
-				: 'Characters Unavailable | inconnu.app'
-	);
-	const heading = $derived(
-		isServiceUnavailable
-			? 'Starting up'
-			: isServerError
-				? 'Connection error'
-				: 'Unable to load characters'
-	);
 	const message = $derived(
-		isServiceUnavailable
-			? 'Inconnu is still starting up. Please wait a moment and try again.'
-			: isServerError
-				? 'Unable to connect to bot. Please try again later.'
-				: $page.error?.message || "We couldn't load your characters. Please try again later."
+		$page.error?.message || "We couldn't load your characters. Please try again later."
 	);
 </script>
 
 <svelte:head>
-	<title>{title}</title>
+	<title>Characters Unavailable | inconnu.app</title>
 </svelte:head>
 
-<div class="flex min-h-[50vh] flex-col items-center justify-center">
-	<h1
-		class="text-primary-500 m-0 overflow-hidden text-center text-[12rem] leading-none font-black tracking-tighter md:text-[25rem]"
-	>
-		{statusCode}
-	</h1>
-	<h2
-		class="text-primary-500 -mt-5 overflow-hidden text-center text-[1.7rem] leading-none font-bold tracking-tight uppercase md:-mt-10 md:text-[3.2rem]"
-	>
-		{heading}
-	</h2>
-	<p class="mt-6 text-center text-xl">{message}</p>
-	<a
-		class="btn preset-outlined-primary-500 mt-4 text-xl hover:brightness-125"
-		href="/"
-		title="Go back to the home page"
-	>
-		Return Home
-	</a>
-</div>
+<ErrorPanel title="Characters Unavailable" subtitle={message}>
+	<p class="text-center">
+		<strong>Inconnu</strong> restarted recently and needs to rebuild its caches. Please try again in a
+		few minutes.
+	</p>
+</ErrorPanel>
