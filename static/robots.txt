@@ -4,6 +4,7 @@
 User-agent: *
 Disallow: /characters
 Disallow: /profile
+Disallow: /post
 
 # Allow public pages
 Allow: /
