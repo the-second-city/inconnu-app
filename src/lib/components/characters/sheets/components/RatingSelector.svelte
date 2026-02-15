@@ -15,6 +15,7 @@
 		showLabel?: boolean;
 		editing: boolean;
 		allowsSubtraits: boolean;
+		type?: string;
 	}
 
 	let {
@@ -25,12 +26,16 @@
 		max = 5,
 		showLabel = true,
 		editing,
-		allowsSubtraits
+		allowsSubtraits,
+		type
 	}: ComponentProps = $props();
 
 	let showSubtraits = $state(false);
 	let enablePopover = $derived((allowsSubtraits && editing) || subtraits.length > 0);
 	let hoveredRating = $state<number | null>(null);
+
+	const subtraitLabel = $derived(type === 'discipline' ? 'Power' : 'Specialty');
+	const subtraitsLabel = $derived(type === 'discipline' ? 'Powers' : 'Specialties');
 
 	let newSubtrait = $state('');
 	let normalizedNewSubtrait = $derived(normalize(newSubtrait));
@@ -77,7 +82,7 @@
 		const isDuplicate = subtraits.some(
 			(existing: string) => existing.toLowerCase() === normalizedNewSubtrait.toLowerCase()
 		);
-		if (isDuplicate) return 'Specialty already exists';
+		if (isDuplicate) return `${subtraitLabel} already exists`;
 		return null;
 	});
 	let invalidSubtrait = $derived(subtraitError !== null);
@@ -109,7 +114,7 @@
 				{/snippet}
 				{#snippet content()}
 					<div class="flex flex-col gap-2">
-						<span class="badge text-surface-100 -mt-4 text-base">Specialties</span>
+						<span class="badge text-surface-100 -mt-4 text-base">{subtraitsLabel}</span>
 						<hr class="text-surface-400 -mx-4 -mt-2" />
 						{#if subtraits.length > 0}
 							{#each subtraits as subtrait, i (subtrait)}
@@ -136,7 +141,7 @@
 									type="text"
 									bind:value={newSubtrait}
 									onkeydown={(e) => e.key === 'Enter' && handleAddSubtrait()}
-									placeholder="Add new Specialty ..."
+									placeholder="Add new {subtraitLabel} ..."
 									maxlength={FORM_VALIDATION.traitMaxLength + 1}
 									class="input border"
 									class:text-error-500={invalidSubtrait}
@@ -147,7 +152,7 @@
 									class="btn preset-filled-secondary-500"
 									onclick={handleAddSubtrait}
 									disabled={!isValidSubtrait()}
-									aria-label="Add specialty"
+									aria-label="Add {subtraitLabel.toLowerCase()}"
 								>
 									<CirclePlus />
 								</button>

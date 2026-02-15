@@ -31,4 +31,5 @@
 	{showLabel}
 	{editing}
 	{allowsSubtraits}
+	type={trait.type}
 />
