@@ -75,16 +75,16 @@ Humanity
 >
 	{#snippet trigger()}
 		<div class="flex flex-wrap items-center gap-2">
-			{#each Array(boxStates.filled) as _}
+			{#each Array(boxStates.filled) as _, i (i)}
 				<Filled size={20} />
 			{/each}
-			{#each Array(boxStates.empty) as _}
+			{#each Array(boxStates.empty) as _, i (i)}
 				<Empty size={20} />
 			{/each}
-			{#each Array(boxStates.degeneration) as _}
+			{#each Array(boxStates.degeneration) as _, i (i)}
 				<Degeneration size={20} />
 			{/each}
-			{#each Array(boxStates.stains) as _}
+			{#each Array(boxStates.stains) as _, i (i)}
 				<Stain size={20} />
 			{/each}
 		</div>

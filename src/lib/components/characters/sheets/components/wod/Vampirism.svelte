@@ -38,7 +38,7 @@
 				bind:value={character.generation}
 				aria-label="Select generation"
 			>
-				{#each generations as generation}
+				{#each generations as generation (generation)}
 					<option value={generation}>{generation}</option>
 				{/each}
 			</select>

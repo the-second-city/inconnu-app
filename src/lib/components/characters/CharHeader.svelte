@@ -53,7 +53,7 @@
 		{#if metadata.length > 0}
 			<div class="flex justify-end">
 				<h6 class="text-surface-800-200 flex items-center gap-3 italic">
-					{#each metadata as item, i}
+					{#each metadata as item, i (i)}
 						{#if i > 0 && !item.badge}<span class="opacity-60">•</span>{/if}
 						{#if item.badge}
 							<span class="badge preset-filled-surface-500 text-xs uppercase">{item.name}</span>

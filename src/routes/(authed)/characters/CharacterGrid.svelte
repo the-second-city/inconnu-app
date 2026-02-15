@@ -94,9 +94,9 @@
 
 {#if characters.length > 0}
 	<div class="flex gap-3">
-		{#each columnData as column}
+		{#each columnData as column, colIdx (colIdx)}
 			<div class="flex flex-1 flex-col gap-3">
-				{#each column as item}
+				{#each column as item, itemIdx (itemIdx)}
 					{@render children(item)}
 				{/each}
 			</div>

@@ -108,7 +108,7 @@
 					<div class="flex flex-col gap-2">
 						<span class="badge text-base">Specialties</span>
 						{#if subtraits.length > 0}
-							{#each subtraits as subtrait, i}
+							{#each subtraits as subtrait, i (subtrait)}
 								{@const buttonTitle = `Remove ${subtrait}`}
 								<div class="flex items-center gap-2">
 									<span class="transition-all hover:brightness-125">{subtrait}</span>
@@ -160,7 +160,7 @@
 	{/if}
 	<div class="flex flex-wrap gap-2" onmouseleave={() => (hoveredRating = null)}>
 		{#if editing}
-			{#each circles as circleRating}
+			{#each circles as circleRating (circleRating)}
 				<button
 					type="button"
 					class="rating-circle"
@@ -176,7 +176,7 @@
 			{/each}
 		{:else}
 			<span class="sr-only">{rating} dots</span>
-			{#each circles as circleRating}
+			{#each circles as circleRating (circleRating)}
 				<span class="rating-circle" class:selected={circleRating <= rating} aria-hidden="true"
 				></span>
 			{/each}

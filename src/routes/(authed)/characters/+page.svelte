@@ -25,7 +25,7 @@
 
 {#if guilds.length > 0}
 	<div class="mb-8 flex flex-wrap gap-3">
-		{#each guilds as guild}
+		{#each guilds as guild (guild.id)}
 			<GuildCard {guild} />
 		{/each}
 	</div>

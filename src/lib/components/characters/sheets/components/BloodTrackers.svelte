@@ -22,7 +22,7 @@
 		<!-- Blood Potency -->
 		<div>Blood Potency</div>
 		<div class="flex items-center gap-1">
-			{#each Array(maxBloodPotency) as _, i}
+			{#each Array(maxBloodPotency) as _, i (i)}
 				<div
 					class="h-3 w-3 rounded-full border-2"
 					class:bg-red-500={i < bloodPotency}
@@ -35,7 +35,7 @@
 		<!-- Hunger -->
 		<div>Hunger</div>
 		<div class="flex items-center gap-1">
-			{#each Array(5) as _, i}
+			{#each Array(5) as _, i (i)}
 				{#if i < hunger}
 					<FilledHunger size={20} />
 				{:else}

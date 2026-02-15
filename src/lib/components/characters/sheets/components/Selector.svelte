@@ -33,7 +33,7 @@
 		{#if showPlaceholder}
 			<option value="" disabled>{placeholder}</option>
 		{/if}
-		{#each options as option}
+		{#each options as option (option)}
 			<option value={option}>{option}</option>
 		{/each}
 	</select>

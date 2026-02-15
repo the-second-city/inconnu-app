@@ -51,7 +51,7 @@
 </script>
 
 <div class="space-y-0 font-mono text-sm">
-	{#each lines as line}
+	{#each lines as line, idx (idx)}
 		{#if line.type === 'add'}
 			<div class="border-l-2 border-green-500 bg-green-500/20 px-3 py-0.5">
 				<span class="mr-2 opacity-60 select-none">+</span>{line.text || '\u00A0'}

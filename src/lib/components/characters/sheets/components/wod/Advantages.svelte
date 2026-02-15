@@ -117,7 +117,7 @@
 										bind:value={newAdvantageRating}
 										data-1p-ignore
 									>
-										{#each Array.from({ length: 7 }, (_, i) => i + 1) as rating}
+										{#each Array.from({ length: 7 }, (_, i) => i + 1) as rating (rating)}
 											<option value={rating}>{rating}</option>
 										{/each}
 									</select>

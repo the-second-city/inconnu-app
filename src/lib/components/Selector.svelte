@@ -28,7 +28,7 @@
 	{#if placeholder}
 		<option value="" disabled selected>{placeholder}</option>
 	{/if}
-	{#each options as option}
+	{#each options as option (option)}
 		<option value={option.toLowerCase()}>
 			{option}
 		</option>

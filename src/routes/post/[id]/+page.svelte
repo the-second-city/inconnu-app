@@ -115,7 +115,7 @@
 			bind:value={selectedIndex}
 			class="input input-bordered w-full border px-4 py-2"
 		>
-			{#each history as entry, i}
+			{#each history as entry, i (i)}
 				<option value={i}>
 					{formatDate(entry.date)}{i === history.length - 1 ? ' (Original)' : ''}
 				</option>

@@ -130,7 +130,7 @@
 >
 	{#snippet trigger()}
 		<div class="flex flex-wrap items-center gap-2">
-			{#each [...Array(trackArray.length).keys()].reverse() as index}
+			{#each [...Array(trackArray.length).keys()].reverse() as index (index)}
 				<TrackBox value={trackArray[index]} />
 			{/each}
 		</div>
@@ -141,7 +141,7 @@
 		{:else}
 			<div class="flex flex-col gap-2">
 				<div class="text-md text-center uppercase">{trackLabel}</div>
-				{#each levels as level}
+				{#each levels as level (level.symbol)}
 					<div class="flex items-center justify-between gap-3">
 						<button
 							class="btn preset-tonal-surface"

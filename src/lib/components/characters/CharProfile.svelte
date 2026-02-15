@@ -99,7 +99,7 @@
 
 	<!-- Image gallery -->
 	<div class={galleryClasses}>
-		{#each profile.images as image, i}
+		{#each profile.images as image, i (i)}
 			{@const alt = `${name} - Image ${i + 1}`}
 			<Modal
 				open={activeModalIndex === i}
