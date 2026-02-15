@@ -9,6 +9,8 @@
 	import RatingSelector from '$lib/components/characters/sheets/components/RatingSelector.svelte';
 	import Card from '$lib/components/Card.svelte';
 	import Selector from '$lib/components/Selector.svelte';
+	import ErrorMessage from '$lib/components/ErrorMessage.svelte';
+	import { FORM_CLASSES, FORM_VALIDATION } from '$lib/constants/formStyles';
 	import { creationInfoStore } from '$lib/stores/CreationStore';
 	import { normalize } from '$lib';
 
@@ -75,13 +77,33 @@
 	});
 
 	// Conviction validation
-	const conviction1Error = $derived(conviction1.length > 200 ? 'Maximum 200 characters' : null);
-	const conviction2Error = $derived(conviction2.length > 200 ? 'Maximum 200 characters' : null);
-	const conviction3Error = $derived(conviction3.length > 200 ? 'Maximum 200 characters' : null);
+	const conviction1Error = $derived(
+		conviction1.length > FORM_VALIDATION.convictionMaxLength
+			? `Maximum ${FORM_VALIDATION.convictionMaxLength} characters`
+			: null
+	);
+	const conviction2Error = $derived(
+		conviction2.length > FORM_VALIDATION.convictionMaxLength
+			? `Maximum ${FORM_VALIDATION.convictionMaxLength} characters`
+			: null
+	);
+	const conviction3Error = $derived(
+		conviction3.length > FORM_VALIDATION.convictionMaxLength
+			? `Maximum ${FORM_VALIDATION.convictionMaxLength} characters`
+			: null
+	);
 
 	// Biography validation
-	const descriptionError = $derived(description.length > 1024 ? 'Maximum 1024 characters' : null);
-	const historyError = $derived(history.length > 1024 ? 'Maximum 1024 characters' : null);
+	const descriptionError = $derived(
+		description.length > FORM_VALIDATION.descriptionMaxLength
+			? `Maximum ${FORM_VALIDATION.descriptionMaxLength} characters`
+			: null
+	);
+	const historyError = $derived(
+		history.length > FORM_VALIDATION.historyMaxLength
+			? `Maximum ${FORM_VALIDATION.historyMaxLength} characters`
+			: null
+	);
 
 	const isFormValid = $derived(
 		isValidCharacterName &&
@@ -154,9 +176,6 @@
 			submitting = false;
 		}
 	}
-
-	const labelClass = 'mb-2 block text-lg uppercase tracking-wide';
-	const inputClass = 'input input-bordered mb-3 block w-full border px-4 py-3 leading-tight';
 </script>
 
 <svelte:head>
@@ -186,10 +205,10 @@
 		<!-- Group 1: Basics -->
 		<div class="-mx-3 flex flex-wrap">
 			<div class="w-full px-3">
-				<label class={labelClass} for="character-name">Name</label>
+				<label class={FORM_CLASSES.label} for="character-name">Name</label>
 				<input
 					bind:value={name}
-					class="{inputClass} {nameError ? 'border-error-500' : ''}"
+					class="{FORM_CLASSES.textInput} {nameError ? 'border-error-500' : ''}"
 					id="character-name"
 					type="text"
 					maxlength="37"
@@ -197,9 +216,7 @@
 					aria-required="true"
 					aria-describedby={nameError ? 'name-error' : undefined}
 				/>
-				{#if nameError}
-					<p id="name-error" class="text-error-500 mt-1 mb-2 text-sm">{nameError}</p>
-				{/if}
+				<ErrorMessage error={nameError} id="name-error" />
 			</div>
 
 			<!-- Health -->
@@ -234,78 +251,68 @@
 		<!-- Group 2: Convictions -->
 		<div class="-mx-3 flex flex-wrap">
 			<div class="w-full px-3">
-				<label class={labelClass} for="conviction-1">Convictions</label>
+				<label class={FORM_CLASSES.label} for="conviction-1">Convictions</label>
 				<input
 					bind:value={conviction1}
-					class="{inputClass} {conviction1Error ? 'border-error-500' : ''}"
+					class="{FORM_CLASSES.textInput} {conviction1Error ? 'border-error-500' : ''}"
 					id="conviction-1"
 					type="text"
-					maxlength="200"
+					maxlength={FORM_VALIDATION.convictionMaxLength + 1}
 					placeholder="First conviction"
 					aria-describedby={conviction1Error ? 'conviction-1-error' : undefined}
 				/>
-				{#if conviction1Error}
-					<p id="conviction-1-error" class="text-error-500 mt-1 mb-2 text-sm">{conviction1Error}</p>
-				{/if}
+				<ErrorMessage error={conviction1Error} id="conviction-1-error" />
 				<input
 					bind:value={conviction2}
-					class="{inputClass} {conviction2Error ? 'border-error-500' : ''}"
+					class="{FORM_CLASSES.textInput} {conviction2Error ? 'border-error-500' : ''}"
 					type="text"
-					maxlength="200"
+					maxlength={FORM_VALIDATION.convictionMaxLength + 1}
 					placeholder="Second conviction"
 					aria-label="Second conviction"
 					aria-describedby={conviction2Error ? 'conviction-2-error' : undefined}
 				/>
-				{#if conviction2Error}
-					<p id="conviction-2-error" class="text-error-500 mt-1 mb-2 text-sm">{conviction2Error}</p>
-				{/if}
+				<ErrorMessage error={conviction2Error} id="conviction-2-error" />
 				<input
 					bind:value={conviction3}
-					class="{inputClass} {conviction3Error ? 'border-error-500' : ''}"
+					class="{FORM_CLASSES.textInput} {conviction3Error ? 'border-error-500' : ''}"
 					type="text"
-					maxlength="200"
+					maxlength={FORM_VALIDATION.convictionMaxLength + 1}
 					placeholder="Third conviction"
 					aria-label="Third conviction"
 					aria-describedby={conviction3Error ? 'conviction-3-error' : undefined}
 				/>
-				{#if conviction3Error}
-					<p id="conviction-3-error" class="text-error-500 mt-1 mb-2 text-sm">{conviction3Error}</p>
-				{/if}
+				<ErrorMessage error={conviction3Error} id="conviction-3-error" />
 			</div>
 		</div>
 
 		<!-- Group 3: Biography -->
 		<div class="-mx-3 flex flex-wrap">
 			<div class="w-full px-3">
-				<label class={labelClass} for="description">Description</label>
+				<label class={FORM_CLASSES.label} for="description">Description</label>
 				<textarea
 					bind:value={description}
-					class="{inputClass} {descriptionError ? 'border-error-500' : ''}"
+					class="{FORM_CLASSES.textarea} {descriptionError ? 'border-error-500' : ''}"
 					id="description"
 					rows="4"
-					maxlength="1024"
+					maxlength={FORM_VALIDATION.descriptionMaxLength + 1}
 					placeholder="Describe your character..."
 					aria-describedby={descriptionError ? 'description-error' : undefined}
 				></textarea>
-				{#if descriptionError}
-					<p id="description-error" class="text-error-500 mt-1 mb-2 text-sm">{descriptionError}</p>
-				{/if}
+				<ErrorMessage error={descriptionError} id="description-error" />
 			</div>
 
 			<div class="w-full px-3">
-				<label class={labelClass} for="history">History</label>
+				<label class={FORM_CLASSES.label} for="history">History</label>
 				<textarea
 					bind:value={history}
-					class="{inputClass} {historyError ? 'border-error-500' : ''}"
+					class="{FORM_CLASSES.textarea} {historyError ? 'border-error-500' : ''}"
 					id="history"
 					rows="4"
-					maxlength="1024"
+					maxlength={FORM_VALIDATION.historyMaxLength + 1}
 					placeholder="Your character's background and history..."
 					aria-describedby={historyError ? 'history-error' : undefined}
 				></textarea>
-				{#if historyError}
-					<p id="history-error" class="text-error-500 mt-1 mb-2 text-sm">{historyError}</p>
-				{/if}
+				<ErrorMessage error={historyError} id="history-error" />
 			</div>
 		</div>
 

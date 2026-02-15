@@ -3,6 +3,8 @@
 	import { CirclePlus, CircleX, ListPlus } from '@lucide/svelte';
 
 	import { insensitiveSort, isValidTraitName, normalize } from '$lib';
+	import { FORM_VALIDATION } from '$lib/constants/formStyles';
+	import ErrorMessage from '$lib/components/ErrorMessage.svelte';
 
 	interface ComponentProps {
 		name?: string;
@@ -69,7 +71,8 @@
 
 	let subtraitError = $derived.by(() => {
 		if (normalizedNewSubtrait.length === 0) return null;
-		if (normalizedNewSubtrait.length > 20) return 'Maximum 20 characters';
+		if (normalizedNewSubtrait.length > FORM_VALIDATION.traitMaxLength)
+			return 'Maximum 20 characters';
 		if (!isValidTraitName(normalizedNewSubtrait)) return 'Letters, spaces, and underscores only';
 		const isDuplicate = subtraits.some(
 			(existing: string) => existing.toLowerCase() === normalizedNewSubtrait.toLowerCase()
@@ -133,6 +136,7 @@
 									bind:value={newSubtrait}
 									onkeydown={(e) => e.key === 'Enter' && handleAddSubtrait()}
 									placeholder="Add new Specialty ..."
+									maxlength={FORM_VALIDATION.traitMaxLength + 1}
 									class="input border"
 									class:text-error-500={invalidSubtrait}
 									class:border-error-500={invalidSubtrait}
@@ -147,9 +151,7 @@
 									<CirclePlus />
 								</button>
 							</div>
-							{#if subtraitError}
-								<p id="subtrait-error" class="text-error-500 mt-1 text-sm">{subtraitError}</p>
-							{/if}
+							<ErrorMessage error={subtraitError} id="subtrait-error" />
 						{/if}
 					</div>
 				{/snippet}

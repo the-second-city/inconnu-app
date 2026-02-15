@@ -1,4 +1,6 @@
 <script lang="ts">
+	import { FORM_CLASSES } from '$lib/constants/formStyles';
+
 	interface ComponentProps {
 		label: string;
 		options: string[];
@@ -16,15 +18,12 @@
 		placeholder,
 		required = false
 	}: ComponentProps = $props();
-
-	const labelClass = 'mb-2 block text-lg uppercase tracking-wide';
-	const selectClass = 'input input-bordered mb-3 block w-full border px-4 py-3 leading-tight';
 </script>
 
-<label class={labelClass} for={id}>
+<label class={FORM_CLASSES.label} for={id}>
 	{label}
 </label>
-<select {id} bind:value class={selectClass} aria-required={required}>
+<select {id} bind:value class={FORM_CLASSES.selectInput} aria-required={required}>
 	{#if placeholder}
 		<option value="" disabled selected>{placeholder}</option>
 	{/if}

@@ -6,8 +6,10 @@
 	import type { Trait } from '$lib/types';
 	import { isValidTraitName, normalize } from '$lib';
 	import { getTraitOrder } from '$lib/data/trait-order';
+	import { FORM_VALIDATION } from '$lib/constants/formStyles';
 
 	import Card from '$lib/components/Card.svelte';
+	import ErrorMessage from '$lib/components/ErrorMessage.svelte';
 	import TraitSelector from './TraitSelector.svelte';
 
 	interface ComponentProps {
@@ -66,7 +68,7 @@
 	let normalizedTrait = $derived(normalize(newTraitName));
 	let traitError = $derived.by(() => {
 		if (normalizedTrait.length === 0) return null;
-		if (normalizedTrait.length > 20) return 'Maximum 20 characters';
+		if (normalizedTrait.length > FORM_VALIDATION.traitMaxLength) return 'Maximum 20 characters';
 		if (!isValidTraitName(normalizedTrait)) return 'Letters and underscores only';
 
 		const lowercased = normalizedTrait.toLowerCase();
@@ -114,6 +116,7 @@
 				bind:value={newTraitName}
 				onkeydown={(e) => e.key === 'Enter' && addTrait()}
 				{placeholder}
+				maxlength={FORM_VALIDATION.traitMaxLength + 1}
 				class="input min-w-0 flex-1 border"
 				class:text-error-500={traitError}
 				class:border-error-500={traitError}
@@ -129,8 +132,6 @@
 				<CirclePlus />
 			</button>
 		</div>
-		{#if traitError}
-			<p id="trait-error" class="text-error-500 mt-1 text-sm">{traitError}</p>
-		{/if}
+		<ErrorMessage error={traitError} id="trait-error" />
 	{/if}
 </Card>
