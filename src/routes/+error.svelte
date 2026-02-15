@@ -1,5 +1,5 @@
 <svelte:head>
-	<title>Page Not Found | inconnu.app</title>
+	<title>Page Not Found | Inconnu</title>
 </svelte:head>
 
 <div class="flex min-h-[50vh] flex-col items-center justify-center">

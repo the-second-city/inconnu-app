@@ -1,5 +1,5 @@
 <svelte:head>
-	<title>Session Not Found | inconnu.app</title>
+	<title>Session Not Found | Inconnu</title>
 </svelte:head>
 
 <div class="flex min-h-[50vh] flex-col items-center justify-center gap-4 px-4">

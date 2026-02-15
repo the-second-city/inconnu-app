@@ -12,7 +12,7 @@
 </script>
 
 <svelte:head>
-	<title>{characterData.character.name} | inconnu.app</title>
+	<title>{characterData.character.name} | Inconnu</title>
 	<meta property="og:title" content={`${characterData.character.name} | Inconnu`} />
 	<meta
 		property="og:description"

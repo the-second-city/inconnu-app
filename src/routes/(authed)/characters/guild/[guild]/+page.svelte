@@ -11,7 +11,7 @@
 </script>
 
 <svelte:head>
-	<title>{guild.name} Characters | inconnu.app</title>
+	<title>{guild.name} Characters | Inconnu</title>
 </svelte:head>
 
 <div class="mb-4 flex items-center gap-2">

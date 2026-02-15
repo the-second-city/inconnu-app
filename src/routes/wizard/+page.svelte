@@ -4,7 +4,7 @@
 </script>
 
 <svelte:head>
-	<title>Character Wizard | inconnu.app</title>
+	<title>Character Wizard | Inconnu</title>
 	<meta property="og:title" content="Character Wizard | Inconnu" />
 	<meta
 		property="og:description"

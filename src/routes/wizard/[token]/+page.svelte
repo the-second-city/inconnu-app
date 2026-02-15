@@ -159,7 +159,7 @@
 </script>
 
 <svelte:head>
-	<title>{title} | inconnu.app</title>
+	<title>{title} | Inconnu</title>
 	<meta property="og:title" content={title} />
 	<meta
 		property="og:description"

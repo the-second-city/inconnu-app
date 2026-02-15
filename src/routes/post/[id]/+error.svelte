@@ -12,7 +12,7 @@
 </script>
 
 <svelte:head>
-	<title>Error Fetching Changelog | inconnu.app</title>
+	<title>Error Fetching Changelog | Inconnu</title>
 </svelte:head>
 
 <ErrorPanel title="Error Fetching Changelog" subtitle={message}>

@@ -20,7 +20,7 @@
 </script>
 
 <svelte:head>
-	<title>Characters | inconnu.app</title>
+	<title>Characters | Inconnu</title>
 </svelte:head>
 
 {#if guilds.length > 0}

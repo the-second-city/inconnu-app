@@ -3,7 +3,7 @@
 </script>
 
 <svelte:head>
-	<title>Roleposts | inconnu.app</title>
+	<title>Roleposts | Inconnu</title>
 </svelte:head>
 
 <h1 class="h1 font-black">Roleposts</h1>

@@ -24,7 +24,7 @@
 </script>
 
 <svelte:head>
-	<title>Character Created | inconnu.app</title>
+	<title>Character Created | Inconnu</title>
 </svelte:head>
 
 <div class="card preset-tonal p-5">

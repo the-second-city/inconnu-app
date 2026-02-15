@@ -43,7 +43,7 @@
 </script>
 
 <svelte:head>
-	<title>{changelog.character.name} — Rolepost History | inconnu.app</title>
+	<title>{changelog.character.name} — Rolepost History | Inconnu</title>
 	<meta property="og:title" content={`${changelog.character.name} — Rolepost History | Inconnu`} />
 	<meta
 		property="og:description"

@@ -9,7 +9,7 @@
 </script>
 
 <svelte:head>
-	<title>Characters Unavailable | inconnu.app</title>
+	<title>Characters Unavailable | Inconnu</title>
 </svelte:head>
 
 <ErrorPanel title="Characters Unavailable" subtitle={message}>

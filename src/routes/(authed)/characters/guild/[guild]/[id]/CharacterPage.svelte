@@ -53,7 +53,7 @@
 </script>
 
 <svelte:head>
-	<title>{character.name} | inconnu.app</title>
+	<title>{character.name} | Inconnu</title>
 </svelte:head>
 
 <CharHeader

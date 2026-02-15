@@ -8,12 +8,12 @@
 
 	const title = $derived(
 		isServiceUnavailable
-			? 'Service Starting | inconnu.app'
+			? 'Service Starting | Inconnu'
 			: isServerError
-				? 'Connection Error | inconnu.app'
+				? 'Connection Error | Inconnu'
 				: isNotFound
-					? 'Character Not Found | inconnu.app'
-					: 'Error | inconnu.app'
+					? 'Character Not Found | Inconnu'
+					: 'Error | Inconnu'
 	);
 	const heading = $derived(
 		isServiceUnavailable

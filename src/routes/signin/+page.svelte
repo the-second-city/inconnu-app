@@ -6,7 +6,7 @@
 </script>
 
 <svelte:head>
-	<title>Sign In | inconnu.app</title>
+	<title>Sign In | Inconnu</title>
 	<meta property="og:title" content="Sign In | Inconnu" />
 	<meta
 		property="og:description"
