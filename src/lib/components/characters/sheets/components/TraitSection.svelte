@@ -33,7 +33,7 @@
 	<div
 		class="flex flex-col items-stretch justify-between gap-3 sm:flex-row sm:flex-wrap sm:items-center"
 	>
-		{#each subs as sub, i (sub)}
+		{#each subs as sub (sub)}
 			<TraitColumn name={sub} {cat} bind:traits {editing} {allowsSubtraits} />
 		{/each}
 	</div>
@@ -42,7 +42,7 @@
 	<div class="flex flex-col gap-3">
 		<h2 class="h2 text-2xl uppercase">{title}</h2>
 		<div class="flex flex-col gap-3">
-			{#each subs as sub, i (sub)}
+			{#each subs as sub (sub)}
 				<TraitColumn name={sub} {cat} bind:traits {editing} {allowsSubtraits} />
 			{/each}
 		</div>
