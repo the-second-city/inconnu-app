@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { DISCORD_URL } from '$lib';
 	import { slide } from 'svelte/transition';
 	import { afterNavigate } from '$app/navigation';
 	import { resolve } from '$app/paths';
@@ -56,7 +57,7 @@
 
 {#snippet discord()}
 	<NavButton
-		href="https://discord.gg/QHnCdSPeEE"
+		href={DISCORD_URL}
 		title="Join the Discord server"
 		color="preset-outlined-secondary-500"
 		full={true}

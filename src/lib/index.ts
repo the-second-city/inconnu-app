@@ -41,6 +41,8 @@ export const getErrorDetail = async (
 	return data?.detail ?? data?.message ?? fallback;
 };
 
+export const DISCORD_URL = 'https://discord.gg/QHnCdSPeEE';
+
 export const hasProfileContent = (profile: Profile): boolean => {
 	return !!(
 		(profile.description && profile.description.trim()) ||

@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { DISCORD_URL } from '$lib';
 	import Ankh from '$lib/components/Ankh.svelte';
 
 	const premiumLinkClasses = 'text-secondary-300 font-semibold underline hover:no-underline';
@@ -43,7 +44,7 @@
 			<a
 				class="btn text-white hover:brightness-125"
 				style="background-color: #5865F2;"
-				href="https://discord.gg/QHnCdSPeEE"
+				href={DISCORD_URL}
 				title="Join our Discord"
 				target="_blank"
 			>

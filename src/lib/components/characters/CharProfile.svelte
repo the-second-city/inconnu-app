@@ -3,6 +3,7 @@
 	import { Eye, Skull } from '@lucide/svelte';
 
 	import type { Profile, Splat } from '$lib/types';
+	import { DISCORD_URL } from '$lib/index';
 	import Markdown from '$lib/components/Markdown.svelte';
 
 	interface ComponentProps {
@@ -124,4 +125,22 @@
 		{/each}
 	</div>
 	<!-- End image gallery -->
+</div>
+
+<!-- Premium CTA and abuse reporting -->
+<div class="text-surface-100 mt-16 text-center">
+	<small>
+		<p>
+			Update profile via <code class="text-secondary-100 text-xs"
+				>/character profile edit:{name}</code
+			>.
+		</p>
+		<p>
+			Upload images via <code class="text-secondary-100 text-xs">/character images upload</code>.
+		</p>
+		<p>
+			Problem?
+			<a href={DISCORD_URL} title="Contact on Discord" class="anchor">Reach out on Discord.</a>
+		</p></small
+	>
 </div>

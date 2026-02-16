@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { DISCORD_URL } from '$lib';
 	import { Copyright } from '@lucide/svelte';
 
 	const currentYear = new Date().getFullYear();
@@ -9,15 +10,12 @@
 		<Copyright size={17} class="mr-1 inline" />{currentYear} tiltowait
 	</p>
 	<p>This site uses cookies for necessary functionality only.</p>
-	<p>This site is in alpha. If something is broken, reach out on Discord.</p>
 	<div class="bullet-list">
 		<span>
 			<a class="anchor" href="https://patreon.com/tiltowait" title="Become a patron">Patreon </a>
 		</span>
 		<span>
-			<a class="anchor" href="https://discord.gg/QHnCdSPeEE" title="Join the Discord server">
-				Discord
-			</a>
+			<a class="anchor" href={DISCORD_URL} title="Join the Discord server"> Discord </a>
 		</span>
 		<span>
 			<a class="anchor" href="https://github.com/tiltowait/inconnu" title="View on GitHub">GitHub</a
