@@ -1,5 +1,4 @@
 <script lang="ts">
-	import { resolve } from '$app/paths';
 	import type { Snippet } from 'svelte';
 
 	interface ComponentProps {
@@ -13,12 +12,6 @@
 	let { href, title, target = null, color, full, children }: ComponentProps = $props();
 </script>
 
-<a
-	class="btn {color} hover:brightness-125"
-	class:w-full={full}
-	href={resolve(href)}
-	{title}
-	{target}
->
+<a class="btn {color} hover:brightness-125" class:w-full={full} {href} {title} {target}>
 	{@render children()}
 </a>
