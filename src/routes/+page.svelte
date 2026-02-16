@@ -1,5 +1,7 @@
 <script lang="ts">
 	import Ankh from '$lib/components/Ankh.svelte';
+
+	const premiumLinkClasses = 'text-secondary-300 font-semibold underline hover:no-underline';
 </script>
 
 <svelte:head>
@@ -112,12 +114,37 @@
 		<div class="text-center md:text-left">
 			<h2 class="h2 text-secondary-300 mb-3 font-semibold">Premium Features</h2>
 			<p class="text-lg">
-				Avoid the Second Inquisition with Premium! <a
+				Avoid the Second Inquisition with Premium! As a thank-you for helping <strong
+					>Inconnu's</strong
+				>
+				development,
+				<a
 					href="https://patreon.com/tiltowait"
+					class={premiumLinkClasses}
 					title="Patreon"
-					class="text-secondary-300 font-semibold underline hover:no-underline"
-					target="_blank">Patreon supporters</a
-				> can upload unlimited character images and send Discord messages as their characters with Roleposts.
+					target="_blank"
+				>
+					Patreon supporters
+				</a>
+				can upload unlimited
+				<a
+					href="https://docs.inconnu.app/premium/character-images"
+					title="Upload character images"
+					class={premiumLinkClasses}
+					target="_blank"
+				>
+					character images
+				</a>
+				and use
+				<a
+					href="https://docs.inconnu.app/premium/roleposting"
+					class={premiumLinkClasses}
+					title="Send messages with Roleposts"
+					target="_blank"
+				>
+					Roleposts
+				</a>
+				to send Discord messages as their characters.
 			</p>
 		</div>
 		<div>
