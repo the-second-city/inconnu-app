@@ -47,7 +47,7 @@
 	});
 
 	const title = $derived(`New Character on ${data.guild.name}`);
-	const characterType = $derived(data.spc ? 'New SPC' : 'New character');
+	const characterType = $derived(data.spc ? 'New SPC' : 'New Character');
 
 	// Format splat names for display
 	const formatSplat = (str: string) => {
@@ -190,7 +190,7 @@
 
 <div class="flex flex-wrap items-start justify-between gap-2">
 	<div>
-		<h1 class="h1 tracking-wide uppercase">{characterType}</h1>
+		<h1 class="h1 font-black tracking-wide">{characterType}</h1>
 		<div class="flex justify-end">
 			<h6 class="text-surface-800-200 flex items-center gap-4 italic">
 				{data.guild.name}

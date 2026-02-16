@@ -36,7 +36,7 @@
 
 <div class="flex flex-wrap items-start justify-between gap-2">
 	<div class="relative">
-		<h1 class="h1 flex items-center gap-4">
+		<h1 class="h1 flex items-center gap-4 font-black">
 			{#if backUrl}
 				<a href={resolve(backUrl)} class="opacity-60 transition-opacity hover:opacity-100">
 					<ChevronLeft size={32} />

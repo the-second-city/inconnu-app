@@ -56,7 +56,7 @@
 	<!-- For Players -->
 	<div class="grid items-center gap-8 md:grid-cols-2">
 		<div class="order-1">
-			<h2 class="h2 mb-4">For Players</h2>
+			<h2 class="h2 mb-4 font-semibold">For Players</h2>
 			<p>
 				Unlike other Discord bots, <strong>Inconnu</strong> tracks your characters' stats. No need to
 				remember your Dexterity rating while fleeing Hunters&mdash;just roll it!
@@ -88,7 +88,7 @@
 			<img src="/images/hero/discord-demo.webp" alt="Discord showcase" />
 		</div>
 		<div class="order-1 md:order-2">
-			<h2 class="h2 mb-4">For Storytellers</h2>
+			<h2 class="h2 mb-4 font-semibold">For Storytellers</h2>
 			<p>
 				<strong>Inconnu</strong> keeps your game organized. Storytellers can manage SPCs, track their
 				players, and minimize metagaming by making hidden rolls on their behalf.
@@ -110,7 +110,7 @@
 	<!-- Premium -->
 	<div class="card preset-glass-secondary flex flex-col items-center gap-6 p-8 md:flex-row">
 		<div class="text-center md:text-left">
-			<h2 class="h2 text-secondary-300 mb-3">Premium Features</h2>
+			<h2 class="h2 text-secondary-300 mb-3 font-semibold">Premium Features</h2>
 			<p class="text-lg">
 				Avoid the Second Inquisition with Premium! <a
 					href="https://patreon.com/tiltowait"

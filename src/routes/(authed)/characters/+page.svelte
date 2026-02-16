@@ -31,7 +31,7 @@
 	</div>
 {/if}
 
-<h1 class="h1">Your Characters</h1>
+<h1 class="h1 font-black">Your Characters</h1>
 
 <hr class="border-surface-500 mx-auto mb-5" />
 

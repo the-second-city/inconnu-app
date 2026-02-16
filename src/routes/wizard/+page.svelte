@@ -14,7 +14,7 @@
 </svelte:head>
 
 <div class="flex flex-col gap-6">
-	<h1 class="h1">Character Wizard</h1>
+	<h1 class="h1 font-black">Character Wizard</h1>
 	<hr class="border-surface-400" />
 
 	<p class="mb-4">

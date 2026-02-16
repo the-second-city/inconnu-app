@@ -49,7 +49,7 @@
 </svelte:head>
 
 <div class="flex flex-col gap-2">
-	<h1 class="h1">Beasty</h1>
+	<h1 class="h1 font-black">Beasty</h1>
 
 	<p class="mb-4">
 		In Discord play-by-post, many servers use <em>italic text</em> to indicate internal thoughts and

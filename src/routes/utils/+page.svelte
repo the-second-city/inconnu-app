@@ -18,7 +18,7 @@
 	<hr class="text-surface-300 py-2" />
 {/snippet}
 
-<h1 class="h1">Utilities</h1>
+<h1 class="h1 font-black">Utilities</h1>
 
 <p class="px-2">
 	A small but growing collection of random play aids for <em>Vampore: The Masquerade</em>.

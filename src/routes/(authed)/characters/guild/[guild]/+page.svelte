@@ -19,7 +19,7 @@
 	<a href={resolve('/characters')} class="opacity-60 transition-opacity hover:opacity-100">
 		<ChevronLeft size={32} />
 	</a>
-	<h1 class="h1 flex items-center gap-4">
+	<h1 class="h1 flex items-center gap-4 font-black">
 		<Avatar src={guild.icon ?? undefined} name="{guild.name} icon" />
 		{guild.name}
 	</h1>

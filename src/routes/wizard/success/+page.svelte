@@ -32,7 +32,7 @@
 	{#if characterInfo}
 		<div class="mb-6 flex justify-center">
 			<div>
-				<h1 class="h1 text-center">{characterInfo.character_name}</h1>
+				<h1 class="h1 text-center font-black">{characterInfo.character_name}</h1>
 				<h4 class="h4 text-center">HAS BEEN CREATED</h4>
 			</div>
 		</div>
@@ -87,7 +87,7 @@
 					<Heart size={24} />
 				</div>
 				<div class="flex-1">
-					<h4 class="h4 mb-3">Support Inconnu</h4>
+					<h4 class="h4 mb-3 font-semibold">Support Inconnu</h4>
 					<p class="text-surface-900-100 mb-4">
 						Unlock premium features and help keep Inconnu running. Patrons get:
 					</p>

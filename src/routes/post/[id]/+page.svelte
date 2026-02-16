@@ -51,7 +51,7 @@
 	/>
 </svelte:head>
 
-<h1 class="h1">Rolepost History</h1>
+<h1 class="h1 font-black">Rolepost History</h1>
 
 {#if deletionWarning}
 	<div class="card preset-filled-warning-500 p-3 text-center font-semibold">
