@@ -69,14 +69,16 @@
 	<div class="grid grid-cols-1 gap-2 sm:grid-cols-2">
 		<Card extraClasses="min-h-[10rem]">
 			{#if beasty}
-				<p>{beasty}</p>
+				<p style="overflow-wrap: break-word;">{beasty}</p>
 			{:else}
 				<p class="text-surface-800-200 italic"><em>Discord text will show here.</em></p>
 			{/if}
 		</Card>
 		<Card extraClasses="min-h-[10rem]">
 			{#if beasty}
-				<Markdown content={beasty} />
+				<div style="overflow-wrap: break-word;">
+					<Markdown content={beasty} />
+				</div>
 			{:else}
 				<p class="text-surface-800-200 italic">Rendered text will display here.</p>
 			{/if}
