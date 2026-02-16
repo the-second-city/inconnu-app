@@ -22,7 +22,7 @@
 
 	<p class="mt-6 text-xl">
 		Stay in the shadows with <strong>Inconnu</strong>, a Discord dice bot for
-		<em>Vampire: The Masquerade 5th Edition</em>
+		<em class="text-secondary-100">Vampire: The Masquerade 5th Edition</em>
 		featuring full character management, character sheets, smart rolls, macros, and more.
 	</p>
 
