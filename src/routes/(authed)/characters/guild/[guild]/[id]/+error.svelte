@@ -6,6 +6,7 @@
 	const isServiceUnavailable = $derived(statusCode === 503);
 	const isServerError = $derived(statusCode === 500);
 	const isNotFound = $derived(statusCode === 404);
+	const isInvalidId = $derived(statusCode === 422);
 
 	const title = $derived(
 		isServiceUnavailable
@@ -14,7 +15,9 @@
 				? 'Connection Error | Inconnu'
 				: isNotFound
 					? 'Character Not Found | Inconnu'
-					: 'Error | Inconnu'
+					: isInvalidId
+						? 'Invalid Character | Inconnu'
+						: 'Error | Inconnu'
 	);
 	const heading = $derived(
 		isServiceUnavailable
@@ -23,7 +26,9 @@
 				? 'Connection error'
 				: isNotFound
 					? 'Character not found'
-					: 'Something went wrong'
+					: isInvalidId
+						? 'Invalid character ID'
+						: 'Something went wrong'
 	);
 	const message = $derived(
 		isServiceUnavailable
@@ -32,7 +37,9 @@
 				? 'Unable to connect to bot. Please try again later.'
 				: isNotFound
 					? "Either it doesn't exist, or it belongs to someone else."
-					: page.error?.message || 'An unexpected error occurred. Please try again later.'
+					: isInvalidId
+						? 'The character ID in the URL is not valid.'
+						: page.error?.message || 'An unexpected error occurred. Please try again later.'
 	);
 </script>
 

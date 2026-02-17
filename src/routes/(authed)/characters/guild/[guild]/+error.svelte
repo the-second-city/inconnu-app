@@ -6,6 +6,7 @@
 	const isServiceUnavailable = $derived(statusCode === 503);
 	const isServerError = $derived(statusCode === 500);
 	const isNotFound = $derived(statusCode === 404);
+	const isInvalidGuild = $derived(statusCode === 422);
 
 	const title = $derived(
 		isServiceUnavailable
@@ -14,7 +15,9 @@
 				? 'Connection Error | Inconnu'
 				: isNotFound
 					? 'Guild Not Found | Inconnu'
-					: 'Error | Inconnu'
+					: isInvalidGuild
+						? 'Invalid Guild | Inconnu'
+						: 'Error | Inconnu'
 	);
 	const heading = $derived(
 		isServiceUnavailable
@@ -23,7 +26,9 @@
 				? 'Connection error'
 				: isNotFound
 					? 'Guild not found'
-					: 'Something went wrong'
+					: isInvalidGuild
+						? 'Invalid guild ID'
+						: 'Something went wrong'
 	);
 	const message = $derived(
 		isServiceUnavailable
@@ -32,7 +37,9 @@
 				? 'Unable to connect to bot. Please try again later.'
 				: isNotFound
 					? "This guild doesn't exist or you don't have access to it."
-					: page.error?.message || 'An unexpected error occurred. Please try again later.'
+					: isInvalidGuild
+						? 'The guild ID in the URL is not valid.'
+						: page.error?.message || 'An unexpected error occurred. Please try again later.'
 	);
 </script>
 
