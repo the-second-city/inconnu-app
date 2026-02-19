@@ -37,7 +37,6 @@ export const getErrorDetail = async (
 	fallback = 'An unexpected error occurred.'
 ): Promise<string> => {
 	const data = await response.json().catch(() => null);
-	console.log(data);
 	return data?.detail ?? data?.message ?? fallback;
 };
 

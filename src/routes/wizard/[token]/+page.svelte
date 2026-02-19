@@ -12,7 +12,7 @@
 	import ErrorMessage from '$lib/components/ErrorMessage.svelte';
 	import { FORM_CLASSES, FORM_VALIDATION } from '$lib/constants/formStyles';
 	import { creationInfoStore } from '$lib/stores/CreationStore';
-	import { normalize } from '$lib';
+	import { normalize, getErrorDetail } from '$lib';
 
 	let { data }: { data: PageData } = $props();
 	let traits = $state<Trait[]>(data.traits);
@@ -146,21 +146,13 @@
 				body: JSON.stringify(payload)
 			});
 
-			console.log(response.status);
 			if (!response.ok) {
 				if (response.status === 404) {
 					alert('This wizard has expired. Please run the command again in Discord.');
 					goto(resolve('/wizard'));
 					return;
 				}
-				const errorData = await response.json().catch(() => null);
-				let message = 'Failed to create character.';
-				if (errorData?.detail && Array.isArray(errorData.detail)) {
-					message = errorData.detail.map((e: { msg: string }) => e.msg).join('\n');
-				} else if (errorData?.message) {
-					message = errorData.message;
-				}
-				alert(message);
+				alert(await getErrorDetail(response, 'Failed to create character.'));
 				return;
 			}
 
