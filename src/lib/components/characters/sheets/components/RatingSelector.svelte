@@ -78,7 +78,7 @@
 		if (normalizedNewSubtrait.length === 0) return null;
 		if (normalizedNewSubtrait.length > FORM_VALIDATION.traitMaxLength)
 			return 'Maximum 20 characters';
-		if (!isValidTraitName(normalizedNewSubtrait)) return 'Letters, spaces, and underscores only';
+		if (!isValidTraitName(normalizedNewSubtrait)) return 'Letters and underscores only';
 		const isDuplicate = subtraits.some(
 			(existing: string) => existing.toLowerCase() === normalizedNewSubtrait.toLowerCase()
 		);
