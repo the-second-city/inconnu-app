@@ -50,8 +50,7 @@ export const POST: RequestHandler = async ({ params, request }) => {
 		});
 
 		if (!response.ok) {
-			const errorData = await response.json().catch(() => ({}));
-			error(response.status, errorData.message || 'Failed to create character.');
+			return response;
 		}
 
 		const data = await response.json();
