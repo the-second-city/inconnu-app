@@ -46,7 +46,7 @@
 
 	<div>
 		<p class="mb-2">
-			<strong>Note:</strong> Wizard links are temporary and expire after 20 minutes. Each link is unique
+			<strong>Note:</strong> Wizard links are temporary and expire after 30 minutes. Each link is unique
 			and can only be used once.
 		</p>
 	</div>
