@@ -6,7 +6,7 @@
 </script>
 
 <svelte:head>
-	<title>inconnu.app | Discord bot for V5</title>
+	<title>Inconnu | Discord bot for V5</title>
 	<meta property="og:title" content="Inconnu" />
 	<meta
 		property="og:description"
