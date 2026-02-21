@@ -75,7 +75,11 @@
 			</ul>
 		</div>
 		<div class="order-2">
-			<img src="/images/hero/for-players.webp" alt="Inconnu website showing character sheet" />
+			<img
+				src="/images/hero/for-players.webp"
+				alt="Inconnu website showing character sheet"
+				fetchpriority="high"
+			/>
 		</div>
 	</div>
 
