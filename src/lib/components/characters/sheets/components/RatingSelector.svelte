@@ -166,7 +166,7 @@
 			{name}
 		{/if}
 	{/if}
-	<div class="flex flex-wrap gap-2" onmouseleave={() => (hoveredRating = null)}>
+	<div role="group" class="flex flex-wrap gap-2" onmouseleave={() => (hoveredRating = null)}>
 		{#if editing}
 			{#each circles as circleRating (circleRating)}
 				<button
