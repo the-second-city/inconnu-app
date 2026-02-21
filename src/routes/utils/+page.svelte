@@ -1,17 +1,13 @@
 <script lang="ts">
 	import { resolve } from '$app/paths';
 	import Card from '$lib/components/Card.svelte';
+	import Meta from '$lib/components/Meta.svelte';
 </script>
 
-<svelte:head>
-	<title>Utilities | Inconnu</title>
-	<meta property="og:title" content="Utilities | Inconnu" />
-	<meta
-		property="og:description"
-		content="Utilities and tools for Vampire: The Masquerade 5th Edition."
-	/>
-	<meta property="og:image" content="/favicon.png" />
-</svelte:head>
+<Meta
+	title="Utilities | Inconnu"
+	description="Utilities and tools for Vampire: The Masquerade 5th Edition."
+/>
 
 {#snippet heading(title: string)}
 	<h2 class="h3">{title}</h2>

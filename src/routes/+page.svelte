@@ -1,19 +1,15 @@
 <script lang="ts">
 	import { DISCORD_URL } from '$lib';
 	import Ankh from '$lib/components/Ankh.svelte';
+	import Meta from '$lib/components/Meta.svelte';
 
 	const premiumLinkClasses = 'text-secondary-300 font-semibold underline hover:no-underline';
 </script>
 
-<svelte:head>
-	<title>Inconnu | Discord bot for V5</title>
-	<meta property="og:title" content="Inconnu" />
-	<meta
-		property="og:description"
-		content="Discord bot for Vampire: The Masquerade 5th Edition. Character sheets. Smart rolls. Profiles. Images. More."
-	/>
-	<meta property="og:image" content="/favicon.png" />
-</svelte:head>
+<Meta
+	title="Inconnu | Discord bot for V5"
+	description="Discord bot for Vampire: The Masquerade 5th Edition. Character sheets. Smart rolls. Profiles. Images. More."
+/>
 
 <div class="mx-auto max-w-3xl text-center">
 	<h1 class="h1 text-primary-500 text-5xl font-black tracking-tighter sm:text-6xl">

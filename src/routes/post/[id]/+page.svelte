@@ -6,6 +6,7 @@
 	import type { Changelog } from '$lib/types';
 	import Markdown from '$lib/components/Markdown.svelte';
 	import DiffView from '$lib/components/DiffView.svelte';
+	import Meta from '$lib/components/Meta.svelte';
 
 	const changelog: Changelog = page.data.changelog;
 
@@ -42,14 +43,10 @@
 	});
 </script>
 
-<svelte:head>
-	<title>{changelog.character.name} — Rolepost History | Inconnu</title>
-	<meta property="og:title" content={`${changelog.character.name} — Rolepost History | Inconnu`} />
-	<meta
-		property="og:description"
-		content={`Rolepost history for ${changelog.character.name} in #${changelog.channel}`}
-	/>
-</svelte:head>
+<Meta
+	title="{changelog.character.name} — Rolepost History | Inconnu"
+	description="Rolepost history for {changelog.character.name} in #{changelog.channel}"
+/>
 
 <h1 class="h1 font-black">Rolepost History</h1>
 

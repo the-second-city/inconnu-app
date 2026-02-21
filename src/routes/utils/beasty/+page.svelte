@@ -3,6 +3,7 @@
 
 	import Card from '$lib/components/Card.svelte';
 	import Markdown from '$lib/components/Markdown.svelte';
+	import Meta from '$lib/components/Meta.svelte';
 
 	let input = $state('');
 	let justCopied = $state(false);
@@ -41,12 +42,7 @@
 	}
 </script>
 
-<svelte:head>
-	<title>Beasty | Inconnu</title>
-	<meta property="og:title" content="Beasty" />
-	<meta property="og:description" content="A tool for formatting Discord text to Beast talk." />
-	<meta property="og:image" content="/favicon.png" />
-</svelte:head>
+<Meta title="Beasty | Inconnu" description="Format Discord text to Beast talk." />
 
 <div class="flex flex-col gap-2">
 	<h1 class="h1 font-black">Beasty</h1>

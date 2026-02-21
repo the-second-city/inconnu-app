@@ -2,6 +2,7 @@
 	import { page } from '$app/state';
 	import type { CharacterData } from '$lib/types';
 	import PublicCharacterView from '$lib/components/characters/PublicCharacterView.svelte';
+	import Meta from '$lib/components/Meta.svelte';
 
 	const characterData: CharacterData = page.data.characterData;
 	const ogImage = $derived(
@@ -11,15 +12,12 @@
 	);
 </script>
 
-<svelte:head>
-	<title>{characterData.character.name} | Inconnu</title>
-	<meta property="og:title" content={`${characterData.character.name} | Inconnu`} />
-	<meta
-		property="og:description"
-		content={`${characterData.character.name} - A ${characterData.character.splat} character for Vampire: The Masquerade 5th Edition on inconnu.app`}
-	/>
-	<meta property="og:image" content={ogImage} />
-	<meta property="og:type" content="profile" />
-</svelte:head>
+<Meta
+	title="{characterData.character.name} | Inconnu"
+	description="{characterData.character.name} - A {characterData.character
+		.splat} character for Vampire: The Masquerade 5th Edition on inconnu.app"
+	image={ogImage}
+	type="profile"
+/>
 
 <PublicCharacterView {characterData} />

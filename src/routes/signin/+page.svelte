@@ -1,19 +1,15 @@
 <script lang="ts">
 	import { page } from '$app/state';
 	import { SignIn } from '@auth/sveltekit/components';
+	import Meta from '$lib/components/Meta.svelte';
 
 	let returnUrl = page.url.searchParams.get('callbackUrl') || '/';
 </script>
 
-<svelte:head>
-	<title>Sign In | Inconnu</title>
-	<meta property="og:title" content="Sign In | Inconnu" />
-	<meta
-		property="og:description"
-		content="Discord bot for Vampire: The Masquerade 5th Edition. Character sheets. Smart rolls. Profiles. Images. More."
-	/>
-	<meta property="og:image" content="/favicon.png" />
-</svelte:head>
+<Meta
+	title="Sign In | Inconnu"
+	description="Discord bot for Vampire: The Masquerade 5th Edition. Character sheets. Smart rolls. Profiles. Images. More."
+/>
 
 <div class="mt-8 flex w-full justify-center">
 	<div class="flex flex-col items-center gap-8 text-center">

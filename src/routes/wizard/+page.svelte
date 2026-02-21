@@ -1,17 +1,13 @@
 <script lang="ts">
 	import Card from '$lib/components/Card.svelte';
 	import { ExternalLink } from '@lucide/svelte';
+	import Meta from '$lib/components/Meta.svelte';
 </script>
 
-<svelte:head>
-	<title>Character Wizard | Inconnu</title>
-	<meta property="og:title" content="Character Wizard | Inconnu" />
-	<meta
-		property="og:description"
-		content="Create V5 characters using Inconnu's web-based character creation wizard."
-	/>
-	<meta property="og:image" content="/favicon.png" />
-</svelte:head>
+<Meta
+	title="Character Wizard | Inconnu"
+	description="Create V5 characters using Inconnu's web-based character creation wizard."
+/>
 
 <div class="flex flex-col gap-6">
 	<h1 class="h1 font-black">Character Wizard</h1>

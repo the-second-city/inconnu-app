@@ -13,6 +13,7 @@
 	import { FORM_CLASSES, FORM_VALIDATION } from '$lib/constants/formStyles';
 	import { creationInfoStore } from '$lib/stores/CreationStore';
 	import { normalize, getErrorDetail } from '$lib';
+	import Meta from '$lib/components/Meta.svelte';
 
 	let { data }: { data: PageData } = $props();
 	let traits = $state<Trait[]>(data.traits);
@@ -176,15 +177,10 @@
 	}
 </script>
 
-<svelte:head>
-	<title>{title} | Inconnu</title>
-	<meta property="og:title" content={title} />
-	<meta
-		property="og:description"
-		content="Create a new character for Vampire: The Masquerade 5th Edition using Inconnu's character wizard."
-	/>
-	<meta property="og:image" content="/favicon.png" />
-</svelte:head>
+<Meta
+	title="{title} | Inconnu"
+	description="Create a new character for Vampire: The Masquerade 5th Edition using Inconnu's character wizard."
+/>
 
 <div class="flex flex-wrap items-start justify-between gap-2">
 	<div>
