@@ -2,7 +2,7 @@ import { SvelteKitAuth } from '@auth/sveltekit';
 import Discord from '@auth/sveltekit/providers/discord';
 
 export const { signIn, signOut, handle } = SvelteKitAuth({
-	providers: [Discord],
+	providers: [Discord({ issuer: 'https://discord.com' })],
 	trustHost: true,
 	session: {
 		strategy: 'jwt'
