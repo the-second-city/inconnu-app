@@ -54,10 +54,7 @@
 	}
 
 	function isValidSubtrait(): boolean {
-		const isDuplicate = subtraits.some(
-			(existing: string) => existing.toLowerCase() === normalizedNewSubtrait.toLowerCase()
-		);
-		return !isDuplicate && isValidTraitName(normalizedNewSubtrait);
+		return normalizedNewSubtrait.length > 0 && subtraitError === null;
 	}
 
 	function handleAddSubtrait() {
