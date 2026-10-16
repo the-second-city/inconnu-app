@@ -9,6 +9,28 @@ export const isValidTraitName = (name: string): boolean => {
 	return validPattern.test(name);
 };
 
+// Mirrors RESERVED_TRAITS and the power bonus check in the bot's validate_trait_names()
+const RESERVED_TRAITS = [
+	'willpower',
+	'hunger',
+	'humanity',
+	'surge',
+	'potency',
+	'bane',
+	'current_hunger',
+	'powerbonus',
+	'power_bonus'
+];
+
+/**
+ * Checks whether a trait name is reserved by the bot and can't be used as a trait.
+ * @param name - The trait name to check
+ * @returns True if the name is reserved
+ */
+export const isReservedTraitName = (name: string): boolean => {
+	return RESERVED_TRAITS.includes(name.toLowerCase());
+};
+
 export const normalize = (text: string): string => {
 	return text.split(/\s+/).filter(Boolean).join(' ');
 };
@@ -27,7 +49,9 @@ export const stripLeadingArticles = (text: string): string => {
 };
 
 /**
- * Extracts the error detail from a FastAPI HTTPException response.
+ * Extracts the error detail from a FastAPI error response. Handles both
+ * HTTPException (string detail) and request validation errors (a list of
+ * error objects, each with a `msg` field).
  * @param response - The fetch Response object
  * @param fallback - Default message if detail can't be extracted
  * @returns The error detail string
@@ -37,7 +61,18 @@ export const getErrorDetail = async (
 	fallback = 'An unexpected error occurred.'
 ): Promise<string> => {
 	const data = await response.json().catch(() => null);
-	return data?.detail ?? data?.message ?? fallback;
+	const detail = data?.detail;
+
+	if (Array.isArray(detail)) {
+		const messages = detail
+			.map((err) => err?.msg)
+			.filter((msg): msg is string => typeof msg === 'string')
+			.map((msg) => msg.replace(/^Value error, /, ''));
+		return messages.length > 0 ? messages.join('\n') : fallback;
+	}
+	if (typeof detail === 'string') return detail;
+	if (typeof data?.message === 'string') return data.message;
+	return fallback;
 };
 
 export const DISCORD_URL = 'https://discord.gg/QHnCdSPeEE';

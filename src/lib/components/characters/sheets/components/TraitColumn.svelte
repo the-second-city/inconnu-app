@@ -4,7 +4,7 @@
 	import { CirclePlus } from '@lucide/svelte';
 
 	import type { Trait } from '$lib/types';
-	import { isValidTraitName, normalize } from '$lib';
+	import { isReservedTraitName, isValidTraitName, normalize } from '$lib';
 	import { getTraitOrder } from '$lib/data/trait-order';
 	import { FORM_VALIDATION } from '$lib/constants/formStyles';
 
@@ -70,11 +70,11 @@
 		if (normalizedTrait.length === 0) return null;
 		if (normalizedTrait.length > FORM_VALIDATION.traitMaxLength) return 'Maximum 20 characters';
 		if (!isValidTraitName(normalizedTrait)) return 'Letters and underscores only';
+		if (isReservedTraitName(normalizedTrait)) return 'Reserved name; set it in Discord instead';
 
+		// Trait names must be unique across all categories, not just this column
 		const lowercased = normalizedTrait.toLowerCase();
-		const isDuplicate = orderedIndices.some(
-			(index) => traits[index].name.toLowerCase() === lowercased
-		);
+		const isDuplicate = traits.some((trait) => trait.name.toLowerCase() === lowercased);
 		if (isDuplicate) return 'Trait already exists';
 		return null;
 	});
