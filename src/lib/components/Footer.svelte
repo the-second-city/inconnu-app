@@ -7,7 +7,7 @@
 
 <footer class="text-surface-800-200 flex flex-col items-center px-16 py-8 text-sm">
 	<p class="mb-0 flex items-center">
-		<Copyright size={17} class="mr-1 inline" />{currentYear} tiltowait
+		<Copyright size={17} class="mr-1 inline" />2021–{currentYear} tiltowait
 	</p>
 	<p>This site uses cookies for necessary functionality only.</p>
 	<div class="bullet-list">

@@ -1,6 +1,6 @@
 import { error, redirect } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
-import { docsHref, getDocs } from '$lib/server/docs';
+import { docsHref, getDocs, readingOrder } from '$lib/server/docs';
 
 export const load: PageServerLoad = async ({ params, parent }) => {
 	await parent(); // The layout reports the docs being unavailable
@@ -8,7 +8,12 @@ export const load: PageServerLoad = async ({ params, parent }) => {
 
 	const page = docs.pages.get(params.path);
 	if (page) {
-		return { page };
+		// Previous and next pages follow the sidebar
+		const order = readingOrder(docs.nav);
+		const index = order.findIndex((link) => link.path === page.path);
+		const previous = index > 0 ? order[index - 1] : null;
+		const next = index >= 0 && index < order.length - 1 ? order[index + 1] : null;
+		return { page, previous, next };
 	}
 
 	// Old paths, including GitBook's, live on in Discord messages and bookmarks

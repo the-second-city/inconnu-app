@@ -2,7 +2,14 @@ import { Marked, type Token, type Tokens } from 'marked';
 import GithubSlugger from 'github-slugger';
 import DOMPurify from 'isomorphic-dompurify';
 
+import { DOCS_CARD_CLASSES } from '$lib/constants/docsStyles';
 import type { DocsPage } from '$lib/types';
+
+/** What a page needs to know about the pages it links to. */
+export interface LinkedPage {
+	path: string;
+	title: string;
+}
 
 // GitHub alert syntax (> [!NOTE]) rendered as a theme-colored rule with a faint tint
 const ALERTS: Record<string, { label: string; classes: string }> = {
@@ -47,20 +54,31 @@ const escapeAttr = (value: string): string =>
  * pages become /docs routes, and assets load through /docs/assets. Headings get
  * GitHub-style anchors, which the bot's help links point to.
  */
-export const renderPage = (page: DocsPage, pathsByFile: Map<string, string>): string => {
+export const renderPage = (page: DocsPage, pagesByFile: Map<string, LinkedPage>): string => {
 	const slugger = new GithubSlugger();
 
-	const resolveHref = (href: string): string => {
+	/** The docs page a relative link points to, if any. */
+	const linkedPage = (href: string): { page: LinkedPage; anchor?: string } | null => {
 		if (/^[a-z][a-z0-9+.-]*:/i.test(href) || href.startsWith('#') || href.startsWith('/')) {
-			return href;
+			return null;
 		}
 		const [target, anchor] = href.split('#');
-		const file = resolveFile(page.file, target);
-		if (file.startsWith('assets/')) {
-			return `/docs/${file}`;
+		const linked = pagesByFile.get(resolveFile(page.file, target));
+		return linked ? { page: linked, anchor } : null;
+	};
+
+	const resolveHref = (href: string): string => {
+		const linked = linkedPage(href);
+		if (linked) {
+			return docsHref(linked.page.path, linked.anchor);
 		}
-		const pagePath = pathsByFile.get(file);
-		return pagePath === undefined ? href : docsHref(pagePath, anchor);
+		if (!/^[a-z][a-z0-9+.-]*:/i.test(href) && !href.startsWith('#') && !href.startsWith('/')) {
+			const file = resolveFile(page.file, href.split('#')[0]);
+			if (file.startsWith('assets/')) {
+				return `/docs/${file}`;
+			}
+		}
+		return href;
 	};
 
 	const marked: Marked = new Marked({
@@ -85,13 +103,31 @@ export const renderPage = (page: DocsPage, pathsByFile: Map<string, string>): st
 				return `<img src="${src}" alt="${escapeAttr(text)}"${titleAttr} loading="lazy" />`;
 			},
 			paragraph({ tokens }) {
+				const [only] = tokens;
+				if (tokens.length !== 1) {
+					return false;
+				}
+
 				// A paragraph holding only an image is a figure, with its title as the caption
-				const [image] = tokens;
-				if (tokens.length === 1 && image.type === 'image') {
-					const { href, title, text } = image as Tokens.Image;
+				if (only.type === 'image') {
+					const { href, title, text } = only as Tokens.Image;
 					const src = escapeAttr(resolveHref(href));
 					const caption = title ? `<figcaption>${escapeAttr(title)}</figcaption>` : '';
 					return `<figure><img src="${src}" alt="${escapeAttr(text)}" loading="lazy" />${caption}</figure>\n`;
+				}
+
+				// A paragraph holding only a link to another page is a card, labeled with
+				// the page's title unless the link already says it
+				const linked = only.type === 'link' ? linkedPage((only as Tokens.Link).href) : null;
+				if (linked) {
+					const { tokens: inner } = only as Tokens.Link;
+					const text = this.parser.parseInline(inner);
+					const label =
+						plainText(inner) === linked.page.title
+							? ''
+							: `<span class="${DOCS_CARD_CLASSES.label}">${escapeAttr(linked.page.title)}</span>`;
+					const href = escapeAttr(docsHref(linked.page.path, linked.anchor));
+					return `<a href="${href}" class="${DOCS_CARD_CLASSES.card} my-[1.25em]">${label}<span class="${DOCS_CARD_CLASSES.title}">${text}</span></a>\n`;
 				}
 				return false;
 			},
@@ -101,7 +137,8 @@ export const renderPage = (page: DocsPage, pathsByFile: Map<string, string>): st
 					return false;
 				}
 				const body = this.parser.parse(marked.lexer(text.replace(ALERT_MARKER, '')));
-				return `<div class="docs-alert rounded-r-base border-l-4 px-4 py-3 ${alert.classes}"><p class="docs-alert-title">${alert.label}</p>${body}</div>\n`;
+				// The rule's color shows the kind; screen readers get its name
+				return `<div class="docs-alert rounded-r-base border-l-4 px-4 py-3 ${alert.classes}" role="note" aria-label="${alert.label}">${body}</div>\n`;
 			}
 		}
 	});

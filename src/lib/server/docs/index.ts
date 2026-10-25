@@ -1,6 +1,6 @@
 import { API_KEY, INCONNU_API_URL } from '$env/static/private';
 import { getErrorDetail } from '$lib';
-import type { DocsBundle, DocsNavSection } from '$lib/types';
+import type { DocsBundle, DocsNavItem, DocsNavSection } from '$lib/types';
 import { renderPage } from './render';
 
 export { docsHref } from './render';
@@ -29,7 +29,9 @@ let pending: Promise<Docs> | null = null;
 
 /** Render every page in the bundle. */
 const build = (bundle: DocsBundle): Docs => {
-	const pathsByFile = new Map(bundle.pages.map((page) => [page.file, page.path]));
+	const pagesByFile = new Map(
+		bundle.pages.map((page) => [page.file, { path: page.path, title: page.title }])
+	);
 	const pages = new Map(
 		bundle.pages.map((page) => [
 			page.path,
@@ -37,7 +39,7 @@ const build = (bundle: DocsBundle): Docs => {
 				path: page.path,
 				title: page.title,
 				description: page.description,
-				html: renderPage(page, pathsByFile)
+				html: renderPage(page, pagesByFile)
 			}
 		])
 	);
@@ -70,6 +72,26 @@ const refresh = async (): Promise<Docs> => {
 	} finally {
 		checkedAt = Date.now();
 	}
+};
+
+export interface DocsLink {
+	path: string;
+	title: string;
+}
+
+/** Every docs page in sidebar order, for previous/next links. */
+export const readingOrder = (nav: DocsNavSection[]): DocsLink[] => {
+	const links: DocsLink[] = [];
+	const walk = (items: DocsNavItem[]) => {
+		for (const item of items) {
+			if (item.path !== null) {
+				links.push({ path: item.path, title: item.title });
+			}
+			walk(item.children);
+		}
+	};
+	nav.forEach((section) => walk(section.items));
+	return links;
 };
 
 /** The rendered docs. */
