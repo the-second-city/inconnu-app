@@ -123,3 +123,32 @@ export interface Changelog {
 	history: PostHistoryEntry[];
 	deletion_date: string | null;
 }
+
+// Docs, served by the Inconnu API from the bot repo's docs/ directory
+
+export interface DocsNavItem {
+	title: string;
+	path: string | null; // A docs page path, such as 'guides/quickstart'
+	url: string | null; // An external link
+	children: DocsNavItem[];
+}
+
+export interface DocsNavSection {
+	title: string | null; // Untitled sections are separated by a divider
+	items: DocsNavItem[];
+}
+
+export interface DocsPage {
+	path: string; // URL path; '' is the docs home page
+	file: string; // Source file, such as 'guides/quickstart/README.md'
+	title: string;
+	description: string | null;
+	markdown: string;
+}
+
+export interface DocsBundle {
+	version: string;
+	nav: DocsNavSection[];
+	pages: DocsPage[];
+	redirects: Record<string, string>; // Old path -> new path, with optional #anchor
+}
