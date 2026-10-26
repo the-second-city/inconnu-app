@@ -99,3 +99,23 @@ test('saves inputs as they change', async () => {
 		difficulty: 3
 	});
 });
+
+test('hovering an outcome labels its bar segment', async () => {
+	render(Page);
+	const row = screen.getAllByText('Critical Win')[0].parentElement;
+	expect(screen.queryByText(/^Critical Win ·/)).not.toBeInTheDocument();
+
+	await userEvent.hover(row as HTMLElement);
+	expect(screen.getByText(/^Critical Win ·/)).toBeInTheDocument();
+
+	await userEvent.unhover(row as HTMLElement);
+	expect(screen.queryByText(/^Critical Win ·/)).not.toBeInTheDocument();
+});
+
+test('explains each re-roll strategy', async () => {
+	render(Page);
+	expect(screen.queryByRole('button', { name: 'About No Re-roll' })).not.toBeInTheDocument();
+
+	await userEvent.click(screen.getByRole('button', { name: 'About Re-roll Failures' }));
+	expect(await screen.findByText('Re-roll up to three failing normal dice.')).toBeInTheDocument();
+});
