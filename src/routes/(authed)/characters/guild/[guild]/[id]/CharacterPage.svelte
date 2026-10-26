@@ -4,6 +4,7 @@
 
 	import { normalize } from '$lib';
 
+	import type { Pathname } from '$app/types';
 	import type { Character, Guild, OwnerData } from '$lib/types';
 	import CharacterSheet from './CharacterSheet.svelte';
 	import CharHeader from '$lib/components/characters/CharHeader.svelte';
@@ -14,7 +15,7 @@
 		guild: Guild;
 		owner?: OwnerData | null;
 		spc?: boolean;
-		backUrl?: string;
+		backUrl?: Pathname;
 	}
 
 	let { character = $bindable(), guild, owner, spc = false, backUrl }: ComponentProps = $props();

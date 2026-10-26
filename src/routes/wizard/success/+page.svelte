@@ -41,7 +41,7 @@
 
 		<div class="mb-6 flex flex-col gap-3">
 			<a
-				href={resolve('/characters/guild/[guild]/[id]', {
+				href={resolve('/(authed)/characters/guild/[guild]/[id]', {
 					guild: characterInfo.guild.id,
 					id: characterInfo.character_id
 				})}
