@@ -33,14 +33,14 @@
 
 <div class="grid gap-8 lg:grid-cols-[16rem_minmax(0,1fr)]">
 	<aside class="border-surface-500 hidden border-r pr-6 lg:block">
-		<DocsNav nav={data.nav} current={data.page.path} />
+		<DocsNav nav={data.nav} current={data.page.path} storageKey="docs-nav-sidebar" />
 	</aside>
 
 	<div class="space-y-4">
 		<details bind:open={contentsOpen} class="card preset-outlined-surface-500 p-3 lg:hidden">
 			<summary class="cursor-pointer font-semibold">Contents</summary>
 			<div class="mt-3">
-				<DocsNav nav={data.nav} current={data.page.path} />
+				<DocsNav nav={data.nav} current={data.page.path} storageKey="docs-nav-contents" />
 			</div>
 		</details>
 		<!-- Safe: rendered from the bot's docs and sanitized by DOMPurify on the server -->
