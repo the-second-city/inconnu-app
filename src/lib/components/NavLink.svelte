@@ -17,13 +17,14 @@
 <a
 	class="flex items-center gap-2 px-2 py-2 hover:shadow-[0_1px_0_0_currentColor] hover:brightness-125"
 	class:active
+	aria-current={active ? 'page' : undefined}
 	href={resolve(href)}
 	{title}
 >
 	{@render children()}
 </a>
 
-<style>
+<style lang="postcss">
 	.active {
 		@apply shadow-[0_1px_0_0_currentColor] brightness-125;
 	}

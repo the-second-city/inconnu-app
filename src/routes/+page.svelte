@@ -38,6 +38,7 @@
 				Get Inconnu
 				<img class="size-6" src="/images/logos/inconnu_logo.webp" alt="Inconnu logo" />
 			</a>
+			<!-- eslint-disable svelte/no-navigation-without-resolve -- external link -->
 			<a
 				class="btn text-white hover:brightness-125"
 				style="background-color: #5865F2;"
@@ -48,6 +49,7 @@
 				<img src="/images/logos/discord-logo.svg" alt="Discord logo" class="size-6" />
 				Discord
 			</a>
+			<!-- eslint-enable svelte/no-navigation-without-resolve -->
 		</div>
 	</div>
 </div>

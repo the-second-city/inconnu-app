@@ -120,7 +120,7 @@
 		>
 			<nav class="flex flex-col items-end gap-4">
 				<NavButton
-					href="/characters"
+					href={resolve('/characters')}
 					title="View your characters"
 					color="preset-filled-secondary-500"
 					full={true}
@@ -128,7 +128,12 @@
 					Characters <Users size={18} />
 				</NavButton>
 
-				<NavButton href="/utils" title="Random utilities" color="preset-tonal-tertiary" full={true}>
+				<NavButton
+					href={resolve('/utils')}
+					title="Random utilities"
+					color="preset-tonal-tertiary"
+					full={true}
+				>
 					Utilities <Orbit size={18} />
 				</NavButton>
 

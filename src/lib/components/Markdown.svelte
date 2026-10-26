@@ -19,6 +19,6 @@
 	);
 </script>
 
-<!-- eslint-disable-next-line svelte/no-at-html-tags -->
 <!-- Safe: DOMPurify sanitizes HTML, images/links stripped by renderer -->
+<!-- eslint-disable-next-line svelte/no-at-html-tags -->
 {@html parsed}

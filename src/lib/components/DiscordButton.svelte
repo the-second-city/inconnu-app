@@ -17,10 +17,12 @@
 	const userName = user?.name ?? '';
 	const userImage = user?.image ?? '';
 
-	const triggerBase = full
-		? 'btn w-full sm:w-fit preset-tonal-secondary hover:brightness-125'
-		: 'btn border-primary-500 rounded-full hover:brightness-125 border-2 p-0';
-	const avatarSize = full ? 'size-6' : 'size-9';
+	const triggerBase = $derived(
+		full
+			? 'btn w-full sm:w-fit preset-tonal-secondary hover:brightness-125'
+			: 'btn border-primary-500 rounded-full hover:brightness-125 border-2 p-0'
+	);
+	const avatarSize = $derived(full ? 'size-6' : 'size-9');
 
 	let showLogoutButton = $state(false);
 </script>

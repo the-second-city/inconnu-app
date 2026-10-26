@@ -16,6 +16,7 @@
 			<a class="anchor" href="https://patreon.com/tiltowait" title="Become a patron">Patreon </a>
 		</span>
 		<span>
+			<!-- eslint-disable-next-line svelte/no-navigation-without-resolve -- external link -->
 			<a class="anchor" href={DISCORD_URL} title="Join the Discord server"> Discord </a>
 		</span>
 		<span>

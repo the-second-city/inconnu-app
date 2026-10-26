@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { untrack } from 'svelte';
 	import type { PageData } from './$types';
 	import type { Trait, Splat } from '$lib/types';
 	import { goto } from '$app/navigation';
@@ -16,7 +17,8 @@
 	import Meta from '$lib/components/Meta.svelte';
 
 	let { data }: { data: PageData } = $props();
-	let traits = $state<Trait[]>(data.traits);
+	// The form starts from the wizard's traits, then owns them
+	let traits = $state<Trait[]>(untrack(() => data.traits));
 	let name = $state('');
 	let splat = $state('');
 	let health = $state('');
@@ -334,6 +336,7 @@
 					<h3 class="h3 -mt-1 mb-2 text-center text-xl font-semibold uppercase">Blood Potency</h3>
 					<div class="flex justify-center">
 						<RatingSelector
+							name="Blood Potency"
 							bind:rating={blood_potency}
 							min={splat === 'thin-blood' ? 0 : 1}
 							max={splat === 'thin-blood' ? 2 : 10}
