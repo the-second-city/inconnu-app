@@ -2,7 +2,7 @@ import { render, screen } from '@testing-library/svelte';
 import userEvent from '@testing-library/user-event';
 import { beforeEach, expect, test } from 'vitest';
 
-import { STRATEGIES } from '$lib/probability';
+import { calculate, STRATEGIES } from '$lib/probability';
 
 import Page from './+page.svelte';
 
@@ -27,6 +27,14 @@ test('shows a result for each Willpower strategy, plus no re-roll', () => {
 
 	const headings = screen.getAllByRole('heading', { level: 2 }).map((h) => h.textContent?.trim());
 	expect(headings).toEqual(['No Re-roll', ...Object.values(STRATEGIES)]);
+});
+
+test('successful includes messy criticals', () => {
+	render(Page);
+
+	const { critical, success, messy } = calculate(5, 1, 3);
+	const successful = screen.getAllByText('successful')[0].previousElementSibling;
+	expect(successful).toHaveTextContent(`${((critical + success + messy) * 100).toFixed(2)}%`);
 });
 
 test('hides outcomes that cannot happen', async () => {

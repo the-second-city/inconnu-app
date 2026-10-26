@@ -107,6 +107,7 @@
 		<h2 class="h4 mb-2">{name}</h2>
 		<!-- The summary gets its own column, as it has no die icons to make room for -->
 		<dl class="grid grid-cols-[auto_1fr] gap-x-4 gap-y-1">
+			{@render stat(percent(probs.critical + probs.success + probs.messy), 'successful')}
 			{@render stat(percent(probs.success + probs.critical), 'success without complication')}
 			{@render stat(probs.totalSuccesses.toFixed(2), 'average successes')}
 			{@render stat(probs.margin.toFixed(2), 'average margin')}
