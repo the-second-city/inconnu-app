@@ -1,14 +1,38 @@
-import { render, screen } from '@testing-library/svelte';
+import { render, screen, within } from '@testing-library/svelte';
 import userEvent from '@testing-library/user-event';
-import { beforeEach, expect, test } from 'vitest';
+import { afterEach, beforeEach, expect, test, vi } from 'vitest';
 
-import { calculate, STRATEGIES } from '$lib/probability';
+import { calculate, STRATEGIES, type Probabilities, type Strategy } from '$lib/probability';
 
 import Page from './+page.svelte';
 
 const STORAGE_KEY = 'probability-inputs';
 
 beforeEach(() => localStorage.clear());
+
+afterEach(() => {
+	vi.restoreAllMocks();
+});
+
+/** The card showing a roll's results, found by its heading. */
+function card(name: string): HTMLElement {
+	const heading = screen
+		.getAllByRole('heading', { level: 2 })
+		.find((h) => h.textContent?.trim() === name);
+	if (!heading?.parentElement) throw new Error(`No card for ${name}`);
+	return heading.parentElement;
+}
+
+/** The chance of any success, including messy criticals. */
+function successful(probs: Probabilities): number {
+	return probs.critical + probs.success + probs.messy;
+}
+
+/** A difference in probability, as the page shows it, in signed percentage points. */
+function points(value: number): string {
+	const sign = value > 0 ? '+' : '';
+	return `${sign}${(value * 100).toFixed(2)} pts`;
+}
 
 /** The labels of the outcomes shown in the breakdown. */
 function shownOutcomes(): string[] {
@@ -118,4 +142,69 @@ test('explains each re-roll strategy', async () => {
 
 	await userEvent.click(screen.getByRole('button', { name: 'About Re-roll Failures' }));
 	expect(await screen.findByText('Re-roll up to three failing normal dice.')).toBeInTheDocument();
+});
+
+test('compares each strategy to no re-roll', () => {
+	render(Page);
+	const baseline = calculate(5, 1, 3);
+
+	expect(within(card('No Re-roll')).queryByText(/pts$/)).not.toBeInTheDocument();
+	for (const [strategy, name] of Object.entries(STRATEGIES)) {
+		const probs = calculate(5, 1, 3, strategy as Strategy);
+		const change = points(successful(probs) - successful(baseline));
+		expect(within(card(name)).getByText(change)).toBeInTheDocument();
+	}
+});
+
+test.each([
+	['reroll_failures', false],
+	['maximize_criticals', false],
+	['avoid_messy', true],
+	['risky', true]
+] as [Strategy, boolean][])(
+	'%s shows its change in messy criticals: %s',
+	(strategy: Strategy, shown: boolean) => {
+		render(Page);
+		const row = within(card(STRATEGIES[strategy])).getByText('Messy Critical');
+
+		if (shown) {
+			const change = calculate(5, 1, 3, strategy).messy - calculate(5, 1, 3).messy;
+			expect(row).toHaveTextContent(`Messy Critical ${points(change)}`);
+		} else {
+			expect(row).not.toHaveTextContent('pts');
+		}
+	}
+);
+
+test.each(Object.entries(STRATEGIES))(
+	'only Maximize Crits warns about its risks (%s)',
+	async (strategy: string, name: string) => {
+		render(Page);
+		await userEvent.click(screen.getByRole('button', { name: `About ${name}` }));
+		await screen.findByRole('dialog');
+
+		const warning = screen.queryByText(/functionally identical to Re-roll Failures/);
+		if (strategy === 'maximize_criticals') {
+			expect(warning).toBeInTheDocument();
+		} else {
+			expect(warning).not.toBeInTheDocument();
+		}
+	}
+);
+
+test('works without local storage', async () => {
+	vi.spyOn(Storage.prototype, 'getItem').mockImplementation(() => {
+		throw new Error('Storage is disabled');
+	});
+	vi.spyOn(Storage.prototype, 'setItem').mockImplementation(() => {
+		throw new Error('Storage is disabled');
+	});
+	render(Page);
+	const pool = screen.getByRole('spinbutton', { name: 'Pool' });
+	await userEvent.clear(pool);
+	await userEvent.type(pool, '8');
+
+	const expected = successful(calculate(8, 1, 3));
+	const headline = within(card('No Re-roll')).getByText('successful').previousElementSibling;
+	expect(headline).toHaveTextContent(`${(expected * 100).toFixed(2)}%`);
 });
