@@ -17,6 +17,11 @@ steps:
     commands:
       - npm ci
 
+  - name: unit tests
+    image: sh
+    commands:
+      - npm test
+
   - name: build
     image: sh
     environment:
