@@ -99,7 +99,7 @@
 </script>
 
 <Card>
-	<h3 class="h3 -mt-1 mb-2 text-xl font-semibold uppercase">
+	<h3 class="h3 mb-2 text-xl font-semibold uppercase">
 		{name}
 	</h3>
 	{#if orderedIndices.length > 0}

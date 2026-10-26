@@ -38,7 +38,7 @@
 {/snippet}
 
 <Card>
-	<h3 class="h3 -mt-1 mb-2 text-xl font-semibold uppercase">Virtues</h3>
+	<h3 class="h3 mb-2 text-xl font-semibold uppercase">Virtues</h3>
 	<div class="flex flex-col gap-2">
 		{#each virtues as virtue (virtue.name)}
 			<div class="flex flex-wrap items-center justify-between">

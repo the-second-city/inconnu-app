@@ -20,3 +20,11 @@
 <div class={classes}>
 	{@render children()}
 </div>
+
+<style>
+	/* A heading's line box adds half its leading above the text, which makes a card's
+	   top padding look larger than its side padding. Trim it from a leading heading. */
+	div > :global(:is(h1, h2, h3, h4, h5, h6, .h1, .h2, .h3, .h4, .h5, .h6):first-child) {
+		margin-top: calc((1em - 1lh) / 2);
+	}
+</style>

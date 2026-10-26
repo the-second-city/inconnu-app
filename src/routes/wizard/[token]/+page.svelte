@@ -333,7 +333,7 @@
 		{#if splat === 'vampire' || splat === 'thin-blood'}
 			<div class="mt-3">
 				<Card>
-					<h3 class="h3 -mt-1 mb-2 text-center text-xl font-semibold uppercase">Blood Potency</h3>
+					<h3 class="h3 mb-2 text-center text-xl font-semibold uppercase">Blood Potency</h3>
 					<div class="flex justify-center">
 						<RatingSelector
 							name="Blood Potency"
