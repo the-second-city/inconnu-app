@@ -85,38 +85,45 @@
 	description="Calculate the exact odds of every outcome of a Vampire: The Masquerade 5th Edition roll."
 />
 
-{#snippet stat(value: string, name: string)}
-	<dt class="text-right font-bold tabular-nums">{value}</dt>
+{#snippet stat(value: string, name: string, die?: string)}
+	<dt class="flex items-center justify-between gap-2 font-bold tabular-nums">
+		{#if die}
+			<!-- The die emoji the bot uses; decorative, since the name follows -->
+			<img src="/images/dice/{die}.png" alt="" class="size-5" />
+		{/if}
+		<span class="ml-auto">{value}</span>
+	</dt>
 	<dd>{name}</dd>
 {/snippet}
 
-{#snippet outcome(name: string, value: number, always = false)}
+{#snippet outcome(name: string, value: number, die: string, always = false)}
 	{#if always || value >= DISPLAY_MIN}
-		{@render stat(percent(value), name)}
+		{@render stat(percent(value), name, die)}
 	{/if}
 {/snippet}
 
 {#snippet result(name: string, probs: Probabilities)}
 	<Card>
 		<h2 class="h4 mb-2">{name}</h2>
-		<!-- Subgrids keep the number column aligned across all three lists -->
+		<!-- The summary gets its own column, as it has no die icons to make room for -->
+		<dl class="grid grid-cols-[auto_1fr] gap-x-4 gap-y-1">
+			{@render stat(percent(probs.success + probs.critical), 'success without complication')}
+			{@render stat(probs.totalSuccesses.toFixed(2), 'average successes')}
+			{@render stat(probs.margin.toFixed(2), 'average margin')}
+		</dl>
+		<hr class="text-surface-300 my-2" />
+		<!-- Subgrids keep the number column aligned across both outcome lists -->
 		<div class="grid grid-cols-[auto_1fr] gap-x-4">
 			<dl class="col-span-2 grid grid-cols-subgrid gap-y-1">
-				{@render stat(percent(probs.success + probs.critical), 'success without complication')}
-				{@render stat(probs.totalSuccesses.toFixed(2), 'average successes')}
-				{@render stat(probs.margin.toFixed(2), 'average margin')}
+				{@render outcome('Critical Win', probs.critical, 'ln_crit')}
+				{@render outcome('Success', probs.success, 'ln_succ', true)}
+				{@render outcome('Messy Critical', probs.messy, 'h_crit')}
 			</dl>
 			<hr class="text-surface-300 col-span-2 my-2" />
 			<dl class="col-span-2 grid grid-cols-subgrid gap-y-1">
-				{@render outcome('Critical Win', probs.critical)}
-				{@render outcome('Success', probs.success, true)}
-				{@render outcome('Messy Critical', probs.messy)}
-			</dl>
-			<hr class="text-surface-300 col-span-2 my-2" />
-			<dl class="col-span-2 grid grid-cols-subgrid gap-y-1">
-				{@render outcome('Failure', probs.fail)}
-				{@render outcome('Total Failure', probs.totalFail, true)}
-				{@render outcome('Bestial Failure', probs.bestial)}
+				{@render outcome('Failure', probs.fail, 'ln_fail')}
+				{@render outcome('Total Failure', probs.totalFail, 'h_fail', true)}
+				{@render outcome('Bestial Failure', probs.bestial, 'h_bestial')}
 			</dl>
 		</div>
 	</Card>
