@@ -26,7 +26,7 @@
 		<ol class="ml-6 list-outside list-decimal space-y-2 pl-2">
 			<li>
 				<a
-					href="https://discord.com/oauth2/authorize?client_id=882409882119196704&permissions=537135104&scope=applications.commands+bot"
+					href="https://discord.com/oauth2/authorize?client_id=882409882119196704&permissions=536872960&scope=applications.commands+bot"
 					class="text-primary-500 underline hover:no-underline"
 					title="Install Inconnu on your server">Install Inconnu</a
 				>
