@@ -90,6 +90,7 @@
 		<span class="font-semibold">{changelog.character.name}</span>
 
 		{#if changelog.url}
+			<!-- eslint-disable svelte/no-navigation-without-resolve -- external link -->
 			<a
 				href={changelog.url}
 				target="_blank"
@@ -99,6 +100,7 @@
 				<ExternalLink size={16} />
 				Discord
 			</a>
+			<!-- eslint-enable svelte/no-navigation-without-resolve -->
 		{/if}
 	</div>
 

@@ -81,6 +81,8 @@
 	let invalidTrait = $derived(normalizedTrait.length === 0 || traitError !== null);
 
 	function addTrait() {
+		if (invalidTrait) return;
+
 		// Skills default to 0, attributes to 1
 		const defaultRating = cat === 'skill' ? 0 : 1;
 
@@ -97,7 +99,7 @@
 </script>
 
 <Card>
-	<h3 class="h3 -mt-1 mb-2 text-xl font-semibold uppercase">
+	<h3 class="h3 mb-2 text-xl font-semibold uppercase">
 		{name}
 	</h3>
 	{#if orderedIndices.length > 0}

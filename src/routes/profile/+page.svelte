@@ -21,7 +21,7 @@
 	<p>
 		Profiles only show the public description, history, and any
 		<a
-			href="https://docs.inconnu.app/premium/character-images"
+			href={resolve('/docs/[...path]', { path: 'premium/character-images' })}
 			title="Character images"
 			class="anchor text-secondary-500">images</a
 		>

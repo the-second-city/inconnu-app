@@ -6,7 +6,7 @@
 		notFoundMessage: string;
 		invalidHeading?: string;
 		invalidMessage?: string;
-		backHref: string;
+		backHref: string; // Already resolved by the caller
 		backLabel: string;
 		backTitle: string;
 	}
@@ -76,6 +76,7 @@
 		{heading}
 	</h2>
 	<p class="mt-6 text-center text-xl">{message}</p>
+	<!-- eslint-disable svelte/no-navigation-without-resolve -- backHref is resolved by the caller -->
 	<a
 		class="btn preset-outlined-primary-500 mt-4 text-xl hover:brightness-125"
 		href={backHref}
@@ -83,4 +84,5 @@
 	>
 		{backLabel}
 	</a>
+	<!-- eslint-enable svelte/no-navigation-without-resolve -->
 </div>

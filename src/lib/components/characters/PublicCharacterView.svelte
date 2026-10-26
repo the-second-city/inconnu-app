@@ -1,11 +1,12 @@
 <script lang="ts">
+	import type { Pathname } from '$app/types';
 	import type { CharacterData } from '$lib/types';
 	import CharHeader from './CharHeader.svelte';
 	import CharProfile from './CharProfile.svelte';
 
 	interface ComponentProps {
 		characterData: CharacterData;
-		backUrl?: string;
+		backUrl?: Pathname;
 	}
 
 	let { characterData, backUrl }: ComponentProps = $props();

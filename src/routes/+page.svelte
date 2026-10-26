@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { resolve } from '$app/paths';
 	import { DISCORD_URL } from '$lib';
 	import Ankh from '$lib/components/Ankh.svelte';
 	import Meta from '$lib/components/Meta.svelte';
@@ -30,13 +31,14 @@
 		<div class="mt-4 flex flex-wrap items-center justify-center gap-3 font-semibold">
 			<a
 				class="btn preset-filled-surface-500 hover:brightness-125"
-				href="https://discord.com/oauth2/authorize?client_id=882409882119196704&permissions=537135104&scope=applications.commands+bot"
+				href="https://discord.com/oauth2/authorize?client_id=882409882119196704&permissions=536872960&scope=applications.commands+bot"
 				title="Install Inconnu on your server"
 				target="_blank"
 			>
 				Get Inconnu
 				<img class="size-6" src="/images/logos/inconnu_logo.webp" alt="Inconnu logo" />
 			</a>
+			<!-- eslint-disable svelte/no-navigation-without-resolve -- external link -->
 			<a
 				class="btn text-white hover:brightness-125"
 				style="background-color: #5865F2;"
@@ -47,6 +49,7 @@
 				<img src="/images/logos/discord-logo.svg" alt="Discord logo" class="size-6" />
 				Discord
 			</a>
+			<!-- eslint-enable svelte/no-navigation-without-resolve -->
 		</div>
 	</div>
 </div>
@@ -129,19 +132,17 @@
 				</a>
 				can upload unlimited
 				<a
-					href="https://docs.inconnu.app/premium/character-images"
+					href={resolve('/docs/[...path]', { path: 'premium/character-images' })}
 					title="Upload character images"
 					class={premiumLinkClasses}
-					target="_blank"
 				>
 					character images
 				</a>
 				and use
 				<a
-					href="https://docs.inconnu.app/premium/roleposting"
+					href={resolve('/docs/[...path]', { path: 'premium/roleposting' })}
 					class={premiumLinkClasses}
 					title="Send messages with Roleposts"
-					target="_blank"
 				>
 					Roleposts
 				</a>

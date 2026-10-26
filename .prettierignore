@@ -5,3 +5,6 @@ yarn.lock
 
 # Documentation
 README.md
+
+# Generated test fixtures
+src/lib/probability.fixture.json

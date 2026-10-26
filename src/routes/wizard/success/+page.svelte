@@ -4,7 +4,7 @@
 	import { goto } from '$app/navigation';
 	import { resolve } from '$app/paths';
 	import { Avatar } from '@skeletonlabs/skeleton-svelte';
-	import { ExternalLink, Heart, Image, MessageSquare, Sparkles } from '@lucide/svelte';
+	import { Heart, Image, MessageSquare, Sparkles } from '@lucide/svelte';
 	import { creationInfoStore } from '$lib/stores/CreationStore';
 	import type { CreationInfo } from '$lib/stores/CreationStore';
 
@@ -41,7 +41,7 @@
 
 		<div class="mb-6 flex flex-col gap-3">
 			<a
-				href={resolve('/characters/guild/[guild]/[id]', {
+				href={resolve('/(authed)/characters/guild/[guild]/[id]', {
 					guild: characterInfo.guild.id,
 					id: characterInfo.character_id
 				})}
@@ -53,13 +53,10 @@
 				{/if}
 			</a>
 			<a
-				href="https://docs.inconnu.app"
-				target="_blank"
-				rel="noopener noreferrer"
+				href={resolve('/docs/[...path]', { path: '' })}
 				class="btn preset-filled-secondary-500 flex items-center gap-2"
 			>
 				Read the documentation
-				<ExternalLink size={16} />
 			</a>
 		</div>
 

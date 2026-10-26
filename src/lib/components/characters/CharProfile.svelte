@@ -28,7 +28,7 @@
 
 	let activeModalIndex = $state<number | null>(null);
 
-	let splatIcon = `/images/wod/${splat}-logo.png`;
+	let splatIcon = $derived(`/images/wod/${splat}-logo.png`);
 </script>
 
 <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
@@ -140,7 +140,9 @@
 		</p>
 		<p>
 			Problem?
+			<!-- eslint-disable svelte/no-navigation-without-resolve -- external link -->
 			<a href={DISCORD_URL} title="Contact on Discord" class="anchor">Reach out on Discord.</a>
+			<!-- eslint-enable svelte/no-navigation-without-resolve -->
 		</p></small
 	>
 </div>

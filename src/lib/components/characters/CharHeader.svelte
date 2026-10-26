@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { page } from '$app/state';
 	import { resolve } from '$app/paths';
+	import type { Pathname } from '$app/types';
 	import { Avatar } from '@skeletonlabs/skeleton-svelte';
 	import { ChevronLeft } from '@lucide/svelte';
 
@@ -12,7 +13,7 @@
 		guild: Guild | null;
 		owner?: OwnerData | null;
 		spc?: boolean;
-		backUrl?: string;
+		backUrl?: Pathname;
 	}
 
 	let { name, images, guild, owner, spc = false, backUrl }: ComponentProps = $props();

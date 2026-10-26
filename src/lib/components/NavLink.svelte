@@ -1,10 +1,11 @@
 <script lang="ts">
 	import { page } from '$app/state';
 	import { resolve } from '$app/paths';
+	import type { Pathname } from '$app/types';
 	import type { Snippet } from 'svelte';
 
 	interface ComponentProps {
-		href: string;
+		href: Pathname | '/docs'; // /docs is a layout route with no page of its own
 		title: string;
 		children: Snippet<[]>;
 	}
@@ -16,13 +17,14 @@
 <a
 	class="flex items-center gap-2 px-2 py-2 hover:shadow-[0_1px_0_0_currentColor] hover:brightness-125"
 	class:active
+	aria-current={active ? 'page' : undefined}
 	href={resolve(href)}
 	{title}
 >
 	{@render children()}
 </a>
 
-<style>
+<style lang="postcss">
 	.active {
 		@apply shadow-[0_1px_0_0_currentColor] brightness-125;
 	}

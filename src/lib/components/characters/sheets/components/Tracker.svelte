@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { untrack } from 'svelte';
 	import { Popover } from '@skeletonlabs/skeleton-svelte';
 
 	import type { Character, TrackType } from '$lib/types';
@@ -24,7 +25,8 @@
 	let trackLabel = $derived(track.charAt(0).toUpperCase() + track.slice(1));
 	let showControls = $state(false);
 
-	let trackArray = $state([...character[track]]) as DamageSymbol[];
+	// Edits happen on a local copy, which is written back to the character
+	let trackArray = $state(untrack(() => [...character[track]])) as DamageSymbol[];
 	$effect(() => {
 		character[track] = trackArray.join('');
 	});

@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { page } from '$app/state';
+	import type { Pathname } from '$app/types';
 	import type { CharacterData, Character } from '$lib/types';
 	import CharacterPage from './CharacterPage.svelte';
 	import PublicCharacterView from '$lib/components/characters/PublicCharacterView.svelte';
@@ -11,7 +12,7 @@
 		characterData.type === 'full' ? (characterData.character as Character) : null
 	);
 
-	const backUrl = `/characters/guild/${characterData.guild.id}`;
+	const backUrl: Pathname = `/characters/guild/${characterData.guild.id}`;
 </script>
 
 {#if character}

@@ -2,7 +2,14 @@
 	let { size = 30, fillColor = '#DC2626', strokeColor = '#EF4444', strokeWidth = 8 } = $props();
 </script>
 
-<svg width={size} height={size} viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+<svg
+	width={size}
+	height={size}
+	viewBox="0 0 100 100"
+	xmlns="http://www.w3.org/2000/svg"
+	role="img"
+	aria-label="Hunger"
+>
 	<path
 		d="M 50,10 C 30,30 20,50 20,65 C 20,80 33,90 50,90 C 67,90 80,80 80,65 C 80,50 70,30 50,10 Z"
 		fill={fillColor}

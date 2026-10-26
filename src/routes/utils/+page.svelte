@@ -37,3 +37,17 @@
 		</p>
 	</Card>
 </a>
+
+<a
+	class="block transition-transform hover:scale-101"
+	href={resolve('/utils/probability')}
+	title="Probability Calculator"
+>
+	<Card>
+		{@render heading('Probability Calculator')}
+		<p>
+			See the exact odds of every outcome of a roll, from messy criticals to bestial failures,
+			including the effect of each Willpower re-roll strategy.
+		</p>
+	</Card>
+</a>

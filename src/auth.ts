@@ -2,7 +2,13 @@ import { SvelteKitAuth } from '@auth/sveltekit';
 import Discord from '@auth/sveltekit/providers/discord';
 
 export const { signIn, signOut, handle } = SvelteKitAuth({
-	providers: [Discord({ issuer: 'https://discord.com' })],
+	providers: [
+		Discord({
+			issuer: 'https://discord.com',
+			// Override the default "identify email" scope; we only need the user ID
+			authorization: { params: { scope: 'identify' } }
+		})
+	],
 	trustHost: true,
 	session: {
 		strategy: 'jwt'

@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { resolve } from '$app/paths';
 	import Card from '$lib/components/Card.svelte';
 	import { ExternalLink } from '@lucide/svelte';
 	import Meta from '$lib/components/Meta.svelte';
@@ -25,7 +26,7 @@
 		<ol class="ml-6 list-outside list-decimal space-y-2 pl-2">
 			<li>
 				<a
-					href="https://discord.com/oauth2/authorize?client_id=882409882119196704&permissions=537135104&scope=applications.commands+bot"
+					href="https://discord.com/oauth2/authorize?client_id=882409882119196704&permissions=536872960&scope=applications.commands+bot"
 					class="text-primary-500 underline hover:no-underline"
 					title="Install Inconnu on your server">Install Inconnu</a
 				>
@@ -53,7 +54,7 @@
 			For more information about using Inconnu and creating characters, check out the documentation.
 		</p>
 		<a
-			href="https://docs.inconnu.app"
+			href={resolve('/docs/[...path]', { path: '' })}
 			target="_blank"
 			rel="noopener noreferrer"
 			class="btn preset-filled-primary-500 inline-flex items-center gap-2"

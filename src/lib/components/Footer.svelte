@@ -1,13 +1,14 @@
 <script lang="ts">
+	import { resolve } from '$app/paths';
 	import { DISCORD_URL } from '$lib';
 	import { Copyright } from '@lucide/svelte';
 
 	const currentYear = new Date().getFullYear();
 </script>
 
-<footer class="text-surface-800-200 flex flex-col items-center px-16 py-8 text-sm">
+<footer class="text-surface-800-200 flex flex-col items-center px-6 py-8 text-sm sm:px-16">
 	<p class="mb-0 flex items-center">
-		<Copyright size={17} class="mr-1 inline" />{currentYear} tiltowait
+		<Copyright size={17} class="mr-1 inline" />2021–{currentYear} tiltowait
 	</p>
 	<p>This site uses cookies for necessary functionality only.</p>
 	<div class="bullet-list">
@@ -15,6 +16,7 @@
 			<a class="anchor" href="https://patreon.com/tiltowait" title="Become a patron">Patreon </a>
 		</span>
 		<span>
+			<!-- eslint-disable-next-line svelte/no-navigation-without-resolve -- external link -->
 			<a class="anchor" href={DISCORD_URL} title="Join the Discord server"> Discord </a>
 		</span>
 		<span>
@@ -22,7 +24,11 @@
 			>
 		</span>
 		<span>
-			<a class="anchor" href="https://docs.inconnu.app/privacy-policy" title="Privacy Policy">
+			<a
+				class="anchor"
+				href={resolve('/docs/[...path]', { path: 'privacy-policy' })}
+				title="Privacy Policy"
+			>
 				Privacy Policy
 			</a>
 		</span>
@@ -50,6 +56,8 @@
 <style>
 	.bullet-list {
 		display: flex;
+		flex-wrap: wrap;
+		justify-content: center;
 		gap: 0.5rem;
 	}
 

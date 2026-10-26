@@ -22,11 +22,10 @@
 
 {#snippet docs()}
 	<NavButton
-		href="https://docs.inconnu.app"
+		href={resolve('/docs/[...path]', { path: '' })}
 		title="Read the docs"
 		color="preset-filled-surface-500"
 		full={true}
-		target="_blank"
 	>
 		Docs <ScrollText size={18} />
 	</NavButton>
@@ -84,14 +83,9 @@
 		<NavLink href="/utils" title="Random utilities">
 			Utilities <Orbit size={18} />
 		</NavLink>
-		<a
-			class="flex items-center gap-2 px-2 py-2 hover:shadow-[0_1px_0_0_currentColor] hover:brightness-125"
-			href="https://docs.inconnu.app"
-			title="Read the docs"
-			target="_blank"
-		>
+		<NavLink href="/docs" title="Read the docs">
 			Docs <ScrollText size={18} />
-		</a>
+		</NavLink>
 
 		<DiscordButton full={false} />
 
@@ -126,7 +120,7 @@
 		>
 			<nav class="flex flex-col items-end gap-4">
 				<NavButton
-					href="/characters"
+					href={resolve('/characters')}
 					title="View your characters"
 					color="preset-filled-secondary-500"
 					full={true}
@@ -134,7 +128,12 @@
 					Characters <Users size={18} />
 				</NavButton>
 
-				<NavButton href="/utils" title="Random utilities" color="preset-tonal-tertiary" full={true}>
+				<NavButton
+					href={resolve('/utils')}
+					title="Random utilities"
+					color="preset-tonal-tertiary"
+					full={true}
+				>
 					Utilities <Orbit size={18} />
 				</NavButton>
 

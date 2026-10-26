@@ -11,7 +11,7 @@
 </script>
 
 <a
-	href={resolve('/characters/guild/[guild]', { guild: guild.id })}
+	href={resolve('/(authed)/characters/guild/[guild]', { guild: guild.id })}
 	title="View {guild.name} characters"
 	class="card preset-filled-surface-400-600 border-surface-200-800 card-hover flex items-center gap-4 overflow-hidden rounded-full border-[1px] px-4 py-3 shadow-md hover:scale-101"
 >
