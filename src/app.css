@@ -95,7 +95,7 @@
 	/* Tables sit in a panel like code blocks and callouts. The panel scrolls
 	   sideways when a table is too wide for the screen, so the page doesn't. */
 	& :where(.docs-table) {
-		margin-block: 2em;
+		margin-block: 1.25em;
 		background: color-mix(in oklab, var(--color-surface-500) 10%, transparent);
 		border: 1px solid var(--color-surface-500);
 		border-radius: 0.5rem;
@@ -158,6 +158,8 @@
 	& :where(pre) {
 		white-space: pre-wrap;
 		overflow-wrap: anywhere;
+		/* Spaced like the other panels; the pre's font is 0.875em, so this is 1.25em of body text */
+		margin-bottom: calc(1.25em / 0.875);
 	}
 
 	/* Keep a code block or table close to the text that introduces it */
