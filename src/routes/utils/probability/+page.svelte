@@ -18,6 +18,30 @@
 	let hunger = $state(1);
 	let difficulty = $state<number | null>(3);
 
+	// Restore the last roll, then keep it saved. Storage can be unavailable (e.g.
+	// private browsing), in which case the inputs reset on reload.
+	const STORAGE_KEY = 'probability-inputs';
+	let restored = false;
+	$effect(() => {
+		if (!restored) {
+			restored = true;
+			try {
+				const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) ?? '{}');
+				if (isWhole(saved.pool, 1, MAX_POOL)) pool = saved.pool;
+				if (isWhole(saved.hunger, 0, MAX_HUNGER)) hunger = saved.hunger;
+				if (isWhole(saved.difficulty, 0)) difficulty = saved.difficulty;
+			} catch {
+				// Nothing saved, or no storage
+			}
+		}
+		const inputs = JSON.stringify({ pool, hunger, difficulty });
+		try {
+			localStorage.setItem(STORAGE_KEY, inputs);
+		} catch {
+			// No storage
+		}
+	});
+
 	let error = $derived.by(() => {
 		if (!isWhole(pool, 1, MAX_POOL)) {
 			return `Pool must be a whole number from 1 to ${MAX_POOL}.`;

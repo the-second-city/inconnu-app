@@ -21,3 +21,11 @@ globalThis.ResizeObserver ??= class {
 	unobserve() {}
 	disconnect() {}
 };
+
+// Node 25+ defines its own localStorage, which is undefined without --localstorage-file and
+// hides jsdom's. Vitest exposes the jsdom instance, so use its storage instead.
+const { jsdom } = globalThis as unknown as { jsdom: { window: Window } };
+Object.defineProperty(globalThis, 'localStorage', {
+	value: jsdom.window.localStorage,
+	configurable: true
+});

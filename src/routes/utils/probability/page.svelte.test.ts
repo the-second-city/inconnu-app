@@ -1,10 +1,14 @@
 import { render, screen } from '@testing-library/svelte';
 import userEvent from '@testing-library/user-event';
-import { expect, test } from 'vitest';
+import { beforeEach, expect, test } from 'vitest';
 
 import { STRATEGIES } from '$lib/probability';
 
 import Page from './+page.svelte';
+
+const STORAGE_KEY = 'probability-inputs';
+
+beforeEach(() => localStorage.clear());
 
 /** The labels of the outcomes shown in the breakdown. */
 function shownOutcomes(): string[] {
@@ -47,4 +51,43 @@ test.each([
 
 	expect(screen.getByRole('alert')).toHaveTextContent(message);
 	expect(screen.queryByText('average successes')).not.toBeInTheDocument();
+});
+
+test('restores the last inputs', () => {
+	localStorage.setItem(STORAGE_KEY, JSON.stringify({ pool: 8, hunger: 3, difficulty: 4 }));
+	render(Page);
+
+	expect(screen.getByRole('spinbutton', { name: 'Pool' })).toHaveValue(8);
+	expect(screen.getByRole('combobox', { name: 'Hunger' })).toHaveValue('3');
+	expect(screen.getByRole('spinbutton', { name: 'Difficulty' })).toHaveValue(4);
+});
+
+test('ignores invalid saved inputs', () => {
+	localStorage.setItem(STORAGE_KEY, JSON.stringify({ pool: 500, hunger: 'x', difficulty: 2 }));
+	render(Page);
+
+	expect(screen.getByRole('spinbutton', { name: 'Pool' })).toHaveValue(5);
+	expect(screen.getByRole('combobox', { name: 'Hunger' })).toHaveValue('1');
+	expect(screen.getByRole('spinbutton', { name: 'Difficulty' })).toHaveValue(2);
+});
+
+test('ignores unreadable saved inputs', () => {
+	localStorage.setItem(STORAGE_KEY, '{not json');
+	render(Page);
+
+	expect(screen.getByRole('spinbutton', { name: 'Pool' })).toHaveValue(5);
+});
+
+test('saves inputs as they change', async () => {
+	render(Page);
+	const pool = screen.getByRole('spinbutton', { name: 'Pool' });
+	await userEvent.clear(pool);
+	await userEvent.type(pool, '12');
+	await userEvent.selectOptions(screen.getByRole('combobox', { name: 'Hunger' }), '4');
+
+	expect(JSON.parse(localStorage.getItem(STORAGE_KEY) ?? '{}')).toEqual({
+		pool: 12,
+		hunger: 4,
+		difficulty: 3
+	});
 });
