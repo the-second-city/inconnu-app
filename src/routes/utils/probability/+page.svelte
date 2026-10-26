@@ -2,7 +2,14 @@
 	import Card from '$lib/components/Card.svelte';
 	import Meta from '$lib/components/Meta.svelte';
 	import { FORM_CLASSES } from '$lib/constants/formStyles';
-	import { calculate, MAX_HUNGER, MAX_POOL, STRATEGIES, type Strategy } from '$lib/probability';
+	import {
+		calculate,
+		MAX_HUNGER,
+		MAX_POOL,
+		STRATEGIES,
+		type Probabilities,
+		type Strategy
+	} from '$lib/probability';
 
 	// Anything smaller displays as 0.00%, so we hide it, as the bot does
 	const DISPLAY_MIN = 0.00005;
@@ -10,7 +17,6 @@
 	let pool = $state<number | null>(5);
 	let hunger = $state(1);
 	let difficulty = $state<number | null>(3);
-	let strategy = $state<Strategy | ''>('');
 
 	let error = $derived.by(() => {
 		if (!isWhole(pool, 1, MAX_POOL)) {
@@ -22,8 +28,21 @@
 		return null;
 	});
 
-	let probs = $derived(
-		error === null ? calculate(pool ?? 1, hunger, difficulty ?? 0, strategy || null) : null
+	// The roll without re-rolls first, for comparison, then each Willpower strategy
+	const ROLLS: [string, Strategy | null][] = [
+		['No Re-roll', null],
+		...(Object.entries(STRATEGIES) as [Strategy, string][]).map(
+			([strategy, name]): [string, Strategy] => [name, strategy]
+		)
+	];
+
+	let results = $derived(
+		error === null
+			? ROLLS.map(([name, strategy]): [string, Probabilities] => [
+					name,
+					calculate(pool ?? 1, hunger, difficulty ?? 0, strategy)
+				])
+			: null
 	);
 
 	/** Whether an input's value is a whole number within the given bounds. */
@@ -53,6 +72,32 @@
 	{/if}
 {/snippet}
 
+{#snippet result(name: string, probs: Probabilities)}
+	<Card>
+		<h2 class="h4 mb-2">{name}</h2>
+		<!-- Subgrids keep the number column aligned across all three lists -->
+		<div class="grid grid-cols-[auto_1fr] gap-x-4">
+			<dl class="col-span-2 grid grid-cols-subgrid gap-y-1">
+				{@render stat(percent(probs.success + probs.critical), 'success without complication')}
+				{@render stat(probs.totalSuccesses.toFixed(2), 'average successes')}
+				{@render stat(probs.margin.toFixed(2), 'average margin')}
+			</dl>
+			<hr class="text-surface-300 col-span-2 my-2" />
+			<dl class="col-span-2 grid grid-cols-subgrid gap-y-1">
+				{@render outcome('Critical Win', probs.critical)}
+				{@render outcome('Success', probs.success, true)}
+				{@render outcome('Messy Critical', probs.messy)}
+			</dl>
+			<hr class="text-surface-300 col-span-2 my-2" />
+			<dl class="col-span-2 grid grid-cols-subgrid gap-y-1">
+				{@render outcome('Failure', probs.fail)}
+				{@render outcome('Total Failure', probs.totalFail, true)}
+				{@render outcome('Bestial Failure', probs.bestial)}
+			</dl>
+		</div>
+	</Card>
+{/snippet}
+
 <div class="flex flex-col gap-2">
 	<h1 class="h1 font-black">Probability Calculator</h1>
 
@@ -62,7 +107,7 @@
 		<code class="code">/probability</code> command.
 	</p>
 
-	<div class="grid grid-cols-1 gap-x-4 sm:grid-cols-2 lg:grid-cols-4">
+	<div class="grid grid-cols-1 gap-x-4 sm:grid-cols-3">
 		<div>
 			<label class={FORM_CLASSES.label} for="pool">Pool</label>
 			<input
@@ -94,48 +139,17 @@
 				aria-describedby={error ? 'probability-error' : undefined}
 			/>
 		</div>
-		<div>
-			<label class={FORM_CLASSES.label} for="strategy">Re-roll</label>
-			<select id="strategy" bind:value={strategy} class={FORM_CLASSES.selectInput}>
-				<option value="">None</option>
-				{#each Object.entries(STRATEGIES) as [value, name] (value)}
-					<option {value}>{name}</option>
-				{/each}
-			</select>
-		</div>
 	</div>
 
 	{#if error}
 		<p id="probability-error" class={FORM_CLASSES.error} role="alert">{error}</p>
 	{/if}
 
-	{#if probs}
-		<div class="grid grid-cols-1 gap-4 sm:grid-cols-2" aria-live="polite">
-			<Card>
-				<h2 class="h4 mb-2">Summary</h2>
-				<dl class="grid grid-cols-[auto_1fr] gap-x-4 gap-y-1">
-					{@render stat(percent(probs.success + probs.critical), 'success without complication')}
-					{@render stat(probs.totalSuccesses.toFixed(2), 'average successes')}
-					{@render stat(probs.margin.toFixed(2), 'average margin')}
-				</dl>
-			</Card>
-			<Card>
-				<h2 class="h4 mb-2">Breakdown</h2>
-				<!-- Subgrids keep the number column aligned across both lists -->
-				<div class="grid grid-cols-[auto_1fr] gap-x-4">
-					<dl class="col-span-2 grid grid-cols-subgrid gap-y-1">
-						{@render outcome('Critical Win', probs.critical)}
-						{@render outcome('Success', probs.success, true)}
-						{@render outcome('Messy Critical', probs.messy)}
-					</dl>
-					<hr class="text-surface-300 col-span-2 my-2" />
-					<dl class="col-span-2 grid grid-cols-subgrid gap-y-1">
-						{@render outcome('Failure', probs.fail)}
-						{@render outcome('Total Failure', probs.totalFail, true)}
-						{@render outcome('Bestial Failure', probs.bestial)}
-					</dl>
-				</div>
-			</Card>
+	{#if results}
+		<div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+			{#each results as [name, probs] (name)}
+				{@render result(name, probs)}
+			{/each}
 		</div>
 	{/if}
 </div>

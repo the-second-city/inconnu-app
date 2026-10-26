@@ -2,6 +2,8 @@ import { render, screen } from '@testing-library/svelte';
 import userEvent from '@testing-library/user-event';
 import { expect, test } from 'vitest';
 
+import { STRATEGIES } from '$lib/probability';
+
 import Page from './+page.svelte';
 
 /** The labels of the outcomes shown in the breakdown. */
@@ -13,7 +15,14 @@ test('shows the default roll', () => {
 	render(Page);
 
 	expect(screen.getByRole('spinbutton', { name: 'Pool' })).toHaveValue(5);
-	expect(screen.getByText('average successes')).toBeInTheDocument();
+	expect(screen.getAllByText('average successes')).toHaveLength(Object.keys(STRATEGIES).length + 1);
+});
+
+test('shows a result for each Willpower strategy, plus no re-roll', () => {
+	render(Page);
+
+	const headings = screen.getAllByRole('heading', { level: 2 }).map((h) => h.textContent?.trim());
+	expect(headings).toEqual(['No Re-roll', ...Object.values(STRATEGIES)]);
 });
 
 test('hides outcomes that cannot happen', async () => {
