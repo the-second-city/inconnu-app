@@ -45,6 +45,7 @@
 /* Docs pages: Tailwind Typography's spacing and layout, in the site's own colors and size */
 .docs {
 	font-size: inherit;
+	line-height: 1.5; /* The site's own spacing; Typography's 1.75 reads airy */
 	--tw-prose-body: inherit;
 	--tw-prose-headings: inherit;
 	--tw-prose-bold: inherit;
