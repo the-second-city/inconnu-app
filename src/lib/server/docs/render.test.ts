@@ -146,3 +146,8 @@ test('details blocks survive sanitizing', () => {
 	expect(html).toContain('<details>');
 	expect(html).toContain('<summary>More</summary>');
 });
+
+test('tables go in a panel that can scroll sideways', () => {
+	const html = render('| Option | Notes |\n| --- | --- |\n| `name` | Short |');
+	expect(html).toMatch(/<div class="docs-table"><table>[\s\S]*<\/table><\/div>/);
+});

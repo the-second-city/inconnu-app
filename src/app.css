@@ -91,16 +91,23 @@
 		font-size: 0.8em;
 	}
 
-	/* Tables at body size, with tighter rows, in a panel like code blocks and callouts */
+	/* Tables sit in a panel like code blocks and callouts. The panel scrolls
+	   sideways when a table is too wide for the screen, so the page doesn't. */
+	& :where(.docs-table) {
+		margin-block: 2em;
+		background: color-mix(in oklab, var(--color-surface-500) 10%, transparent);
+		border: 1px solid var(--color-surface-500);
+		border-radius: 0.5rem;
+		overflow-x: auto;
+	}
+
+	/* Tables at body size, with tighter rows */
 	& :where(table) {
 		font-size: 1em;
 		line-height: 1.5;
-		background: color-mix(in oklab, var(--color-surface-500) 10%, transparent);
+		margin: 0;
 		border-collapse: separate;
 		border-spacing: 0;
-		border: 1px solid var(--color-surface-500);
-		border-radius: 0.5rem;
-		overflow: hidden;
 	}
 	& :where(thead) {
 		background: color-mix(in oklab, var(--color-surface-500) 15%, transparent);
@@ -122,11 +129,16 @@
 		border: none;
 	}
 
-	/* Option names take only the room they need, so descriptions sit beside them */
+	/* Option names take only the room they need, so descriptions sit beside them.
+	   Phones are too narrow to keep them on one line. */
 	& :where(th:first-child, td:first-child) {
-		width: 1%;
-		white-space: nowrap;
 		padding-right: 1.5em;
+	}
+	@media (min-width: 40rem) {
+		& :where(th:first-child, td:first-child) {
+			width: 1%;
+			white-space: nowrap;
+		}
 	}
 
 	/* Inline code as a chip, without Typography's literal backticks */
@@ -148,10 +160,10 @@
 	}
 
 	/* Keep a code block or table close to the text that introduces it */
-	& :where(p:has(+ pre, + table)) {
+	& :where(p:has(+ pre, + .docs-table)) {
 		margin-bottom: 0.5em;
 	}
-	& :where(p + pre, p + table) {
+	& :where(p + pre, p + .docs-table) {
 		margin-top: 0.5em;
 	}
 

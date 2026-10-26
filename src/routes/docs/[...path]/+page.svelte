@@ -31,7 +31,7 @@
 	</a>
 {/snippet}
 
-<div class="grid gap-8 lg:grid-cols-[16rem_minmax(0,1fr)]">
+<div class="grid grid-cols-[minmax(0,1fr)] gap-8 lg:grid-cols-[16rem_minmax(0,1fr)]">
 	<aside class="border-surface-500 hidden border-r pr-6 lg:block">
 		<DocsNav nav={data.nav} current={data.page.path} storageKey="docs-nav-sidebar" />
 	</aside>

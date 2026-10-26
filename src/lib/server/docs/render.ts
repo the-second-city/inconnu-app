@@ -143,6 +143,9 @@ export const renderPage = (page: DocsPage, pagesByFile: Map<string, LinkedPage>)
 		}
 	});
 
-	const html = marked.parse(page.markdown, { async: false });
+	// Tables go in a panel that scrolls sideways when they're too wide for the screen
+	const html = (marked.parse(page.markdown, { async: false }) as string)
+		.replaceAll('<table>', '<div class="docs-table"><table>')
+		.replaceAll('</table>', '</table></div>');
 	return DOMPurify.sanitize(html, { ADD_ATTR: ['target'] });
 };

@@ -6,7 +6,7 @@
 	const currentYear = new Date().getFullYear();
 </script>
 
-<footer class="text-surface-800-200 flex flex-col items-center px-16 py-8 text-sm">
+<footer class="text-surface-800-200 flex flex-col items-center px-6 py-8 text-sm sm:px-16">
 	<p class="mb-0 flex items-center">
 		<Copyright size={17} class="mr-1 inline" />2021–{currentYear} tiltowait
 	</p>
@@ -55,6 +55,8 @@
 <style>
 	.bullet-list {
 		display: flex;
+		flex-wrap: wrap;
+		justify-content: center;
 		gap: 0.5rem;
 	}
 
