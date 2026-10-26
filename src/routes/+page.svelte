@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { resolve } from '$app/paths';
 	import { DISCORD_URL } from '$lib';
 	import Ankh from '$lib/components/Ankh.svelte';
 	import Meta from '$lib/components/Meta.svelte';
@@ -129,19 +130,17 @@
 				</a>
 				can upload unlimited
 				<a
-					href="https://docs.inconnu.app/premium/character-images"
+					href={resolve('/docs/[...path]', { path: 'premium/character-images' })}
 					title="Upload character images"
 					class={premiumLinkClasses}
-					target="_blank"
 				>
 					character images
 				</a>
 				and use
 				<a
-					href="https://docs.inconnu.app/premium/roleposting"
+					href={resolve('/docs/[...path]', { path: 'premium/roleposting' })}
 					class={premiumLinkClasses}
 					title="Send messages with Roleposts"
-					target="_blank"
 				>
 					Roleposts
 				</a>

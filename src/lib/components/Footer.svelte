@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { resolve } from '$app/paths';
 	import { DISCORD_URL } from '$lib';
 	import { Copyright } from '@lucide/svelte';
 
@@ -22,7 +23,11 @@
 			>
 		</span>
 		<span>
-			<a class="anchor" href="https://docs.inconnu.app/privacy-policy" title="Privacy Policy">
+			<a
+				class="anchor"
+				href={resolve('/docs/[...path]', { path: 'privacy-policy' })}
+				title="Privacy Policy"
+			>
 				Privacy Policy
 			</a>
 		</span>

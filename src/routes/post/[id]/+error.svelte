@@ -20,7 +20,7 @@
 	<p>
 		<strong>Tip:</strong> After you set up
 		<a
-			href="https://docs.inconnu.app/premium/roleposting/rp-changelog"
+			href="{resolve('/docs/[...path]', { path: 'premium/roleposting' })}#changelog-channel"
 			title="Set up the Rolepost changelog"
 			class="anchor text-secondary-500">the Rolepost changelog channel</a
 		> for your server, you can view changes your players have made to their posts by clicking the notification's

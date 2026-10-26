@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { ExternalLink } from '@lucide/svelte';
+	import { resolve } from '$app/paths';
 </script>
 
 <svelte:head>
@@ -19,11 +19,8 @@
 	</p>
 	<a
 		class="btn preset-outlined-primary-500 text-xl hover:brightness-125"
-		href="https://docs.inconnu.app/premium/roleposting"
-		target="_blank"
-		rel="noopener noreferrer"
+		href={resolve('/docs/[...path]', { path: 'premium/roleposting' })}
 	>
 		Read the Docs
-		<ExternalLink size={16} />
 	</a>
 </div>
