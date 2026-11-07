@@ -3,6 +3,7 @@ skip_clone: true
 when:
   - branch: master
     event: push
+  - event: pull_request
   - event: manual
 
 steps:
@@ -23,6 +24,9 @@ steps:
       - npm test
 
   - name: build
+    when:
+      - branch: master
+        event: [push, manual]
     image: sh
     environment:
       AUTH_SECRET:
@@ -42,6 +46,9 @@ steps:
       - npm run build
 
   - name: copy-artifacts
+    when:
+      - branch: master
+        event: [push, manual]
     image: sh
     commands:
       - mkdir -p /mnt/build-artifacts/${CI_REPO_NAME}
@@ -49,6 +56,9 @@ steps:
       - chmod 755 /mnt/build-artifacts/${CI_REPO_NAME}
 
   - name: redeploy
+    when:
+      - branch: master
+        event: [push, manual]
     image: sh
     commands:
       - ssh -tt inconnu-app

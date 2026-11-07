@@ -102,6 +102,15 @@ test('shows the first image as a banner', () => {
 	expect(screen.getByRole('img', { name: 'banner' })).toHaveAttribute('src', images[0]);
 });
 
+test('lazy-loads the banner', () => {
+	const images = ['https://example.com/one.png'];
+	render(CharCard, { data: publicData({}, profile({ images })), showOwner: false });
+
+	const banner = screen.getByRole('img', { name: 'banner' });
+	expect(banner).toHaveAttribute('loading', 'lazy');
+	expect(banner).toHaveAttribute('decoding', 'async');
+});
+
 test('has no banner without images', () => {
 	render(CharCard, { data: publicData(), showOwner: false });
 
