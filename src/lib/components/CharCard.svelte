@@ -37,7 +37,13 @@
 {#snippet cardContent()}
 	<header>
 		{#if data.character.profile.images.length > 0}
-			<img src={data.character.profile.images[0]} class="w-full" alt="banner" />
+			<img
+				src={data.character.profile.images[0]}
+				class="w-full"
+				alt="banner"
+				loading="lazy"
+				decoding="async"
+			/>
 		{/if}
 	</header>
 	<article class="space-y-1 p-3">
@@ -46,9 +52,9 @@
 		</div>
 		<p class="line-clamp-4 text-sm opacity-60">
 			{#if data.character.profile.description}
-				<Markdown content={data.character.profile.description} />
+				<Markdown content={data.character.profile.description} preview />
 			{:else if data.character.profile.biography}
-				<Markdown content={data.character.profile.biography} />
+				<Markdown content={data.character.profile.biography} preview />
 			{:else}
 				<em>{data.character.name} is a total mystery ...</em>
 			{/if}
