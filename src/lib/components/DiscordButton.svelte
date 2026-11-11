@@ -1,8 +1,9 @@
 <script lang="ts">
 	import { page } from '$app/state';
+	import { resolve } from '$app/paths';
 	import { Avatar } from '@skeletonlabs/skeleton-svelte';
 	import { Popover } from '@skeletonlabs/skeleton-svelte';
-	import { LogIn, LogOut } from '@lucide/svelte';
+	import { KeyRound, LogIn, LogOut } from '@lucide/svelte';
 	import { SignIn } from '@auth/sveltekit/components';
 	import { signOut } from '@auth/sveltekit/client';
 
@@ -45,13 +46,20 @@
 			{/if}
 		{/snippet}
 		{#snippet content()}
-			<button
-				class="btn preset-filled-primary-500 w-56"
-				onclick={() => signOut({ redirect: true, redirectTo: '/' })}
-			>
-				<LogOut size={18} />
-				Sign out
-			</button>
+			<div class="flex flex-col gap-2">
+				<a
+					href={resolve('/api-keys')}
+					class="btn preset-outlined-primary-500 w-56"
+					onclick={() => (showLogoutButton = false)}><KeyRound size={18} /> API Keys</a
+				>
+				<button
+					class="btn preset-filled-primary-500 w-56"
+					onclick={() => signOut({ redirect: true, redirectTo: '/' })}
+				>
+					<LogOut size={18} />
+					Sign out
+				</button>
+			</div>
 		{/snippet}
 	</Popover>
 {:else}
