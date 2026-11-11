@@ -152,3 +152,27 @@ export interface DocsBundle {
 	pages: DocsPage[];
 	redirects: Record<string, string>; // Old path -> new path, with optional #anchor
 }
+
+export interface IntegrationKey {
+	id: string;
+	name: string;
+	prefix: string;
+	guild_id: string;
+	channel_id: string;
+	created_at: string;
+	expires_at: string | null;
+	revoked_at: string | null;
+	scope: 'rolls:read';
+}
+
+export interface IntegrationChannel {
+	guild_id: string;
+	guild_name: string;
+	channel_id: string;
+	channel_name: string;
+}
+
+export interface IntegrationKeys {
+	keys: IntegrationKey[];
+	channels: IntegrationChannel[];
+}
