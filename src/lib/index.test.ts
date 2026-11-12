@@ -2,6 +2,7 @@ import { expect, test } from 'vitest';
 
 import {
 	getErrorDetail,
+	isHttpsUrl,
 	hasProfileContent,
 	insensitiveSort,
 	isReservedTraitName,
@@ -87,4 +88,18 @@ test.each<[string, Profile, boolean]>([
 	['an image', { description: null, biography: null, images: ['a.webp'] }, true]
 ])('hasProfileContent with %s is %s', (_label: string, profile: Profile, expected: boolean) => {
 	expect(hasProfileContent(profile)).toBe(expected);
+});
+
+test('isHttpsUrl accepts https URLs', () => {
+	expect(isHttpsUrl('https://discord.com/channels/1/2/3')).toBe(true);
+});
+
+test.each([
+	'javascript:alert(1)',
+	'data:text/html,<script>alert(1)</script>',
+	'http://example.com',
+	'/relative',
+	''
+])('isHttpsUrl rejects %j', (url: string) => {
+	expect(isHttpsUrl(url)).toBe(false);
 });

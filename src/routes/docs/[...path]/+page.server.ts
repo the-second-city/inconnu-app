@@ -17,8 +17,9 @@ export const load: PageServerLoad = async ({ params, parent }) => {
 	}
 
 	// Old paths, including GitBook's, live on in Discord messages and bookmarks
-	const target = docs.redirects[params.path];
-	if (target !== undefined) {
+	// An own-property check, so paths like "constructor" don't match Object's builtins
+	if (Object.hasOwn(docs.redirects, params.path)) {
+		const target = docs.redirects[params.path];
 		const [targetPath, anchor] = target.split('#');
 		redirect(301, docsHref(targetPath, anchor));
 	}

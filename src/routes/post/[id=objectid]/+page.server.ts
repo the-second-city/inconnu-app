@@ -11,7 +11,7 @@ export const load: PageServerLoad = async ({ params }) => {
 		error(400, 'Post ID is required');
 	}
 
-	const response = await fetch(`${INCONNU_API_URL}/changelog/${id}`, {
+	const response = await fetch(`${INCONNU_API_URL}/changelog/${encodeURIComponent(id)}`, {
 		headers: {
 			Authorization: `Bearer ${API_KEY}`
 		}

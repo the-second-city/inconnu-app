@@ -3,6 +3,7 @@
 	import { Avatar } from '@skeletonlabs/skeleton-svelte';
 	import { ExternalLink } from '@lucide/svelte';
 
+	import { isHttpsUrl } from '$lib';
 	import type { Changelog } from '$lib/types';
 	import Markdown from '$lib/components/Markdown.svelte';
 	import DiffView from '$lib/components/DiffView.svelte';
@@ -89,7 +90,7 @@
 		<!-- Character -->
 		<span class="font-semibold">{changelog.character.name}</span>
 
-		{#if changelog.url}
+		{#if changelog.url && isHttpsUrl(changelog.url)}
 			<!-- eslint-disable svelte/no-navigation-without-resolve -- external link -->
 			<a
 				href={changelog.url}

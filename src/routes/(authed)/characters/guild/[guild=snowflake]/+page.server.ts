@@ -17,7 +17,7 @@ export const load: PageServerLoad = async ({ params, parent }) => {
 		error(400, 'Guild ID is required');
 	}
 
-	const response = await fetch(`${INCONNU_API_URL}/characters/guild/${guild}`, {
+	const response = await fetch(`${INCONNU_API_URL}/characters/guild/${encodeURIComponent(guild)}`, {
 		headers: {
 			Authorization: `Bearer ${API_KEY}`,
 			'X-Discord-User-ID': discordUserId

@@ -12,7 +12,7 @@ export const load: PageServerLoad = async ({ params, parent }) => {
 
 	const discordUserId = session.user.id;
 
-	const response = await fetch(`${INCONNU_API_URL}/characters/${params.id}`, {
+	const response = await fetch(`${INCONNU_API_URL}/characters/${encodeURIComponent(params.id)}`, {
 		headers: {
 			Authorization: `Bearer ${API_KEY}`,
 			'X-Discord-User-ID': discordUserId
