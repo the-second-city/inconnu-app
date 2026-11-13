@@ -19,10 +19,11 @@
 
 	const totalBoxes = 10;
 
-	let boxStates = $derived.by(() => {
-		const humanity = character.humanity || 7;
-		const stains = character.stains || 0;
+	// Default only when missing; 0 is a valid Humanity (and Stains)
+	let humanity = $derived(character.humanity ?? 7);
+	let stains = $derived(character.stains ?? 0);
 
+	let boxStates = $derived.by(() => {
 		const emptyBoxes = totalBoxes - humanity;
 		const stainOverflow = Math.max(0, stains - emptyBoxes);
 		const normalStains = stains - stainOverflow;
@@ -40,27 +41,19 @@
 	});
 
 	function incHumanity() {
-		if ((character.humanity || 7) < 10) {
-			character.humanity = (character.humanity || 7) + 1;
-		}
+		if (humanity < 10) character.humanity = humanity + 1;
 	}
 
 	function decHumanity() {
-		if ((character.humanity || 7) > 0) {
-			character.humanity = (character.humanity || 7) - 1;
-		}
+		if (humanity > 0) character.humanity = humanity - 1;
 	}
 
 	function incStains() {
-		if ((character.stains || 0) < 10) {
-			character.stains = (character.stains || 0) + 1;
-		}
+		if (stains < 10) character.stains = stains + 1;
 	}
 
 	function decStains() {
-		if ((character.stains || 0) > 0) {
-			character.stains = (character.stains || 0) - 1;
-		}
+		if (stains > 0) character.stains = stains - 1;
 	}
 </script>
 
@@ -98,7 +91,7 @@ Humanity
 				<div class="flex items-center justify-between gap-3">
 					<button
 						class="btn preset-tonal-surface"
-						disabled={(character.humanity || 7) <= 0}
+						disabled={humanity <= 0}
 						onclick={decHumanity}
 						aria-label="Decrease Humanity"
 					>
@@ -107,7 +100,7 @@ Humanity
 					Rating
 					<button
 						class="btn preset-tonal-surface"
-						disabled={(character.humanity || 7) >= 10}
+						disabled={humanity >= 10}
 						onclick={incHumanity}
 						aria-label="Increase Humanity"
 					>
@@ -117,7 +110,7 @@ Humanity
 				<div class="flex items-center justify-between gap-3">
 					<button
 						class="btn preset-tonal-surface"
-						disabled={(character.stains || 0) <= 0}
+						disabled={stains <= 0}
 						onclick={decStains}
 						aria-label="Decrease Stains"
 					>
@@ -126,7 +119,7 @@ Humanity
 					Stains
 					<button
 						class="btn preset-tonal-surface"
-						disabled={(character.stains || 0) >= 10}
+						disabled={stains >= 10}
 						onclick={incStains}
 						aria-label="Increase Stains"
 					>

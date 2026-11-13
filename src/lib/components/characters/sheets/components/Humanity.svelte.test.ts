@@ -93,7 +93,35 @@ test('changes Humanity and Stains', async () => {
 	expect(boxes()).toEqual([...times(6, 'Humanity'), ...times(2, 'Empty'), ...times(2, 'Stain')]);
 });
 
+test('shows a Humanity of 0 as all empty', () => {
+	render(Humanity, { character: character(0, 0), editing: false });
+
+	expect(boxes()).toEqual(times(10, 'Empty'));
+});
+
+test('Humanity can be lowered to 0', async () => {
+	const user = userEvent.setup();
+	const bound = renderHumanity(1, 0);
+	await openControls(user);
+
+	await user.click(await screen.findByRole('button', { name: 'Decrease Humanity' }));
+
+	expect(bound.humanity).toBe(0);
+	expect(boxes()).toEqual(times(10, 'Empty'));
+});
+
+test('Humanity of 0 can be raised to 1', async () => {
+	const user = userEvent.setup();
+	const bound = renderHumanity(0, 0);
+	await openControls(user);
+
+	await user.click(await screen.findByRole('button', { name: 'Increase Humanity' }));
+
+	expect(bound.humanity).toBe(1);
+});
+
 test.each([
+	['Decrease Humanity', 0, 0],
 	['Increase Humanity', 10, 0],
 	['Decrease Stains', 7, 0],
 	['Increase Stains', 7, 10]
