@@ -10,7 +10,7 @@ export const load: PageServerLoad = async ({ params }) => {
 		error(400, 'Character ID is required');
 	}
 
-	const response = await fetch(`${INCONNU_API_URL}/characters/profile/${id}`, {
+	const response = await fetch(`${INCONNU_API_URL}/characters/profile/${encodeURIComponent(id)}`, {
 		headers: {
 			Authorization: `Bearer ${API_KEY}`
 		}

@@ -73,7 +73,10 @@
 {/snippet}
 
 <a
-	href={resolve('/(authed)/characters/guild/[guild]/[id]', { guild: guildId, id: characterId })}
+	href={resolve('/(authed)/characters/guild/[guild=snowflake]/[id=objectid]', {
+		guild: guildId,
+		id: characterId
+	})}
 	title="View/Edit {data.character.name}"
 	class="{baseCardClasses} card-hover hover:scale-101 {hasProfileContent(data.character.profile)
 		? ''

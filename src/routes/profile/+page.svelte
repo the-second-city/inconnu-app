@@ -29,7 +29,7 @@
 	</p>
 	<a
 		class="btn preset-outlined-secondary-500 text-xl hover:brightness-125"
-		href={resolve('/profile/[id]', { id: '680d32cbc0bf6151dbd5004e' })}
+		href={resolve('/profile/[id=objectid]', { id: '680d32cbc0bf6151dbd5004e' })}
 		target="_blank"
 		rel="noopener noreferrer"
 	>

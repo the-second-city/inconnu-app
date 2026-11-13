@@ -29,6 +29,22 @@ test('turns links into plain text', () => {
 	expect(screen.getByText(/the Elysium/)).toBeInTheDocument();
 });
 
+test('keeps formatting inside link text', () => {
+	render(Markdown, { content: 'Visit [**Clan Toreador**](https://example.com)' });
+
+	expect(screen.queryByRole('link')).not.toBeInTheDocument();
+	expect(screen.getByText('Clan Toreador').tagName).toBe('STRONG');
+});
+
+test('shows task lists as text checkboxes', () => {
+	render(Markdown, { content: '- [x] Fed tonight\n- [ ] Paid the Prince' });
+
+	const [done, pending] = screen.getAllByRole('listitem');
+	expect(done).toHaveTextContent('☑ Fed tonight');
+	expect(pending).toHaveTextContent('☐ Paid the Prince');
+	expect(screen.queryByRole('checkbox')).not.toBeInTheDocument();
+});
+
 test('removes scripts and event handlers', () => {
 	const { container } = render(Markdown, {
 		content: '<script>alert(1)</script><p onclick="alert(2)">Hello</p>'
@@ -36,6 +52,28 @@ test('removes scripts and event handlers', () => {
 
 	expect(container.querySelector('script')).toBeNull();
 	expect(screen.getByText('Hello')).not.toHaveAttribute('onclick');
+});
+
+test.each([
+	'<style>body { display: none }</style>',
+	'<img src="https://example.com/tracker.png">',
+	'<a href="https://example.com">Click me</a>',
+	'<form action="https://example.com"><input name="password"><button>Go</button></form>',
+	'<p class="fixed inset-0" style="background: black" id="overlay">Overlay</p>',
+	'<iframe src="https://example.com"></iframe>',
+	'<svg><circle r="10" /></svg>'
+])('renders no styling, media, links, or forms from %s', (content: string) => {
+	const { container } = render(Markdown, { content });
+
+	const forbidden = 'style, img, a, form, input, button, iframe, svg, [class], [style], [id]';
+	expect(container.querySelector(forbidden)).toBeNull();
+});
+
+test('keeps tables and lists', () => {
+	render(Markdown, { content: '| Clan |\n| :-: |\n| Toreador |\n\n3. Third\n4. Fourth' });
+
+	expect(screen.getByRole('columnheader', { name: 'Clan' })).toHaveAttribute('align', 'center');
+	expect(screen.getByRole('list')).toHaveAttribute('start', '3');
 });
 
 test('previews keep formatting', () => {
