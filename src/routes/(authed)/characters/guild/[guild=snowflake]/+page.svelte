@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { page } from '$app/state';
 	import { resolve } from '$app/paths';
-	import { Avatar } from '@skeletonlabs/skeleton-svelte';
+	import Avatar from '$lib/components/Avatar.svelte';
 	import { ChevronLeft } from '@lucide/svelte';
 	import type { CharacterData, Guild } from '$lib/types';
 	import CharCard from '$lib/components/CharCard.svelte';

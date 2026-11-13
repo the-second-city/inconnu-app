@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { page } from '$app/state';
-	import { Avatar } from '@skeletonlabs/skeleton-svelte';
+	import Avatar from '$lib/components/Avatar.svelte';
 	import { ExternalLink } from '@lucide/svelte';
 
 	import { isHttpsUrl } from '$lib';

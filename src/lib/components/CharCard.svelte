@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { Avatar } from '@skeletonlabs/skeleton-svelte';
+	import Avatar from '$lib/components/Avatar.svelte';
 	import { EyeOff } from '@lucide/svelte';
 	import { resolve } from '$app/paths';
 

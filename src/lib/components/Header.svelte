@@ -5,7 +5,7 @@
 	import { resolve } from '$app/paths';
 
 	import { ChevronDown, Github, Orbit, ScrollText, Users } from '@lucide/svelte';
-	import { Popover } from '@skeletonlabs/skeleton-svelte';
+	import Popover from '$lib/components/Popover.svelte';
 
 	import DiscordButton from '$lib/components/DiscordButton.svelte';
 	import Hamburger from '$lib/components/Hamburger.svelte';
@@ -90,10 +90,9 @@
 		<DiscordButton full={false} />
 
 		<Popover
-			open={isMoreMenuOpen}
-			onOpenChange={(e) => (isMoreMenuOpen = e.open)}
-			triggerBase="btn p-1.5 rounded-full border-2 flex items-stretch border-surface-700-300 hover:brightness-125"
-			contentBase="bg-black w-64 p-4"
+			bind:open={isMoreMenuOpen}
+			triggerClass="btn p-1.5 rounded-full border-2 flex items-stretch border-surface-700-300 hover:brightness-125"
+			contentClass="bg-black w-64 p-4"
 		>
 			{#snippet trigger()}
 				<span class="sr-only">More</span>

@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { page } from '$app/state';
-	import { Avatar } from '@skeletonlabs/skeleton-svelte';
-	import { Popover } from '@skeletonlabs/skeleton-svelte';
+	import Avatar from '$lib/components/Avatar.svelte';
+	import Popover from '$lib/components/Popover.svelte';
 	import { LogIn, LogOut } from '@lucide/svelte';
 	import { SignIn } from '@auth/sveltekit/components';
 	import { signOut } from '@auth/sveltekit/client';
@@ -17,10 +17,10 @@
 	const userName = user?.name ?? '';
 	const userImage = user?.image ?? '';
 
-	const triggerBase = $derived(
+	const triggerClass = $derived(
 		full
-			? 'btn w-full sm:w-fit preset-tonal-secondary hover:brightness-125'
-			: 'btn border-primary-500 rounded-full hover:brightness-125 border-2 p-0'
+			? 'btn w-full sm:w-fit flex items-center preset-tonal-secondary hover:brightness-125'
+			: 'btn flex items-center border-primary-500 rounded-full hover:brightness-125 border-2 p-0'
 	);
 	const avatarSize = $derived(full ? 'size-6' : 'size-9');
 
@@ -29,13 +29,10 @@
 
 {#if user}
 	<Popover
-		open={showLogoutButton}
-		onOpenChange={(e) => (showLogoutButton = e.open)}
+		bind:open={showLogoutButton}
 		positioning={{ placement: 'bottom-end' }}
-		{triggerBase}
-		classes="w-full sm:w-fit flex items-center"
-		contentBase="card bg-black p-2"
-		zIndex="60"
+		{triggerClass}
+		contentClass="card bg-black p-2 z-60"
 	>
 		{#snippet trigger()}
 			{#if full}

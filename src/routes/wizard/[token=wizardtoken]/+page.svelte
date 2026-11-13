@@ -4,7 +4,7 @@
 	import type { Trait, Splat } from '$lib/types';
 	import { goto } from '$app/navigation';
 	import { resolve } from '$app/paths';
-	import { Avatar } from '@skeletonlabs/skeleton-svelte';
+	import Avatar from '$lib/components/Avatar.svelte';
 	import { Loader2 } from '@lucide/svelte';
 	import TraitSheet from '$lib/components/characters/sheets/TraitSheet.svelte';
 	import RatingSelector from '$lib/components/characters/sheets/components/RatingSelector.svelte';

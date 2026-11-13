@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { Modal } from '@skeletonlabs/skeleton-svelte';
+	import { Dialog, Portal } from '@skeletonlabs/skeleton-svelte';
 	import { Eye, Skull } from '@lucide/svelte';
 
 	import type { Profile, Splat } from '$lib/types';
@@ -102,26 +102,31 @@
 	<div class={galleryClasses}>
 		{#each profile.images as image, i (i)}
 			{@const alt = `${name} - Image ${i + 1}`}
-			<Modal
+			<Dialog
 				open={activeModalIndex === i}
 				onOpenChange={(e) => {
 					activeModalIndex = e.open ? i : null;
 				}}
-				triggerBase="placeholder w-full h-full group relative overflow-hidden rounded-md aspect-12/16"
-				contentBase="card bg-surface-100-900 p-2 shadow-xl max-w-screen-sm"
 			>
-				{#snippet trigger()}
+				<Dialog.Trigger
+					class="placeholder group relative aspect-12/16 h-full w-full overflow-hidden rounded-md"
+				>
 					<img
 						class="h-full w-full object-cover transition-transform duration-300 group-hover:scale-110"
 						src={image}
 						{alt}
 						loading="lazy"
 					/>
-				{/snippet}
-				{#snippet content()}
-					<img class="rounded-md" src={image} {alt} />
-				{/snippet}
-			</Modal>
+				</Dialog.Trigger>
+				<Portal>
+					<Dialog.Backdrop class="bg-surface-50-950/50 fixed inset-0 z-50" />
+					<Dialog.Positioner class="fixed inset-0 z-50 flex items-center justify-center p-4">
+						<Dialog.Content class="card bg-surface-100-900 max-w-screen-sm p-2 shadow-xl">
+							<img class="rounded-md" src={image} {alt} />
+						</Dialog.Content>
+					</Dialog.Positioner>
+				</Portal>
+			</Dialog>
 		{/each}
 	</div>
 	<!-- End image gallery -->

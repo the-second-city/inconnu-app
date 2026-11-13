@@ -181,9 +181,10 @@ test.each(Object.entries(STRATEGIES))(
 	async (strategy: string, name: string) => {
 		render(Page);
 		await userEvent.click(screen.getByRole('button', { name: `About ${name}` }));
-		await screen.findByRole('dialog');
+		// Closed popovers stay in the page, hidden, so look only in the open one
+		const dialog = await screen.findByRole('dialog');
 
-		const warning = screen.queryByText(/functionally identical to Re-roll Failures/);
+		const warning = within(dialog).queryByText(/functionally identical to Re-roll Failures/);
 		if (strategy === 'maximize_criticals') {
 			expect(warning).toBeInTheDocument();
 		} else {

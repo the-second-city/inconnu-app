@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { untrack } from 'svelte';
-	import { Popover } from '@skeletonlabs/skeleton-svelte';
+	import Popover from '$lib/components/Popover.svelte';
 
 	import type { Character, TrackType } from '$lib/types';
 
@@ -123,13 +123,7 @@
 
 {trackLabel}
 
-<Popover
-	open={showControls}
-	onOpenChange={(e) => (showControls = e.open)}
-	contentBase="card bg-surface-500 p-4"
-	arrow
-	arrowBackground="!bg-surface-500 dark:!bg-surface-500"
->
+<Popover bind:open={showControls} arrow>
 	{#snippet trigger()}
 		<div class="flex flex-wrap items-center gap-2">
 			{#each [...Array(trackArray.length).keys()].reverse() as index (index)}

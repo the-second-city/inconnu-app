@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { Popover } from '@skeletonlabs/skeleton-svelte';
+	import Popover from '$lib/components/Popover.svelte';
 	import { CirclePlus, CircleX } from '@lucide/svelte';
 
 	import type { Advantage, AdvantageType } from '$lib/types';
@@ -80,13 +80,7 @@
 				{title}
 			</h3>
 			{#if editing}
-				<Popover
-					open={isOpen}
-					onOpenChange={(e) => onOpenChange(e.open)}
-					contentBase="card bg-surface-500 p-4"
-					arrow
-					arrowBackground="!bg-surface-500 dark:!bg-surface-500"
-				>
+				<Popover open={isOpen} {onOpenChange} arrow>
 					{#snippet trigger()}
 						<span class="sr-only">Add {type}</span>
 						<CirclePlus />

@@ -2,7 +2,7 @@
 	import { page } from '$app/state';
 	import { resolve } from '$app/paths';
 	import type { Pathname } from '$app/types';
-	import { Avatar } from '@skeletonlabs/skeleton-svelte';
+	import Avatar from '$lib/components/Avatar.svelte';
 	import { ChevronLeft } from '@lucide/svelte';
 
 	import type { Guild, OwnerData } from '$lib/types';
