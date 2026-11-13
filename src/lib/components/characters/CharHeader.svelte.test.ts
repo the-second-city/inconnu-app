@@ -74,6 +74,40 @@ test('links back when given somewhere to go', () => {
 	expect(screen.getByRole('link')).toHaveAttribute('href', '/characters');
 });
 
+test("shows the character's first image as an avatar", () => {
+	render(CharHeader, { name: 'Nadia', images: ['https://example.com/1.webp', 'x'], guild: null });
+
+	expect(screen.getByAltText('Nadia')).toHaveAttribute('src', 'https://example.com/1.webp');
+});
+
+test('has no avatar without images', () => {
+	render(CharHeader, { name: 'Nadia', images: [], guild: null });
+
+	expect(screen.queryByAltText('Nadia')).not.toBeInTheDocument();
+});
+
+test('shows guild and owner icons', () => {
+	render(CharHeader, {
+		name: 'Nadia',
+		images: [],
+		guild: { ...GUILD, icon: 'https://example.com/guild.png' },
+		owner: { ...OWNER, icon: 'https://example.com/lodin.png' }
+	});
+
+	expect(screen.getByAltText('Camarilla of Chicago')).toHaveAttribute(
+		'src',
+		'https://example.com/guild.png'
+	);
+	expect(screen.getByAltText('Lodin')).toHaveAttribute('src', 'https://example.com/lodin.png');
+});
+
+test('shows no icon image when there is none', () => {
+	render(CharHeader, { name: 'Nadia', images: [], guild: GUILD, owner: OWNER });
+
+	expect(screen.queryByAltText('Camarilla of Chicago')).not.toBeInTheDocument();
+	expect(screen.queryByAltText('Lodin')).not.toBeInTheDocument();
+});
+
 test('has no back link otherwise', () => {
 	render(CharHeader, { name: 'Nadia', images: [], guild: null });
 

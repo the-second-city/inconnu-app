@@ -100,6 +100,7 @@ Humanity
 						class="btn preset-tonal-surface"
 						disabled={(character.humanity || 7) <= 0}
 						onclick={decHumanity}
+						aria-label="Decrease Humanity"
 					>
 						-
 					</button>
@@ -108,6 +109,7 @@ Humanity
 						class="btn preset-tonal-surface"
 						disabled={(character.humanity || 7) >= 10}
 						onclick={incHumanity}
+						aria-label="Increase Humanity"
 					>
 						+
 					</button>
@@ -117,6 +119,7 @@ Humanity
 						class="btn preset-tonal-surface"
 						disabled={(character.stains || 0) <= 0}
 						onclick={decStains}
+						aria-label="Decrease Stains"
 					>
 						-
 					</button>
@@ -125,6 +128,7 @@ Humanity
 						class="btn preset-tonal-surface"
 						disabled={(character.stains || 0) >= 10}
 						onclick={incStains}
+						aria-label="Increase Stains"
 					>
 						+
 					</button>

@@ -88,6 +88,7 @@
 					arrowBackground="!bg-surface-500 dark:!bg-surface-500"
 				>
 					{#snippet trigger()}
+						<span class="sr-only">Add {type}</span>
 						<CirclePlus />
 					{/snippet}
 					{#snippet content()}
@@ -143,7 +144,7 @@
 		<div class="flex flex-col">
 			{#if indices.length > 0}
 				{#each indices as index (advantages[index].name)}
-					{@const buttonTitle = `Remove ${advantages[index]}`}
+					{@const buttonTitle = `Remove ${advantages[index].name}`}
 					<div class="flex items-center justify-between" class:italic>
 						<div class="flex items-center gap-2">
 							{#if editing}
@@ -153,7 +154,6 @@
 									title={buttonTitle}
 									tabindex="0"
 								>
-									<span class="sr-only">Remove {advantages[index]}</span>
 									<CircleX size={14} color="#FF0000" />
 								</button>
 							{/if}
