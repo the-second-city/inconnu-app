@@ -153,9 +153,13 @@ const characterWithLog = (): Character => ({
 		times_awakened: 0,
 		times_blushed: 0,
 		times_frenzied: 0,
+		times_impaired: 0,
+		times_mended: 0,
 		times_slaked: 0,
 		willpower_aggravated: 0,
 		willpower_superficial: 0,
+		worst_health: '',
+		worst_willpower: '',
 		incomplete_since: {}
 	}
 });

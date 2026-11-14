@@ -100,16 +100,27 @@ export interface CharacterLog {
 	times_awakened: number;
 	times_blushed: number;
 	times_frenzied: number;
+	times_impaired: number; // Times going from unimpaired to impaired
+	times_mended: number; // Superficial and Aggravated healing
 	times_slaked: number;
 	willpower_aggravated: number;
 	willpower_superficial: number;
-	incomplete_since: Partial<Record<CharacterLogCounter, string>>; // Counters added after creation
+	worst_health: string; // The Health track at its worst; empty if never damaged
+	worst_willpower: string; // Likewise for Willpower
+	incomplete_since: Partial<Record<CharacterLogStat, string>>; // Stats added after creation
 }
 
-export type CharacterLogCounter = Exclude<
-	keyof CharacterLog,
-	'created' | 'left' | 'incomplete_since'
->;
+/** The log's running counts. (`incomplete_since` is skipped, as its type refers to this one.) */
+type LogKey = Exclude<keyof CharacterLog, 'incomplete_since'>;
+export type CharacterLogCounter = {
+	[K in LogKey]: CharacterLog[K] extends number ? K : never;
+}[LogKey];
+
+/** The log's damage tracks at their worst. */
+export type CharacterLogTrack = 'worst_health' | 'worst_willpower';
+
+/** Every stat in the log: its counts and its worst tracks. */
+export type CharacterLogStat = CharacterLogCounter | CharacterLogTrack;
 
 export interface PublicCharacter {
 	id: string;

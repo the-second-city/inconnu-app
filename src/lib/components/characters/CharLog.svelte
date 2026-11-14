@@ -12,7 +12,14 @@
 	import type { Component } from 'svelte';
 
 	import Popover from '$lib/components/Popover.svelte';
-	import type { CharacterLog, CharacterLogCounter, Splat } from '$lib/types';
+	import TrackBox from '$lib/components/characters/sheets/components/damage/TrackBox.svelte';
+	import type {
+		CharacterLog,
+		CharacterLogCounter,
+		CharacterLogStat,
+		CharacterLogTrack,
+		Splat
+	} from '$lib/types';
 
 	interface ComponentProps {
 		log: CharacterLog;
@@ -25,7 +32,7 @@
 		title: string;
 		icon: Component;
 		vampiric: boolean; // Hidden for mortals and ghouls unless something was counted
-		stats: [CharacterLogCounter, string][];
+		stats: [CharacterLogStat, string][];
 	}
 
 	const GROUPS: StatGroup[] = [
@@ -83,14 +90,18 @@
 			]
 		},
 		{
-			title: 'Damage Taken',
+			title: 'Damage',
 			icon: HeartCrack,
 			vampiric: false,
 			stats: [
+				['worst_health', 'Worst Health'],
+				['worst_willpower', 'Worst Willpower'],
 				['health_superficial', 'Superficial Health'],
 				['health_aggravated', 'Aggravated Health'],
 				['willpower_superficial', 'Superficial Willpower'],
-				['willpower_aggravated', 'Aggravated Willpower']
+				['willpower_aggravated', 'Aggravated Willpower'],
+				['times_impaired', 'Times impaired'],
+				['times_mended', 'Times mended']
 			]
 		}
 	];
@@ -107,11 +118,42 @@
 
 	const numberFormat = new Intl.NumberFormat('en-US');
 
+	const TRACKS: CharacterLogStat[] = [
+		'worst_health',
+		'worst_willpower'
+	] satisfies CharacterLogTrack[];
+
+	/** Whether a stat is a damage track rather than a count. */
+	const isTrack = (key: CharacterLogStat): key is CharacterLogTrack => TRACKS.includes(key);
+
+	/** A damage track's boxes, damage first, as the sheet shows them. */
+	const trackBoxes = (track: string): string[] => [...track].reverse();
+
+	/** A damage track described for screen readers, such as "2 Superficial, 1 Aggravated of 7". */
+	const describeTrack = (track: string): string => {
+		const superficial = [...track].filter((box) => box === '/').length;
+		const aggravated = [...track].filter((box) => box === 'x').length;
+		return `${superficial} Superficial, ${aggravated} Aggravated of ${track.length}`;
+	};
+
+	/** A row's classes. Tracks stack their label over their boxes, and the last of a run of
+	 * tracks gets extra room to set it apart from the counts below. */
+	const rowClass = (group: StatGroup, index: number): string => {
+		const key = group.stats[index][0];
+		if (!isTrack(key)) return 'flex justify-between gap-4';
+		const next = group.stats[index + 1]?.[0];
+		return next && !isTrack(next) ? 'space-y-1 pb-4' : 'space-y-1 pb-1.5';
+	};
+
+	/** Whether a stat has counted anything. */
+	const hasCount = (key: CharacterLogStat): boolean =>
+		isTrack(key) ? (log[key] ?? '').length > 0 : (log[key] ?? 0) > 0;
+
 	const isVampire = $derived(splat === 'vampire' || splat === 'thin-blood');
 
 	const groups = $derived(
 		GROUPS.filter(
-			(group) => isVampire || !group.vampiric || group.stats.some(([key]) => log[key] > 0)
+			(group) => isVampire || !group.vampiric || group.stats.some(([key]) => hasCount(key))
 		)
 	);
 </script>
@@ -140,10 +182,10 @@
 					<h2 class="h6" {id}>{group.title}</h2>
 				</header>
 				<dl class="space-y-1">
-					{#each group.stats as [key, label] (key)}
+					{#each group.stats as [key, label], index (key)}
 						<!-- Counters that started after the character was created explain why they're low -->
 						{@const since = log.incomplete_since?.[key]}
-						<div class="flex justify-between gap-4">
+						<div class={rowClass(group, index)}>
 							<dt class="flex items-center gap-1.5">
 								{label}
 								{#if since}
@@ -160,7 +202,24 @@
 									</Popover>
 								{/if}
 							</dt>
-							<dd class="font-semibold tabular-nums">{numberFormat.format(log[key] ?? 0)}</dd>
+							{#if isTrack(key)}
+								{@const track = log[key] ?? ''}
+								<dd>
+									{#if track}
+										<div class="flex flex-wrap gap-1" role="img" aria-label={describeTrack(track)}>
+											{#each trackBoxes(track) as box, index (index)}
+												<TrackBox value={box} />
+											{/each}
+										</div>
+									{:else}
+										<span class="text-surface-300 italic">None recorded</span>
+									{/if}
+								</dd>
+							{:else}
+								<dd class="font-semibold tabular-nums">
+									{numberFormat.format(log[key as CharacterLogCounter] ?? 0)}
+								</dd>
+							{/if}
 						</div>
 					{/each}
 				</dl>
