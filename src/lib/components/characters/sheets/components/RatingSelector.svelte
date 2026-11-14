@@ -133,6 +133,7 @@
 									bind:value={newSubtrait}
 									onkeydown={(e) => e.key === 'Enter' && handleAddSubtrait()}
 									placeholder="Add new {subtraitLabel} ..."
+									aria-label="New {subtraitLabel}"
 									maxlength={FORM_VALIDATION.traitMaxLength + 1}
 									class="input border"
 									class:text-error-500={invalidSubtrait}

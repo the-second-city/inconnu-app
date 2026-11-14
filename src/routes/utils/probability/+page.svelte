@@ -267,6 +267,7 @@
 					contentClass="card bg-surface-100-900 border-surface-500 max-w-xs border p-3 text-base shadow-xl"
 					arrow
 					arrowColor="var(--color-surface-100-900)"
+					arrowTipClass="border-surface-500 border-t border-l"
 				>
 					{#snippet trigger()}
 						<Info size={18} />

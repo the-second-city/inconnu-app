@@ -1,5 +1,6 @@
 <script lang="ts">
-	import { Dialog, Portal } from '@skeletonlabs/skeleton-svelte';
+	import { Dialog } from '@skeletonlabs/skeleton-svelte';
+	import ClientPortal from '$lib/components/ClientPortal.svelte';
 	import { Eye, Skull } from '@lucide/svelte';
 
 	import type { Profile, Splat } from '$lib/types';
@@ -51,7 +52,7 @@
 					</span>
 					<h2 class="h6">Description</h2>
 				</header>
-				<p class="leading-relaxed">
+				<div class="leading-relaxed">
 					{#if editing}
 						<textarea
 							class="textarea border"
@@ -66,7 +67,7 @@
 							{name}'s appearance is an enigma...
 						</span>
 					{/if}
-				</p>
+				</div>
 			</section>
 
 			<!-- History Section -->
@@ -77,7 +78,7 @@
 					</span>
 					<h2 class="h6">History</h2>
 				</header>
-				<p class="leading-relaxed">
+				<div class="leading-relaxed">
 					{#if editing}
 						<textarea
 							class="textarea border"
@@ -92,7 +93,7 @@
 							{name}'s past is shrouded in mystery ...
 						</span>
 					{/if}
-				</p>
+				</div>
 			</section>
 		</article>
 	</div>
@@ -118,14 +119,19 @@
 						loading="lazy"
 					/>
 				</Dialog.Trigger>
-				<Portal>
+				<ClientPortal>
 					<Dialog.Backdrop class="bg-surface-50-950/50 fixed inset-0 z-50" />
 					<Dialog.Positioner class="fixed inset-0 z-50 flex items-center justify-center p-4">
 						<Dialog.Content class="card bg-surface-100-900 max-w-screen-sm p-2 shadow-xl">
-							<img class="rounded-md" src={image} {alt} />
+							<!-- Fit the viewport, less the positioner's and panel's padding -->
+							<img
+								class="max-h-[calc(100dvh-3rem)] w-auto rounded-md object-contain"
+								src={image}
+								{alt}
+							/>
 						</Dialog.Content>
 					</Dialog.Positioner>
-				</Portal>
+				</ClientPortal>
 			</Dialog>
 		{/each}
 	</div>

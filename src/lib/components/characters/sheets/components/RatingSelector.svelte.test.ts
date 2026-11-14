@@ -147,11 +147,11 @@ test('adds a specialty, trimmed and in order', async () => {
 	const bound = renderRating({ subtraits: ['Running'] });
 	await openPopover(user);
 
-	await user.type(screen.getByPlaceholderText('Add new Specialty ...'), '  Climbing ');
+	await user.type(screen.getByRole('textbox', { name: 'New Specialty' }), '  Climbing ');
 	await user.click(screen.getByRole('button', { name: 'Add specialty' }));
 
 	expect(bound.subtraits).toEqual(['Climbing', 'Running']);
-	expect(screen.getByPlaceholderText('Add new Specialty ...')).toHaveValue('');
+	expect(screen.getByRole('textbox', { name: 'New Specialty' })).toHaveValue('');
 });
 
 test('Enter adds a specialty', async () => {
@@ -159,7 +159,7 @@ test('Enter adds a specialty', async () => {
 	const bound = renderRating();
 	await openPopover(user);
 
-	await user.type(screen.getByPlaceholderText('Add new Specialty ...'), 'Climbing{Enter}');
+	await user.type(screen.getByRole('textbox', { name: 'New Specialty' }), 'Climbing{Enter}');
 
 	expect(bound.subtraits).toEqual(['Climbing']);
 });
@@ -172,7 +172,7 @@ test.each([
 	const user = userEvent.setup();
 	const bound = renderRating({ subtraits: ['Parkour'] });
 	await openPopover(user);
-	const input = screen.getByPlaceholderText('Add new Specialty ...');
+	const input = screen.getByRole('textbox', { name: 'New Specialty' });
 
 	await user.type(input, `${subtrait}{Enter}`);
 
@@ -187,7 +187,7 @@ test("can't add an empty specialty", async () => {
 	renderRating();
 	await openPopover(user);
 
-	await user.type(screen.getByPlaceholderText('Add new Specialty ...'), '   ');
+	await user.type(screen.getByRole('textbox', { name: 'New Specialty' }), '   ');
 
 	expect(screen.getByRole('button', { name: 'Add specialty' })).toBeDisabled();
 });
@@ -209,7 +209,7 @@ test('disciplines have powers instead of specialties', async () => {
 	await openPopover(user);
 
 	expect(screen.getByText('Powers')).toBeInTheDocument();
-	expect(screen.getByPlaceholderText('Add new Power ...')).toBeInTheDocument();
+	expect(screen.getByRole('textbox', { name: 'New Power' })).toBeInTheDocument();
 	expect(screen.getByRole('button', { name: 'Add power' })).toBeInTheDocument();
 });
 

@@ -1,10 +1,7 @@
 <script lang="ts">
 	import type { Snippet } from 'svelte';
-	import {
-		Popover as SkeletonPopover,
-		Portal,
-		type PopoverRootProps
-	} from '@skeletonlabs/skeleton-svelte';
+	import { Popover as SkeletonPopover, type PopoverRootProps } from '@skeletonlabs/skeleton-svelte';
+	import ClientPortal from '$lib/components/ClientPortal.svelte';
 
 	interface ComponentProps {
 		/** Whether the popover is open; bind to control it */
@@ -23,6 +20,12 @@
 		arrow?: boolean;
 		/** The arrow's color as a CSS value; match the panel's background */
 		arrowColor?: string;
+		/**
+		 * Classes for the arrow's tip. To continue a bordered panel's outline, give it the panel's
+		 * border on its top and left (`border-t border-l border-…`): the tip is rotated so those
+		 * edges always face away from the panel
+		 */
+		arrowTipClass?: string;
 		/** What's clicked to open the popover */
 		trigger: Snippet;
 		/** The popover's contents */
@@ -38,6 +41,7 @@
 		contentClass = 'card bg-surface-500 p-4',
 		arrow = false,
 		arrowColor = 'var(--color-surface-500)',
+		arrowTipClass = '',
 		trigger,
 		content
 	}: ComponentProps = $props();
@@ -59,16 +63,16 @@ Wraps Skeleton's Popover so its anatomy lives in one place.
 	<SkeletonPopover.Trigger class={triggerClass} aria-label={triggerLabel}>
 		{@render trigger()}
 	</SkeletonPopover.Trigger>
-	<Portal>
+	<ClientPortal>
 		<SkeletonPopover.Positioner>
 			<SkeletonPopover.Content class={contentClass}>
 				{#if arrow}
 					<SkeletonPopover.Arrow style="--arrow-size: 10px; --arrow-background: {arrowColor};">
-						<SkeletonPopover.ArrowTip />
+						<SkeletonPopover.ArrowTip class={arrowTipClass} />
 					</SkeletonPopover.Arrow>
 				{/if}
 				{@render content()}
 			</SkeletonPopover.Content>
 		</SkeletonPopover.Positioner>
-	</Portal>
+	</ClientPortal>
 </SkeletonPopover>
