@@ -1,12 +1,18 @@
-import { render, screen, waitFor, within } from '@testing-library/svelte';
+import { fireEvent, render, screen, waitFor, within } from '@testing-library/svelte';
 import userEvent from '@testing-library/user-event';
-import { expect, test, vi } from 'vitest';
+import { afterEach, expect, test, vi } from 'vitest';
 
 import type { Character, Guild } from '$lib/types';
 import CharacterPage from './CharacterPage.svelte';
 
 vi.mock('$app/state', () => ({ page: { data: { session: null } } }));
 vi.mock('$app/paths', () => ({ resolve: (route: string) => route }));
+// SvelteKit's router doesn't run in tests, so write the URL directly
+vi.mock('$app/navigation', () => ({
+	replaceState: (url: string) => window.history.replaceState({}, '', url)
+}));
+
+afterEach(() => window.history.replaceState({}, '', '/'));
 
 const GUILD: Guild = { id: '111', name: 'Camarilla of Chicago', icon: null, count: null };
 
@@ -122,10 +128,10 @@ test('saving keeps the edits', async () => {
 	expect(within(panel()).queryByRole('textbox')).not.toBeInTheDocument();
 });
 
-test('a character with a log has a Chronicle tab showing it', async () => {
-	const user = userEvent.setup();
-	const char = character();
-	char.log = {
+/** A character with a log, which gives it a Chronicle tab. */
+const characterWithLog = (): Character => ({
+	...character(),
+	log: {
 		created: '2024-03-05T12:00:00',
 		left: null,
 		deepest_degeneration: 0,
@@ -151,11 +157,64 @@ test('a character with a log has a Chronicle tab showing it', async () => {
 		willpower_aggravated: 0,
 		willpower_superficial: 0,
 		incomplete_since: {}
-	};
-	renderPage(char);
+	}
+});
+
+test('a character with a log has a Chronicle tab showing it', async () => {
+	const user = userEvent.setup();
+	renderPage(characterWithLog());
 
 	await user.click(screen.getByRole('tab', { name: 'Chronicle' }));
 
 	expect(within(panel()).getByText('Stains gained')).toBeInTheDocument();
 	expect(within(panel()).queryByText('Strength')).not.toBeInTheDocument();
+});
+
+/** The name of the selected tab. */
+const selectedTab = (): string | undefined =>
+	screen
+		.getAllByRole('tab')
+		.find((tab) => tab.getAttribute('aria-selected') === 'true')
+		?.textContent?.trim();
+
+test.each([
+	['#profile', 'Profile'],
+	['#chronicle', 'Chronicle'],
+	['#sheet', 'Sheet'],
+	['#nonsense', 'Sheet'],
+	['', 'Sheet']
+])('the URL hash %j opens the %s tab', async (hash, expected) => {
+	window.history.replaceState({}, '', `/${hash}`);
+	renderPage(characterWithLog());
+
+	await waitFor(() => expect(selectedTab()).toBe(expected));
+});
+
+test('#chronicle opens the sheet when the character has no log', async () => {
+	window.history.replaceState({}, '', '/#chronicle');
+	renderPage();
+
+	await waitFor(() => expect(selectedTab()).toBe('Sheet'));
+});
+
+test('selecting a tab puts it in the URL, and the sheet clears it', async () => {
+	const user = userEvent.setup();
+	window.history.replaceState({}, '', '/char?x=1');
+	renderPage(characterWithLog());
+
+	await user.click(screen.getByRole('tab', { name: 'Chronicle' }));
+	expect(window.location.hash).toBe('#chronicle');
+
+	await user.click(screen.getByRole('tab', { name: 'Sheet' }));
+	expect(window.location.hash).toBe('');
+	expect(window.location.pathname + window.location.search).toBe('/char?x=1');
+});
+
+test('changing the URL hash switches tabs', async () => {
+	renderPage(characterWithLog());
+
+	window.history.replaceState({}, '', '/#profile');
+	await fireEvent(window, new HashChangeEvent('hashchange'));
+
+	expect(selectedTab()).toBe('Profile');
 });

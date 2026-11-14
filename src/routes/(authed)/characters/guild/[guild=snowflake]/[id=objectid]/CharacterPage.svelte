@@ -1,9 +1,11 @@
 <script lang="ts">
+	import { onMount } from 'svelte';
 	import { Tabs } from '@skeletonlabs/skeleton-svelte';
 	import { Ban, Check, Pencil } from '@lucide/svelte';
 
 	import { normalize } from '$lib';
 
+	import { replaceState } from '$app/navigation';
 	import type { Pathname } from '$app/types';
 	import type { Character, Guild, OwnerData } from '$lib/types';
 	import CharacterSheet from './CharacterSheet.svelte';
@@ -21,7 +23,26 @@
 
 	let { character = $bindable(), guild, owner, spc = false, backUrl }: ComponentProps = $props();
 
-	let selectedTab = $state('sheet');
+	// The selected tab follows the URL's hash (#profile, #chronicle); the sheet has none
+	const DEFAULT_TAB = 'sheet';
+	let selectedTab = $state(DEFAULT_TAB);
+	const tabs = $derived(['sheet', 'profile', ...(character.log ? ['chronicle'] : [])]);
+
+	/** Select the tab named by the URL's hash, or the sheet if it names none. */
+	const selectTabFromHash = () => {
+		const tab = window.location.hash.slice(1);
+		selectedTab = tabs.includes(tab) ? tab : DEFAULT_TAB;
+	};
+
+	/** Select a tab and put it in the URL, without adding a history entry. */
+	const selectTab = (tab: string) => {
+		selectedTab = tab;
+		const { pathname, search } = window.location;
+		replaceState(tab === DEFAULT_TAB ? `${pathname}${search}` : `#${tab}`, {});
+	};
+
+	// The server never sees the hash, so the page renders the sheet and switches once mounted
+	onMount(selectTabFromHash);
 	let copy: Character | null = null;
 	let editing = $state(false);
 
@@ -67,7 +88,9 @@
 	{backUrl}
 />
 
-<Tabs value={selectedTab} onValueChange={(e) => (selectedTab = e.value)}>
+<svelte:window onhashchange={selectTabFromHash} />
+
+<Tabs value={selectedTab} onValueChange={(e) => selectTab(e.value)}>
 	<Tabs.List>
 		<Tabs.Trigger value="sheet">Sheet</Tabs.Trigger>
 		<Tabs.Trigger value="profile">Profile</Tabs.Trigger>
