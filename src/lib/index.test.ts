@@ -8,6 +8,7 @@ import {
 	isReservedTraitName,
 	isValidTraitName,
 	normalize,
+	parseApiDate,
 	stripLeadingArticles
 } from '$lib';
 import type { Profile } from '$lib/types';
@@ -102,4 +103,14 @@ test.each([
 	''
 ])('isHttpsUrl rejects %j', (url: string) => {
 	expect(isHttpsUrl(url)).toBe(false);
+});
+
+test.each([
+	['2024-03-05T12:00:00', '2024-03-05T12:00:00.000Z'],
+	['2024-03-05T12:00:00.123456', '2024-03-05T12:00:00.123Z'],
+	['2024-03-05T12:00:00Z', '2024-03-05T12:00:00.000Z'],
+	['2024-03-05T12:00:00+02:00', '2024-03-05T10:00:00.000Z'],
+	['2024-03-05T12:00:00-05:00', '2024-03-05T17:00:00.000Z']
+])('parseApiDate(%j) is %s', (date: string, expected: string) => {
+	expect(parseApiDate(date).toISOString()).toBe(expected);
 });

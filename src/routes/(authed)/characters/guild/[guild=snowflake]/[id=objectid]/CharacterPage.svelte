@@ -13,6 +13,7 @@
 	import CharHeader from '$lib/components/characters/CharHeader.svelte';
 	import CharProfile from '$lib/components/characters/CharProfile.svelte';
 	import CharLog from '$lib/components/characters/CharLog.svelte';
+	import CharExperience from '$lib/components/characters/CharExperience.svelte';
 
 	interface ComponentProps {
 		character: Character;
@@ -37,6 +38,7 @@
 	interface Tab {
 		value: string;
 		label: string;
+		ariaLabel?: string; // When the label is an abbreviation
 		content: Snippet;
 	}
 
@@ -44,8 +46,10 @@
 	const tabs: Tab[] = $derived([
 		{ value: 'sheet', label: 'Sheet', content: sheetTab },
 		{ value: 'profile', label: 'Profile', content: profileTab },
-		...(character.log ? [{ value: 'chronicle', label: 'Chronicle', content: chronicleTab }] : [])
-		// Planned: an Experience tab, once the API exports the experience log
+		...(character.log ? [{ value: 'chronicle', label: 'Chronicle', content: chronicleTab }] : []),
+		...(character.experience
+			? [{ value: 'experience', label: 'XP', ariaLabel: 'Experience', content: experienceTab }]
+			: [])
 	]);
 	const defaultTab = $derived(tabs[0].value);
 
@@ -156,6 +160,12 @@
 	{/key}
 {/snippet}
 
+{#snippet experienceTab()}
+	{#if character.experience}
+		<CharExperience experience={character.experience} />
+	{/if}
+{/snippet}
+
 {#snippet chronicleTab()}
 	{#if character.log}
 		<CharLog log={character.log} splat={character.splat} />
@@ -165,7 +175,7 @@
 <Tabs value={selectedTab} onValueChange={(e) => selectTab(e.value)}>
 	<Tabs.List>
 		{#each tabs as tab (tab.value)}
-			<Tabs.Trigger value={tab.value}>{tab.label}</Tabs.Trigger>
+			<Tabs.Trigger value={tab.value} aria-label={tab.ariaLabel}>{tab.label}</Tabs.Trigger>
 		{/each}
 		<Tabs.Indicator />
 	</Tabs.List>

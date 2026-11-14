@@ -199,9 +199,14 @@ test('new data for the same character keeps edits in progress', async () => {
 	expect(screen.getByRole('button', { name: 'Save' })).toBeInTheDocument();
 });
 
-/** A character with a log, which gives it a Chronicle tab. */
+/** A character with experience and a log, which give it Experience and Chronicle tabs. */
 const characterWithLog = (): Character => ({
 	...character(),
+	experience: {
+		current: 2,
+		total: 7,
+		log: [{ event: 'award_lifetime', amount: 7, reason: 'Downtime', date: '2024-03-05T12:00:00' }]
+	},
 	log: {
 		created: '2024-03-05T12:00:00',
 		left: null,
@@ -254,6 +259,7 @@ const selectedTab = (): string | undefined =>
 
 test.each([
 	['#profile', 'Profile'],
+	['#experience', 'XP'],
 	['#chronicle', 'Chronicle'],
 	['#sheet', 'Sheet'],
 	['#nonsense', 'Sheet'],
@@ -326,4 +332,27 @@ test('navigating to another hash switches tabs', async () => {
 	navigate('#profile');
 
 	await waitFor(() => expect(selectedTab()).toBe('Profile'));
+});
+
+test('a character with experience has an XP tab, named Experience, showing its log', async () => {
+	const user = userEvent.setup();
+	renderPage(characterWithLog());
+
+	expect(screen.getAllByRole('tab').map((tab) => tab.textContent?.trim())).toEqual([
+		'Sheet',
+		'Profile',
+		'Chronicle',
+		'XP'
+	]);
+	await user.click(screen.getByRole('tab', { name: 'Experience' }));
+
+	expect(within(panel()).getByText('Downtime')).toBeInTheDocument();
+	expect(within(panel()).queryByText('Strength')).not.toBeInTheDocument();
+});
+
+test('#experience opens the sheet when the character has no experience', () => {
+	navigate('/#experience');
+	renderPage();
+
+	expect(selectedTab()).toBe('Sheet');
 });
