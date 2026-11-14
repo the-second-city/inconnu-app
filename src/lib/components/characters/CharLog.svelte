@@ -11,6 +11,7 @@
 	} from '@lucide/svelte';
 	import { onMount, type Component } from 'svelte';
 
+	import { parseApiDate } from '$lib';
 	import Popover from '$lib/components/Popover.svelte';
 	import TrackBox from '$lib/components/characters/sheets/components/damage/TrackBox.svelte';
 	import type {
@@ -118,14 +119,11 @@
 	let mounted = $state(false);
 	onMount(() => (mounted = true));
 
-	/** Parse an API date. The database stores naive UTC, so a date-time without an offset is UTC. */
-	const parseDate = (date: string): Date => new Date(/T[^Z+-]*$/.test(date) ? `${date}Z` : date);
-
 	/** Format an API date as a calendar date, such as "Nov 14, 2026", or "unknown" if invalid.
 	 * It's empty until the page is in the browser. */
 	const formatDate = (date: string): string => {
 		if (!mounted) return '';
-		const parsed = parseDate(date);
+		const parsed = parseApiDate(date);
 		return Number.isNaN(parsed.getTime()) ? 'unknown' : dateFormat.format(parsed);
 	};
 

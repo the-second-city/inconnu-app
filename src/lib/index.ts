@@ -93,3 +93,8 @@ export const hasProfileContent = (profile: Profile): boolean => {
 		(profile.images && profile.images.length > 0)
 	);
 };
+
+/** Parse a date from the API. The database stores naive UTC, so a date-time without an offset
+ * is UTC. */
+export const parseApiDate = (date: string): Date =>
+	new Date(/T[^Z+-]*$/.test(date) ? `${date}Z` : date);

@@ -13,6 +13,7 @@
 	import CharHeader from '$lib/components/characters/CharHeader.svelte';
 	import CharProfile from '$lib/components/characters/CharProfile.svelte';
 	import CharLog from '$lib/components/characters/CharLog.svelte';
+	import CharExperience from '$lib/components/characters/CharExperience.svelte';
 
 	interface ComponentProps {
 		character: Character;
@@ -20,6 +21,7 @@
 		owner?: OwnerData | null;
 		spc?: boolean;
 		backUrl?: Pathname;
+		editable?: boolean; // Shows the edit buttons. Off until characters can be saved
 	}
 
 	let {
@@ -27,7 +29,8 @@
 		guild,
 		owner,
 		spc = false,
-		backUrl
+		backUrl,
+		editable = false
 	}: ComponentProps = $props();
 
 	// The page's own copy, for edits. The parent keys this component on the character's ID, so a
@@ -37,6 +40,7 @@
 	interface Tab {
 		value: string;
 		label: string;
+		ariaLabel?: string; // When the label is an abbreviation
 		content: Snippet;
 	}
 
@@ -44,8 +48,10 @@
 	const tabs: Tab[] = $derived([
 		{ value: 'sheet', label: 'Sheet', content: sheetTab },
 		{ value: 'profile', label: 'Profile', content: profileTab },
-		...(character.log ? [{ value: 'chronicle', label: 'Chronicle', content: chronicleTab }] : [])
-		// Planned: an Experience tab, once the API exports the experience log
+		...(character.log ? [{ value: 'chronicle', label: 'Chronicle', content: chronicleTab }] : []),
+		...(character.experience
+			? [{ value: 'experience', label: 'XP', ariaLabel: 'Experience', content: experienceTab }]
+			: [])
 	]);
 	const defaultTab = $derived(tabs[0].value);
 
@@ -156,6 +162,12 @@
 	{/key}
 {/snippet}
 
+{#snippet experienceTab()}
+	{#if character.experience}
+		<CharExperience experience={character.experience} />
+	{/if}
+{/snippet}
+
 {#snippet chronicleTab()}
 	{#if character.log}
 		<CharLog log={character.log} splat={character.splat} />
@@ -165,7 +177,7 @@
 <Tabs value={selectedTab} onValueChange={(e) => selectTab(e.value)}>
 	<Tabs.List>
 		{#each tabs as tab (tab.value)}
-			<Tabs.Trigger value={tab.value}>{tab.label}</Tabs.Trigger>
+			<Tabs.Trigger value={tab.value} aria-label={tab.ariaLabel}>{tab.label}</Tabs.Trigger>
 		{/each}
 		<Tabs.Indicator />
 	</Tabs.List>
@@ -176,34 +188,36 @@
 	{/each}
 </Tabs>
 
-<!-- Mobile floating edit buttons; remove entire block to undo -->
-<div class="fixed right-6 bottom-6 z-40 sm:hidden">
-	<div class="p-4">
-		<div class="container mx-auto flex justify-center gap-4">
-			{#if editing}
-				<button
-					class="from-error-400 to-error-600 border-surface-50/20 hover:shadow-error-500/50 relative flex aspect-square size-14 items-center justify-center overflow-hidden !rounded-full border-2 bg-gradient-to-br text-white shadow-xl transition-all duration-300 ease-out hover:scale-110 active:scale-95"
-					onclick={cancelEditing}
-					aria-label="Cancel"
-				>
-					<Ban strokeWidth={3} class="drop-shadow-md" size={24} />
-				</button>
-				<button
-					class="from-success-400 to-success-600 border-surface-50/20 hover:shadow-success-500/50 relative flex aspect-square size-14 items-center justify-center overflow-hidden !rounded-full border-2 bg-gradient-to-br text-white shadow-xl transition-all duration-300 ease-out hover:scale-110 active:scale-95"
-					onclick={saveChanges}
-					aria-label="Save"
-				>
-					<Check color="#000" strokeWidth={3} class="drop-shadow-md" size={24} />
-				</button>
-			{:else}
-				<button
-					class="from-secondary-500 to-secondary-700 border-surface-50/20 hover:shadow-secondary-500/50 relative flex aspect-square size-14 items-center justify-center overflow-hidden !rounded-full border-2 bg-gradient-to-br text-white shadow-xl transition-all duration-300 ease-out hover:scale-110 active:scale-95"
-					onclick={enterEditMode}
-					aria-label="Edit"
-				>
-					<Pencil class="drop-shadow-md" size={24} />
-				</button>
-			{/if}
+{#if editable}
+	<!-- Mobile floating edit buttons -->
+	<div class="fixed right-6 bottom-6 z-40 sm:hidden">
+		<div class="p-4">
+			<div class="container mx-auto flex justify-center gap-4">
+				{#if editing}
+					<button
+						class="from-error-400 to-error-600 border-surface-50/20 hover:shadow-error-500/50 relative flex aspect-square size-14 items-center justify-center overflow-hidden !rounded-full border-2 bg-gradient-to-br text-white shadow-xl transition-all duration-300 ease-out hover:scale-110 active:scale-95"
+						onclick={cancelEditing}
+						aria-label="Cancel"
+					>
+						<Ban strokeWidth={3} class="drop-shadow-md" size={24} />
+					</button>
+					<button
+						class="from-success-400 to-success-600 border-surface-50/20 hover:shadow-success-500/50 relative flex aspect-square size-14 items-center justify-center overflow-hidden !rounded-full border-2 bg-gradient-to-br text-white shadow-xl transition-all duration-300 ease-out hover:scale-110 active:scale-95"
+						onclick={saveChanges}
+						aria-label="Save"
+					>
+						<Check color="#000" strokeWidth={3} class="drop-shadow-md" size={24} />
+					</button>
+				{:else}
+					<button
+						class="from-secondary-500 to-secondary-700 border-surface-50/20 hover:shadow-secondary-500/50 relative flex aspect-square size-14 items-center justify-center overflow-hidden !rounded-full border-2 bg-gradient-to-br text-white shadow-xl transition-all duration-300 ease-out hover:scale-110 active:scale-95"
+						onclick={enterEditMode}
+						aria-label="Edit"
+					>
+						<Pencil class="drop-shadow-md" size={24} />
+					</button>
+				{/if}
+			</div>
 		</div>
 	</div>
-</div>
+{/if}

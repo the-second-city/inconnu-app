@@ -53,10 +53,7 @@ export interface Character {
 	user: string;
 	splat: Splat;
 	profile: Profile;
-	experience?: {
-		current: number;
-		total: number;
-	};
+	experience?: Experience;
 	health: string;
 	willpower: string;
 	humanity: number;
@@ -71,6 +68,29 @@ export interface Character {
 	max_bp?: number;
 	blood_pool?: number;
 	log?: CharacterLog;
+}
+
+/** A character's experience and its log. Mirrors the bot's `VCharExperience`. */
+export interface Experience {
+	current: number; // Unspent
+	total: number; // Lifetime
+	log: ExperienceEntry[]; // Oldest first
+}
+
+/** How an experience entry changed the character's XP. Lifetime awards also add unspent XP. */
+export type ExperienceEvent =
+	'award_unspent' | 'award_lifetime' | 'deduct_unspent' | 'deduct_lifetime';
+
+/**
+ * An award or deduction of experience. Mirrors the bot's `VCharExperienceEntry`, minus `admin`,
+ * the recording user's Discord ID: the app can't show their name, and as a JSON number the ID
+ * loses precision anyway.
+ */
+export interface ExperienceEntry {
+	event: ExperienceEvent;
+	amount: number; // Negative for deductions
+	reason: string;
+	date: string; // ISO; naive UTC, like the character log's dates
 }
 
 /**
