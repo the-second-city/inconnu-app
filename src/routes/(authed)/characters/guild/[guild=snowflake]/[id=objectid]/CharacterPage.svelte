@@ -9,6 +9,7 @@
 	import CharacterSheet from './CharacterSheet.svelte';
 	import CharHeader from '$lib/components/characters/CharHeader.svelte';
 	import CharProfile from '$lib/components/characters/CharProfile.svelte';
+	import CharLog from '$lib/components/characters/CharLog.svelte';
 
 	interface ComponentProps {
 		character: Character;
@@ -70,6 +71,9 @@
 	<Tabs.List>
 		<Tabs.Trigger value="sheet">Sheet</Tabs.Trigger>
 		<Tabs.Trigger value="profile">Profile</Tabs.Trigger>
+		{#if character.log}
+			<Tabs.Trigger value="chronicle">Chronicle</Tabs.Trigger>
+		{/if}
 		<!--
 		<Tabs.Trigger value="experience">Experience</Tabs.Trigger>
 		-->
@@ -90,6 +94,11 @@
 			<CharacterSheet bind:character />
 		{/key}
 	</Tabs.Content>
+	{#if character.log}
+		<Tabs.Content value="chronicle">
+			<CharLog log={character.log} splat={character.splat} />
+		</Tabs.Content>
+	{/if}
 	<!--
 	<Tabs.Content value="experience">
 		{#key character}

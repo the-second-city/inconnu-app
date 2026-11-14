@@ -26,8 +26,8 @@ const character = (): Character => ({
 });
 
 /** Render the character page, with the character as reactive state. Returns that state. */
-const renderPage = () => {
-	const bound = $state({ character: character() });
+const renderPage = (char: Character = character()) => {
+	const bound = $state({ character: char });
 	render(CharacterPage, {
 		guild: GUILD,
 		get character() {
@@ -120,4 +120,42 @@ test('saving keeps the edits', async () => {
 
 	expect(bound.character.profile.description).toBe('Tall and pale. Scarred.');
 	expect(within(panel()).queryByRole('textbox')).not.toBeInTheDocument();
+});
+
+test('a character with a log has a Chronicle tab showing it', async () => {
+	const user = userEvent.setup();
+	const char = character();
+	char.log = {
+		created: '2024-03-05T12:00:00',
+		left: null,
+		deepest_degeneration: 0,
+		degenerations: 0,
+		frenzy_resisted: 0,
+		health_aggravated: 0,
+		health_superficial: 0,
+		hunger_gained: 0,
+		hunger_slaked: 0,
+		hunts: 0,
+		remorse_checks: 0,
+		remorse_failures: 0,
+		remorse_successes: 0,
+		rouse_checks: 0,
+		rouse_failures: 0,
+		rouse_successes: 0,
+		stains_gained: 5,
+		surges: 0,
+		times_awakened: 0,
+		times_blushed: 0,
+		times_frenzied: 0,
+		times_slaked: 0,
+		willpower_aggravated: 0,
+		willpower_superficial: 0,
+		incomplete_since: {}
+	};
+	renderPage(char);
+
+	await user.click(screen.getByRole('tab', { name: 'Chronicle' }));
+
+	expect(within(panel()).getByText('Stains gained')).toBeInTheDocument();
+	expect(within(panel()).queryByText('Strength')).not.toBeInTheDocument();
 });

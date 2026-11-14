@@ -70,7 +70,46 @@ export interface Character {
 	vitae?: number;
 	max_bp?: number;
 	blood_pool?: number;
+	log?: CharacterLog;
 }
+
+/**
+ * When the character was created and its owner left, and running counts of gameplay events.
+ * Mirrors the bot's `VCharLog`. Dates are ISO strings; ones read from the database have no
+ * offset but are UTC.
+ */
+export interface CharacterLog {
+	created: string;
+	left: string | null; // The owner left the server
+	deepest_degeneration: number; // Most Stains ever beyond Humanity's empty boxes
+	degenerations: number;
+	frenzy_resisted: number;
+	health_aggravated: number;
+	health_superficial: number;
+	hunger_gained: number;
+	hunger_slaked: number;
+	hunts: number;
+	remorse_checks: number;
+	remorse_failures: number;
+	remorse_successes: number;
+	rouse_checks: number;
+	rouse_failures: number;
+	rouse_successes: number;
+	stains_gained: number;
+	surges: number;
+	times_awakened: number;
+	times_blushed: number;
+	times_frenzied: number;
+	times_slaked: number;
+	willpower_aggravated: number;
+	willpower_superficial: number;
+	incomplete_since: Partial<Record<CharacterLogCounter, string>>; // Counters added after creation
+}
+
+export type CharacterLogCounter = Exclude<
+	keyof CharacterLog,
+	'created' | 'left' | 'incomplete_since'
+>;
 
 export interface PublicCharacter {
 	id: string;

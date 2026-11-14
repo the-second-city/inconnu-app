@@ -11,7 +11,7 @@
 	const isDocs = $derived(page.route.id?.startsWith('/docs') ?? false);
 </script>
 
-<div class="grid h-screen grid-rows-[auto_1fr_auto]">
+<div class="grid min-h-screen grid-rows-[auto_1fr_auto]">
 	<Header />
 
 	<main class="w-full">
