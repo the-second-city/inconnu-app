@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { untrack } from 'svelte';
-	import { Popover } from '@skeletonlabs/skeleton-svelte';
+	import Popover from '$lib/components/Popover.svelte';
 
 	import type { Character, TrackType } from '$lib/types';
 
@@ -123,13 +123,7 @@
 
 {trackLabel}
 
-<Popover
-	open={showControls}
-	onOpenChange={(e) => (showControls = e.open)}
-	contentBase="card bg-surface-500 p-4"
-	arrow
-	arrowBackground="!bg-surface-500 dark:!bg-surface-500"
->
+<Popover bind:open={showControls} arrow>
 	{#snippet trigger()}
 		<div class="flex flex-wrap items-center gap-2">
 			{#each [...Array(trackArray.length).keys()].reverse() as index (index)}
@@ -149,6 +143,7 @@
 							class="btn preset-tonal-surface"
 							disabled={!level.dec}
 							onclick={() => adjustTrack(level.symbol, -1)}
+							aria-label="Decrease {level.title}"
 						>
 							-
 						</button>
@@ -157,6 +152,7 @@
 							class="btn preset-tonal-surface"
 							disabled={!level.inc}
 							onclick={() => adjustTrack(level.symbol, 1)}
+							aria-label="Increase {level.title}"
 						>
 							+
 						</button>
@@ -169,6 +165,7 @@
 						class="btn preset-tonal-surface"
 						onclick={decPermanent}
 						disabled={trackArray.length == 1}
+						aria-label="Decrease Permanent"
 					>
 						-
 					</button>
@@ -177,6 +174,7 @@
 						class="btn preset-tonal-surface"
 						onclick={incPermanent}
 						disabled={trackArray.length == 15}
+						aria-label="Increase Permanent"
 					>
 						+
 					</button>

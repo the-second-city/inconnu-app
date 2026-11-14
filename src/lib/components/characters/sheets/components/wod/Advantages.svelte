@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { Popover } from '@skeletonlabs/skeleton-svelte';
+	import Popover from '$lib/components/Popover.svelte';
 	import { CirclePlus, CircleX } from '@lucide/svelte';
 
 	import type { Advantage, AdvantageType } from '$lib/types';
@@ -80,14 +80,9 @@
 				{title}
 			</h3>
 			{#if editing}
-				<Popover
-					open={isOpen}
-					onOpenChange={(e) => onOpenChange(e.open)}
-					contentBase="card bg-surface-500 p-4"
-					arrow
-					arrowBackground="!bg-surface-500 dark:!bg-surface-500"
-				>
+				<Popover open={isOpen} {onOpenChange} arrow>
 					{#snippet trigger()}
+						<span class="sr-only">Add {type}</span>
 						<CirclePlus />
 					{/snippet}
 					{#snippet content()}
@@ -143,7 +138,7 @@
 		<div class="flex flex-col">
 			{#if indices.length > 0}
 				{#each indices as index (advantages[index].name)}
-					{@const buttonTitle = `Remove ${advantages[index]}`}
+					{@const buttonTitle = `Remove ${advantages[index].name}`}
 					<div class="flex items-center justify-between" class:italic>
 						<div class="flex items-center gap-2">
 							{#if editing}
@@ -153,7 +148,6 @@
 									title={buttonTitle}
 									tabindex="0"
 								>
-									<span class="sr-only">Remove {advantages[index]}</span>
 									<CircleX size={14} color="#FF0000" />
 								</button>
 							{/if}

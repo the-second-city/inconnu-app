@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { Popover } from '@skeletonlabs/skeleton-svelte';
+	import Popover from '$lib/components/Popover.svelte';
 
 	import type { Character } from '$lib/types';
 
@@ -19,10 +19,11 @@
 
 	const totalBoxes = 10;
 
-	let boxStates = $derived.by(() => {
-		const humanity = character.humanity || 7;
-		const stains = character.stains || 0;
+	// Default only when missing; 0 is a valid Humanity (and Stains)
+	let humanity = $derived(character.humanity ?? 7);
+	let stains = $derived(character.stains ?? 0);
 
+	let boxStates = $derived.by(() => {
 		const emptyBoxes = totalBoxes - humanity;
 		const stainOverflow = Math.max(0, stains - emptyBoxes);
 		const normalStains = stains - stainOverflow;
@@ -40,39 +41,25 @@
 	});
 
 	function incHumanity() {
-		if ((character.humanity || 7) < 10) {
-			character.humanity = (character.humanity || 7) + 1;
-		}
+		if (humanity < 10) character.humanity = humanity + 1;
 	}
 
 	function decHumanity() {
-		if ((character.humanity || 7) > 0) {
-			character.humanity = (character.humanity || 7) - 1;
-		}
+		if (humanity > 0) character.humanity = humanity - 1;
 	}
 
 	function incStains() {
-		if ((character.stains || 0) < 10) {
-			character.stains = (character.stains || 0) + 1;
-		}
+		if (stains < 10) character.stains = stains + 1;
 	}
 
 	function decStains() {
-		if ((character.stains || 0) > 0) {
-			character.stains = (character.stains || 0) - 1;
-		}
+		if (stains > 0) character.stains = stains - 1;
 	}
 </script>
 
 Humanity
 
-<Popover
-	open={showControls}
-	onOpenChange={(e) => (showControls = e.open)}
-	contentBase="card bg-surface-500 p-4"
-	arrow
-	arrowBackground="!bg-surface-500 dark:!bg-surface-500"
->
+<Popover bind:open={showControls} arrow>
 	{#snippet trigger()}
 		<div class="flex flex-wrap items-center gap-2">
 			{#each Array(boxStates.filled), i (i)}
@@ -98,16 +85,18 @@ Humanity
 				<div class="flex items-center justify-between gap-3">
 					<button
 						class="btn preset-tonal-surface"
-						disabled={(character.humanity || 7) <= 0}
+						disabled={humanity <= 0}
 						onclick={decHumanity}
+						aria-label="Decrease Humanity"
 					>
 						-
 					</button>
 					Rating
 					<button
 						class="btn preset-tonal-surface"
-						disabled={(character.humanity || 7) >= 10}
+						disabled={humanity >= 10}
 						onclick={incHumanity}
+						aria-label="Increase Humanity"
 					>
 						+
 					</button>
@@ -115,16 +104,18 @@ Humanity
 				<div class="flex items-center justify-between gap-3">
 					<button
 						class="btn preset-tonal-surface"
-						disabled={(character.stains || 0) <= 0}
+						disabled={stains <= 0}
 						onclick={decStains}
+						aria-label="Decrease Stains"
 					>
 						-
 					</button>
 					Stains
 					<button
 						class="btn preset-tonal-surface"
-						disabled={(character.stains || 0) >= 10}
+						disabled={stains >= 10}
 						onclick={incStains}
+						aria-label="Increase Stains"
 					>
 						+
 					</button>

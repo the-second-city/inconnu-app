@@ -67,37 +67,36 @@
 />
 
 <Tabs value={selectedTab} onValueChange={(e) => (selectedTab = e.value)}>
-	{#snippet list()}
-		<Tabs.Control value="sheet">Sheet</Tabs.Control>
-		<Tabs.Control value="profile">Profile</Tabs.Control>
+	<Tabs.List>
+		<Tabs.Trigger value="sheet">Sheet</Tabs.Trigger>
+		<Tabs.Trigger value="profile">Profile</Tabs.Trigger>
 		<!--
-		<Tabs.Control value="experience">Experience</Tabs.Control>
+		<Tabs.Trigger value="experience">Experience</Tabs.Trigger>
 		-->
-	{/snippet}
-	{#snippet content()}
-		<Tabs.Panel value="profile">
-			{#key character}
-				<CharProfile
-					name={character.name}
-					bind:profile={character.profile}
-					splat={character.splat}
-					{editing}
-				/>
-			{/key}
-		</Tabs.Panel>
-		<Tabs.Panel value="sheet">
-			{#key character}
-				<CharacterSheet bind:character />
-			{/key}
-		</Tabs.Panel>
-		<!--
-		<Tabs.Panel value="experience">
-			{#key character}
-				Eventually
-			{/key}
-		</Tabs.Panel>
-		-->
-	{/snippet}
+		<Tabs.Indicator />
+	</Tabs.List>
+	<Tabs.Content value="profile">
+		{#key character}
+			<CharProfile
+				name={character.name}
+				bind:profile={character.profile}
+				splat={character.splat}
+				{editing}
+			/>
+		{/key}
+	</Tabs.Content>
+	<Tabs.Content value="sheet">
+		{#key character}
+			<CharacterSheet bind:character />
+		{/key}
+	</Tabs.Content>
+	<!--
+	<Tabs.Content value="experience">
+		{#key character}
+			Eventually
+		{/key}
+	</Tabs.Content>
+	-->
 </Tabs>
 
 <!-- Mobile floating edit buttons; remove entire block to undo -->

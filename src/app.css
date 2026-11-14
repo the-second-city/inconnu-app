@@ -4,7 +4,7 @@
 @custom-variant dark (&:where(.dark, .dark *));
 
 @import '@skeletonlabs/skeleton';
-@import '@skeletonlabs/skeleton/optional/presets';
+@import '@skeletonlabs/skeleton-svelte';
 @import '@skeletonlabs/skeleton/themes/crimson';
 
 @source '../node_modules/@skeletonlabs/skeleton-svelte/dist';
@@ -52,7 +52,7 @@
 	--tw-prose-quotes: inherit;
 	--tw-prose-code: inherit;
 	--tw-prose-pre-code: inherit;
-	--tw-prose-links: var(--anchor-font-color-dark);
+	--tw-prose-links: var(--typo-anchor--color-dark);
 	--tw-prose-counters: var(--color-surface-400);
 	--tw-prose-bullets: var(--color-surface-500);
 	--tw-prose-hr: var(--color-surface-700);

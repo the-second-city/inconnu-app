@@ -33,7 +33,7 @@
 			</li>
 			<li>Open Discord and navigate to your game server</li>
 			<li>
-				Type the command: <code class="code">/character wizard</code>
+				Type the command: <code>/character wizard</code>
 			</li>
 			<li>You'll receive a private link to create your character</li>
 			<li>Click the link to open the Character Wizard in your browser</li>

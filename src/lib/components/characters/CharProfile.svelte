@@ -1,5 +1,6 @@
 <script lang="ts">
-	import { Modal } from '@skeletonlabs/skeleton-svelte';
+	import { Dialog } from '@skeletonlabs/skeleton-svelte';
+	import ClientPortal from '$lib/components/ClientPortal.svelte';
 	import { Eye, Skull } from '@lucide/svelte';
 
 	import type { Profile, Splat } from '$lib/types';
@@ -51,7 +52,7 @@
 					</span>
 					<h2 class="h6">Description</h2>
 				</header>
-				<p class="leading-relaxed">
+				<div class="leading-relaxed">
 					{#if editing}
 						<textarea
 							class="textarea border"
@@ -66,7 +67,7 @@
 							{name}'s appearance is an enigma...
 						</span>
 					{/if}
-				</p>
+				</div>
 			</section>
 
 			<!-- History Section -->
@@ -77,7 +78,7 @@
 					</span>
 					<h2 class="h6">History</h2>
 				</header>
-				<p class="leading-relaxed">
+				<div class="leading-relaxed">
 					{#if editing}
 						<textarea
 							class="textarea border"
@@ -92,7 +93,7 @@
 							{name}'s past is shrouded in mystery ...
 						</span>
 					{/if}
-				</p>
+				</div>
 			</section>
 		</article>
 	</div>
@@ -102,26 +103,36 @@
 	<div class={galleryClasses}>
 		{#each profile.images as image, i (i)}
 			{@const alt = `${name} - Image ${i + 1}`}
-			<Modal
+			<Dialog
 				open={activeModalIndex === i}
 				onOpenChange={(e) => {
 					activeModalIndex = e.open ? i : null;
 				}}
-				triggerBase="placeholder w-full h-full group relative overflow-hidden rounded-md aspect-12/16"
-				contentBase="card bg-surface-100-900 p-2 shadow-xl max-w-screen-sm"
 			>
-				{#snippet trigger()}
+				<Dialog.Trigger
+					class="placeholder group relative aspect-12/16 h-full w-full overflow-hidden rounded-md"
+				>
 					<img
 						class="h-full w-full object-cover transition-transform duration-300 group-hover:scale-110"
 						src={image}
 						{alt}
 						loading="lazy"
 					/>
-				{/snippet}
-				{#snippet content()}
-					<img class="rounded-md" src={image} {alt} />
-				{/snippet}
-			</Modal>
+				</Dialog.Trigger>
+				<ClientPortal>
+					<Dialog.Backdrop class="bg-surface-50-950/50 fixed inset-0 z-50" />
+					<Dialog.Positioner class="fixed inset-0 z-50 flex items-center justify-center p-4">
+						<Dialog.Content class="card bg-surface-100-900 max-w-screen-sm p-2 shadow-xl">
+							<!-- Fit the viewport, less the positioner's and panel's padding -->
+							<img
+								class="max-h-[calc(100dvh-3rem)] w-auto rounded-md object-contain"
+								src={image}
+								{alt}
+							/>
+						</Dialog.Content>
+					</Dialog.Positioner>
+				</ClientPortal>
+			</Dialog>
 		{/each}
 	</div>
 	<!-- End image gallery -->

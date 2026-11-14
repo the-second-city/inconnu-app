@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/svelte';
+import { render, screen, within } from '@testing-library/svelte';
 import { expect, test, vi } from 'vitest';
 
 import type { Character, CharacterData, OwnerData, Profile, PublicCharacter } from '$lib/types';
@@ -70,6 +70,28 @@ test.each([
 	render(CharCard, { data, showOwner });
 
 	expect(screen.getByRole('contentinfo')).toHaveTextContent(label);
+});
+
+test.each([
+	['the guild icon, when not showing owners', false, 'Camarilla of Chicago icon', 'guild.png'],
+	["the owner's icon", true, 'Lodin icon', 'lodin.png']
+])('shows %s', (_case, showOwner, alt, icon) => {
+	const data = publicData({
+		guild: { ...GUILD, icon: 'https://example.com/guild.png' },
+		owner: { ...OWNER, icon: 'https://example.com/lodin.png' }
+	});
+	render(CharCard, { data, showOwner });
+
+	expect(within(screen.getByRole('contentinfo')).getByAltText(alt)).toHaveAttribute(
+		'src',
+		`https://example.com/${icon}`
+	);
+});
+
+test('shows no icon image when there is none', () => {
+	render(CharCard, { data: publicData(), showOwner: true });
+
+	expect(screen.queryByAltText('Lodin icon')).not.toBeInTheDocument();
 });
 
 test('shows the description over the biography', () => {

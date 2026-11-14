@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { Avatar } from '@skeletonlabs/skeleton-svelte';
+	import Avatar from '$lib/components/Avatar.svelte';
 	import { EyeOff } from '@lucide/svelte';
 	import { resolve } from '$app/paths';
 
@@ -50,7 +50,7 @@
 		<div>
 			<h3 class="h3">{data.character.name}</h3>
 		</div>
-		<p class="line-clamp-4 text-sm opacity-60">
+		<div class="line-clamp-4 text-sm opacity-60">
 			{#if data.character.profile.description}
 				<Markdown content={data.character.profile.description} preview />
 			{:else if data.character.profile.biography}
@@ -58,7 +58,7 @@
 			{:else}
 				<em>{data.character.name} is a total mystery ...</em>
 			{/if}
-		</p>
+		</div>
 	</article>
 	<footer class="bg-surface-50-950/50 flex items-center justify-end gap-2 px-4 py-2">
 		<small class="opacity-60">{footerLabel}</small>
@@ -78,7 +78,7 @@
 		id: characterId
 	})}
 	title="View/Edit {data.character.name}"
-	class="{baseCardClasses} card-hover hover:scale-101 {hasProfileContent(data.character.profile)
+	class="{baseCardClasses} hover:scale-101 {hasProfileContent(data.character.profile)
 		? ''
 		: 'opacity-65'}"
 	data-sveltekit-preload-data="off"

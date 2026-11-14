@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { Popover } from '@skeletonlabs/skeleton-svelte';
+	import Popover from '$lib/components/Popover.svelte';
 	import { CirclePlus, CircleX, ListPlus } from '@lucide/svelte';
 
 	import { insensitiveSort, isValidTraitName, normalize } from '$lib';
@@ -90,13 +90,7 @@
 <div class="flex flex-wrap items-center justify-between">
 	{#if showLabel && name}
 		{#if enablePopover}
-			<Popover
-				open={showSubtraits}
-				onOpenChange={(e) => (showSubtraits = e.open)}
-				contentBase="card bg-surface-500 p-4"
-				arrow
-				arrowBackground="!bg-surface-500 dark:!bg-surface-500"
-			>
+			<Popover bind:open={showSubtraits} arrow>
 				{#snippet trigger()}
 					<div class="flex items-center gap-2 text-left">
 						{name}
@@ -139,6 +133,7 @@
 									bind:value={newSubtrait}
 									onkeydown={(e) => e.key === 'Enter' && handleAddSubtrait()}
 									placeholder="Add new {subtraitLabel} ..."
+									aria-label="New {subtraitLabel}"
 									maxlength={FORM_VALIDATION.traitMaxLength + 1}
 									class="input border"
 									class:text-error-500={invalidSubtrait}

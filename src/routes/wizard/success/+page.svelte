@@ -3,7 +3,7 @@
 	import { onMount } from 'svelte';
 	import { goto } from '$app/navigation';
 	import { resolve } from '$app/paths';
-	import { Avatar } from '@skeletonlabs/skeleton-svelte';
+	import Avatar from '$lib/components/Avatar.svelte';
 	import { Heart, Image, MessageSquare, Sparkles } from '@lucide/svelte';
 	import { creationInfoStore } from '$lib/stores/CreationStore';
 	import type { CreationInfo } from '$lib/stores/CreationStore';

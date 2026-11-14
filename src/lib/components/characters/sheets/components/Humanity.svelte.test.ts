@@ -1,4 +1,5 @@
 import { render, screen } from '@testing-library/svelte';
+import userEvent from '@testing-library/user-event';
 import { expect, test } from 'vitest';
 
 import type { Character } from '$lib/types';
@@ -52,4 +53,83 @@ test('always shows 10 boxes', () => {
 	render(Humanity, { character: character(10, 3), editing: false });
 
 	expect(boxes()).toHaveLength(10);
+});
+
+/**
+ * Render Humanity as the character sheet does, with the character as reactive state so edits
+ * are written back to it. Returns that state.
+ */
+const renderHumanity = (humanity: number, stains: number, editing = true) => {
+	const bound = $state(character(humanity, stains));
+	render(Humanity, { character: bound, editing });
+	return bound;
+};
+
+/** Open the Humanity controls by clicking the boxes. */
+const openControls = async (user: ReturnType<typeof userEvent.setup>) => {
+	await user.click(screen.getByRole('button', { name: /^(Humanity|Empty|Degeneration|Stain)/ }));
+};
+
+test('clicking the boxes explains how to edit, when not editing', async () => {
+	const user = userEvent.setup();
+	renderHumanity(7, 0, false);
+
+	await openControls(user);
+
+	expect(await screen.findByText('Click "Edit" above to enable controls.')).toBeInTheDocument();
+	expect(screen.queryByRole('button', { name: 'Increase Humanity' })).not.toBeInTheDocument();
+});
+
+test('changes Humanity and Stains', async () => {
+	const user = userEvent.setup();
+	const bound = renderHumanity(7, 0);
+	await openControls(user);
+
+	await user.click(await screen.findByRole('button', { name: 'Decrease Humanity' }));
+	await user.click(screen.getByRole('button', { name: 'Increase Stains' }));
+	await user.click(screen.getByRole('button', { name: 'Increase Stains' }));
+
+	expect(bound).toMatchObject({ humanity: 6, stains: 2 });
+	expect(boxes()).toEqual([...times(6, 'Humanity'), ...times(2, 'Empty'), ...times(2, 'Stain')]);
+});
+
+test('shows a Humanity of 0 as all empty', () => {
+	render(Humanity, { character: character(0, 0), editing: false });
+
+	expect(boxes()).toEqual(times(10, 'Empty'));
+});
+
+test('Humanity can be lowered to 0', async () => {
+	const user = userEvent.setup();
+	const bound = renderHumanity(1, 0);
+	await openControls(user);
+
+	await user.click(await screen.findByRole('button', { name: 'Decrease Humanity' }));
+
+	expect(bound.humanity).toBe(0);
+	expect(boxes()).toEqual(times(10, 'Empty'));
+});
+
+test('Humanity of 0 can be raised to 1', async () => {
+	const user = userEvent.setup();
+	const bound = renderHumanity(0, 0);
+	await openControls(user);
+
+	await user.click(await screen.findByRole('button', { name: 'Increase Humanity' }));
+
+	expect(bound.humanity).toBe(1);
+});
+
+test.each([
+	['Decrease Humanity', 0, 0],
+	['Increase Humanity', 10, 0],
+	['Decrease Stains', 7, 0],
+	['Increase Stains', 7, 10]
+])('%s is disabled at its limit', async (name, humanity, stains) => {
+	const user = userEvent.setup();
+	renderHumanity(humanity, stains);
+
+	await openControls(user);
+
+	expect(await screen.findByRole('button', { name })).toBeDisabled();
 });

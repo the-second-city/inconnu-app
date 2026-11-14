@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { Info } from '@lucide/svelte';
-	import { Popover } from '@skeletonlabs/skeleton-svelte';
+	import Popover from '$lib/components/Popover.svelte';
 
 	import Card from '$lib/components/Card.svelte';
 	import Meta from '$lib/components/Meta.svelte';
@@ -262,11 +262,12 @@
 			{#if strategy}
 				<Popover
 					positioning={{ placement: 'bottom' }}
-					triggerBase="text-surface-600-400 hover:text-surface-950-50 transition-colors"
-					triggerAriaLabel="About {name}"
-					contentBase="card bg-surface-100-900 border-surface-500 max-w-xs border p-3 text-base shadow-xl"
+					triggerClass="text-surface-600-400 hover:text-surface-950-50 transition-colors"
+					triggerLabel="About {name}"
+					contentClass="card bg-surface-100-900 border-surface-500 max-w-xs border p-3 text-base shadow-xl"
 					arrow
-					arrowBackground="var(--color-surface-100-900)"
+					arrowColor="var(--color-surface-100-900)"
+					arrowTipClass="border-surface-500 border-t border-l"
 				>
 					{#snippet trigger()}
 						<Info size={18} />
