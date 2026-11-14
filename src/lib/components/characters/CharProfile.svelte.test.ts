@@ -19,11 +19,12 @@ const profile = (overrides: Partial<Profile> = {}): Profile => ({
  * Render Nadia's profile, with `profile` as reactive state so edits are written back to it, as a
  * parent's `bind:` would. Returns that state.
  */
-const renderProfile = (prof: Profile = profile(), editing = false) => {
+const renderProfile = (prof: Profile = profile(), editing = false, convictions?: string[]) => {
 	const bound = $state({ profile: prof });
 	render(CharProfile, {
 		name: 'Nadia',
 		splat: 'vampire',
+		convictions,
 		editing,
 		get profile() {
 			return bound.profile;
@@ -64,6 +65,22 @@ test('edits the description and history in place', async () => {
 	await user.type(within(section('History')).getByRole('textbox'), 'Embraced.');
 
 	expect(bound.profile).toMatchObject({ description: 'Tall. Pale.', biography: 'Embraced.' });
+});
+
+test('lists the convictions, skipping blanks', () => {
+	renderProfile(profile(), false, ['Protect the weak.', '', '  ', 'Never lie to kin.']);
+
+	const items = within(section('Convictions')).getAllByRole('listitem');
+	expect(items.map((item) => item.textContent)).toEqual(['Protect the weak.', 'Never lie to kin.']);
+});
+
+test.each([
+	['none', undefined],
+	['only blanks', ['', ' ', '']]
+])('has no Convictions section with %s', (_label: string, convictions?: string[]) => {
+	renderProfile(profile(), false, convictions);
+
+	expect(screen.queryByRole('heading', { name: 'Convictions' })).not.toBeInTheDocument();
 });
 
 test('shows each image as a button', () => {

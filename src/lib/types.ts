@@ -58,6 +58,7 @@ export interface Character {
 	willpower: string;
 	humanity: number;
 	stains: number;
+	convictions?: string[]; // Up to 3; may contain blanks
 	traits: Trait[];
 	potency?: number;
 	hunger?: number;

@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { Dialog } from '@skeletonlabs/skeleton-svelte';
 	import ClientPortal from '$lib/components/ClientPortal.svelte';
-	import { Eye, Skull } from '@lucide/svelte';
+	import { Eye, Scale, Skull } from '@lucide/svelte';
 
 	import type { Profile, Splat } from '$lib/types';
 	import { DISCORD_URL } from '$lib/index';
@@ -11,10 +11,14 @@
 		name: string;
 		profile: Profile;
 		splat: Splat;
+		convictions?: string[];
 		editing: boolean;
 	}
 
-	let { name, profile = $bindable(), splat, editing }: ComponentProps = $props();
+	let { name, profile = $bindable(), splat, convictions = [], editing }: ComponentProps = $props();
+
+	// The bot may store blank convictions
+	let shownConvictions = $derived(convictions.map((c) => c.trim()).filter(Boolean));
 	let galleryClasses = $derived.by(() => {
 		let classes: string;
 		if (profile.images.length == 1) {
@@ -95,6 +99,23 @@
 					{/if}
 				</div>
 			</section>
+
+			<!-- Convictions Section -->
+			{#if shownConvictions.length > 0}
+				<section class="space-y-2">
+					<header class="border-surface-300-700 flex items-center gap-2 border-b pb-2">
+						<span class="text-primary-500">
+							<Scale size={18} />
+						</span>
+						<h2 class="h6">Convictions</h2>
+					</header>
+					<ul class="list-inside list-disc space-y-1 leading-relaxed">
+						{#each shownConvictions as conviction, i (i)}
+							<li>{conviction}</li>
+						{/each}
+					</ul>
+				</section>
+			{/if}
 		</article>
 	</div>
 	<!-- End profile -->

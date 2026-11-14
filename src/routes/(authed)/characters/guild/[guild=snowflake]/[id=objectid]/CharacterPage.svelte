@@ -157,6 +157,7 @@
 			name={character.name}
 			bind:profile={character.profile}
 			splat={character.splat}
+			convictions={character.convictions}
 			{editing}
 		/>
 	{/key}
