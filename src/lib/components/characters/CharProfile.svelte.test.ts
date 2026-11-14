@@ -99,6 +99,18 @@ test('lazy-loads gallery images', () => {
 	expect(thumbnail).toHaveAttribute('loading', 'lazy');
 });
 
+test('gallery images ask for async decoding', async () => {
+	const user = userEvent.setup();
+	renderProfile(profile({ images: IMAGES }));
+	const trigger = screen.getByRole('button', { name: 'Nadia - Image 1' });
+	expect(within(trigger).getByRole('img')).toHaveAttribute('decoding', 'async');
+
+	await user.click(trigger);
+
+	const dialog = await screen.findByRole('dialog');
+	expect(within(dialog).getByRole('img')).toHaveAttribute('decoding', 'async');
+});
+
 test('has no gallery without images', () => {
 	renderProfile();
 

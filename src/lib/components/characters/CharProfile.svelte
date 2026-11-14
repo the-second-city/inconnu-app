@@ -138,6 +138,7 @@
 						src={image}
 						{alt}
 						loading="lazy"
+						decoding="async"
 					/>
 				</Dialog.Trigger>
 				<ClientPortal>
@@ -149,6 +150,7 @@
 								class="max-h-[calc(100dvh-3rem)] w-auto rounded-md object-contain"
 								src={image}
 								{alt}
+								decoding="async"
 							/>
 						</Dialog.Content>
 					</Dialog.Positioner>
