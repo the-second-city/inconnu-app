@@ -43,11 +43,20 @@ const log = (overrides: Partial<CharacterLog> = {}): CharacterLog => ({
 const headings = (): string[] =>
 	screen.getAllByRole('heading').map((heading) => heading.textContent?.trim() ?? '');
 
-/** The value shown for a stat, by its label, within a group. */
-const value = (group: string, label: string): string | null | undefined => {
+/** The value shown for a stat, by its label, within a group. Each term has one definition. */
+const value = (group: string, label: string): string | undefined => {
 	const region = screen.getByRole('region', { name: group });
-	return within(region).getByText(label).closest('div')?.querySelector('dd')?.textContent;
+	const terms = within(region).getAllByRole('term');
+	const index = terms.findIndex((term) => term.textContent?.trim() === label);
+	expect(index, `${label} in ${group}`).toBeGreaterThanOrEqual(0);
+	return within(region).getAllByRole('definition')[index].textContent?.trim();
 };
+
+/** An ISO date formatted as the component formats it, in this machine's time zone. */
+const localDate = (iso: string): string =>
+	new Intl.DateTimeFormat('en-US', { year: 'numeric', month: 'short', day: 'numeric' }).format(
+		new Date(iso)
+	);
 
 test.each<[Splat, string[]]>([
 	['vampire', ['Blood', 'Hunger', 'Nights', 'Frenzy', 'Humanity', 'Damage']],
@@ -88,12 +97,15 @@ test('reads offset-less dates as UTC', () => {
 	render(CharLog, { log: log({ created: '2024-03-05T23:30:00' }), splat: 'mortal' });
 
 	// The database's naive dates are UTC, so this must format like the explicit UTC date
-	const expected = new Intl.DateTimeFormat('en-US', {
-		year: 'numeric',
-		month: 'short',
-		day: 'numeric'
-	}).format(new Date('2024-03-05T23:30:00Z'));
-	expect(screen.getByText(/^Created/)).toHaveTextContent(`Created ${expected}`);
+	expect(screen.getByText(/^Created/)).toHaveTextContent(
+		`Created ${localDate('2024-03-05T23:30:00Z')}`
+	);
+});
+
+test('a malformed date shows as unknown', () => {
+	render(CharLog, { log: log({ created: 'not a date' }), splat: 'mortal' });
+
+	expect(screen.getByText(/^Created/)).toHaveTextContent('Created unknown');
 });
 
 test('shows when the owner left, only if they did', () => {
@@ -130,7 +142,7 @@ test('an info button explains when counting began', async () => {
 	await user.click(screen.getByRole('button', { name: 'About Hunts' }));
 
 	expect(await screen.findByRole('dialog')).toHaveTextContent(
-		"Counted since Nov 14, 2026. Earlier events aren't included."
+		`Counted since ${localDate('2026-11-14T12:00:00Z')}. Earlier events aren't included.`
 	);
 });
 

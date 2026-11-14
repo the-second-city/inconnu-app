@@ -1,18 +1,22 @@
-import { fireEvent, render, screen, waitFor, within } from '@testing-library/svelte';
+import { render, screen, waitFor, within, type RenderResult } from '@testing-library/svelte';
 import userEvent from '@testing-library/user-event';
-import { afterEach, expect, test, vi } from 'vitest';
+import { flushSync } from 'svelte';
+import { beforeEach, expect, test, vi } from 'vitest';
 
 import type { Character, Guild } from '$lib/types';
+import { navigate, page } from '$lib/testing/page.svelte';
 import CharacterPage from './CharacterPage.svelte';
 
-vi.mock('$app/state', () => ({ page: { data: { session: null } } }));
+// SvelteKit's router doesn't run in tests: `page` is reactive state, which `goto` updates
+const goto = vi.hoisted(() => vi.fn());
+vi.mock('$app/state', () => import('$lib/testing/page.svelte'));
 vi.mock('$app/paths', () => ({ resolve: (route: string) => route }));
-// SvelteKit's router doesn't run in tests, so write the URL directly
-vi.mock('$app/navigation', () => ({
-	replaceState: (url: string) => window.history.replaceState({}, '', url)
-}));
+vi.mock('$app/navigation', () => ({ goto }));
 
-afterEach(() => window.history.replaceState({}, '', '/'));
+beforeEach(() => {
+	navigate('http://localhost/');
+	goto.mockReset().mockImplementation(async (url: string) => navigate(url));
+});
 
 const GUILD: Guild = { id: '111', name: 'Camarilla of Chicago', icon: null, count: null };
 
@@ -31,20 +35,9 @@ const character = (): Character => ({
 	traits: [{ name: 'Strength', rating: 2, type: 'attribute', subtraits: [] }]
 });
 
-/** Render the character page, with the character as reactive state. Returns that state. */
-const renderPage = (char: Character = character()) => {
-	const bound = $state({ character: char });
-	render(CharacterPage, {
-		guild: GUILD,
-		get character() {
-			return bound.character;
-		},
-		set character(next: Character) {
-			bound.character = next;
-		}
-	});
-	return bound;
-};
+/** Render the character page. Returns the render result, whose `rerender` changes its props. */
+const renderPage = (char: Character = character()): RenderResult<typeof CharacterPage> =>
+	render(CharacterPage, { guild: GUILD, character: char });
 
 /** The panel for the selected tab. */
 const panel = (): HTMLElement => screen.getByRole('tabpanel');
@@ -98,34 +91,112 @@ test('arrow keys move between tabs', async () => {
 	await waitFor(() => expect(screen.getByRole('tab', { name: 'Profile' })).toHaveFocus());
 });
 
+/** The profile description's text box, while editing. */
+const descriptionBox = (): HTMLElement => within(panel()).getAllByRole('textbox')[0];
+
 test('editing the profile, then cancelling, restores it', async () => {
 	const user = userEvent.setup();
-	const bound = renderPage();
+	renderPage();
 	await user.click(screen.getByRole('tab', { name: 'Profile' }));
 
 	await user.click(screen.getByRole('button', { name: 'Edit' }));
-	const description = within(panel()).getAllByRole('textbox')[0];
-	await user.clear(description);
-	await user.type(description, 'Short.');
-	expect(bound.character.profile.description).toBe('Short.');
+	await user.clear(descriptionBox());
+	await user.type(descriptionBox(), 'Short.');
+	expect(descriptionBox()).toHaveValue('Short.');
 
 	await user.click(screen.getByRole('button', { name: 'Cancel' }));
 
-	expect(bound.character.profile.description).toBe('Tall and pale.');
 	expect(within(panel()).getByText('Tall and pale.')).toBeInTheDocument();
+	expect(within(panel()).queryByText('Short.')).not.toBeInTheDocument();
 });
 
 test('saving keeps the edits', async () => {
 	const user = userEvent.setup();
-	const bound = renderPage();
+	renderPage();
 	await user.click(screen.getByRole('tab', { name: 'Profile' }));
 
 	await user.click(screen.getByRole('button', { name: 'Edit' }));
-	await user.type(within(panel()).getAllByRole('textbox')[0], ' Scarred.');
+	await user.type(descriptionBox(), ' Scarred.');
 	await user.click(screen.getByRole('button', { name: 'Save' }));
 
-	expect(bound.character.profile.description).toBe('Tall and pale. Scarred.');
+	expect(within(panel()).getByText('Tall and pale. Scarred.')).toBeInTheDocument();
 	expect(within(panel()).queryByRole('textbox')).not.toBeInTheDocument();
+});
+
+test('edits after a cancel still apply', async () => {
+	const user = userEvent.setup();
+	renderPage();
+	await user.click(screen.getByRole('tab', { name: 'Profile' }));
+	await user.click(screen.getByRole('button', { name: 'Edit' }));
+	await user.click(screen.getByRole('button', { name: 'Cancel' }));
+
+	// Cancelling restores a copy, which must be as reactive as the original
+	await user.click(screen.getByRole('button', { name: 'Edit' }));
+	await user.type(descriptionBox(), ' Scarred.');
+	await user.click(screen.getByRole('button', { name: 'Save' }));
+
+	expect(within(panel()).getByText('Tall and pale. Scarred.')).toBeInTheDocument();
+});
+
+test('new data for the same character shows when not editing', async () => {
+	const { rerender } = renderPage();
+
+	// Such as when the page's data reloads
+	await rerender({ guild: GUILD, character: { ...character(), name: 'Nadia Vasquez' } });
+
+	expect(screen.getByRole('heading', { name: 'Nadia Vasquez' })).toBeInTheDocument();
+});
+
+test('new data after an edit session keeps its new name', async () => {
+	const user = userEvent.setup();
+	const { rerender } = renderPage();
+	await user.click(screen.getByRole('button', { name: 'Edit' }));
+	await user.click(screen.getByRole('button', { name: 'Save' }));
+
+	// Renamed elsewhere, such as in Discord
+	await rerender({ guild: GUILD, character: { ...character(), name: 'Nadia Vasquez' } });
+
+	expect(screen.getByRole('heading', { name: 'Nadia Vasquez' })).toBeInTheDocument();
+});
+
+test('saving keeps the edits even if new data arrived while editing', async () => {
+	const user = userEvent.setup();
+	const { rerender } = renderPage();
+	await user.click(screen.getByRole('tab', { name: 'Profile' }));
+	await user.click(screen.getByRole('button', { name: 'Edit' }));
+	await user.type(descriptionBox(), ' Scarred.');
+
+	await rerender({ guild: GUILD, character: character() });
+	await user.click(screen.getByRole('button', { name: 'Save' }));
+
+	expect(within(panel()).getByText('Tall and pale. Scarred.')).toBeInTheDocument();
+});
+
+test('new data that arrives while editing applies once editing ends', async () => {
+	const user = userEvent.setup();
+	const { rerender } = renderPage();
+	await user.click(screen.getByRole('button', { name: 'Edit' }));
+
+	await rerender({ guild: GUILD, character: { ...character(), name: 'Nadia Vasquez' } });
+	expect(screen.getByRole('heading', { name: 'Nadia' })).toBeInTheDocument();
+
+	await user.click(screen.getByRole('button', { name: 'Cancel' }));
+
+	expect(screen.getByRole('heading', { name: 'Nadia Vasquez' })).toBeInTheDocument();
+});
+
+test('new data for the same character keeps edits in progress', async () => {
+	const user = userEvent.setup();
+	const { rerender } = renderPage();
+	await user.click(screen.getByRole('tab', { name: 'Profile' }));
+	await user.click(screen.getByRole('button', { name: 'Edit' }));
+	await user.type(descriptionBox(), ' Scarred.');
+
+	// Such as when the page's data reloads
+	await rerender({ guild: GUILD, character: character() });
+
+	expect(descriptionBox()).toHaveValue('Tall and pale. Scarred.');
+	expect(screen.getByRole('button', { name: 'Save' })).toBeInTheDocument();
 });
 
 /** A character with a log, which gives it a Chronicle tab. */
@@ -187,38 +258,72 @@ test.each([
 	['#sheet', 'Sheet'],
 	['#nonsense', 'Sheet'],
 	['', 'Sheet']
-])('the URL hash %j opens the %s tab', async (hash, expected) => {
-	window.history.replaceState({}, '', `/${hash}`);
+])('the URL hash %j opens the %s tab', (hash, expected) => {
+	navigate(`/${hash}`);
 	renderPage(characterWithLog());
 
-	await waitFor(() => expect(selectedTab()).toBe(expected));
+	expect(selectedTab()).toBe(expected);
 });
 
-test('#chronicle opens the sheet when the character has no log', async () => {
-	window.history.replaceState({}, '', '/#chronicle');
+test.each(['#nonsense', '#sheet'])('the URL hash %j is cleared, keeping the query', (hash) => {
+	navigate(`/char?x=1${hash}`);
+	renderPage(characterWithLog());
+
+	expect(page.url.href).toBe('http://localhost/char?x=1');
+	expect(selectedTab()).toBe('Sheet');
+});
+
+test('a valid URL hash is kept', () => {
+	navigate('/#profile');
+	renderPage(characterWithLog());
+
+	expect(page.url.hash).toBe('#profile');
+	expect(goto).not.toHaveBeenCalled();
+});
+
+test("leaving the page doesn't touch the next page's hash", () => {
+	navigate('/char#profile');
+	renderPage(characterWithLog());
+
+	// `page.url` changes before this page is torn down
+	navigate('/docs/rolls#rerolls');
+	flushSync();
+
+	expect(page.url.href).toBe('http://localhost/docs/rolls#rerolls');
+	expect(goto).not.toHaveBeenCalled();
+});
+
+test('#chronicle opens the sheet when the character has no log', () => {
+	navigate('/#chronicle');
 	renderPage();
 
-	await waitFor(() => expect(selectedTab()).toBe('Sheet'));
+	expect(selectedTab()).toBe('Sheet');
 });
 
-test('selecting a tab puts it in the URL, and the sheet clears it', async () => {
+test('selecting a tab puts it in the URL without adding history, and the sheet clears it', async () => {
 	const user = userEvent.setup();
-	window.history.replaceState({}, '', '/char?x=1');
+	navigate('/char?x=1');
 	renderPage(characterWithLog());
 
 	await user.click(screen.getByRole('tab', { name: 'Chronicle' }));
-	expect(window.location.hash).toBe('#chronicle');
+	expect(goto).toHaveBeenLastCalledWith('#chronicle', {
+		replaceState: true,
+		noScroll: true,
+		keepFocus: true
+	});
+	expect(page.url.hash).toBe('#chronicle');
+	expect(selectedTab()).toBe('Chronicle');
 
 	await user.click(screen.getByRole('tab', { name: 'Sheet' }));
-	expect(window.location.hash).toBe('');
-	expect(window.location.pathname + window.location.search).toBe('/char?x=1');
+	expect(goto).toHaveBeenLastCalledWith('/char?x=1', expect.anything());
+	expect(page.url.href).toBe('http://localhost/char?x=1');
+	expect(selectedTab()).toBe('Sheet');
 });
 
-test('changing the URL hash switches tabs', async () => {
+test('navigating to another hash switches tabs', async () => {
 	renderPage(characterWithLog());
 
-	window.history.replaceState({}, '', '/#profile');
-	await fireEvent(window, new HashChangeEvent('hashchange'));
+	navigate('#profile');
 
-	expect(selectedTab()).toBe('Profile');
+	await waitFor(() => expect(selectedTab()).toBe('Profile'));
 });

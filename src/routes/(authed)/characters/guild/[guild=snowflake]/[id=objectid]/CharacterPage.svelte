@@ -1,11 +1,12 @@
 <script lang="ts">
-	import { onMount } from 'svelte';
+	import { untrack, type Snippet } from 'svelte';
 	import { Tabs } from '@skeletonlabs/skeleton-svelte';
 	import { Ban, Check, Pencil } from '@lucide/svelte';
 
 	import { normalize } from '$lib';
 
-	import { replaceState } from '$app/navigation';
+	import { goto } from '$app/navigation';
+	import { page } from '$app/state';
 	import type { Pathname } from '$app/types';
 	import type { Character, Guild, OwnerData } from '$lib/types';
 	import CharacterSheet from './CharacterSheet.svelte';
@@ -21,42 +22,90 @@
 		backUrl?: Pathname;
 	}
 
-	let { character = $bindable(), guild, owner, spc = false, backUrl }: ComponentProps = $props();
+	let {
+		character: initialCharacter,
+		guild,
+		owner,
+		spc = false,
+		backUrl
+	}: ComponentProps = $props();
 
-	// The selected tab follows the URL's hash (#profile, #chronicle); the sheet has none
-	const DEFAULT_TAB = 'sheet';
-	let selectedTab = $state(DEFAULT_TAB);
-	const tabs = $derived(['sheet', 'profile', ...(character.log ? ['chronicle'] : [])]);
+	// The page's own copy, for edits. The parent keys this component on the character's ID, so a
+	// new character starts a new copy.
+	let character: Character = $state(untrack(() => $state.snapshot(initialCharacter)));
 
-	/** Select the tab named by the URL's hash, or the sheet if it names none. */
-	const selectTabFromHash = () => {
-		const tab = window.location.hash.slice(1);
-		selectedTab = tabs.includes(tab) ? tab : DEFAULT_TAB;
-	};
+	interface Tab {
+		value: string;
+		label: string;
+		content: Snippet;
+	}
 
-	/** Select a tab and put it in the URL, without adding a history entry. */
+	// The one list of tabs, which renders their triggers and panels. The first is the default.
+	const tabs: Tab[] = $derived([
+		{ value: 'sheet', label: 'Sheet', content: sheetTab },
+		{ value: 'profile', label: 'Profile', content: profileTab },
+		...(character.log ? [{ value: 'chronicle', label: 'Chronicle', content: chronicleTab }] : [])
+		// Planned: an Experience tab, once the API exports the experience log
+	]);
+	const defaultTab = $derived(tabs[0].value);
+
+	// This page's URL hash. `page.url` becomes the next page's URL before this one is torn down,
+	// so the hash only follows it while it's still this page; its hash isn't ours.
+	const { pathname, search } = untrack(() => page.url);
+	let lastHash = '';
+	const hash = $derived.by(() => {
+		if (page.url.pathname === pathname) lastHash = page.url.hash;
+		return lastHash;
+	});
+
+	// The selected tab is the hash (#profile, #chronicle); the default tab has none. The server
+	// never sees the hash, so a link to another tab renders the default tab, then switches.
+	const selectedTab = $derived.by(() => {
+		const tab = hash.slice(1);
+		return tabs.some(({ value }) => value === tab) ? tab : defaultTab;
+	});
+
+	/** The URL hash for a tab: none for the default tab. */
+	const hashFor = (tab: string): string => (tab === defaultTab ? '' : `#${tab}`);
+
+	/** Select a tab by putting it in the URL, without adding a history entry. */
 	const selectTab = (tab: string) => {
-		selectedTab = tab;
-		const { pathname, search } = window.location;
-		replaceState(tab === DEFAULT_TAB ? `${pathname}${search}` : `#${tab}`, {});
+		const url = tab === defaultTab ? `${pathname}${search}` : hashFor(tab);
+		// An aborted navigation (say, a quick second click) leaves the tab as the URL has it
+		goto(url, { replaceState: true, noScroll: true, keepFocus: true }).catch(() => {});
 	};
 
-	// The server never sees the hash, so the page renders the sheet and switches once mounted
-	onMount(selectTabFromHash);
+	// A hash that names no tab (or the default tab) shows the default tab, so drop it from the
+	// URL. Otherwise it would stay, and selecting the default tab couldn't clear it.
+	$effect(() => {
+		if (page.url.pathname === pathname && hash !== hashFor(selectedTab)) selectTab(selectedTab);
+	});
+
 	let copy: Character | null = null;
 	let editing = $state(false);
 
+	// Fresh data for the same character (such as a data refresh) replaces the copy. While it's
+	// being edited, the data waits: Cancel takes it, and Save keeps the edits instead.
+	let applied = untrack(() => initialCharacter);
+	$effect(() => {
+		const fresh = initialCharacter;
+		if (editing || fresh === applied) return;
+		applied = fresh;
+		character = untrack(() => $state.snapshot(fresh));
+	});
+
 	const enterEditMode = () => {
 		editing = true;
-		copy = structuredClone($state.snapshot(character));
+		copy = $state.snapshot(character);
 		newName = character.name;
 	};
 	const cancelEditing = () => {
 		editing = false;
-		character = copy!;
+		if (copy) character = copy;
 		copy = null;
 	};
 	const saveChanges = () => {
+		applied = initialCharacter; // Data that arrived while editing would undo the edits
 		editing = false;
 		copy = null;
 	};
@@ -67,8 +116,10 @@
 	const isValidCharName = (): boolean =>
 		0 < normalizedNewName.length && normalizedNewName.length <= 37;
 
+	// Only while editing: otherwise replacing the character (Cancel, fresh data) would get the last
+	// edited name written back over it
 	$effect(() => {
-		if (isValidCharName()) {
+		if (editing && isValidCharName()) {
 			character.name = normalizedNewName;
 			newName = normalizedNewName;
 		}
@@ -88,47 +139,41 @@
 	{backUrl}
 />
 
-<svelte:window onhashchange={selectTabFromHash} />
+{#snippet sheetTab()}
+	{#key character}
+		<CharacterSheet bind:character />
+	{/key}
+{/snippet}
+
+{#snippet profileTab()}
+	{#key character}
+		<CharProfile
+			name={character.name}
+			bind:profile={character.profile}
+			splat={character.splat}
+			{editing}
+		/>
+	{/key}
+{/snippet}
+
+{#snippet chronicleTab()}
+	{#if character.log}
+		<CharLog log={character.log} splat={character.splat} />
+	{/if}
+{/snippet}
 
 <Tabs value={selectedTab} onValueChange={(e) => selectTab(e.value)}>
 	<Tabs.List>
-		<Tabs.Trigger value="sheet">Sheet</Tabs.Trigger>
-		<Tabs.Trigger value="profile">Profile</Tabs.Trigger>
-		{#if character.log}
-			<Tabs.Trigger value="chronicle">Chronicle</Tabs.Trigger>
-		{/if}
-		<!--
-		<Tabs.Trigger value="experience">Experience</Tabs.Trigger>
-		-->
+		{#each tabs as tab (tab.value)}
+			<Tabs.Trigger value={tab.value}>{tab.label}</Tabs.Trigger>
+		{/each}
 		<Tabs.Indicator />
 	</Tabs.List>
-	<Tabs.Content value="profile">
-		{#key character}
-			<CharProfile
-				name={character.name}
-				bind:profile={character.profile}
-				splat={character.splat}
-				{editing}
-			/>
-		{/key}
-	</Tabs.Content>
-	<Tabs.Content value="sheet">
-		{#key character}
-			<CharacterSheet bind:character />
-		{/key}
-	</Tabs.Content>
-	{#if character.log}
-		<Tabs.Content value="chronicle">
-			<CharLog log={character.log} splat={character.splat} />
+	{#each tabs as tab (tab.value)}
+		<Tabs.Content value={tab.value}>
+			{@render tab.content()}
 		</Tabs.Content>
-	{/if}
-	<!--
-	<Tabs.Content value="experience">
-		{#key character}
-			Eventually
-		{/key}
-	</Tabs.Content>
-	-->
+	{/each}
 </Tabs>
 
 <!-- Mobile floating edit buttons; remove entire block to undo -->

@@ -9,7 +9,7 @@
 		Moon,
 		Scale
 	} from '@lucide/svelte';
-	import type { Component } from 'svelte';
+	import { onMount, type Component } from 'svelte';
 
 	import Popover from '$lib/components/Popover.svelte';
 	import TrackBox from '$lib/components/characters/sheets/components/damage/TrackBox.svelte';
@@ -106,17 +106,28 @@
 		}
 	];
 
-	/** Parse an API date. The database stores naive UTC, so a date without an offset is UTC. */
-	const parseDate = (date: string): Date =>
-		new Date(/(Z|[+-]\d{2}:?\d{2})$/.test(date) ? date : `${date}Z`);
-
-	/** Format an API date as a calendar date, such as "Nov 14, 2026". */
-	const formatDate = (date: string): string =>
-		new Intl.DateTimeFormat('en-US', { year: 'numeric', month: 'short', day: 'numeric' }).format(
-			parseDate(date)
-		);
-
+	const dateFormat = new Intl.DateTimeFormat('en-US', {
+		year: 'numeric',
+		month: 'short',
+		day: 'numeric'
+	});
 	const numberFormat = new Intl.NumberFormat('en-US');
+
+	// Dates are in the viewer's time zone, which the server doesn't know, so they're only
+	// formatted in the browser. Otherwise the page would keep the server's calendar day.
+	let mounted = $state(false);
+	onMount(() => (mounted = true));
+
+	/** Parse an API date. The database stores naive UTC, so a date-time without an offset is UTC. */
+	const parseDate = (date: string): Date => new Date(/T[^Z+-]*$/.test(date) ? `${date}Z` : date);
+
+	/** Format an API date as a calendar date, such as "Nov 14, 2026", or "unknown" if invalid.
+	 * It's empty until the page is in the browser. */
+	const formatDate = (date: string): string => {
+		if (!mounted) return '';
+		const parsed = parseDate(date);
+		return Number.isNaN(parsed.getTime()) ? 'unknown' : dateFormat.format(parsed);
+	};
 
 	const TRACKS: CharacterLogStat[] = [
 		'worst_health',
@@ -159,7 +170,8 @@
 </script>
 
 <div class="space-y-4">
-	<p class="text-surface-300 flex flex-wrap items-center gap-x-2">
+	<!-- Hidden until its dates are formatted in the browser, so it doesn't flash half-empty -->
+	<p class="text-surface-300 flex flex-wrap items-center gap-x-2" class:invisible={!mounted}>
 		<CalendarDays size={18} class="text-primary-500" aria-hidden="true" />
 		<span>Created <time datetime={log.created}>{formatDate(log.created)}</time></span>
 		{#if log.left}
@@ -173,11 +185,8 @@
 	<div class="-mb-4 columns-1 gap-4 sm:columns-2 lg:columns-3">
 		{#each groups as group (group.title)}
 			{@const id = `log-${group.title.toLowerCase().replace(/\s+/g, '-')}`}
-			<section
-				class="card variant-soft mb-4 break-inside-avoid space-y-2 p-4 shadow-lg"
-				aria-labelledby={id}
-			>
-				<header class="border-surface-300-600 flex items-center gap-2 border-b pb-2">
+			<section class="card mb-4 break-inside-avoid space-y-2 p-4 shadow-lg" aria-labelledby={id}>
+				<header class="border-surface-300-700 flex items-center gap-2 border-b pb-2">
 					<span class="text-primary-500"><group.icon size={18} /></span>
 					<h2 class="h6" {id}>{group.title}</h2>
 				</header>
@@ -207,7 +216,7 @@
 								<dd>
 									{#if track}
 										<div class="flex flex-wrap gap-1" role="img" aria-label={describeTrack(track)}>
-											{#each trackBoxes(track) as box, index (index)}
+											{#each trackBoxes(track) as box, boxIndex (boxIndex)}
 												<TrackBox value={box} />
 											{/each}
 										</div>
