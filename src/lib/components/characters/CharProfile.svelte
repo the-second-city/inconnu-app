@@ -35,7 +35,7 @@
 <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
 	<!-- Profile -->
 	<div
-		class="card variant-soft splatted top-4 self-start p-4 shadow-lg transition-all hover:shadow-xl sm:sticky"
+		class="card splatted top-4 self-start p-4 shadow-lg transition-all hover:shadow-xl sm:sticky"
 	>
 		<img
 			src={splatIcon}
@@ -46,7 +46,7 @@
 		<article class="space-y-6">
 			<!-- Description Section -->
 			<section class="space-y-2">
-				<header class="border-surface-300-600 flex items-center gap-2 border-b pb-2">
+				<header class="border-surface-300-700 flex items-center gap-2 border-b pb-2">
 					<span class="text-primary-500">
 						<Eye size={18} />
 					</span>
@@ -72,7 +72,7 @@
 
 			<!-- History Section -->
 			<section class="space-y-2">
-				<header class="border-surface-300-600 flex items-center gap-2 border-b pb-2">
+				<header class="border-surface-300-700 flex items-center gap-2 border-b pb-2">
 					<span class="text-primary-500">
 						<Skull size={18} />
 					</span>

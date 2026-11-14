@@ -70,7 +70,57 @@ export interface Character {
 	vitae?: number;
 	max_bp?: number;
 	blood_pool?: number;
+	log?: CharacterLog;
 }
+
+/**
+ * When the character was created and its owner left, and running counts of gameplay events.
+ * Mirrors the bot's `VCharLog`. Dates are ISO strings; ones read from the database have no
+ * offset but are UTC.
+ */
+export interface CharacterLog {
+	created: string;
+	left: string | null; // The owner left the server
+	deepest_degeneration: number; // Most Stains ever beyond Humanity's empty boxes
+	degenerations: number;
+	frenzy_resisted: number;
+	health_aggravated: number;
+	health_superficial: number;
+	hunger_gained: number;
+	hunger_slaked: number;
+	hunts: number;
+	remorse_checks: number;
+	remorse_failures: number;
+	remorse_successes: number;
+	rouse_checks: number;
+	rouse_failures: number;
+	rouse_successes: number;
+	stains_gained: number;
+	surges: number;
+	times_awakened: number;
+	times_blushed: number;
+	times_frenzied: number;
+	times_impaired: number; // Times going from unimpaired to impaired
+	times_mended: number; // Superficial and Aggravated healing
+	times_slaked: number;
+	willpower_aggravated: number;
+	willpower_superficial: number;
+	worst_health: string; // The Health track at its worst; empty if never damaged
+	worst_willpower: string; // Likewise for Willpower
+	incomplete_since: Partial<Record<CharacterLogStat, string>>; // Stats added after creation
+}
+
+/** The log's running counts. (`incomplete_since` is skipped, as its type refers to this one.) */
+type LogKey = Exclude<keyof CharacterLog, 'incomplete_since'>;
+export type CharacterLogCounter = {
+	[K in LogKey]: CharacterLog[K] extends number ? K : never;
+}[LogKey];
+
+/** The log's damage tracks at their worst. */
+export type CharacterLogTrack = 'worst_health' | 'worst_willpower';
+
+/** Every stat in the log: its counts and its worst tracks. */
+export type CharacterLogStat = CharacterLogCounter | CharacterLogTrack;
 
 export interface PublicCharacter {
 	id: string;
