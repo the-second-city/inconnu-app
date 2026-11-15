@@ -15,8 +15,8 @@
 
 <Card alignment="center" extraClasses="px-2 h-full justify-center">
 	<div class="grid grid-cols-[120px_1fr] gap-2">
-		<Tracker bind:character track="health" editing={true} />
-		<Tracker bind:character track="willpower" editing={true} />
-		<Humanity bind:character editing={true} />
+		<Tracker bind:character track="health" {editing} />
+		<Tracker bind:character track="willpower" {editing} />
+		<Humanity bind:character {editing} />
 	</div>
 </Card>
