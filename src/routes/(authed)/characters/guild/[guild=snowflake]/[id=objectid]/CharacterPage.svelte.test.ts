@@ -711,3 +711,85 @@ test('the notice opens once for each new version', async () => {
 	await rerender({ guild: GUILD, character: { ...fresh, health: '....//' } });
 	expect(await staleNotice()).toBeInTheDocument();
 });
+
+/** Press a key on the page, as a keyboard shortcut. */
+const press = (
+	key: string,
+	modifiers: { metaKey?: boolean; ctrlKey?: boolean } = {}
+): KeyboardEvent => {
+	const event = new KeyboardEvent('keydown', {
+		key,
+		bubbles: true,
+		cancelable: true,
+		...modifiers
+	});
+	document.body.dispatchEvent(event);
+	flushSync();
+	return event;
+};
+
+test.each([
+	['s', { metaKey: true }],
+	['s', { ctrlKey: true }],
+	['Enter', { metaKey: true }]
+])('%s with %o saves', async (key, modifiers) => {
+	const user = userEvent.setup();
+	renderPage();
+	await makeChange(user);
+
+	const event = press(key, modifiers);
+
+	expect(event.defaultPrevented).toBe(true);
+	expect(screen.queryByRole('textbox', { name: 'Character name' })).not.toBeInTheDocument();
+	expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('Nadiah');
+});
+
+test("⌘S without changes doesn't save, or let the browser save the page", async () => {
+	const user = userEvent.setup();
+	renderPage();
+	await user.click(editButton('Edit'));
+
+	const event = press('s', { metaKey: true });
+
+	expect(event.defaultPrevented).toBe(true);
+	expect(nameBox()).toBeInTheDocument();
+});
+
+test('shortcuts do nothing outside edit mode', () => {
+	renderPage();
+
+	expect(press('s', { metaKey: true }).defaultPrevented).toBe(false);
+	expect(press('Escape').defaultPrevented).toBe(false);
+});
+
+test('Escape cancels editing', async () => {
+	const user = userEvent.setup();
+	renderPage();
+	await makeChange(user);
+
+	press('Escape');
+
+	expect(screen.queryByRole('textbox', { name: 'Character name' })).not.toBeInTheDocument();
+	expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('Nadia');
+});
+
+test("Escape with a dialog open doesn't cancel editing", async () => {
+	const user = userEvent.setup();
+	const { rerender } = renderPage();
+	await makeChange(user);
+	await rerender({ guild: GUILD, character: { ...character(), name: 'Nadia Vasquez' } });
+	await staleNotice();
+
+	press('Escape');
+
+	expect(nameBox()).toHaveValue('Nadiah');
+});
+
+test('Save and Cancel name their shortcuts', async () => {
+	const user = userEvent.setup();
+	renderPage();
+	await user.click(editButton('Edit'));
+
+	expect(editButton('Save')).toHaveAttribute('aria-keyshortcuts', 'Meta+S Control+S');
+	expect(editButton('Cancel')).toHaveAttribute('aria-keyshortcuts', 'Escape');
+});

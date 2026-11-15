@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { untrack, type Snippet } from 'svelte';
+	import { onMount, untrack, type Snippet } from 'svelte';
 	import { fade } from 'svelte/transition';
 	import { Dialog, Tabs } from '@skeletonlabs/skeleton-svelte';
 	import { Ban, Check, Pencil } from '@lucide/svelte';
@@ -184,7 +184,35 @@
 		editing = false;
 		copy = null;
 	};
+
+	// Keyboard shortcuts while editing: ⌘/Ctrl+S or ⌘/Ctrl+Enter saves, Escape cancels. The
+	// modifier's name, for the buttons' tooltips, is only known in the browser.
+	let modKey = $state('Ctrl');
+	onMount(() => {
+		if (/Mac|iPhone|iPad/.test(navigator.userAgent)) modKey = '⌘';
+	});
+
+	/** Whether a popover or dialog is open, which Escape should close rather than cancelling.
+	 * Closed ones stay in the page, `hidden`. */
+	const layerOpen = (): boolean =>
+		document.querySelector('[role="dialog"]:not([hidden]), [role="alertdialog"]:not([hidden])') !==
+		null;
+
+	// Captured, so it runs before an open popover or dialog handles (and closes on) Escape
+	const handleShortcut = (e: KeyboardEvent) => {
+		if (!editing || e.isComposing) return;
+		const mod = e.metaKey || e.ctrlKey;
+		if (mod && (e.key === 's' || e.key === 'S' || e.key === 'Enter')) {
+			e.preventDefault(); // Not the browser's "save page", even when there's nothing to save
+			saveChanges();
+		} else if (e.key === 'Escape' && !mod && !layerOpen()) {
+			e.preventDefault();
+			cancelEditing();
+		}
+	};
 </script>
+
+<svelte:window onkeydowncapture={handleShortcut} />
 
 <svelte:head>
 	<title>{character.name} | Inconnu</title>
@@ -247,7 +275,12 @@
 			     should hold only tabs). The mobile ones float instead. -->
 			<div class="absolute top-0 right-0 hidden gap-2 sm:flex">
 				{#if editing}
-					<button class="btn preset-tonal-error" onclick={cancelEditing}>
+					<button
+						class="btn preset-tonal-error"
+						onclick={cancelEditing}
+						title="Cancel (Esc)"
+						aria-keyshortcuts="Escape"
+					>
 						<Ban size={18} />
 						<span>Cancel</span>
 					</button>
@@ -255,6 +288,8 @@
 						class="btn preset-filled-success-500"
 						onclick={saveChanges}
 						disabled={nameError !== null || !hasChanges}
+						title="Save ({modKey}S)"
+						aria-keyshortcuts="Meta+S Control+S"
 					>
 						<Check size={18} />
 						<span>Save</span>
