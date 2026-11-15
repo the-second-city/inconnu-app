@@ -1,5 +1,5 @@
 <script lang="ts">
-	let { size = 30, color = '#FF0000', strokeWidth = 10 } = $props();
+	let { size = 30, color = 'var(--color-red-500)', strokeWidth = 10 } = $props();
 </script>
 
 <svg
@@ -10,13 +10,21 @@
 	role="img"
 	aria-label="Aggravated damage"
 >
-	<rect x="5" y="5" width="90" height="90" fill="none" stroke={color} stroke-width={strokeWidth} />
+	<rect
+		x="5"
+		y="5"
+		width="90"
+		height="90"
+		fill="none"
+		style:stroke={color}
+		stroke-width={strokeWidth}
+	/>
 	<line
 		x1="0"
 		y1="0"
 		x2="100"
 		y2="100"
-		stroke={color}
+		style:stroke={color}
 		stroke-width={strokeWidth}
 		stroke-linecap="butt"
 	/>
@@ -25,16 +33,7 @@
 		y1="0"
 		x2="0"
 		y2="100"
-		stroke={color}
-		stroke-width={strokeWidth}
-		stroke-linecap="butt"
-	/>
-	<line
-		x1="50"
-		y1="0"
-		x2="50"
-		y2="100"
-		stroke={color}
+		style:stroke={color}
 		stroke-width={strokeWidth}
 		stroke-linecap="butt"
 	/>
