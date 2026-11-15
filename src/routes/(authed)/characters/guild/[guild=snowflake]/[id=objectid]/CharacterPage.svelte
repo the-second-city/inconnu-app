@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { untrack, type Snippet } from 'svelte';
+	import { fade } from 'svelte/transition';
 	import { Tabs } from '@skeletonlabs/skeleton-svelte';
 	import { Ban, Check, Pencil } from '@lucide/svelte';
 
@@ -9,6 +10,7 @@
 	import { page } from '$app/state';
 	import type { Pathname } from '$app/types';
 	import type { Character, Guild, OwnerData } from '$lib/types';
+	import ClientPortal from '$lib/components/ClientPortal.svelte';
 	import CharacterSheet from './CharacterSheet.svelte';
 	import CharHeader from '$lib/components/characters/CharHeader.svelte';
 	import CharProfile from '$lib/components/characters/CharProfile.svelte';
@@ -219,6 +221,19 @@
 	{/each}
 </Tabs>
 
+<!-- Edit mode tints the window's edge, so it's clear anywhere on the page. It's decoration only:
+     it ignores clicks, and sits under the floating edit buttons. Portaled to <body>, as the page's
+     own spacing (margins between siblings) would otherwise lift its bottom edge. -->
+{#if editing}
+	<ClientPortal>
+		<div
+			class="edit-edge pointer-events-none fixed inset-0 z-30"
+			aria-hidden="true"
+			transition:fade={{ duration: 150 }}
+		></div>
+	</ClientPortal>
+{/if}
+
 {#if editable}
 	<!-- Mobile floating edit buttons -->
 	<div class="fixed right-6 bottom-6 z-40 sm:hidden">
@@ -253,3 +268,10 @@
 		</div>
 	</div>
 {/if}
+
+<style>
+	.edit-edge {
+		/* A glow only, no hard line: a line would be clipped by rounded window corners */
+		box-shadow: inset 0 0 48px color-mix(in oklab, var(--color-secondary-500) 75%, transparent);
+	}
+</style>
