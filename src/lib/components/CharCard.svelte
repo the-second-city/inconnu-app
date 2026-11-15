@@ -46,7 +46,7 @@
 			/>
 		{/if}
 	</header>
-	<article class="space-y-1 p-3">
+	<article class="space-y-1 p-3 wrap-anywhere">
 		<div>
 			<h3 class="h3">{data.character.name}</h3>
 		</div>
