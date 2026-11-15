@@ -9,13 +9,24 @@ import CharacterPage from './CharacterPage.svelte';
 
 // SvelteKit's router doesn't run in tests: `page` is reactive state, which `goto` updates
 const goto = vi.hoisted(() => vi.fn());
+// The page's beforeNavigate callback, so tests can call it as SvelteKit would
+const navigation = vi.hoisted(() => ({ before: null as ((nav: unknown) => void) | null }));
 vi.mock('$app/state', () => import('$lib/testing/page.svelte'));
 vi.mock('$app/paths', () => ({ resolve: (route: string) => route }));
-vi.mock('$app/navigation', () => ({ goto }));
+vi.mock('$app/navigation', () => ({
+	goto,
+	beforeNavigate: (callback: (nav: unknown) => void) => {
+		navigation.before = callback;
+	}
+}));
 
 beforeEach(() => {
 	navigate('http://localhost/');
 	goto.mockReset().mockImplementation(async (url: string) => navigate(url));
+	navigation.before = null;
+	vi.restoreAllMocks();
+	// jsdom has no confirm(); agree to discarding edits unless a test says otherwise
+	vi.spyOn(window, 'confirm').mockReturnValue(true);
 });
 
 const GUILD: Guild = { id: '111', name: 'Camarilla of Chicago', icon: null, count: null };
@@ -542,4 +553,93 @@ test.each([
 	await edit(user);
 
 	expect(editButton('Save')).toBeDisabled();
+});
+
+/** Navigate away as SvelteKit would, through the page's beforeNavigate. Returns whether the
+ * navigation was cancelled. */
+const leave = (type: string, toPath: string | null = '/characters'): boolean => {
+	const cancel = vi.fn();
+	navigation.before?.({
+		type,
+		from: { url: new URL('http://localhost/characters/guild/111/id') },
+		to: toPath === null ? null : { url: new URL(`http://localhost${toPath}`) },
+		cancel
+	});
+	return cancel.mock.calls.length > 0;
+};
+
+/** Enter edit mode and make an unsaved change. */
+const makeChange = async (user: ReturnType<typeof userEvent.setup>): Promise<void> => {
+	await user.click(editButton('Edit'));
+	await user.type(nameBox(), 'h');
+};
+
+test('cancelling with unsaved changes asks first, and keeps editing if declined', async () => {
+	const user = userEvent.setup();
+	const confirm = vi.spyOn(window, 'confirm').mockReturnValue(false);
+	renderPage();
+	await makeChange(user);
+
+	await user.click(editButton('Cancel'));
+
+	expect(confirm).toHaveBeenCalledWith('Discard your unsaved changes?');
+	expect(nameBox()).toHaveValue('Nadiah');
+});
+
+test('cancelling with unsaved changes discards them once confirmed', async () => {
+	const user = userEvent.setup();
+	vi.spyOn(window, 'confirm').mockReturnValue(true);
+	renderPage();
+	await makeChange(user);
+
+	await user.click(editButton('Cancel'));
+
+	expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('Nadia');
+	expect(screen.queryByRole('textbox', { name: 'Character name' })).not.toBeInTheDocument();
+});
+
+test("cancelling without changes doesn't ask", async () => {
+	const user = userEvent.setup();
+	const confirm = vi.spyOn(window, 'confirm');
+	renderPage();
+
+	await user.click(editButton('Edit'));
+	await user.click(editButton('Cancel'));
+
+	expect(confirm).not.toHaveBeenCalled();
+});
+
+test.each([
+	[false, true],
+	[true, false]
+])('leaving with unsaved changes asks; confirming %s cancels: %s', async (agree, cancelled) => {
+	const user = userEvent.setup();
+	vi.spyOn(window, 'confirm').mockReturnValue(agree);
+	renderPage();
+	await makeChange(user);
+
+	expect(leave('link')).toBe(cancelled);
+});
+
+test("closing the tab with unsaved changes leaves it to the browser's prompt", async () => {
+	const user = userEvent.setup();
+	const confirm = vi.spyOn(window, 'confirm');
+	renderPage();
+	await makeChange(user);
+
+	expect(leave('leave', null)).toBe(true);
+	expect(confirm).not.toHaveBeenCalled();
+});
+
+test("switching tabs, or leaving without changes, doesn't ask", async () => {
+	const user = userEvent.setup();
+	const confirm = vi.spyOn(window, 'confirm');
+	renderPage();
+
+	await user.click(editButton('Edit'));
+	expect(leave('link')).toBe(false);
+	await user.type(nameBox(), 'h');
+	expect(leave('goto', '/characters/guild/111/id')).toBe(false);
+
+	expect(confirm).not.toHaveBeenCalled();
 });

@@ -6,7 +6,7 @@
 
 	import { characterNameError, normalize } from '$lib';
 
-	import { goto } from '$app/navigation';
+	import { beforeNavigate, goto } from '$app/navigation';
 	import { page } from '$app/state';
 	import type { Pathname } from '$app/types';
 	import type { Character, Guild, OwnerData } from '$lib/types';
@@ -131,7 +131,19 @@
 		// Three conviction slots to fill in, like the wizard's. Cancel restores the original list.
 		character.convictions = [...(character.convictions ?? []), '', '', ''].slice(0, 3);
 	};
+	/** Ask before discarding unsaved edits. True when there are none, or the user agrees. */
+	const confirmDiscard = (): boolean => !hasChanges || confirm('Discard your unsaved changes?');
+
+	// Leaving the page with unsaved edits asks first. Switching tabs (a hash change on this page)
+	// isn't leaving. For closing the tab, reloading, or leaving the site ("leave"), cancelling has
+	// the browser show its own prompt, as pages can't show theirs there.
+	beforeNavigate(({ type, from, to, cancel }) => {
+		if (!hasChanges || (to && from && to.url.pathname === from.url.pathname)) return;
+		if (type === 'leave' || !confirmDiscard()) cancel();
+	});
+
 	const cancelEditing = () => {
+		if (!confirmDiscard()) return;
 		editing = false;
 		if (copy) character = copy;
 		copy = null;

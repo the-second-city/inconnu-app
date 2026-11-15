@@ -14,7 +14,7 @@ vi.mock('$app/paths', () => ({
 	resolve: (route: string, params: Record<string, string> = {}) =>
 		route.replace(/\[(\w+)(=\w+)?\]/g, (_, name: string) => params[name])
 }));
-vi.mock('$app/navigation', () => ({ goto: vi.fn(), invalidate }));
+vi.mock('$app/navigation', () => ({ goto: vi.fn(), invalidate, beforeNavigate: () => {} }));
 // EventSource doesn't exist in jsdom; `liveUpdates.test.ts` tests the watcher itself
 vi.mock('$lib/liveUpdates', () => ({ CHARACTER_DEPENDENCY: 'app:character', watchCharacter }));
 
