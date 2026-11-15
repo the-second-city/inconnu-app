@@ -163,6 +163,7 @@ test('new data after an edit session keeps its new name', async () => {
 	const user = userEvent.setup();
 	const { rerender } = renderPage();
 	await user.click(editButton('Edit'));
+	await user.type(nameBox(), 'h');
 	await user.click(editButton('Save'));
 
 	// Renamed elsewhere, such as in Discord
@@ -413,7 +414,7 @@ test('an invalid name shows why, and blocks saving', async () => {
 	renderPage();
 
 	await user.click(editButton('Edit'));
-	await user.type(nameBox(), '!');
+	await user.type(nameBox(), 'h!');
 
 	expect(nameBox()).toHaveAccessibleDescription(
 		'Name can only contain letters, numbers, spaces, hyphens, underscores, and apostrophes'
@@ -493,4 +494,52 @@ test('cancelling restores the convictions', async () => {
 			.getAllByRole('listitem')
 			.map((item) => item.textContent)
 	).toEqual(['Protect the weak']);
+});
+
+test('Save is disabled until something changes', async () => {
+	const user = userEvent.setup();
+	renderPage();
+
+	await user.click(editButton('Edit'));
+	expect(editButton('Save')).toBeDisabled();
+
+	await user.type(nameBox(), 'h');
+	expect(editButton('Save')).toBeEnabled();
+});
+
+test('undoing a change disables Save again', async () => {
+	const user = userEvent.setup();
+	renderPage();
+	await user.click(screen.getByRole('tab', { name: 'Profile' }));
+
+	await user.click(editButton('Edit'));
+	await user.type(descriptionBox(), '!');
+	expect(editButton('Save')).toBeEnabled();
+	await user.type(descriptionBox(), '{Backspace}');
+
+	expect(editButton('Save')).toBeDisabled();
+});
+
+test.each([
+	[
+		'extra spaces in the name',
+		async (user: ReturnType<typeof userEvent.setup>) => {
+			await user.type(nameBox(), '  ');
+		}
+	],
+	[
+		'a blank conviction',
+		async (user: ReturnType<typeof userEvent.setup>) => {
+			await user.click(screen.getByRole('tab', { name: 'Profile' }));
+			await user.type(convictionBoxes()[2], '   ');
+		}
+	]
+])("%s isn't a change", async (_, edit) => {
+	const user = userEvent.setup();
+	renderPage({ ...character(), convictions: ['Protect the weak'] });
+
+	await user.click(editButton('Edit'));
+	await edit(user);
+
+	expect(editButton('Save')).toBeDisabled();
 });

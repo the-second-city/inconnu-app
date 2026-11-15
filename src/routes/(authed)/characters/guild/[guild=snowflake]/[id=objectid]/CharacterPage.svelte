@@ -104,9 +104,29 @@
 		character = untrack(() => $state.snapshot(fresh));
 	});
 
+	// The name being edited. It's only written to the character on Save, as normalizing it while
+	// typing would strip the space before the next word.
+	let newName = $state('');
+	const normalizedNewName = $derived(normalize(newName));
+	const nameError = $derived(editing ? characterNameError(normalizedNewName) : null);
+
+	/** A character as Save would store it, for telling whether anything changed: the name and
+	 * convictions normalized, and blank convictions (such as edit mode's empty slots) dropped. */
+	const comparable = (char: Character, name: string): string =>
+		JSON.stringify({
+			...$state.snapshot(char),
+			name: normalize(name),
+			convictions: (char.convictions ?? []).map(normalize).filter(Boolean)
+		});
+
+	// The character when editing began, to compare the edits against
+	let baseline = $state('');
+	const hasChanges = $derived(editing && comparable(character, newName) !== baseline);
+
 	const enterEditMode = () => {
 		editing = true;
 		copy = $state.snapshot(character);
+		baseline = comparable(copy, copy.name);
 		newName = character.name;
 		// Three conviction slots to fill in, like the wizard's. Cancel restores the original list.
 		character.convictions = [...(character.convictions ?? []), '', '', ''].slice(0, 3);
@@ -117,19 +137,13 @@
 		copy = null;
 	};
 	const saveChanges = () => {
-		if (nameError) return;
+		if (nameError || !hasChanges) return;
 		character.name = normalizedNewName;
 		character.convictions = character.convictions?.map(normalize);
 		applied = initialCharacter; // Data that arrived while editing would undo the edits
 		editing = false;
 		copy = null;
 	};
-
-	// The name being edited. It's only written to the character on Save, as normalizing it while
-	// typing would strip the space before the next word.
-	let newName = $state('');
-	const normalizedNewName = $derived(normalize(newName));
-	const nameError = $derived(editing ? characterNameError(normalizedNewName) : null);
 </script>
 
 <svelte:head>
@@ -200,7 +214,7 @@
 					<button
 						class="btn preset-filled-success-500"
 						onclick={saveChanges}
-						disabled={nameError !== null}
+						disabled={nameError !== null || !hasChanges}
 					>
 						<Check size={18} />
 						<span>Save</span>
@@ -250,7 +264,7 @@
 					<button
 						class="from-success-400 to-success-600 border-surface-50/20 hover:shadow-success-500/50 relative flex aspect-square size-14 items-center justify-center overflow-hidden !rounded-full border-2 bg-gradient-to-br text-white shadow-xl transition-all duration-300 ease-out hover:scale-110 active:scale-95"
 						onclick={saveChanges}
-						disabled={nameError !== null}
+						disabled={nameError !== null || !hasChanges}
 						aria-label="Save"
 					>
 						<Check color="#000" strokeWidth={3} class="drop-shadow-md" size={24} />
