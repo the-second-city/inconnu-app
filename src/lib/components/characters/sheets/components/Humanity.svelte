@@ -16,6 +16,10 @@
 	let { character = $bindable(), editing }: ComponentProps = $props();
 
 	let showControls = $state(false);
+	// So the controls don't reopen by themselves when editing starts again
+	$effect(() => {
+		if (!editing) showControls = false;
+	});
 
 	const totalBoxes = 10;
 
@@ -59,68 +63,69 @@
 
 Humanity
 
-<Popover bind:open={showControls} arrow>
-	{#snippet trigger()}
-		<div class="flex flex-wrap items-center gap-2">
-			{#each Array(boxStates.filled), i (i)}
-				<Filled size={20} />
-			{/each}
-			{#each Array(boxStates.empty), i (i)}
-				<Empty size={20} />
-			{/each}
-			{#each Array(boxStates.degeneration), i (i)}
-				<Degeneration size={20} />
-			{/each}
-			{#each Array(boxStates.stains), i (i)}
-				<Stain size={20} />
-			{/each}
+{#snippet boxes()}
+	<div class="flex flex-wrap items-center gap-2">
+		{#each Array(boxStates.filled), i (i)}
+			<Filled size={20} />
+		{/each}
+		{#each Array(boxStates.empty), i (i)}
+			<Empty size={20} />
+		{/each}
+		{#each Array(boxStates.degeneration), i (i)}
+			<Degeneration size={20} />
+		{/each}
+		{#each Array(boxStates.stains), i (i)}
+			<Stain size={20} />
+		{/each}
+	</div>
+{/snippet}
+
+{#snippet controls()}
+	<div class="flex flex-col gap-2">
+		<div class="text-md text-center uppercase">Humanity</div>
+		<div class="flex items-center justify-between gap-3">
+			<button
+				class="btn preset-tonal-surface"
+				disabled={humanity <= 0}
+				onclick={decHumanity}
+				aria-label="Decrease Humanity"
+			>
+				-
+			</button>
+			Rating
+			<button
+				class="btn preset-tonal-surface"
+				disabled={humanity >= 10}
+				onclick={incHumanity}
+				aria-label="Increase Humanity"
+			>
+				+
+			</button>
 		</div>
-	{/snippet}
-	{#snippet content()}
-		{#if !editing}
-			<p>Click "Edit" above to enable controls.</p>
-		{:else}
-			<div class="flex flex-col gap-2">
-				<div class="text-md text-center uppercase">Humanity</div>
-				<div class="flex items-center justify-between gap-3">
-					<button
-						class="btn preset-tonal-surface"
-						disabled={humanity <= 0}
-						onclick={decHumanity}
-						aria-label="Decrease Humanity"
-					>
-						-
-					</button>
-					Rating
-					<button
-						class="btn preset-tonal-surface"
-						disabled={humanity >= 10}
-						onclick={incHumanity}
-						aria-label="Increase Humanity"
-					>
-						+
-					</button>
-				</div>
-				<div class="flex items-center justify-between gap-3">
-					<button
-						class="btn preset-tonal-surface"
-						disabled={stains <= 0}
-						onclick={decStains}
-						aria-label="Decrease Stains"
-					>
-						-
-					</button>
-					Stains
-					<button
-						class="btn preset-tonal-surface"
-						disabled={stains >= 10}
-						onclick={incStains}
-						aria-label="Increase Stains"
-					>
-						+
-					</button>
-				</div>
-			</div>
-		{/if}
-	{/snippet}
-</Popover>
+		<div class="flex items-center justify-between gap-3">
+			<button
+				class="btn preset-tonal-surface"
+				disabled={stains <= 0}
+				onclick={decStains}
+				aria-label="Decrease Stains"
+			>
+				-
+			</button>
+			Stains
+			<button
+				class="btn preset-tonal-surface"
+				disabled={stains >= 10}
+				onclick={incStains}
+				aria-label="Increase Stains"
+			>
+				+
+			</button>
+		</div>
+	</div>
+{/snippet}
+
+{#if editing}
+	<Popover bind:open={showControls} trigger={boxes} content={controls} arrow />
+{:else}
+	{@render boxes()}
+{/if}

@@ -72,13 +72,26 @@ const openControls = async (user: ReturnType<typeof userEvent.setup>) => {
 	await user.click(screen.getByRole('button', { name: /^(Healthy|Superficial|Aggravated)/ }));
 };
 
-test('clicking the track explains how to edit, when not editing', async () => {
-	const user = userEvent.setup();
+test('the boxes are only a button while editing', () => {
 	renderTrack('.....', 'health', false);
 
-	await openControls(user);
+	expect(screen.getAllByRole('img').length).toBeGreaterThan(0);
+	expect(screen.queryByRole('button')).not.toBeInTheDocument();
+});
 
-	expect(await screen.findByText('Click "Edit" above to enable controls.')).toBeInTheDocument();
+test('the controls stay closed when editing starts again', async () => {
+	const user = userEvent.setup();
+	const { rerender } = render(Tracker, {
+		character: character('.....'),
+		track: 'health',
+		editing: true
+	});
+	await openControls(user);
+	expect(await screen.findByRole('button', { name: 'Increase Superficial' })).toBeInTheDocument();
+
+	await rerender({ editing: false });
+	await rerender({ editing: true });
+
 	expect(screen.queryByRole('button', { name: 'Increase Superficial' })).not.toBeInTheDocument();
 });
 

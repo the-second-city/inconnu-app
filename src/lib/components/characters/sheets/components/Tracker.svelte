@@ -19,6 +19,10 @@
 
 	let trackLabel = $derived(track.charAt(0).toUpperCase() + track.slice(1));
 	let showControls = $state(false);
+	// So the controls don't reopen by themselves when editing starts again
+	$effect(() => {
+		if (!editing) showControls = false;
+	});
 
 	// Edits happen on a local copy, which is written back to the character
 	let trackArray = $state(untrack(() => [...character[track]])) as DamageSymbol[];
@@ -78,63 +82,64 @@
 
 {trackLabel}
 
-<Popover bind:open={showControls} arrow>
-	{#snippet trigger()}
-		<div class="flex flex-wrap items-center gap-2">
-			{#each [...Array(trackArray.length).keys()].reverse() as index (index)}
-				<TrackBox value={trackArray[index]} />
-			{/each}
-		</div>
-	{/snippet}
-	{#snippet content()}
-		{#if !editing}
-			<p>Click "Edit" above to enable controls.</p>
-		{:else}
-			<div class="flex flex-col gap-2">
-				<div class="text-md text-center uppercase">{trackLabel}</div>
-				{#each levels as level (level.symbol)}
-					<div class="flex items-center justify-between gap-3">
-						<button
-							class="btn preset-tonal-surface"
-							disabled={!level.dec}
-							onclick={() => adjustTrack(level.symbol, -1)}
-							aria-label="Decrease {level.title}"
-						>
-							-
-						</button>
-						{level.title}
-						<button
-							class="btn preset-tonal-surface"
-							disabled={!level.inc}
-							onclick={() => adjustTrack(level.symbol, 1)}
-							aria-label="Increase {level.title}"
-						>
-							+
-						</button>
-					</div>
-				{/each}
+{#snippet boxes()}
+	<div class="flex flex-wrap items-center gap-2">
+		{#each [...Array(trackArray.length).keys()].reverse() as index (index)}
+			<TrackBox value={trackArray[index]} />
+		{/each}
+	</div>
+{/snippet}
 
-				<hr class="hr" />
-				<div class="flex items-center justify-between gap-3">
-					<button
-						class="btn preset-tonal-surface"
-						onclick={decBoxes}
-						disabled={trackArray.length == 1}
-						aria-label="Decrease Boxes"
-					>
-						-
-					</button>
-					Boxes
-					<button
-						class="btn preset-tonal-surface"
-						onclick={incBoxes}
-						disabled={trackArray.length == 15}
-						aria-label="Increase Boxes"
-					>
-						+
-					</button>
-				</div>
+{#snippet controls()}
+	<div class="flex flex-col gap-2">
+		<div class="text-md text-center uppercase">{trackLabel}</div>
+		{#each levels as level (level.symbol)}
+			<div class="flex items-center justify-between gap-3">
+				<button
+					class="btn preset-tonal-surface"
+					disabled={!level.dec}
+					onclick={() => adjustTrack(level.symbol, -1)}
+					aria-label="Decrease {level.title}"
+				>
+					-
+				</button>
+				{level.title}
+				<button
+					class="btn preset-tonal-surface"
+					disabled={!level.inc}
+					onclick={() => adjustTrack(level.symbol, 1)}
+					aria-label="Increase {level.title}"
+				>
+					+
+				</button>
 			</div>
-		{/if}
-	{/snippet}
-</Popover>
+		{/each}
+
+		<hr class="hr" />
+		<div class="flex items-center justify-between gap-3">
+			<button
+				class="btn preset-tonal-surface"
+				onclick={decBoxes}
+				disabled={trackArray.length == 1}
+				aria-label="Decrease Boxes"
+			>
+				-
+			</button>
+			Boxes
+			<button
+				class="btn preset-tonal-surface"
+				onclick={incBoxes}
+				disabled={trackArray.length == 15}
+				aria-label="Increase Boxes"
+			>
+				+
+			</button>
+		</div>
+	</div>
+{/snippet}
+
+{#if editing}
+	<Popover bind:open={showControls} trigger={boxes} content={controls} arrow />
+{:else}
+	{@render boxes()}
+{/if}
