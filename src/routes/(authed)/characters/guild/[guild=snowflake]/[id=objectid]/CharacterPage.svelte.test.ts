@@ -203,6 +203,7 @@ test('new data that arrives while editing applies once editing ends', async () =
 
 	await rerender({ guild: GUILD, character: { ...character(), name: 'Nadia Vasquez' } });
 	expect(screen.getByRole('heading', { name: 'Nadia' })).toBeInTheDocument();
+	await user.click(await screen.findByRole('button', { name: 'Proceed Anyway' }));
 
 	await user.click(editButton('Cancel'));
 
@@ -642,4 +643,71 @@ test("switching tabs, or leaving without changes, doesn't ask", async () => {
 	expect(leave('goto', '/characters/guild/111/id')).toBe(false);
 
 	expect(confirm).not.toHaveBeenCalled();
+});
+
+/** The notice that the character changed while editing, once it opens. */
+const staleNotice = (): Promise<HTMLElement> => screen.findByRole('alertdialog');
+
+test('new data that changes editable fields while editing opens a notice', async () => {
+	const user = userEvent.setup();
+	const { rerender } = renderPage();
+	await user.click(editButton('Edit'));
+
+	await rerender({ guild: GUILD, character: { ...character(), health: '....//' } });
+
+	expect(
+		within(await staleNotice()).getByText(/changed while you were editing/)
+	).toBeInTheDocument();
+});
+
+test("new data that changes only the Chronicle log doesn't open the notice", async () => {
+	const user = userEvent.setup();
+	const { rerender } = renderPage();
+	await user.click(editButton('Edit'));
+
+	const log = { created: '2024-01-01T00:00:00', left: null } as unknown as Character['log'];
+	await rerender({ guild: GUILD, character: { ...character(), log } });
+
+	expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument();
+});
+
+test("the notice's Reload takes the new data, discarding the edits", async () => {
+	const user = userEvent.setup();
+	const { rerender } = renderPage();
+	await makeChange(user);
+
+	await rerender({ guild: GUILD, character: { ...character(), name: 'Nadia Vasquez' } });
+	await user.click(within(await staleNotice()).getByRole('button', { name: 'Reload' }));
+
+	expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument();
+	expect(screen.queryByRole('textbox', { name: 'Character name' })).not.toBeInTheDocument();
+	expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('Nadia Vasquez');
+});
+
+test("the notice's Proceed Anyway keeps editing, and Save keeps the edits", async () => {
+	const user = userEvent.setup();
+	const { rerender } = renderPage();
+	await makeChange(user);
+
+	await rerender({ guild: GUILD, character: { ...character(), name: 'Nadia Vasquez' } });
+	await user.click(within(await staleNotice()).getByRole('button', { name: 'Proceed Anyway' }));
+	expect(nameBox()).toHaveValue('Nadiah');
+	await user.click(editButton('Save'));
+
+	expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('Nadiah');
+});
+
+test('the notice opens once for each new version', async () => {
+	const user = userEvent.setup();
+	const fresh = { ...character(), name: 'Nadia Vasquez' };
+	const { rerender } = renderPage();
+	await user.click(editButton('Edit'));
+
+	await rerender({ guild: GUILD, character: fresh });
+	await user.click(within(await staleNotice()).getByRole('button', { name: 'Proceed Anyway' }));
+	await rerender({ guild: GUILD, character: fresh });
+	expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument();
+
+	await rerender({ guild: GUILD, character: { ...fresh, health: '....//' } });
+	expect(await staleNotice()).toBeInTheDocument();
 });

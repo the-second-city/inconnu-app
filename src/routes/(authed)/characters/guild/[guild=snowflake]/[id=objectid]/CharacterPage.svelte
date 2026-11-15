@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { untrack, type Snippet } from 'svelte';
 	import { fade } from 'svelte/transition';
-	import { Tabs } from '@skeletonlabs/skeleton-svelte';
+	import { Dialog, Tabs } from '@skeletonlabs/skeleton-svelte';
 	import { Ban, Check, Pencil } from '@lucide/svelte';
 
 	import { characterNameError, normalize } from '$lib';
@@ -111,17 +111,45 @@
 	const nameError = $derived(editing ? characterNameError(normalizedNewName) : null);
 
 	/** A character as Save would store it, for telling whether anything changed: the name and
-	 * convictions normalized, and blank convictions (such as edit mode's empty slots) dropped. */
-	const comparable = (char: Character, name: string): string =>
-		JSON.stringify({
+	 * convictions normalized, blank convictions (such as edit mode's empty slots) dropped, and the
+	 * fields edit mode can't change (the Chronicle log, which each roll updates, and experience)
+	 * left out. */
+	const comparable = (char: Character, name: string): string => {
+		const editable: Partial<Character> = {
 			...$state.snapshot(char),
 			name: normalize(name),
 			convictions: (char.convictions ?? []).map(normalize).filter(Boolean)
-		});
+		};
+		delete editable.log;
+		delete editable.experience;
+		return JSON.stringify(editable);
+	};
 
 	// The character when editing began, to compare the edits against
 	let baseline = $state('');
 	const hasChanges = $derived(editing && comparable(character, newName) !== baseline);
+
+	// Fresh data that changes what edit mode can (say, damage taken in Discord) while editing asks
+	// whether to reload it, discarding the edits, or keep editing. Each version asks once.
+	let showStaleNotice = $state(false);
+	let noticed: Character | null = null;
+	$effect(() => {
+		const fresh = initialCharacter;
+		if (!editing || fresh === applied || fresh === noticed) return;
+		noticed = fresh;
+		if (untrack(() => comparable(fresh, fresh.name) !== comparable(applied, applied.name))) {
+			showStaleNotice = true;
+		}
+	});
+
+	/** Take the fresh data, leaving edit mode and discarding the edits. */
+	const reloadFresh = () => {
+		showStaleNotice = false;
+		editing = false;
+		copy = null;
+		applied = initialCharacter;
+		character = $state.snapshot(initialCharacter);
+	};
 
 	const enterEditMode = () => {
 		editing = true;
@@ -259,6 +287,42 @@
 		></div>
 	</ClientPortal>
 {/if}
+
+<!-- The character changed while it was being edited -->
+<Dialog
+	role="alertdialog"
+	open={showStaleNotice}
+	onOpenChange={(e) => (showStaleNotice = e.open)}
+	closeOnInteractOutside={false}
+>
+	<ClientPortal>
+		<Dialog.Backdrop class="bg-surface-50-950/50 fixed inset-0 z-50" />
+		<Dialog.Positioner class="fixed inset-0 z-50 flex items-center justify-center p-4">
+			<Dialog.Content class="card bg-surface-100-900 w-full max-w-md space-y-4 p-6 shadow-xl">
+				<Dialog.Title class="h5">{character.name} was updated</Dialog.Title>
+				<Dialog.Description class="space-y-2">
+					<p>
+						This character changed while you were editing, perhaps in Discord. Reload to see the
+						changes, which discards your edits.
+					</p>
+					<p>If you proceed anyway, saving will overwrite those changes.</p>
+				</Dialog.Description>
+				<div class="flex justify-end gap-2">
+					<button
+						type="button"
+						class="btn preset-tonal-surface"
+						onclick={() => (showStaleNotice = false)}
+					>
+						Proceed Anyway
+					</button>
+					<button type="button" class="btn preset-filled-primary-500" onclick={reloadFresh}>
+						Reload
+					</button>
+				</div>
+			</Dialog.Content>
+		</Dialog.Positioner>
+	</ClientPortal>
+</Dialog>
 
 {#if editable}
 	<!-- Mobile floating edit buttons -->
