@@ -92,6 +92,11 @@ test('arrow keys move between tabs', async () => {
 	await waitFor(() => expect(screen.getByRole('tab', { name: 'Profile' })).toHaveFocus());
 });
 
+/** An edit button (Edit, Save, Cancel). There's a set for desktop and one for mobile, each hidden
+ * by CSS at the other's widths; jsdom has no CSS, so this takes the first, the desktop one. */
+const editButton = (name: 'Edit' | 'Save' | 'Cancel'): HTMLElement =>
+	screen.getAllByRole('button', { name })[0];
+
 /** The profile description's text box, while editing. */
 const descriptionBox = (): HTMLElement => within(panel()).getAllByRole('textbox')[0];
 
@@ -106,12 +111,12 @@ test('editing the profile, then cancelling, restores it', async () => {
 	renderPage();
 	await user.click(screen.getByRole('tab', { name: 'Profile' }));
 
-	await user.click(screen.getByRole('button', { name: 'Edit' }));
+	await user.click(editButton('Edit'));
 	await user.clear(descriptionBox());
 	await user.type(descriptionBox(), 'Short.');
 	expect(descriptionBox()).toHaveValue('Short.');
 
-	await user.click(screen.getByRole('button', { name: 'Cancel' }));
+	await user.click(editButton('Cancel'));
 
 	expect(within(panel()).getByText('Tall and pale.')).toBeInTheDocument();
 	expect(within(panel()).queryByText('Short.')).not.toBeInTheDocument();
@@ -122,9 +127,9 @@ test('saving keeps the edits', async () => {
 	renderPage();
 	await user.click(screen.getByRole('tab', { name: 'Profile' }));
 
-	await user.click(screen.getByRole('button', { name: 'Edit' }));
+	await user.click(editButton('Edit'));
 	await user.type(descriptionBox(), ' Scarred.');
-	await user.click(screen.getByRole('button', { name: 'Save' }));
+	await user.click(editButton('Save'));
 
 	expect(within(panel()).getByText('Tall and pale. Scarred.')).toBeInTheDocument();
 	expect(within(panel()).queryByRole('textbox')).not.toBeInTheDocument();
@@ -134,13 +139,13 @@ test('edits after a cancel still apply', async () => {
 	const user = userEvent.setup();
 	renderPage();
 	await user.click(screen.getByRole('tab', { name: 'Profile' }));
-	await user.click(screen.getByRole('button', { name: 'Edit' }));
-	await user.click(screen.getByRole('button', { name: 'Cancel' }));
+	await user.click(editButton('Edit'));
+	await user.click(editButton('Cancel'));
 
 	// Cancelling restores a copy, which must be as reactive as the original
-	await user.click(screen.getByRole('button', { name: 'Edit' }));
+	await user.click(editButton('Edit'));
 	await user.type(descriptionBox(), ' Scarred.');
-	await user.click(screen.getByRole('button', { name: 'Save' }));
+	await user.click(editButton('Save'));
 
 	expect(within(panel()).getByText('Tall and pale. Scarred.')).toBeInTheDocument();
 });
@@ -157,8 +162,8 @@ test('new data for the same character shows when not editing', async () => {
 test('new data after an edit session keeps its new name', async () => {
 	const user = userEvent.setup();
 	const { rerender } = renderPage();
-	await user.click(screen.getByRole('button', { name: 'Edit' }));
-	await user.click(screen.getByRole('button', { name: 'Save' }));
+	await user.click(editButton('Edit'));
+	await user.click(editButton('Save'));
 
 	// Renamed elsewhere, such as in Discord
 	await rerender({ guild: GUILD, character: { ...character(), name: 'Nadia Vasquez' } });
@@ -170,11 +175,11 @@ test('saving keeps the edits even if new data arrived while editing', async () =
 	const user = userEvent.setup();
 	const { rerender } = renderPage();
 	await user.click(screen.getByRole('tab', { name: 'Profile' }));
-	await user.click(screen.getByRole('button', { name: 'Edit' }));
+	await user.click(editButton('Edit'));
 	await user.type(descriptionBox(), ' Scarred.');
 
 	await rerender({ guild: GUILD, character: character() });
-	await user.click(screen.getByRole('button', { name: 'Save' }));
+	await user.click(editButton('Save'));
 
 	expect(within(panel()).getByText('Tall and pale. Scarred.')).toBeInTheDocument();
 });
@@ -182,12 +187,12 @@ test('saving keeps the edits even if new data arrived while editing', async () =
 test('new data that arrives while editing applies once editing ends', async () => {
 	const user = userEvent.setup();
 	const { rerender } = renderPage();
-	await user.click(screen.getByRole('button', { name: 'Edit' }));
+	await user.click(editButton('Edit'));
 
 	await rerender({ guild: GUILD, character: { ...character(), name: 'Nadia Vasquez' } });
 	expect(screen.getByRole('heading', { name: 'Nadia' })).toBeInTheDocument();
 
-	await user.click(screen.getByRole('button', { name: 'Cancel' }));
+	await user.click(editButton('Cancel'));
 
 	expect(screen.getByRole('heading', { name: 'Nadia Vasquez' })).toBeInTheDocument();
 });
@@ -196,14 +201,14 @@ test('new data for the same character keeps edits in progress', async () => {
 	const user = userEvent.setup();
 	const { rerender } = renderPage();
 	await user.click(screen.getByRole('tab', { name: 'Profile' }));
-	await user.click(screen.getByRole('button', { name: 'Edit' }));
+	await user.click(editButton('Edit'));
 	await user.type(descriptionBox(), ' Scarred.');
 
 	// Such as when the page's data reloads
 	await rerender({ guild: GUILD, character: character() });
 
 	expect(descriptionBox()).toHaveValue('Tall and pale. Scarred.');
-	expect(screen.getByRole('button', { name: 'Save' })).toBeInTheDocument();
+	expect(editButton('Save')).toBeInTheDocument();
 });
 
 /** A character with experience and a log, which give it Experience and Chronicle tabs. */

@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { dev } from '$app/environment';
 	import { invalidate } from '$app/navigation';
 	import { resolve } from '$app/paths';
 	import type { Pathname } from '$app/types';
@@ -49,6 +50,7 @@
 			owner={characterData.owner}
 			spc={characterData.spc}
 			{backUrl}
+			editable={dev}
 		/>
 	{:else}
 		<PublicCharacterView {characterData} {backUrl} />

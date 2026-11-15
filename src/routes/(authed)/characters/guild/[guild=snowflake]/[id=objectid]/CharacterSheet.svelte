@@ -7,9 +7,10 @@
 
 	interface ComponentProps {
 		character: Character;
+		editing: boolean;
 	}
 
-	let { character = $bindable() }: ComponentProps = $props();
+	let { character = $bindable(), editing }: ComponentProps = $props();
 
 	const isVampire = $derived(character.splat === 'vampire' || character.splat === 'thin-blood');
 </script>
@@ -17,12 +18,12 @@
 <div class="flex flex-col gap-3">
 	{#if isVampire}
 		<div class="grid grid-cols-1 items-stretch gap-3 md:grid-cols-2">
-			<MainTrackers bind:character editing={false} />
+			<MainTrackers bind:character {editing} />
 			<BloodTrackers {character} />
 		</div>
 	{:else}
-		<MainTrackers bind:character editing={false} />
+		<MainTrackers bind:character {editing} />
 	{/if}
 
-	<TraitSheet bind:traits={character.traits} splat={character.splat} editing={false} />
+	<TraitSheet bind:traits={character.traits} splat={character.splat} {editing} />
 </div>

@@ -149,7 +149,7 @@
 
 {#snippet sheetTab()}
 	{#key character}
-		<CharacterSheet bind:character />
+		<CharacterSheet bind:character {editing} />
 	{/key}
 {/snippet}
 
@@ -178,12 +178,35 @@
 {/snippet}
 
 <Tabs value={selectedTab} onValueChange={(e) => selectTab(e.value)}>
-	<Tabs.List>
-		{#each tabs as tab (tab.value)}
-			<Tabs.Trigger value={tab.value} aria-label={tab.ariaLabel}>{tab.label}</Tabs.Trigger>
-		{/each}
-		<Tabs.Indicator />
-	</Tabs.List>
+	<div class="relative">
+		<Tabs.List>
+			{#each tabs as tab (tab.value)}
+				<Tabs.Trigger value={tab.value} aria-label={tab.ariaLabel}>{tab.label}</Tabs.Trigger>
+			{/each}
+			<Tabs.Indicator />
+		</Tabs.List>
+		{#if editable}
+			<!-- Desktop edit buttons, at the end of the tab row (outside the tab list, which
+			     should hold only tabs). The mobile ones float instead. -->
+			<div class="absolute top-0 right-0 hidden gap-2 sm:flex">
+				{#if editing}
+					<button class="btn preset-tonal-error" onclick={cancelEditing}>
+						<Ban size={18} />
+						<span>Cancel</span>
+					</button>
+					<button class="btn preset-filled-success-500" onclick={saveChanges}>
+						<Check size={18} />
+						<span>Save</span>
+					</button>
+				{:else}
+					<button class="btn preset-tonal-secondary" onclick={enterEditMode}>
+						<Pencil size={18} />
+						<span>Edit</span>
+					</button>
+				{/if}
+			</div>
+		{/if}
+	</div>
 	{#each tabs as tab (tab.value)}
 		<Tabs.Content value={tab.value}>
 			{@render tab.content()}
