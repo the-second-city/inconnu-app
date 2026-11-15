@@ -4,7 +4,6 @@
 	import TraitSheet from '$lib/components/characters/sheets/TraitSheet.svelte';
 	import MainTrackers from '$lib/components/characters/sheets/components/MainTrackers.svelte';
 	import BloodTrackers from '$lib/components/characters/sheets/components/BloodTrackers.svelte';
-	import Vampirism from '$lib/components/characters/sheets/components/wod/Vampirism.svelte';
 
 	interface ComponentProps {
 		character: Character;
@@ -26,8 +25,4 @@
 	{/if}
 
 	<TraitSheet bind:traits={character.traits} splat={character.splat} editing={false} />
-
-	<!--
-	<Vampirism bind:character editing={false} />
-	-->
 </div>
