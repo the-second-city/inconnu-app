@@ -438,3 +438,59 @@ test("cancelling keeps the profile's gallery images, rather than rebuilding them
 
 	expect(within(panel()).getByAltText('Nadia - Image 1')).toBe(image);
 });
+
+/** The conviction text fields, while editing. */
+const convictionBoxes = (): HTMLElement[] =>
+	within(panel()).getAllByRole('textbox', { name: /^Conviction \d$/ });
+
+/** Open the Profile tab and enter edit mode. */
+const editProfile = async (user: ReturnType<typeof userEvent.setup>): Promise<void> => {
+	await user.click(screen.getByRole('tab', { name: 'Profile' }));
+	await user.click(editButton('Edit'));
+};
+
+test('editing shows three conviction fields, filled from the character', async () => {
+	const user = userEvent.setup();
+	renderPage({ ...character(), convictions: ['Protect the weak'] });
+
+	await editProfile(user);
+
+	expect(convictionBoxes().map((box) => (box as HTMLInputElement).value)).toEqual([
+		'Protect the weak',
+		'',
+		''
+	]);
+});
+
+test('a character without convictions can add them', async () => {
+	const user = userEvent.setup();
+	renderPage();
+	await user.click(screen.getByRole('tab', { name: 'Profile' }));
+	expect(within(panel()).queryByRole('heading', { name: 'Convictions' })).not.toBeInTheDocument();
+
+	await user.click(editButton('Edit'));
+	await user.type(convictionBoxes()[1], '  Never   lie ');
+	await user.click(editButton('Save'));
+
+	expect(
+		within(panel())
+			.getAllByRole('listitem')
+			.map((item) => item.textContent)
+	).toEqual(['Never lie']);
+});
+
+test('cancelling restores the convictions', async () => {
+	const user = userEvent.setup();
+	renderPage({ ...character(), convictions: ['Protect the weak'] });
+
+	await editProfile(user);
+	await user.clear(convictionBoxes()[0]);
+	await user.type(convictionBoxes()[0], 'Harm the weak');
+	await user.click(editButton('Cancel'));
+
+	expect(
+		within(panel())
+			.getAllByRole('listitem')
+			.map((item) => item.textContent)
+	).toEqual(['Protect the weak']);
+});

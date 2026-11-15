@@ -106,6 +106,8 @@
 		editing = true;
 		copy = $state.snapshot(character);
 		newName = character.name;
+		// Three conviction slots to fill in, like the wizard's. Cancel restores the original list.
+		character.convictions = [...(character.convictions ?? []), '', '', ''].slice(0, 3);
 	};
 	const cancelEditing = () => {
 		editing = false;
@@ -115,6 +117,7 @@
 	const saveChanges = () => {
 		if (nameError) return;
 		character.name = normalizedNewName;
+		character.convictions = character.convictions?.map(normalize);
 		applied = initialCharacter; // Data that arrived while editing would undo the edits
 		editing = false;
 		copy = null;
@@ -157,7 +160,7 @@
 		name={character.name}
 		bind:profile={character.profile}
 		splat={character.splat}
-		convictions={character.convictions}
+		bind:convictions={character.convictions}
 		{editing}
 	/>
 {/snippet}

@@ -5,20 +5,27 @@
 
 	import type { Profile, Splat } from '$lib/types';
 	import { DISCORD_URL } from '$lib/index';
+	import { FORM_VALIDATION } from '$lib/constants/formStyles';
 	import Markdown from '$lib/components/Markdown.svelte';
 
 	interface ComponentProps {
 		name: string;
 		profile: Profile;
 		splat: Splat;
-		convictions?: string[];
+		convictions?: string[]; // While editing, the parent pads these to three slots
 		editing: boolean;
 	}
 
-	let { name, profile = $bindable(), splat, convictions = [], editing }: ComponentProps = $props();
+	let {
+		name,
+		profile = $bindable(),
+		splat,
+		convictions = $bindable(), // Bound to an optional field, so no fallback
+		editing
+	}: ComponentProps = $props();
 
 	// The bot may store blank convictions
-	let shownConvictions = $derived(convictions.map((c) => c.trim()).filter(Boolean));
+	let shownConvictions = $derived((convictions ?? []).map((c) => c.trim()).filter(Boolean));
 	let galleryClasses = $derived.by(() => {
 		let classes: string;
 		if (profile.images.length == 1) {
@@ -158,7 +165,7 @@
 			</section>
 
 			<!-- Convictions Section -->
-			{#if shownConvictions.length > 0}
+			{#if editing || shownConvictions.length > 0}
 				<section class="space-y-2">
 					<header class="border-surface-300-700 flex items-center gap-2 border-b pb-2">
 						<span class="text-primary-500">
@@ -166,11 +173,29 @@
 						</span>
 						<h2 class="h6">Convictions</h2>
 					</header>
-					<ul class="list-inside list-disc space-y-1 leading-relaxed">
-						{#each shownConvictions as conviction, i (i)}
-							<li>{conviction}</li>
-						{/each}
-					</ul>
+					{#if editing}
+						<div class="space-y-2">
+							{#each convictions ?? [] as conviction, i (i)}
+								<input
+									type="text"
+									class="input border"
+									maxlength={FORM_VALIDATION.convictionMaxLength}
+									placeholder="Conviction {i + 1}"
+									aria-label="Conviction {i + 1}"
+									value={conviction}
+									oninput={(e) => {
+										if (convictions) convictions[i] = e.currentTarget.value;
+									}}
+								/>
+							{/each}
+						</div>
+					{:else}
+						<ul class="list-inside list-disc space-y-1 leading-relaxed">
+							{#each shownConvictions as conviction, i (i)}
+								<li>{conviction}</li>
+							{/each}
+						</ul>
+					{/if}
 				</section>
 			{/if}
 		</article>
