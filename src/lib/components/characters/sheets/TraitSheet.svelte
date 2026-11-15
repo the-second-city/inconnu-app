@@ -16,13 +16,14 @@
 </script>
 
 <div class="flex flex-col gap-3">
+	<!-- Attributes don't take specialties -->
 	<TraitSection
 		title="Attributes"
 		cat="attribute"
 		subs={['physical', 'social', 'mental']}
 		bind:traits
 		{editing}
-		allowsSubtraits={true}
+		allowsSubtraits={false}
 	/>
 	<TraitSection
 		title="Skills"

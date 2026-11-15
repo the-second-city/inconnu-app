@@ -66,3 +66,18 @@ test('mortals have no disciplines', () => {
 	expect(hasHeading('Disciplines')).toBe(false);
 	expect(hasHeading('Custom Traits')).toBe(true);
 });
+
+test("while editing, skills take specialties, and attributes don't", () => {
+	renderSheet(BASICS, 'vampire', true);
+
+	// A trait that takes specialties has its name as a button, opening them
+	expect(screen.getByRole('button', { name: 'Athletics' })).toBeInTheDocument();
+	expect(screen.queryByRole('button', { name: 'Strength' })).not.toBeInTheDocument();
+});
+
+// Its badge counts them; the button opens them, so they can still be removed
+test('an attribute that already has specialties still shows them', () => {
+	renderSheet([{ ...trait('Strength', 'attribute'), subtraits: ['Grip'] }], 'vampire', true);
+
+	expect(screen.getByRole('button', { name: 'Strength 1' })).toBeInTheDocument();
+});
