@@ -19,7 +19,7 @@
 	{#if isVampire}
 		<div class="grid grid-cols-1 items-stretch gap-3 md:grid-cols-2">
 			<MainTrackers bind:character {editing} />
-			<BloodTrackers {character} />
+			<BloodTrackers bind:character {editing} />
 		</div>
 	{:else}
 		<MainTrackers bind:character {editing} />
