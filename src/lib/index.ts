@@ -35,6 +35,20 @@ export const normalize = (text: string): string => {
 	return text.split(/\s+/).filter(Boolean).join(' ');
 };
 
+/**
+ * Why a character name is invalid, or null if it's valid.
+ * @param name - The name, already normalized
+ * @returns The problem, as a message for the user
+ */
+export const characterNameError = (name: string): string | null => {
+	if (!name) return 'Name cannot be empty';
+	if (name.length > 30) return 'Name must be 30 characters or less';
+	if (!/^([^\W]|[-_\s'])+$/.test(name)) {
+		return 'Name can only contain letters, numbers, spaces, hyphens, underscores, and apostrophes';
+	}
+	return null;
+};
+
 export const insensitiveSort = (items: string[]) => {
 	items.sort((a, b) => a.localeCompare(b, undefined, { sensitivity: 'base' }));
 };

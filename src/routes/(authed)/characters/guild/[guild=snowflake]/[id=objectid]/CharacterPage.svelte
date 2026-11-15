@@ -3,7 +3,7 @@
 	import { Tabs } from '@skeletonlabs/skeleton-svelte';
 	import { Ban, Check, Pencil } from '@lucide/svelte';
 
-	import { normalize } from '$lib';
+	import { characterNameError, normalize } from '$lib';
 
 	import { goto } from '$app/navigation';
 	import { page } from '$app/state';
@@ -113,25 +113,18 @@
 		copy = null;
 	};
 	const saveChanges = () => {
+		if (nameError) return;
+		character.name = normalizedNewName;
 		applied = initialCharacter; // Data that arrived while editing would undo the edits
 		editing = false;
 		copy = null;
 	};
 
+	// The name being edited. It's only written to the character on Save, as normalizing it while
+	// typing would strip the space before the next word.
 	let newName = $state('');
-	let normalizedNewName = $derived(normalize(newName));
-
-	const isValidCharName = (): boolean =>
-		0 < normalizedNewName.length && normalizedNewName.length <= 37;
-
-	// Only while editing: otherwise replacing the character (Cancel, fresh data) would get the last
-	// edited name written back over it
-	$effect(() => {
-		if (editing && isValidCharName()) {
-			character.name = normalizedNewName;
-			newName = normalizedNewName;
-		}
-	});
+	const normalizedNewName = $derived(normalize(newName));
+	const nameError = $derived(editing ? characterNameError(normalizedNewName) : null);
 </script>
 
 <svelte:head>
@@ -145,6 +138,9 @@
 	{owner}
 	{spc}
 	{backUrl}
+	{editing}
+	bind:editedName={newName}
+	{nameError}
 />
 
 {#snippet sheetTab()}
@@ -194,7 +190,11 @@
 						<Ban size={18} />
 						<span>Cancel</span>
 					</button>
-					<button class="btn preset-filled-success-500" onclick={saveChanges}>
+					<button
+						class="btn preset-filled-success-500"
+						onclick={saveChanges}
+						disabled={nameError !== null}
+					>
 						<Check size={18} />
 						<span>Save</span>
 					</button>
@@ -230,6 +230,7 @@
 					<button
 						class="from-success-400 to-success-600 border-surface-50/20 hover:shadow-success-500/50 relative flex aspect-square size-14 items-center justify-center overflow-hidden !rounded-full border-2 bg-gradient-to-br text-white shadow-xl transition-all duration-300 ease-out hover:scale-110 active:scale-95"
 						onclick={saveChanges}
+						disabled={nameError !== null}
 						aria-label="Save"
 					>
 						<Check color="#000" strokeWidth={3} class="drop-shadow-md" size={24} />

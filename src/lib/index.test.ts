@@ -1,6 +1,7 @@
 import { expect, test } from 'vitest';
 
 import {
+	characterNameError,
 	getErrorDetail,
 	isHttpsUrl,
 	hasProfileContent,
@@ -16,6 +17,22 @@ import type { Profile } from '$lib/types';
 /** A JSON response, as the Inconnu API would send it. */
 const jsonResponse = (body: unknown, status = 400): Response =>
 	new Response(JSON.stringify(body), { status, headers: { 'Content-Type': 'application/json' } });
+
+test.each([
+	['Nadia', null],
+	["Jean-Luc d'Arcy_II", null],
+	['a'.repeat(30), null],
+	['', 'Name cannot be empty'],
+	['a'.repeat(31), 'Name must be 30 characters or less'],
+	// JS's \W is ASCII-only without the u flag (Python's isn't), so accented letters are refused
+	['Ölga', 'Name can only contain letters, numbers, spaces, hyphens, underscores, and apostrophes'],
+	[
+		'Nadia!',
+		'Name can only contain letters, numbers, spaces, hyphens, underscores, and apostrophes'
+	]
+])('characterNameError(%j) is %j', (name: string, expected: string | null) => {
+	expect(characterNameError(name)).toBe(expected);
+});
 
 test.each([
 	['Strength', true],

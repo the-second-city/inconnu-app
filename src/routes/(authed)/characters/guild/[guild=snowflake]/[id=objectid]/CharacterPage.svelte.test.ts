@@ -368,3 +368,59 @@ test('#experience opens the sheet when the character has no experience', () => {
 
 	expect(selectedTab()).toBe('Sheet');
 });
+
+/** The name's text field, while editing. */
+const nameBox = (): HTMLElement => screen.getByRole('textbox', { name: 'Character name' });
+
+test('editing swaps the name for a text field', async () => {
+	const user = userEvent.setup();
+	renderPage();
+
+	await user.click(editButton('Edit'));
+
+	expect(nameBox()).toHaveValue('Nadia');
+});
+
+test('renaming, then saving, keeps the new name, normalized', async () => {
+	const user = userEvent.setup();
+	renderPage();
+
+	await user.click(editButton('Edit'));
+	await user.clear(nameBox());
+	await user.type(nameBox(), '  Nadia   Petrova ');
+	expect(nameBox()).toHaveValue('  Nadia   Petrova '); // Typing isn't normalized as it goes
+	await user.click(editButton('Save'));
+
+	expect(screen.queryByRole('textbox', { name: 'Character name' })).not.toBeInTheDocument();
+	expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('Nadia Petrova');
+});
+
+test('renaming, then cancelling, restores the name', async () => {
+	const user = userEvent.setup();
+	renderPage();
+
+	await user.click(editButton('Edit'));
+	await user.type(nameBox(), 'x');
+	await user.click(editButton('Cancel'));
+
+	expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('Nadia');
+	await user.click(editButton('Edit'));
+	expect(nameBox()).toHaveValue('Nadia');
+});
+
+test('an invalid name shows why, and blocks saving', async () => {
+	const user = userEvent.setup();
+	renderPage();
+
+	await user.click(editButton('Edit'));
+	await user.type(nameBox(), '!');
+
+	expect(nameBox()).toHaveAccessibleDescription(
+		'Name can only contain letters, numbers, spaces, hyphens, underscores, and apostrophes'
+	);
+	expect(editButton('Save')).toBeDisabled();
+
+	await user.type(nameBox(), '{Backspace}');
+	expect(nameBox()).not.toHaveAccessibleDescription();
+	expect(editButton('Save')).toBeEnabled();
+});

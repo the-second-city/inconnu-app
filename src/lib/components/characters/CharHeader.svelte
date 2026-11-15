@@ -14,9 +14,22 @@
 		owner?: OwnerData | null;
 		spc?: boolean;
 		backUrl?: Pathname;
+		editing?: boolean; // Swaps the name for a text field
+		editedName?: string; // The text field's value
+		nameError?: string | null; // Why the edited name is invalid
 	}
 
-	let { name, images, guild, owner, spc = false, backUrl }: ComponentProps = $props();
+	let {
+		name,
+		images,
+		guild,
+		owner,
+		spc = false,
+		backUrl,
+		editing = false,
+		editedName = $bindable(''),
+		nameError = null
+	}: ComponentProps = $props();
 
 	const currentUserId = $derived(page.data.session?.user?.id);
 
@@ -48,11 +61,41 @@
 					<Avatar {name} src={images[0]} />
 				</div>
 			{/if}
-			{name}
+			{#if editing}
+				<!-- The field is as wide as its text, so the header (and the metadata aligned to its
+				     right edge) keeps its width. An invisible copy of the text, styled like the field,
+				     sizes the grid cell they share. Negative margins, the size of the field's padding
+				     (from Skeleton's `input`: (1rem - 0.125rem) / 2 + 0.25rem by 0.4375rem) plus its
+				     border, keep the text where it was. -->
+				<span
+					class="-mx-[calc(0.6875rem+1px)] -my-[calc(0.4375rem+1px)] inline-grid max-w-full min-w-[4ch]"
+				>
+					<span
+						class="input h1 invisible col-start-1 row-start-1 w-auto! overflow-hidden border font-black whitespace-pre"
+						aria-hidden="true">{editedName}</span
+					>
+					<input
+						type="text"
+						size="1"
+						class="input h1 col-start-1 row-start-1 min-w-0 border font-black"
+						class:text-error-500={nameError}
+						class:border-error-500={nameError}
+						bind:value={editedName}
+						aria-label="Character name"
+						aria-invalid={nameError ? 'true' : undefined}
+						aria-describedby={nameError ? 'name-error' : undefined}
+					/>
+				</span>
+			{:else}
+				{name}
+			{/if}
 		</h1>
+		{#if editing && nameError}
+			<p id="name-error" class="text-error-500 mt-1 text-sm">{nameError}</p>
+		{/if}
 
 		{#if metadata.length > 0}
-			<div class="flex justify-end">
+			<div class="flex justify-end" class:mt-3={editing}>
 				<h6 class="text-surface-800-200 flex items-center gap-3 italic">
 					{#each metadata as item, i (i)}
 						{#if i > 0 && !item.badge}<span class="opacity-60">•</span>{/if}

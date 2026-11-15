@@ -13,7 +13,7 @@
 	import ErrorMessage from '$lib/components/ErrorMessage.svelte';
 	import { FORM_CLASSES, FORM_VALIDATION } from '$lib/constants/formStyles';
 	import { creationInfoStore } from '$lib/stores/CreationStore';
-	import { normalize, getErrorDetail } from '$lib';
+	import { characterNameError, normalize, getErrorDetail } from '$lib';
 	import Meta from '$lib/components/Meta.svelte';
 
 	let { data }: { data: PageData } = $props();
@@ -64,20 +64,9 @@
 
 	// Character name validation
 	const normalizedName = $derived(normalize(name));
-	const isValidCharacterName = $derived.by(() => {
-		if (!normalizedName) return false;
-		if (normalizedName.length > 30) return false;
-		return /^([^\W]|[-_\s'])+$/.test(normalizedName);
-	});
-	const nameError = $derived.by(() => {
-		if (name.length === 0) return null; // Don't show error for empty field
-		if (!normalizedName) return 'Name cannot be empty';
-		if (normalizedName.length > 30) return 'Name must be 30 characters or less';
-		if (!/^([^\W]|[-_\s'])+$/.test(normalizedName)) {
-			return 'Name can only contain letters, numbers, spaces, hyphens, underscores, and apostrophes';
-		}
-		return null;
-	});
+	const isValidCharacterName = $derived(characterNameError(normalizedName) === null);
+	// Don't show an error for an empty field
+	const nameError = $derived(name.length === 0 ? null : characterNameError(normalizedName));
 
 	// Conviction validation
 	const conviction1Error = $derived(
