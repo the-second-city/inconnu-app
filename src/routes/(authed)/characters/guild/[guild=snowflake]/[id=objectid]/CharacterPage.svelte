@@ -150,15 +150,16 @@
 {/snippet}
 
 {#snippet profileTab()}
-	{#key character}
-		<CharProfile
-			name={character.name}
-			bind:profile={character.profile}
-			splat={character.splat}
-			convictions={character.convictions}
-			{editing}
-		/>
-	{/key}
+	<!-- Not keyed, unlike the sheet: CharProfile derives everything from its props, so it takes a
+	     replaced character (Cancel, fresh data) in place. Rebuilding it would re-decode the gallery's
+	     full-size images. -->
+	<CharProfile
+		name={character.name}
+		bind:profile={character.profile}
+		splat={character.splat}
+		convictions={character.convictions}
+		{editing}
+	/>
 {/snippet}
 
 {#snippet experienceTab()}

@@ -424,3 +424,17 @@ test('an invalid name shows why, and blocks saving', async () => {
 	expect(nameBox()).not.toHaveAccessibleDescription();
 	expect(editButton('Save')).toBeEnabled();
 });
+
+test("cancelling keeps the profile's gallery images, rather than rebuilding them", async () => {
+	const user = userEvent.setup();
+	const char = character();
+	char.profile.images = ['https://example.com/a.webp', 'https://example.com/b.webp'];
+	renderPage(char);
+	await user.click(screen.getByRole('tab', { name: 'Profile' }));
+	const image = within(panel()).getByAltText('Nadia - Image 1');
+
+	await user.click(editButton('Edit'));
+	await user.click(editButton('Cancel'));
+
+	expect(within(panel()).getByAltText('Nadia - Image 1')).toBe(image);
+});
