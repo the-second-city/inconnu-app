@@ -24,8 +24,14 @@ test.each([
 	['a'.repeat(30), null],
 	['', 'Name cannot be empty'],
 	['a'.repeat(31), 'Name must be 30 characters or less'],
-	// JS's \W is ASCII-only without the u flag (Python's isn't), so accented letters are refused
-	['Ölga', 'Name can only contain letters, numbers, spaces, hyphens, underscores, and apostrophes'],
+	// Letters of any script, like the bot's Python \w
+	['Ölga', null],
+	['José Núñez', null],
+	['日本', null],
+	[
+		'Nadia 😈',
+		'Name can only contain letters, numbers, spaces, hyphens, underscores, and apostrophes'
+	],
 	[
 		'Nadia!',
 		'Name can only contain letters, numbers, spaces, hyphens, underscores, and apostrophes'

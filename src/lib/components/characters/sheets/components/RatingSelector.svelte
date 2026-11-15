@@ -74,7 +74,7 @@
 	let subtraitError = $derived.by(() => {
 		if (normalizedNewSubtrait.length === 0) return null;
 		if (normalizedNewSubtrait.length > FORM_VALIDATION.traitMaxLength)
-			return 'Maximum 20 characters';
+			return `Maximum ${FORM_VALIDATION.traitMaxLength} characters`;
 		if (!isValidTraitName(normalizedNewSubtrait)) return 'Letters and underscores only';
 		const isDuplicate = subtraits.some(
 			(existing: string) => existing.toLowerCase() === normalizedNewSubtrait.toLowerCase()

@@ -143,7 +143,7 @@ test('new skills start at 0', async () => {
 });
 
 test.each([
-	['A'.repeat(21), 'Maximum 20 characters'],
+	['A'.repeat(31), 'Maximum 30 characters'],
 	['Blood Magic', 'Letters and underscores only'],
 	['Willpower', 'Reserved name; set it in Discord instead'],
 	['strength', 'Trait already exists']

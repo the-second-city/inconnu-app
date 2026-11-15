@@ -77,6 +77,10 @@
 	// Superficial damage on a full track becomes aggravated, so damage lands until it's all aggravated
 	const canTakeDamage = $derived(damageCounts['x'] < trackArray.length);
 
+	// Box counts: Health 4-20, Willpower 3-20
+	const minBoxes = $derived(track === 'willpower' ? 3 : 4);
+	const MAX_BOXES = 20;
+
 	function incBoxes() {
 		trackArray.unshift('.');
 	}
@@ -127,7 +131,7 @@
 			<button
 				class="btn preset-tonal-surface"
 				onclick={decBoxes}
-				disabled={trackArray.length == 1}
+				disabled={trackArray.length <= minBoxes}
 				aria-label="Decrease Boxes"
 			>
 				-
@@ -136,7 +140,7 @@
 			<button
 				class="btn preset-tonal-surface"
 				onclick={incBoxes}
-				disabled={trackArray.length == 15}
+				disabled={trackArray.length >= MAX_BOXES}
 				aria-label="Increase Boxes"
 			>
 				+

@@ -112,3 +112,14 @@ test.each([
 
 	expect(character.potency).toBe(min);
 });
+
+test('a vampire at Blood Potency 0 (set in Discord) can return to 0 after a stray click', async () => {
+	const user = userEvent.setup();
+	const character = renderEditing({ potency: 0 });
+
+	await user.click(screen.getByRole('button', { name: 'Set Blood Potency to 1' }));
+	expect(character.potency).toBe(1);
+	await user.click(screen.getByRole('button', { name: 'Set Blood Potency to 1' }));
+
+	expect(character.potency).toBe(0);
+});

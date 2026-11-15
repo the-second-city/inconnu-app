@@ -126,7 +126,7 @@
 							class="textarea field-sizing-content max-h-[70vh] min-h-48 border leading-relaxed"
 							bind:value={profile.description}
 							rows="8"
-							maxlength="1500"
+							maxlength={FORM_VALIDATION.descriptionMaxLength}
 						></textarea>
 					{:else if profile.description}
 						<Markdown content={profile.description} />
@@ -152,7 +152,7 @@
 							class="textarea field-sizing-content max-h-[70vh] min-h-48 border leading-relaxed"
 							bind:value={profile.biography}
 							rows="8"
-							maxlength="1500"
+							maxlength={FORM_VALIDATION.historyMaxLength}
 						></textarea>
 					{:else if profile.biography}
 						<Markdown content={profile.biography} />

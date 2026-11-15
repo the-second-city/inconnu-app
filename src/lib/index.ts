@@ -43,7 +43,9 @@ export const normalize = (text: string): string => {
 export const characterNameError = (name: string): string | null => {
 	if (!name) return 'Name cannot be empty';
 	if (name.length > 30) return 'Name must be 30 characters or less';
-	if (!/^([^\W]|[-_\s'])+$/.test(name)) {
+	// The bot's Python \w is Unicode-aware (letters and numbers of any script, plus _); JS's isn't,
+	// even with the u flag, so spell it out
+	if (!/^[\p{L}\p{N}_\-\s']+$/u.test(name)) {
 		return 'Name can only contain letters, numbers, spaces, hyphens, underscores, and apostrophes';
 	}
 	return null;

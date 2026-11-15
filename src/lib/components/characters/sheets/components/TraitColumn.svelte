@@ -68,7 +68,8 @@
 	let normalizedTrait = $derived(normalize(newTraitName));
 	let traitError = $derived.by(() => {
 		if (normalizedTrait.length === 0) return null;
-		if (normalizedTrait.length > FORM_VALIDATION.traitMaxLength) return 'Maximum 20 characters';
+		if (normalizedTrait.length > FORM_VALIDATION.traitMaxLength)
+			return `Maximum ${FORM_VALIDATION.traitMaxLength} characters`;
 		if (!isValidTraitName(normalizedTrait)) return 'Letters and underscores only';
 		if (isReservedTraitName(normalizedTrait)) return 'Reserved name; set it in Discord instead';
 

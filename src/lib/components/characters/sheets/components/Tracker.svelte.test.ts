@@ -157,12 +157,30 @@ test('box controls add and remove boxes', async () => {
 	expect(bound.health).toBe('....');
 });
 
-test('a track keeps at least one box', async () => {
+test.each([
+	['health', 4],
+	['willpower', 3]
+] as const)('%s keeps at least %i boxes', async (track, min) => {
 	const user = userEvent.setup();
-	renderTrack('.');
+	const shortest = '.'.repeat(min);
+	render(Tracker, { character: character(shortest, shortest), track, editing: true });
 	await openControls(user);
 
 	expect(await screen.findByRole('button', { name: 'Decrease Boxes' })).toBeDisabled();
+	expect(screen.getByRole('button', { name: 'Increase Boxes' })).toBeEnabled();
+});
+
+test.each([
+	['health', 20],
+	['willpower', 20]
+] as const)('%s has at most %i boxes', async (track, max) => {
+	const user = userEvent.setup();
+	const full = '.'.repeat(max);
+	render(Tracker, { character: character(full, full), track, editing: true });
+	await openControls(user);
+
+	expect(await screen.findByRole('button', { name: 'Increase Boxes' })).toBeDisabled();
+	expect(screen.getByRole('button', { name: 'Decrease Boxes' })).toBeEnabled();
 });
 
 /** Render a track in view mode, offering its actions, and open them. Returns the action menu. */

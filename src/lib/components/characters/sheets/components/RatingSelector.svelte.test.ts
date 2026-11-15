@@ -165,7 +165,7 @@ test('Enter adds a specialty', async () => {
 });
 
 test.each([
-	['A'.repeat(21), 'Maximum 20 characters'],
+	['A'.repeat(31), 'Maximum 30 characters'],
 	['Free running', 'Letters and underscores only'],
 	['parkour', 'Specialty already exists']
 ])('rejects the specialty %o', async (subtrait, error) => {

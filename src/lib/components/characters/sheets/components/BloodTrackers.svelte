@@ -1,4 +1,6 @@
 <script lang="ts">
+	import { untrack } from 'svelte';
+
 	import type { Character } from '$lib/types';
 
 	import Card from '$lib/components/Card.svelte';
@@ -13,9 +15,12 @@
 
 	let { character = $bindable(), editing = false }: ComponentProps = $props();
 
-	// Thin-bloods have 0-2; other vampires 1-10, like the wizard
+	// Thin-bloods have 0-2; other vampires 1-10, like the wizard. Discord can set a vampire to 0,
+	// which the bot keeps as long as it isn't changed, so a vampire can return to its recorded
+	// value. (The sheet is rebuilt for each new character copy, so this is the saved value.)
+	const recordedPotency = untrack(() => character.potency ?? character.blood_potency ?? 0);
 	const isThinBlood = $derived(character.splat === 'thin-blood');
-	const minBloodPotency = $derived(isThinBlood ? 0 : 1);
+	const minBloodPotency = $derived(isThinBlood ? 0 : Math.min(1, recordedPotency));
 	const maxBloodPotency = $derived(isThinBlood ? 2 : 10);
 </script>
 
