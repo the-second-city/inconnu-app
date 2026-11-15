@@ -1,5 +1,8 @@
 <script lang="ts">
+	import { invalidate } from '$app/navigation';
+	import { resolve } from '$app/paths';
 	import type { Pathname } from '$app/types';
+	import { CHARACTER_DEPENDENCY, watchCharacter } from '$lib/liveUpdates';
 	import type { CharacterData, Character, PublicCharacter } from '$lib/types';
 	import CharacterPage from './CharacterPage.svelte';
 	import PublicCharacterView from '$lib/components/characters/PublicCharacterView.svelte';
@@ -12,14 +15,25 @@
 	// next route's data before this page is torn down.
 	const characterData: CharacterData = $derived(data.characterData);
 
-	// The guild and character this page shows, which key its view
-	const pageKey = $derived(
-		`${characterData.guild.id}/${
-			characterData.type === 'full'
-				? (characterData.character as Character)._id
-				: (characterData.character as PublicCharacter).id
-		}`
+	const characterId = $derived(
+		characterData.type === 'full'
+			? (characterData.character as Character)._id
+			: (characterData.character as PublicCharacter).id
 	);
+
+	// The guild and character this page shows, which key its view
+	const pageKey = $derived(`${characterData.guild.id}/${characterId}`);
+
+	// Live updates: when the character changes (in Discord, say), the loader refetches it. Watched
+	// here rather than in the view, so it covers both full and public access, and keeps going when a
+	// refetch switches between them. A new character starts a new watch.
+	$effect(() => {
+		const url = resolve('/api/characters/[id=objectid]/events', { id: characterId });
+		return watchCharacter(url, () => {
+			// A failed refetch shows itself (the error page); there's nothing more to do here
+			invalidate(CHARACTER_DEPENDENCY).catch(() => {});
+		});
+	});
 
 	const backUrl: Pathname = $derived(`/characters/guild/${characterData.guild.id}` as const);
 </script>
