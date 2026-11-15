@@ -169,3 +169,34 @@ test("can't add a trait without a name", async () => {
 	await user.keyboard('{Enter}');
 	expect(bound.traits).toHaveLength(TRAITS.length);
 });
+
+test('removing a discipline takes it out of the traits', async () => {
+	const user = userEvent.setup();
+	const bound = renderColumn({ name: 'Disciplines', cat: 'discipline', addable: true });
+
+	await user.click(screen.getByRole('button', { name: 'Remove Potence' }));
+
+	expect(bound.traits.map((t) => t.name)).not.toContain('Potence');
+	expect(bound.traits.map((t) => t.name)).toContain('Celerity');
+	expect(screen.queryByRole('button', { name: 'Remove Potence' })).not.toBeInTheDocument();
+});
+
+test.each([
+	['when not editing', { name: 'Disciplines', cat: 'discipline', addable: true, editing: false }],
+	["when the column isn't addable", { cat: 'attribute', addable: false }]
+] as [string, Options][])('traits have no remove buttons %s', (_, options) => {
+	renderColumn(options);
+
+	expect(screen.queryByRole('button', { name: /^Remove / })).not.toBeInTheDocument();
+});
+
+test('a removed trait can be added again', async () => {
+	const user = userEvent.setup();
+	const bound = renderColumn({ name: 'Disciplines', cat: 'discipline', addable: true });
+
+	await user.click(screen.getByRole('button', { name: 'Remove Potence' }));
+	await user.type(screen.getByPlaceholderText(/Add new/), 'Potence');
+	await user.click(screen.getByRole('button', { name: 'Add trait' }));
+
+	expect(bound.traits.filter((t) => t.name === 'Potence')).toHaveLength(1);
+});

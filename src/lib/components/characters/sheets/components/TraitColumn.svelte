@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { fade } from 'svelte/transition';
 
-	import { CirclePlus } from '@lucide/svelte';
+	import { CirclePlus, CircleX } from '@lucide/svelte';
 
 	import type { Trait } from '$lib/types';
 	import { isReservedTraitName, isValidTraitName, normalize } from '$lib';
@@ -96,6 +96,11 @@
 		traits.sort((a, b) => a.name.localeCompare(b.name, undefined, { sensitivity: 'base' }));
 		newTraitName = '';
 	}
+
+	/** Remove a trait the user can add (fixed ones, like attributes, stay). */
+	function removeTrait(index: number) {
+		traits.splice(index, 1);
+	}
 </script>
 
 <Card>
@@ -105,7 +110,24 @@
 	{#if orderedIndices.length > 0}
 		<div class="flex flex-col gap-2">
 			{#each orderedIndices as index (traits[index].name)}
-				<TraitSelector bind:trait={traits[index]} {editing} {allowsSubtraits} />
+				{#if editing && addable}
+					<div class="flex items-center gap-2">
+						<div class="min-w-0 flex-1">
+							<TraitSelector bind:trait={traits[index]} {editing} {allowsSubtraits} />
+						</div>
+						<button
+							type="button"
+							class="hover:preset-tonal-error shrink-0 rounded-full p-1"
+							onclick={() => removeTrait(index)}
+							aria-label="Remove {traits[index].name}"
+							title="Remove {traits[index].name}"
+						>
+							<CircleX size={16} color="#FF0000" />
+						</button>
+					</div>
+				{:else}
+					<TraitSelector bind:trait={traits[index]} {editing} {allowsSubtraits} />
+				{/if}
 			{/each}
 		</div>
 	{:else if !editing}
