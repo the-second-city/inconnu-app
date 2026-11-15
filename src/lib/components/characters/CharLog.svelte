@@ -179,58 +179,66 @@
 	</p>
 
 	<!-- Columns, not a grid, so each card sits right under the one above it (masonry).
-	     The negative margin cancels the bottom margin of each column's last card. -->
+	     Each card's spacing is its wrapper's padding, not a margin: at a column break, WebKit
+	     carries a margin over to the top of the next column and paints the card's shadow there.
+	     The negative margin cancels the padding below each column's last card. -->
 	<div class="-mb-4 columns-1 gap-4 sm:columns-2 lg:columns-3">
 		{#each groups as group (group.title)}
 			{@const id = `log-${group.title.toLowerCase().replace(/\s+/g, '-')}`}
-			<section class="card mb-4 break-inside-avoid space-y-2 p-4 shadow-lg" aria-labelledby={id}>
-				<header class="border-surface-300-700 flex items-center gap-2 border-b pb-2">
-					<span class="text-primary-500"><group.icon size={18} /></span>
-					<h2 class="h6" {id}>{group.title}</h2>
-				</header>
-				<dl class="space-y-1">
-					{#each group.stats as [key, label], index (key)}
-						<!-- Counters that started after the character was created explain why they're low -->
-						{@const since = log.incomplete_since?.[key]}
-						<div class={rowClass(group, index)}>
-							<dt class="flex items-center gap-1.5">
-								{label}
-								{#if since}
-									<Popover
-										arrow
-										triggerClass="text-surface-400 hover:text-surface-200 transition-colors"
-										triggerLabel="About {label}"
-										contentClass="card bg-surface-500 max-w-xs p-3 text-sm"
-									>
-										{#snippet trigger()}<Info size={14} />{/snippet}
-										{#snippet content()}
-											Counted since {formatDate(since)}. Earlier events aren't included.
-										{/snippet}
-									</Popover>
-								{/if}
-							</dt>
-							{#if isTrack(key)}
-								{@const track = log[key] ?? ''}
-								<dd>
-									{#if track}
-										<div class="flex flex-wrap gap-1" role="img" aria-label={describeTrack(track)}>
-											{#each trackBoxes(track) as box, boxIndex (boxIndex)}
-												<TrackBox value={box} />
-											{/each}
-										</div>
-									{:else}
-										<span class="text-surface-300 italic">None recorded</span>
+			<div class="break-inside-avoid pb-4">
+				<section class="card space-y-2 p-4 shadow-lg" aria-labelledby={id}>
+					<header class="border-surface-300-700 flex items-center gap-2 border-b pb-2">
+						<span class="text-primary-500"><group.icon size={18} /></span>
+						<h2 class="h6" {id}>{group.title}</h2>
+					</header>
+					<dl class="space-y-1">
+						{#each group.stats as [key, label], index (key)}
+							<!-- Counters that started after the character was created explain why they're low -->
+							{@const since = log.incomplete_since?.[key]}
+							<div class={rowClass(group, index)}>
+								<dt class="flex items-center gap-1.5">
+									{label}
+									{#if since}
+										<Popover
+											arrow
+											triggerClass="text-surface-400 hover:text-surface-200 transition-colors"
+											triggerLabel="About {label}"
+											contentClass="card bg-surface-500 max-w-xs p-3 text-sm"
+										>
+											{#snippet trigger()}<Info size={14} />{/snippet}
+											{#snippet content()}
+												Counted since {formatDate(since)}. Earlier events aren't included.
+											{/snippet}
+										</Popover>
 									{/if}
-								</dd>
-							{:else}
-								<dd class="font-semibold tabular-nums">
-									{numberFormat.format(log[key as CharacterLogCounter] ?? 0)}
-								</dd>
-							{/if}
-						</div>
-					{/each}
-				</dl>
-			</section>
+								</dt>
+								{#if isTrack(key)}
+									{@const track = log[key] ?? ''}
+									<dd>
+										{#if track}
+											<div
+												class="flex flex-wrap gap-1"
+												role="img"
+												aria-label={describeTrack(track)}
+											>
+												{#each trackBoxes(track) as box, boxIndex (boxIndex)}
+													<TrackBox value={box} />
+												{/each}
+											</div>
+										{:else}
+											<span class="text-surface-300 italic">None recorded</span>
+										{/if}
+									</dd>
+								{:else}
+									<dd class="font-semibold tabular-nums">
+										{numberFormat.format(log[key as CharacterLogCounter] ?? 0)}
+									</dd>
+								{/if}
+							</div>
+						{/each}
+					</dl>
+				</section>
+			</div>
 		{/each}
 	</div>
 </div>
