@@ -17,11 +17,11 @@
 <div class="flex flex-col gap-3">
 	{#if isVampire}
 		<div class="grid grid-cols-1 items-stretch gap-3 md:grid-cols-2">
-			<MainTrackers bind:character editing={false} allowsPathChange={true} />
+			<MainTrackers bind:character editing={false} />
 			<BloodTrackers {character} />
 		</div>
 	{:else}
-		<MainTrackers bind:character editing={false} allowsPathChange={true} />
+		<MainTrackers bind:character editing={false} />
 	{/if}
 
 	<TraitSheet bind:traits={character.traits} splat={character.splat} editing={false} />

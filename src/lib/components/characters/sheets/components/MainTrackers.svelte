@@ -8,10 +8,9 @@
 	interface ComponentProps {
 		character: Character;
 		editing: boolean;
-		allowsPathChange: boolean;
 	}
 
-	let { character = $bindable(), editing, allowsPathChange }: ComponentProps = $props();
+	let { character = $bindable(), editing }: ComponentProps = $props();
 </script>
 
 <Card alignment="center" extraClasses="px-2 h-full justify-center">
