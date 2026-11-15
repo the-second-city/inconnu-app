@@ -40,20 +40,21 @@ test('an undamaged track is all healthy', () => {
 });
 
 test('shows damage leftmost, worst first', () => {
-	render(Tracker, { character: character('...../x*'), track: 'health', editing: false });
+	render(Tracker, { character: character('...../x'), track: 'health', editing: false });
 
-	expect(boxes()).toEqual([
-		'Aggravated damage',
-		'Lethal damage',
-		'Bashing damage',
-		...Array(5).fill('Healthy')
-	]);
+	expect(boxes()).toEqual(['Aggravated damage', 'Superficial damage', ...Array(5).fill('Healthy')]);
 });
 
 test('shows the chosen track', () => {
-	render(Tracker, { character: character('......', '...//'), track: 'willpower', editing: false });
+	render(Tracker, { character: character('......', '..//x'), track: 'willpower', editing: false });
 
-	expect(boxes()).toEqual(['Bashing damage', 'Bashing damage', 'Healthy', 'Healthy', 'Healthy']);
+	expect(boxes()).toEqual([
+		'Aggravated damage',
+		'Superficial damage',
+		'Superficial damage',
+		'Healthy',
+		'Healthy'
+	]);
 });
 
 /**
@@ -68,51 +69,56 @@ const renderTrack = (health: string, track: 'health' | 'willpower' = 'health', e
 
 /** Open the track's controls by clicking its boxes. */
 const openControls = async (user: ReturnType<typeof userEvent.setup>) => {
-	await user.click(screen.getByRole('button', { name: /^(Healthy|Bashing|Lethal|Aggravated)/ }));
+	await user.click(screen.getByRole('button', { name: /^(Healthy|Superficial|Aggravated)/ }));
 };
 
-test('clicking the track explains how to edit, when not editing', async () => {
-	const user = userEvent.setup();
+test('the boxes are only a button while editing', () => {
 	renderTrack('.....', 'health', false);
 
-	await openControls(user);
-
-	expect(await screen.findByText('Click "Edit" above to enable controls.')).toBeInTheDocument();
-	expect(screen.queryByRole('button', { name: 'Increase Bashing' })).not.toBeInTheDocument();
+	expect(screen.getAllByRole('img').length).toBeGreaterThan(0);
+	expect(screen.queryByRole('button')).not.toBeInTheDocument();
 });
 
-test('Health has controls for each kind of damage', async () => {
+test('the controls stay closed when editing starts again', async () => {
 	const user = userEvent.setup();
-	renderTrack('.....');
-
+	const { rerender } = render(Tracker, {
+		character: character('.....'),
+		track: 'health',
+		editing: true
+	});
 	await openControls(user);
+	expect(await screen.findByRole('button', { name: 'Increase Superficial' })).toBeInTheDocument();
 
-	for (const level of ['Bashing', 'Lethal', 'Aggravated', 'Permanent']) {
-		expect(await screen.findByRole('button', { name: `Increase ${level}` })).toBeInTheDocument();
-		expect(screen.getByRole('button', { name: `Decrease ${level}` })).toBeInTheDocument();
+	await rerender({ editing: false });
+	await rerender({ editing: true });
+
+	expect(screen.queryByRole('button', { name: 'Increase Superficial' })).not.toBeInTheDocument();
+});
+
+test.each(['health', 'willpower'] as const)(
+	'%s has controls for each kind of damage',
+	async (track) => {
+		const user = userEvent.setup();
+		renderTrack('.....', track);
+
+		await openControls(user);
+
+		for (const level of ['Superficial', 'Aggravated', 'Boxes']) {
+			expect(await screen.findByRole('button', { name: `Increase ${level}` })).toBeInTheDocument();
+			expect(screen.getByRole('button', { name: `Decrease ${level}` })).toBeInTheDocument();
+		}
 	}
-});
-
-test('Willpower has only temporary and permanent controls', async () => {
-	const user = userEvent.setup();
-	renderTrack('.....', 'willpower');
-
-	await openControls(user);
-
-	expect(await screen.findByRole('button', { name: 'Increase Temporary' })).toBeInTheDocument();
-	expect(screen.getByRole('button', { name: 'Increase Permanent' })).toBeInTheDocument();
-	expect(screen.queryByRole('button', { name: 'Increase Lethal' })).not.toBeInTheDocument();
-});
+);
 
 test('adding damage updates the track and the character', async () => {
 	const user = userEvent.setup();
 	const bound = renderTrack('.....');
 	await openControls(user);
 
-	await user.click(await screen.findByRole('button', { name: 'Increase Lethal' }));
-	await user.click(screen.getByRole('button', { name: 'Increase Bashing' }));
+	await user.click(await screen.findByRole('button', { name: 'Increase Aggravated' }));
+	await user.click(screen.getByRole('button', { name: 'Increase Superficial' }));
 
-	expect(boxes()).toEqual(['Lethal damage', 'Bashing damage', ...Array(3).fill('Healthy')]);
+	expect(boxes()).toEqual(['Aggravated damage', 'Superficial damage', ...Array(3).fill('Healthy')]);
 	expect(bound.health).toBe('.../x');
 });
 
@@ -121,32 +127,32 @@ test('damage can be removed only when there is some', async () => {
 	renderTrack('..../');
 	await openControls(user);
 
-	expect(await screen.findByRole('button', { name: 'Decrease Lethal' })).toBeDisabled();
-	await user.click(screen.getByRole('button', { name: 'Decrease Bashing' }));
+	expect(await screen.findByRole('button', { name: 'Decrease Aggravated' })).toBeDisabled();
+	await user.click(screen.getByRole('button', { name: 'Decrease Superficial' }));
 
 	expect(boxes()).toEqual(Array(5).fill('Healthy'));
-	expect(screen.getByRole('button', { name: 'Decrease Bashing' })).toBeDisabled();
+	expect(screen.getByRole('button', { name: 'Decrease Superficial' })).toBeDisabled();
 });
 
 test('a full track takes no more damage', async () => {
 	const user = userEvent.setup();
-	renderTrack('***');
+	renderTrack('xxx');
 	await openControls(user);
 
 	expect(await screen.findByRole('button', { name: 'Increase Aggravated' })).toBeDisabled();
-	expect(screen.getByRole('button', { name: 'Increase Bashing' })).toBeDisabled();
+	expect(screen.getByRole('button', { name: 'Increase Superficial' })).toBeDisabled();
 });
 
-test('permanent controls add and remove boxes', async () => {
+test('box controls add and remove boxes', async () => {
 	const user = userEvent.setup();
 	const bound = renderTrack('.....');
 	await openControls(user);
 
-	await user.click(await screen.findByRole('button', { name: 'Increase Permanent' }));
+	await user.click(await screen.findByRole('button', { name: 'Increase Boxes' }));
 	expect(boxes()).toHaveLength(6);
 
-	await user.click(screen.getByRole('button', { name: 'Decrease Permanent' }));
-	await user.click(screen.getByRole('button', { name: 'Decrease Permanent' }));
+	await user.click(screen.getByRole('button', { name: 'Decrease Boxes' }));
+	await user.click(screen.getByRole('button', { name: 'Decrease Boxes' }));
 	expect(boxes()).toHaveLength(4);
 	expect(bound.health).toBe('....');
 });
@@ -156,5 +162,5 @@ test('a track keeps at least one box', async () => {
 	renderTrack('.');
 	await openControls(user);
 
-	expect(await screen.findByRole('button', { name: 'Decrease Permanent' })).toBeDisabled();
+	expect(await screen.findByRole('button', { name: 'Decrease Boxes' })).toBeDisabled();
 });

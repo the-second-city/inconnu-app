@@ -22,11 +22,6 @@ export type Trait = {
 	subtraits: string[];
 };
 
-export type Grounding = {
-	path: string;
-	rating: number;
-};
-
 type PoolElem = number | string;
 export type TrackType = 'willpower' | 'health';
 
@@ -62,12 +57,7 @@ export interface Character {
 	traits: Trait[];
 	potency?: number;
 	hunger?: number;
-	generation?: number;
 	blood_potency?: number;
-	max_vitae?: number;
-	vitae?: number;
-	max_bp?: number;
-	blood_pool?: number;
 	log?: CharacterLog;
 }
 

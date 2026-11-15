@@ -6,13 +6,8 @@
 
 	import TrackBox from './damage/TrackBox.svelte';
 
-	type DamageSymbol = '.' | '/' | 'x' | '*';
+	type DamageSymbol = '.' | '/' | 'x';
 	type DamageAdjust = { title: string; symbol: DamageSymbol; dec: boolean; inc: boolean };
-	type ControlState = {
-		bashing: { dec: boolean; inc: boolean };
-		lethal: { dec: boolean; inc: boolean };
-		aggravated: { dec: boolean; inc: boolean };
-	};
 
 	interface ComponentProps {
 		character: Character;
@@ -24,6 +19,10 @@
 
 	let trackLabel = $derived(track.charAt(0).toUpperCase() + track.slice(1));
 	let showControls = $state(false);
+	// So the controls don't reopen by themselves when editing starts again
+	$effect(() => {
+		if (!editing) showControls = false;
+	});
 
 	// Edits happen on a local copy, which is written back to the character
 	let trackArray = $state(untrack(() => [...character[track]])) as DamageSymbol[];
@@ -32,78 +31,38 @@
 	});
 
 	let damageCounts = $derived.by(() => {
-		const counts = { '.': 0, '/': 0, x: 0, '*': 0 };
+		const counts = { '.': 0, '/': 0, x: 0 };
 		trackArray.forEach((c) => counts[c]++);
 		return counts;
 	});
-	let trackState = $derived.by(() => {
-		return {
-			hale: damageCounts['.'],
-			bashing: damageCounts['/'],
-			lethal: damageCounts['x'],
-			aggravated: damageCounts['*']
-		};
-	});
-	let controls: ControlState = $derived({
-		bashing: {
-			dec: trackState.bashing > 0,
-			inc: trackState.hale > 0
-		},
-		lethal: {
-			dec: trackState.lethal > 0,
-			inc: trackState.bashing + trackState.hale > 0
-		},
-		aggravated: {
-			dec: trackState.aggravated > 0,
-			inc: trackState.lethal + trackState.bashing + trackState.hale > 0
-		}
-	});
 
-	let levels: DamageAdjust[] = $derived.by(() => {
-		if (track === 'health') {
-			return [
-				{
-					title: 'Bashing',
-					symbol: '/',
-					dec: controls.bashing.dec,
-					inc: controls.bashing.inc
-				},
-				{
-					title: 'Lethal',
-					symbol: 'x',
-					dec: controls.lethal.dec,
-					inc: controls.lethal.inc
-				},
-				{
-					title: 'Aggravated',
-					symbol: '*',
-					dec: controls.aggravated.dec,
-					inc: controls.aggravated.inc
-				}
-			];
+	// Health and Willpower both take Superficial and Aggravated damage
+	let levels: DamageAdjust[] = $derived([
+		{
+			title: 'Superficial',
+			symbol: '/',
+			dec: damageCounts['/'] > 0,
+			inc: damageCounts['.'] > 0
+		},
+		{
+			title: 'Aggravated',
+			symbol: 'x',
+			dec: damageCounts['x'] > 0,
+			inc: damageCounts['/'] + damageCounts['.'] > 0
 		}
-		return [
-			{
-				title: 'Temporary',
-				symbol: '/',
-				dec: controls.bashing.dec,
-				inc: controls.bashing.inc
-			}
-		];
-	});
+	]);
 
 	function adjustTrack(symbol: DamageSymbol, amount: number): void {
 		const newCounts = { ...damageCounts };
 		newCounts[symbol] = Math.max(0, newCounts[symbol] + amount);
 
 		// Calculate total used slots
-		const totalDamage = newCounts['/'] + newCounts['x'] + newCounts['*'];
+		const totalDamage = newCounts['/'] + newCounts['x'];
 		const healthyDots = Math.max(0, trackArray.length - totalDamage);
 		newCounts['.'] = healthyDots;
 
-		// Rebuild the track with priority: aggravated > lethal > bashing > healthy
+		// Rebuild the track with priority: aggravated > superficial > healthy
 		trackArray = [
-			...Array(newCounts['*']).fill('*'),
 			...Array(newCounts['x']).fill('x'),
 			...Array(newCounts['/']).fill('/'),
 			...Array(newCounts['.']).fill('.')
@@ -112,74 +71,75 @@
 			.reverse() as DamageSymbol[];
 	}
 
-	function incPermanent() {
+	function incBoxes() {
 		trackArray.unshift('.');
 	}
 
-	function decPermanent() {
+	function decBoxes() {
 		trackArray.shift();
 	}
 </script>
 
 {trackLabel}
 
-<Popover bind:open={showControls} arrow>
-	{#snippet trigger()}
-		<div class="flex flex-wrap items-center gap-2">
-			{#each [...Array(trackArray.length).keys()].reverse() as index (index)}
-				<TrackBox value={trackArray[index]} />
-			{/each}
-		</div>
-	{/snippet}
-	{#snippet content()}
-		{#if !editing}
-			<p>Click "Edit" above to enable controls.</p>
-		{:else}
-			<div class="flex flex-col gap-2">
-				<div class="text-md text-center uppercase">{trackLabel}</div>
-				{#each levels as level (level.symbol)}
-					<div class="flex items-center justify-between gap-3">
-						<button
-							class="btn preset-tonal-surface"
-							disabled={!level.dec}
-							onclick={() => adjustTrack(level.symbol, -1)}
-							aria-label="Decrease {level.title}"
-						>
-							-
-						</button>
-						{level.title}
-						<button
-							class="btn preset-tonal-surface"
-							disabled={!level.inc}
-							onclick={() => adjustTrack(level.symbol, 1)}
-							aria-label="Increase {level.title}"
-						>
-							+
-						</button>
-					</div>
-				{/each}
+{#snippet boxes()}
+	<div class="flex flex-wrap items-center gap-2">
+		{#each [...Array(trackArray.length).keys()].reverse() as index (index)}
+			<TrackBox value={trackArray[index]} />
+		{/each}
+	</div>
+{/snippet}
 
-				<hr class="hr" />
-				<div class="flex items-center justify-between gap-3">
-					<button
-						class="btn preset-tonal-surface"
-						onclick={decPermanent}
-						disabled={trackArray.length == 1}
-						aria-label="Decrease Permanent"
-					>
-						-
-					</button>
-					Permanent
-					<button
-						class="btn preset-tonal-surface"
-						onclick={incPermanent}
-						disabled={trackArray.length == 15}
-						aria-label="Increase Permanent"
-					>
-						+
-					</button>
-				</div>
+{#snippet controls()}
+	<div class="flex flex-col gap-2">
+		<div class="text-md text-center uppercase">{trackLabel}</div>
+		{#each levels as level (level.symbol)}
+			<div class="flex items-center justify-between gap-3">
+				<button
+					class="btn preset-tonal-surface"
+					disabled={!level.dec}
+					onclick={() => adjustTrack(level.symbol, -1)}
+					aria-label="Decrease {level.title}"
+				>
+					-
+				</button>
+				{level.title}
+				<button
+					class="btn preset-tonal-surface"
+					disabled={!level.inc}
+					onclick={() => adjustTrack(level.symbol, 1)}
+					aria-label="Increase {level.title}"
+				>
+					+
+				</button>
 			</div>
-		{/if}
-	{/snippet}
-</Popover>
+		{/each}
+
+		<hr class="hr" />
+		<div class="flex items-center justify-between gap-3">
+			<button
+				class="btn preset-tonal-surface"
+				onclick={decBoxes}
+				disabled={trackArray.length == 1}
+				aria-label="Decrease Boxes"
+			>
+				-
+			</button>
+			Boxes
+			<button
+				class="btn preset-tonal-surface"
+				onclick={incBoxes}
+				disabled={trackArray.length == 15}
+				aria-label="Increase Boxes"
+			>
+				+
+			</button>
+		</div>
+	</div>
+{/snippet}
+
+{#if editing}
+	<Popover bind:open={showControls} trigger={boxes} content={controls} arrow />
+{:else}
+	{@render boxes()}
+{/if}

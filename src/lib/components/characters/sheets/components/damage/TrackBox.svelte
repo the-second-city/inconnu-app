@@ -2,8 +2,7 @@
 	import type { Component } from 'svelte';
 
 	import Hale from './Hale.svelte';
-	import Bashing from './Bashing.svelte';
-	import Lethal from './Lethal.svelte';
+	import Superficial from './Superficial.svelte';
 	import Aggravated from './Aggravated.svelte';
 
 	interface ComponentProps {
@@ -12,9 +11,8 @@
 
 	const boxMap: Record<string, Component> = {
 		'.': Hale,
-		'/': Bashing,
-		x: Lethal,
-		'*': Aggravated
+		'/': Superficial,
+		x: Aggravated
 	};
 
 	let { value }: ComponentProps = $props();

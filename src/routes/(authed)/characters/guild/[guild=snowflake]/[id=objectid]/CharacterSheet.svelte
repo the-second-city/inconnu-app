@@ -4,7 +4,6 @@
 	import TraitSheet from '$lib/components/characters/sheets/TraitSheet.svelte';
 	import MainTrackers from '$lib/components/characters/sheets/components/MainTrackers.svelte';
 	import BloodTrackers from '$lib/components/characters/sheets/components/BloodTrackers.svelte';
-	import Vampirism from '$lib/components/characters/sheets/components/wod/Vampirism.svelte';
 
 	interface ComponentProps {
 		character: Character;
@@ -18,16 +17,12 @@
 <div class="flex flex-col gap-3">
 	{#if isVampire}
 		<div class="grid grid-cols-1 items-stretch gap-3 md:grid-cols-2">
-			<MainTrackers bind:character editing={false} allowsPathChange={true} />
+			<MainTrackers bind:character editing={false} />
 			<BloodTrackers {character} />
 		</div>
 	{:else}
-		<MainTrackers bind:character editing={false} allowsPathChange={true} />
+		<MainTrackers bind:character editing={false} />
 	{/if}
 
 	<TraitSheet bind:traits={character.traits} splat={character.splat} editing={false} />
-
-	<!--
-	<Vampirism bind:character editing={false} />
-	-->
 </div>
