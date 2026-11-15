@@ -116,9 +116,9 @@
 				<div class="leading-relaxed">
 					{#if editing}
 						<textarea
-							class="textarea border"
+							class="textarea field-sizing-content max-h-[70vh] min-h-48 border leading-relaxed"
 							bind:value={profile.description}
-							rows="4"
+							rows="8"
 							maxlength="1500"
 						></textarea>
 					{:else if profile.description}
@@ -142,9 +142,9 @@
 				<div class="leading-relaxed">
 					{#if editing}
 						<textarea
-							class="textarea border"
+							class="textarea field-sizing-content max-h-[70vh] min-h-48 border leading-relaxed"
 							bind:value={profile.biography}
-							rows="4"
+							rows="8"
 							maxlength="1500"
 						></textarea>
 					{:else if profile.biography}
