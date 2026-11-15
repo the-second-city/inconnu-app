@@ -63,28 +63,40 @@
 			{/if}
 			{#if editing}
 				<!-- The field is as wide as its text, so the header (and the metadata aligned to its
-				     right edge) keeps its width. An invisible copy of the text, styled like the field,
-				     sizes the grid cell they share. Negative margins, the size of the field's padding
-				     (from Skeleton's `input`: (1rem - 0.125rem) / 2 + 0.25rem by 0.4375rem) plus its
-				     border, keep the text where it was. -->
+				     right edge) keeps its width, and wraps like the heading where it doesn't fit (on a
+				     phone). An invisible copy of the text, styled like the field, sizes the grid cell
+				     they share. Negative margins, the size of the field's padding (from Skeleton's
+				     `input`: (1rem - 0.125rem) / 2 + 0.25rem by 0.4375rem) plus its border, keep the
+				     text where it was. It's a textarea only to wrap: Enter and pasted line breaks don't
+				     add lines. -->
 				<span
 					class="-mx-[calc(0.6875rem+1px)] -my-[calc(0.4375rem+1px)] inline-grid max-w-full min-w-[4ch]"
 				>
 					<span
-						class="input h1 invisible col-start-1 row-start-1 w-auto! overflow-hidden border font-black whitespace-pre"
+						class="input h1 invisible col-start-1 row-start-1 w-auto! border font-black wrap-break-word whitespace-pre-wrap"
 						aria-hidden="true">{editedName}</span
 					>
-					<input
-						type="text"
-						size="1"
-						class="input h1 col-start-1 row-start-1 min-w-0 border font-black"
+					<!-- One column, so its default width (20 columns) doesn't size the grid; the copy does -->
+					<textarea
+						rows="1"
+						cols="1"
+						class="input h1 col-start-1 row-start-1 h-full min-w-0 resize-none overflow-hidden border font-black"
 						class:text-error-500={nameError}
 						class:border-error-500={nameError}
-						bind:value={editedName}
+						value={editedName}
+						oninput={(e) => {
+							// A name is one line
+							const value = e.currentTarget.value;
+							editedName = value.replace(/[\r\n]+/g, ' ');
+							if (editedName !== value) e.currentTarget.value = editedName;
+						}}
+						onkeydown={(e) => {
+							if (e.key === 'Enter') e.preventDefault();
+						}}
 						aria-label="Character name"
 						aria-invalid={nameError ? 'true' : undefined}
 						aria-describedby={nameError ? 'name-error' : undefined}
-					/>
+					></textarea>
 				</span>
 			{:else}
 				{name}

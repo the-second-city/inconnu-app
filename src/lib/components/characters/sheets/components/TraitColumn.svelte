@@ -111,13 +111,14 @@
 		<div class="flex flex-col gap-2">
 			{#each orderedIndices as index (traits[index].name)}
 				{#if editing && addable}
-					<div class="flex items-center gap-2">
+					<!-- The ✕ stays by the name when a long name wraps the dots onto a second line -->
+					<div class="flex items-start gap-2">
 						<div class="min-w-0 flex-1">
 							<TraitSelector bind:trait={traits[index]} {editing} {allowsSubtraits} />
 						</div>
 						<button
 							type="button"
-							class="hover:preset-tonal-error shrink-0 rounded-full p-1"
+							class="hover:preset-tonal-error mt-0.5 shrink-0 rounded-full p-1"
 							onclick={() => removeTrait(index)}
 							aria-label="Remove {traits[index].name}"
 							title="Remove {traits[index].name}"

@@ -325,6 +325,9 @@
 </Dialog>
 
 {#if editable}
+	<!-- Room at the end of the page, so its last rows can scroll clear of the floating buttons -->
+	<div class="h-24 sm:hidden" aria-hidden="true"></div>
+
 	<!-- Mobile floating edit buttons -->
 	<div class="fixed right-6 bottom-6 z-40 sm:hidden">
 		<div class="p-4">
