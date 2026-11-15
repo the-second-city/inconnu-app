@@ -6,19 +6,26 @@ import { beforeEach, expect, test, vi } from 'vitest';
 import type { Character, Guild } from '$lib/types';
 import { navigate, page } from '$lib/testing/page.svelte';
 import CharacterPage from './CharacterPage.svelte';
+import { CHARACTER_DEPENDENCY } from '$lib/liveUpdates';
 
 // SvelteKit's router doesn't run in tests: `page` is reactive state, which `goto` updates
 const goto = vi.hoisted(() => vi.fn());
+const invalidate = vi.hoisted(() => vi.fn(async () => {}));
 // The page's beforeNavigate callback, so tests can call it as SvelteKit would
 const navigation = vi.hoisted(() => ({ before: null as ((nav: unknown) => void) | null }));
 vi.mock('$app/state', () => import('$lib/testing/page.svelte'));
 vi.mock('$app/paths', () => ({ resolve: (route: string) => route }));
 vi.mock('$app/navigation', () => ({
 	goto,
+	invalidate,
 	beforeNavigate: (callback: (nav: unknown) => void) => {
 		navigation.before = callback;
 	}
 }));
+
+// The API, for saves
+const fetchMock = vi.hoisted(() => vi.fn<typeof fetch>());
+vi.stubGlobal('fetch', fetchMock);
 
 beforeEach(() => {
 	navigate('http://localhost/');
@@ -27,6 +34,9 @@ beforeEach(() => {
 	vi.restoreAllMocks();
 	// jsdom has no confirm(); agree to discarding edits unless a test says otherwise
 	vi.spyOn(window, 'confirm').mockReturnValue(true);
+	// Saves succeed unless a test says otherwise
+	invalidate.mockClear();
+	fetchMock.mockReset().mockResolvedValue(new Response(null, { status: 204 }));
 });
 
 const GUILD: Guild = { id: '111', name: 'Camarilla of Chicago', icon: null, count: null };
@@ -108,6 +118,13 @@ test('arrow keys move between tabs', async () => {
 const editButton = (name: 'Edit' | 'Save' | 'Cancel'): HTMLElement =>
 	screen.getAllByRole('button', { name })[0];
 
+/** Wait for a save to finish, which leaves edit mode. */
+const saved = async (): Promise<void> => {
+	await waitFor(() =>
+		expect(screen.queryByRole('textbox', { name: 'Character name' })).not.toBeInTheDocument()
+	);
+};
+
 /** The profile description's text box, while editing. */
 const descriptionBox = (): HTMLElement => within(panel()).getAllByRole('textbox')[0];
 
@@ -141,6 +158,7 @@ test('saving keeps the edits', async () => {
 	await user.click(editButton('Edit'));
 	await user.type(descriptionBox(), ' Scarred.');
 	await user.click(editButton('Save'));
+	await saved();
 
 	expect(within(panel()).getByText('Tall and pale. Scarred.')).toBeInTheDocument();
 	expect(within(panel()).queryByRole('textbox')).not.toBeInTheDocument();
@@ -157,6 +175,7 @@ test('edits after a cancel still apply', async () => {
 	await user.click(editButton('Edit'));
 	await user.type(descriptionBox(), ' Scarred.');
 	await user.click(editButton('Save'));
+	await saved();
 
 	expect(within(panel()).getByText('Tall and pale. Scarred.')).toBeInTheDocument();
 });
@@ -176,6 +195,7 @@ test('new data after an edit session keeps its new name', async () => {
 	await user.click(editButton('Edit'));
 	await user.type(nameBox(), 'h');
 	await user.click(editButton('Save'));
+	await saved();
 
 	// Renamed elsewhere, such as in Discord
 	await rerender({ guild: GUILD, character: { ...character(), name: 'Nadia Vasquez' } });
@@ -192,6 +212,7 @@ test('saving keeps the edits even if new data arrived while editing', async () =
 
 	await rerender({ guild: GUILD, character: character() });
 	await user.click(editButton('Save'));
+	await saved();
 
 	expect(within(panel()).getByText('Tall and pale. Scarred.')).toBeInTheDocument();
 });
@@ -403,6 +424,7 @@ test('renaming, then saving, keeps the new name, normalized', async () => {
 	await user.type(nameBox(), '  Nadia   Petrova ');
 	expect(nameBox()).toHaveValue('  Nadia   Petrova '); // Typing isn't normalized as it goes
 	await user.click(editButton('Save'));
+	await saved();
 
 	expect(screen.queryByRole('textbox', { name: 'Character name' })).not.toBeInTheDocument();
 	expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('Nadia Petrova');
@@ -484,6 +506,7 @@ test('a character without convictions can add them', async () => {
 	await user.click(editButton('Edit'));
 	await user.type(convictionBoxes()[1], '  Never   lie ');
 	await user.click(editButton('Save'));
+	await saved();
 
 	expect(
 		within(panel())
@@ -693,6 +716,7 @@ test("the notice's Proceed Anyway keeps editing, and Save keeps the edits", asyn
 	await user.click(within(await staleNotice()).getByRole('button', { name: 'Proceed Anyway' }));
 	expect(nameBox()).toHaveValue('Nadiah');
 	await user.click(editButton('Save'));
+	await saved();
 
 	expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('Nadiah');
 });
@@ -740,6 +764,7 @@ test.each([
 	const event = press(key, modifiers);
 
 	expect(event.defaultPrevented).toBe(true);
+	await saved();
 	expect(screen.queryByRole('textbox', { name: 'Character name' })).not.toBeInTheDocument();
 	expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('Nadiah');
 });
@@ -792,4 +817,153 @@ test('Save and Cancel name their shortcuts', async () => {
 
 	expect(editButton('Save')).toHaveAttribute('aria-keyshortcuts', 'Meta+S Control+S');
 	expect(editButton('Cancel')).toHaveAttribute('aria-keyshortcuts', 'Escape');
+});
+
+/** The body of the last save sent to the API. */
+const sentBody = (): Record<string, unknown> =>
+	JSON.parse(fetchMock.mock.calls.at(-1)?.[1]?.body as string) as Record<string, unknown>;
+
+/** A validation error response from the API. */
+const invalidResponse = (loc: (string | number)[], msg: string): Response =>
+	Response.json({ detail: [{ loc, msg, type: 'value_error' }] }, { status: 422 });
+
+test('saving sends the edits to the API, then refetches the character', async () => {
+	const user = userEvent.setup();
+	renderPage();
+	await makeChange(user);
+
+	await user.click(editButton('Save'));
+	await saved();
+
+	expect(fetchMock).toHaveBeenCalledWith(
+		'/api/characters/[id=objectid]',
+		expect.objectContaining({ method: 'PATCH' })
+	);
+	expect(sentBody()).toMatchObject({ name: 'Nadiah', health: '......', humanity: 7 });
+	expect(sentBody()).not.toHaveProperty('potency'); // A mortal
+	expect(invalidate).toHaveBeenCalledWith(CHARACTER_DEPENDENCY);
+});
+
+test('while saving, Save and Cancel are disabled', async () => {
+	const user = userEvent.setup();
+	let answer: (response: Response) => void = () => {};
+	fetchMock.mockReturnValueOnce(new Promise((resolve) => (answer = resolve)));
+	renderPage();
+	await makeChange(user);
+
+	await user.click(editButton('Save'));
+
+	expect(editButton('Save')).toBeDisabled();
+	expect(editButton('Save')).toHaveAttribute('aria-busy', 'true');
+	expect(editButton('Cancel')).toBeDisabled();
+	answer(new Response(null, { status: 204 }));
+	await saved();
+});
+
+test("the API's error for the name shows with the name, until it's changed", async () => {
+	const user = userEvent.setup();
+	fetchMock.mockResolvedValueOnce(
+		invalidResponse(['body', 'name'], "There's already a character named `Nadiah`.")
+	);
+	renderPage();
+	await makeChange(user);
+
+	await user.click(editButton('Save'));
+
+	await waitFor(() =>
+		expect(nameBox()).toHaveAccessibleDescription("There's already a character named `Nadiah`.")
+	);
+	expect(editButton('Save')).toBeDisabled();
+
+	await user.type(nameBox(), 'x');
+	expect(nameBox()).not.toHaveAccessibleDescription();
+	expect(editButton('Save')).toBeEnabled();
+});
+
+test('other errors are listed, and the edits stay', async () => {
+	const user = userEvent.setup();
+	fetchMock.mockResolvedValueOnce(
+		invalidResponse(['body', 'traits', 0, 'rating'], '`Strength` must be between 0 and 5.')
+	);
+	renderPage();
+	await makeChange(user);
+
+	await user.click(editButton('Save'));
+
+	const alert = await screen.findByRole('alert');
+	expect(within(alert).getByText("Your changes weren't saved.")).toBeInTheDocument();
+	expect(
+		within(alert).getByText('Strength: `Strength` must be between 0 and 5.')
+	).toBeInTheDocument();
+	expect(nameBox()).toHaveValue('Nadiah');
+	expect(invalidate).not.toHaveBeenCalled();
+});
+
+test('an unreachable API says so, and the edits stay', async () => {
+	const user = userEvent.setup();
+	fetchMock.mockRejectedValueOnce(new TypeError('fetch failed'));
+	renderPage();
+	await makeChange(user);
+
+	await user.click(editButton('Save'));
+
+	expect(await screen.findByRole('alert')).toHaveTextContent(
+		"Couldn't reach Inconnu to save your changes."
+	);
+	expect(nameBox()).toHaveValue('Nadiah');
+});
+
+test("cancelling clears a failed save's errors", async () => {
+	const user = userEvent.setup();
+	fetchMock.mockRejectedValueOnce(new TypeError('fetch failed'));
+	renderPage();
+	await makeChange(user);
+	await user.click(editButton('Save'));
+	await screen.findByRole('alert');
+
+	await user.click(editButton('Cancel'));
+	await user.click(editButton('Edit'));
+
+	expect(screen.queryByRole('alert')).not.toBeInTheDocument();
+});
+
+test("new data that changes only images doesn't open the notice, as Save doesn't send them", async () => {
+	const user = userEvent.setup();
+	const { rerender } = renderPage();
+	await makeChange(user);
+
+	const fresh = character();
+	fresh.profile.images = ['https://example.com/new.webp'];
+	await rerender({ guild: GUILD, character: fresh });
+
+	expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument();
+});
+
+test("a failed save's errors don't come back after Reload", async () => {
+	const user = userEvent.setup();
+	fetchMock.mockRejectedValueOnce(new TypeError('fetch failed'));
+	const { rerender } = renderPage();
+	await makeChange(user);
+	await user.click(editButton('Save'));
+	await screen.findByRole('alert');
+
+	await rerender({ guild: GUILD, character: { ...character(), name: 'Nadia Vasquez' } });
+	await user.click(within(await staleNotice()).getByRole('button', { name: 'Reload' }));
+	await user.click(editButton('Edit'));
+
+	expect(screen.queryByRole('alert')).not.toBeInTheDocument();
+});
+
+test("⌘S doesn't save while the notice asks whether to keep the edits", async () => {
+	const user = userEvent.setup();
+	const { rerender } = renderPage();
+	await makeChange(user);
+	await rerender({ guild: GUILD, character: { ...character(), name: 'Nadia Vasquez' } });
+	await staleNotice();
+
+	const event = press('s', { metaKey: true });
+
+	expect(event.defaultPrevented).toBe(true);
+	expect(fetchMock).not.toHaveBeenCalled();
+	expect(nameBox()).toHaveValue('Nadiah');
 });

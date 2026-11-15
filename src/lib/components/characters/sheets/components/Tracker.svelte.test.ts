@@ -61,14 +61,18 @@ test('shows the chosen track', () => {
  * Render a track as the character sheet does, with the character as reactive state so the
  * track's edits are written back to it. Returns that state.
  */
-const renderTrack = (health: string, track: 'health' | 'willpower' = 'health', editing = true) => {
+const renderTrack = (
+	health: string,
+	track: 'health' | 'willpower' = 'health',
+	editing = true
+): Character => {
 	const bound = $state(character(health, '.....'));
 	render(Tracker, { character: bound, track, editing });
 	return bound;
 };
 
 /** Open the track's controls by clicking its boxes. */
-const openControls = async (user: ReturnType<typeof userEvent.setup>) => {
+const openControls = async (user: ReturnType<typeof userEvent.setup>): Promise<void> => {
 	await user.click(screen.getByRole('button', { name: /^(Healthy|Superficial|Aggravated)/ }));
 };
 

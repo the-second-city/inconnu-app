@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/svelte';
+import { render, screen, type RenderResult } from '@testing-library/svelte';
 import { expect, test } from 'vitest';
 
 import type { Splat, Trait } from '$lib/types';
@@ -13,7 +13,11 @@ const BASICS = [trait('Strength', 'attribute'), trait('Athletics', 'skill')];
  * Render a sheet for a `splat` with the given traits. The traits are reactive state, as the wizard
  * passes them, since the sheet binds each one down to its rating.
  */
-const renderSheet = (traits: Trait[], splat: Splat = 'vampire', editing = false) => {
+const renderSheet = (
+	traits: Trait[],
+	splat: Splat = 'vampire',
+	editing = false
+): RenderResult<typeof TraitSheet> => {
 	const bound = $state({ traits });
 	return render(TraitSheet, { traits: bound.traits, splat, editing });
 };

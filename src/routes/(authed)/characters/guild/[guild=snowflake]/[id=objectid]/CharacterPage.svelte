@@ -2,11 +2,14 @@
 	import { onMount, untrack, type Snippet } from 'svelte';
 	import { fade } from 'svelte/transition';
 	import { Dialog, Tabs } from '@skeletonlabs/skeleton-svelte';
-	import { Ban, Check, Pencil } from '@lucide/svelte';
+	import { Ban, Check, Loader2, Pencil } from '@lucide/svelte';
 
 	import { characterNameError, normalize } from '$lib';
 
-	import { beforeNavigate, goto } from '$app/navigation';
+	import { beforeNavigate, goto, invalidate } from '$app/navigation';
+	import { resolve } from '$app/paths';
+	import { editBody, saveErrors, type SaveErrors } from '$lib/characterEdit';
+	import { CHARACTER_DEPENDENCY } from '$lib/liveUpdates';
 	import { page } from '$app/state';
 	import type { Pathname } from '$app/types';
 	import type { Character, Guild, OwnerData } from '$lib/types';
@@ -23,7 +26,7 @@
 		owner?: OwnerData | null;
 		spc?: boolean;
 		backUrl?: Pathname;
-		editable?: boolean; // Shows the edit buttons. Off until characters can be saved
+		editable?: boolean; // Shows the edit buttons
 	}
 
 	let {
@@ -108,21 +111,26 @@
 	// typing would strip the space before the next word.
 	let newName = $state('');
 	const normalizedNewName = $derived(normalize(newName));
-	const nameError = $derived(editing ? characterNameError(normalizedNewName) : null);
 
-	/** A character as Save would store it, for telling whether anything changed: the name and
-	 * convictions normalized, blank convictions (such as edit mode's empty slots) dropped, and the
-	 * fields edit mode can't change (the Chronicle log, which each roll updates, and experience)
-	 * left out. */
+	// A failed save's errors. The bot's error for the name shows with the name until it's changed
+	let saveError: SaveErrors | null = $state(null);
+	let rejectedName = $state('');
+	const nameError = $derived.by(() => {
+		if (!editing) return null;
+		const serverError = normalizedNewName === rejectedName ? saveError?.name : null;
+		return characterNameError(normalizedNewName) ?? serverError ?? null;
+	});
+
+	// A save in progress: the buttons and shortcuts wait for it
+	let saving = $state(false);
+
+	/** What Save would send for a character, for telling whether anything changed. It's only the
+	 * editable fields, so changes elsewhere (the Chronicle log, which each roll updates, or images
+	 * added in Discord) don't count. Blank convictions (such as edit mode's empty slots) are left
+	 * out, as the bot drops them. */
 	const comparable = (char: Character, name: string): string => {
-		const editable: Partial<Character> = {
-			...$state.snapshot(char),
-			name: normalize(name),
-			convictions: (char.convictions ?? []).map(normalize).filter(Boolean)
-		};
-		delete editable.log;
-		delete editable.experience;
-		return JSON.stringify(editable);
+		const body = editBody(char, name);
+		return JSON.stringify({ ...body, convictions: body.convictions.filter(Boolean) });
 	};
 
 	// The character when editing began, to compare the edits against
@@ -135,7 +143,8 @@
 	let noticed: Character | null = null;
 	$effect(() => {
 		const fresh = initialCharacter;
-		if (!editing || fresh === applied || fresh === noticed) return;
+		// Not while saving: the save's own "changed" event would bring it
+		if (!editing || saving || fresh === applied || fresh === noticed) return;
 		noticed = fresh;
 		if (untrack(() => comparable(fresh, fresh.name) !== comparable(applied, applied.name))) {
 			showStaleNotice = true;
@@ -145,6 +154,7 @@
 	/** Take the fresh data, leaving edit mode and discarding the edits. */
 	const reloadFresh = () => {
 		showStaleNotice = false;
+		saveError = null;
 		editing = false;
 		copy = null;
 		applied = initialCharacter;
@@ -152,6 +162,7 @@
 	};
 
 	const enterEditMode = () => {
+		saveError = null; // A failed save's errors belong to that edit
 		editing = true;
 		copy = $state.snapshot(character);
 		baseline = comparable(copy, copy.name);
@@ -171,18 +182,49 @@
 	});
 
 	const cancelEditing = () => {
-		if (!confirmDiscard()) return;
+		if (saving || !confirmDiscard()) return;
+		saveError = null;
 		editing = false;
 		if (copy) character = copy;
 		copy = null;
 	};
-	const saveChanges = () => {
-		if (nameError || !hasChanges) return;
-		character.name = normalizedNewName;
-		character.convictions = character.convictions?.map(normalize);
-		applied = initialCharacter; // Data that arrived while editing would undo the edits
-		editing = false;
-		copy = null;
+	/**
+	 * Send the edits to the bot. On success, leave edit mode and refetch the character, so the page
+	 * shows what the bot stored. On failure, stay in edit mode and show why.
+	 */
+	const saveChanges = async () => {
+		if (saving || nameError || !hasChanges) return;
+		saving = true;
+		saveError = null;
+		const body = editBody($state.snapshot(character), newName);
+
+		try {
+			const url = resolve('/api/characters/[id=objectid]', { id: character._id });
+			const response = await fetch(url, {
+				method: 'PATCH',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify(body)
+			});
+
+			if (response.ok) {
+				character.name = body.name;
+				character.convictions = body.convictions.filter(Boolean);
+				applied = initialCharacter; // Until the refetch, the edits stand
+				editing = false;
+				copy = null;
+				// A failed refetch shows itself (the error page)
+				invalidate(CHARACTER_DEPENDENCY).catch(() => {});
+				return;
+			}
+
+			const json = await response.json().catch(() => null);
+			saveError = saveErrors(response.status, json, body);
+			rejectedName = body.name;
+		} catch {
+			saveError = { name: null, messages: ["Couldn't reach Inconnu to save your changes."] };
+		} finally {
+			saving = false;
+		}
 	};
 
 	// Keyboard shortcuts while editing: ⌘/Ctrl+S or ⌘/Ctrl+Enter saves, Escape cancels. The
@@ -200,11 +242,12 @@
 
 	// Captured, so it runs before an open popover or dialog handles (and closes on) Escape
 	const handleShortcut = (e: KeyboardEvent) => {
-		if (!editing || e.isComposing) return;
+		if (!editing || saving || e.isComposing) return;
 		const mod = e.metaKey || e.ctrlKey;
 		if (mod && (e.key === 's' || e.key === 'S' || e.key === 'Enter')) {
 			e.preventDefault(); // Not the browser's "save page", even when there's nothing to save
-			saveChanges();
+			// Not under the "was updated" notice: it asks first whether to keep these edits
+			if (!showStaleNotice) saveChanges();
 		} else if (e.key === 'Escape' && !mod && !layerOpen()) {
 			e.preventDefault();
 			cancelEditing();
@@ -278,6 +321,7 @@
 					<button
 						class="btn preset-tonal-error"
 						onclick={cancelEditing}
+						disabled={saving}
 						title="Cancel (Esc)"
 						aria-keyshortcuts="Escape"
 					>
@@ -287,11 +331,16 @@
 					<button
 						class="btn preset-filled-success-500"
 						onclick={saveChanges}
-						disabled={nameError !== null || !hasChanges}
+						disabled={saving || nameError !== null || !hasChanges}
+						aria-busy={saving}
 						title="Save ({modKey}S)"
 						aria-keyshortcuts="Meta+S Control+S"
 					>
-						<Check size={18} />
+						{#if saving}
+							<Loader2 size={18} class="animate-spin" />
+						{:else}
+							<Check size={18} />
+						{/if}
 						<span>Save</span>
 					</button>
 				{:else}
@@ -303,6 +352,16 @@
 			</div>
 		{/if}
 	</div>
+	{#if editing && saveError && saveError.messages.length > 0}
+		<div class="card preset-tonal-error mb-4 p-4" role="alert">
+			<p class="font-semibold">Your changes weren't saved.</p>
+			<ul class="mt-1 list-inside list-disc text-sm">
+				{#each saveError.messages as message, i (i)}
+					<li>{message}</li>
+				{/each}
+			</ul>
+		</div>
+	{/if}
 	{#each tabs as tab (tab.value)}
 		<Tabs.Content value={tab.value}>
 			{@render tab.content()}
@@ -371,6 +430,7 @@
 					<button
 						class="from-error-400 to-error-600 border-surface-50/20 hover:shadow-error-500/50 relative flex aspect-square size-14 items-center justify-center overflow-hidden !rounded-full border-2 bg-gradient-to-br text-white shadow-xl transition-all duration-300 ease-out hover:scale-110 active:scale-95"
 						onclick={cancelEditing}
+						disabled={saving}
 						aria-label="Cancel"
 					>
 						<Ban strokeWidth={3} class="drop-shadow-md" size={24} />
@@ -378,10 +438,15 @@
 					<button
 						class="from-success-400 to-success-600 border-surface-50/20 hover:shadow-success-500/50 relative flex aspect-square size-14 items-center justify-center overflow-hidden !rounded-full border-2 bg-gradient-to-br text-white shadow-xl transition-all duration-300 ease-out hover:scale-110 active:scale-95"
 						onclick={saveChanges}
-						disabled={nameError !== null || !hasChanges}
+						disabled={saving || nameError !== null || !hasChanges}
+						aria-busy={saving}
 						aria-label="Save"
 					>
-						<Check color="#000" strokeWidth={3} class="drop-shadow-md" size={24} />
+						{#if saving}
+							<Loader2 color="#000" strokeWidth={3} class="animate-spin drop-shadow-md" size={24} />
+						{:else}
+							<Check color="#000" strokeWidth={3} class="drop-shadow-md" size={24} />
+						{/if}
 					</button>
 				{:else}
 					<button
