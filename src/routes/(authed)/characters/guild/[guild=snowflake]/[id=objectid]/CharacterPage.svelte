@@ -148,7 +148,8 @@
 
 {#snippet sheetTab()}
 	{#key character}
-		<CharacterSheet bind:character {editing} />
+		<!-- Tracker actions follow `editable` for now; they'll be for owners only (not STs) -->
+		<CharacterSheet bind:character {editing} actionable={editable} />
 	{/key}
 {/snippet}
 

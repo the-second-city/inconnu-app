@@ -8,15 +8,16 @@
 	interface ComponentProps {
 		character: Character;
 		editing: boolean;
+		actionable?: boolean; // Outside edit mode, the damage tracks offer actions
 	}
 
-	let { character = $bindable(), editing }: ComponentProps = $props();
+	let { character = $bindable(), editing, actionable = false }: ComponentProps = $props();
 </script>
 
 <Card alignment="center" extraClasses="px-2 h-full justify-center">
 	<div class="grid grid-cols-[120px_1fr] gap-2">
-		<Tracker bind:character track="health" {editing} />
-		<Tracker bind:character track="willpower" {editing} />
+		<Tracker bind:character track="health" {editing} {actionable} />
+		<Tracker bind:character track="willpower" {editing} {actionable} />
 		<Humanity bind:character {editing} />
 	</div>
 </Card>

@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/svelte';
+import { render, screen, within } from '@testing-library/svelte';
 import userEvent from '@testing-library/user-event';
 import { expect, test } from 'vitest';
 
@@ -163,4 +163,93 @@ test('a track keeps at least one box', async () => {
 	await openControls(user);
 
 	expect(await screen.findByRole('button', { name: 'Decrease Boxes' })).toBeDisabled();
+});
+
+/** Render a track in view mode, offering its actions, and open them. Returns the action menu. */
+const openActions = async (
+	health: string,
+	track: 'health' | 'willpower' = 'health',
+	willpower = '.....'
+): Promise<HTMLElement> => {
+	const user = userEvent.setup();
+	render(Tracker, {
+		character: character(health, willpower),
+		track,
+		editing: false,
+		actionable: true
+	});
+	await user.click(
+		screen.getByRole('button', { name: `${track === 'health' ? 'Health' : 'Willpower'} actions` })
+	);
+	return screen.findByRole('dialog');
+};
+
+/** The names of a menu's buttons, with "(disabled)" after those that are. */
+const menuButtons = (menu: HTMLElement): string[] =>
+	within(menu)
+		.getAllByRole('button')
+		.map(
+			(button) =>
+				`${button.textContent?.trim()}${button.hasAttribute('disabled') ? ' (disabled)' : ''}`
+		);
+
+test('the track offers no actions unless actionable', () => {
+	renderTrack('..//x', 'health', false);
+
+	expect(screen.queryByRole('button', { name: 'Health actions' })).not.toBeInTheDocument();
+});
+
+test('while editing, an actionable track opens the corrections, not the actions', () => {
+	render(Tracker, {
+		character: character('.....'),
+		track: 'health',
+		editing: true,
+		actionable: true
+	});
+
+	expect(screen.queryByRole('button', { name: 'Health actions' })).not.toBeInTheDocument();
+});
+
+test('Health offers damage and mending', async () => {
+	const menu = await openActions('..//x');
+
+	expect(menuButtons(menu)).toEqual(['Take Damage', 'Superficial', 'Aggravated']);
+	expect(within(menu).getByRole('group', { name: 'Mend' })).toBeInTheDocument();
+});
+
+test('Willpower offers no mending', async () => {
+	const menu = await openActions('.....', 'willpower', '..//x');
+
+	expect(menuButtons(menu)).toEqual(['Take Damage']);
+	expect(within(menu).queryByRole('group', { name: 'Mend' })).not.toBeInTheDocument();
+});
+
+test.each([
+	['.....', ['Take Damage', 'Superficial (disabled)', 'Aggravated (disabled)']],
+	['...//', ['Take Damage', 'Superficial', 'Aggravated (disabled)']],
+	['...xx', ['Take Damage', 'Superficial (disabled)', 'Aggravated']],
+	['/////', ['Take Damage', 'Superficial', 'Aggravated (disabled)']],
+	['xxxxx', ['Take Damage (disabled)', 'Superficial (disabled)', 'Aggravated']]
+])('with Health %j, the actions are %j', async (health, expected) => {
+	expect(menuButtons(await openActions(health))).toEqual(expected);
+});
+
+test.each([
+	[
+		'health',
+		"These changes won't appear in the Chronicle log. To log damage or mending, exit edit mode first."
+	],
+	[
+		'willpower',
+		"These changes won't appear in the Chronicle log. To log damage, exit edit mode first."
+	]
+] as const)('the %s corrections say how to log changes instead', async (track, footnote) => {
+	const user = userEvent.setup();
+	renderTrack('..//x', track);
+
+	await openControls(user);
+
+	const controls = await screen.findByRole('dialog');
+	expect(within(controls).getByText('Make Corrections')).toBeInTheDocument();
+	expect(within(controls).getByText(footnote)).toBeInTheDocument();
 });

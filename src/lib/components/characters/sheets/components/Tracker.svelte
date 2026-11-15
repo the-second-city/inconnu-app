@@ -13,15 +13,18 @@
 		character: Character;
 		track: TrackType;
 		editing: boolean;
+		actionable?: boolean; // Outside edit mode, clicking the track offers actions (Take Damage, ...)
 	}
 
-	let { character = $bindable(), track, editing }: ComponentProps = $props();
+	let { character = $bindable(), track, editing, actionable = false }: ComponentProps = $props();
 
 	let trackLabel = $derived(track.charAt(0).toUpperCase() + track.slice(1));
 	let showControls = $state(false);
-	// So the controls don't reopen by themselves when editing starts again
+	let showActions = $state(false);
+	// So neither popover reopens by itself when the mode switches back
 	$effect(() => {
 		if (!editing) showControls = false;
+		if (editing) showActions = false;
 	});
 
 	// Edits happen on a local copy, which is written back to the character
@@ -71,6 +74,9 @@
 			.reverse() as DamageSymbol[];
 	}
 
+	// Superficial damage on a full track becomes aggravated, so damage lands until it's all aggravated
+	const canTakeDamage = $derived(damageCounts['x'] < trackArray.length);
+
 	function incBoxes() {
 		trackArray.unshift('.');
 	}
@@ -92,7 +98,7 @@
 
 {#snippet controls()}
 	<div class="flex flex-col gap-2">
-		<div class="text-md text-center uppercase">{trackLabel}</div>
+		<div class="text-md text-center uppercase">Make Corrections</div>
 		{#each levels as level (level.symbol)}
 			<div class="flex items-center justify-between gap-3">
 				<button
@@ -104,6 +110,7 @@
 					-
 				</button>
 				{level.title}
+				{trackLabel}
 				<button
 					class="btn preset-tonal-surface"
 					disabled={!level.inc}
@@ -135,11 +142,57 @@
 				+
 			</button>
 		</div>
+		<!-- Corrections aren't logged; damage and mending are, through the actions outside edit mode -->
+		<p class="text-surface-200 mt-2 max-w-60 text-center text-xs">
+			These changes won't appear in the Chronicle log. To log
+			{track === 'health' ? 'damage or mending' : 'damage'}, exit edit mode first.
+		</p>
+	</div>
+{/snippet}
+
+<!-- Not wired up yet: these will call the bot, which logs and reports them. Corrections are in
+     edit mode instead. -->
+{#snippet actions()}
+	<div class="flex w-60 flex-col gap-2">
+		<div class="text-md text-center uppercase">{trackLabel}</div>
+		<button type="button" class="btn preset-tonal-surface" disabled={!canTakeDamage}>
+			Take Damage
+		</button>
+		<!-- Willpower doesn't mend; the bot restores it through awaken -->
+		{#if track === 'health'}
+			<fieldset class="border-surface-400-600 rounded-base mt-2 border px-2 pb-2">
+				<legend class="mx-auto px-2 text-sm uppercase">Mend</legend>
+				<div class="flex gap-2">
+					<button
+						type="button"
+						class="btn preset-tonal-surface flex-1"
+						disabled={damageCounts['/'] === 0}
+					>
+						Superficial
+					</button>
+					<button
+						type="button"
+						class="btn preset-tonal-surface flex-1"
+						disabled={damageCounts['x'] === 0}
+					>
+						Aggravated
+					</button>
+				</div>
+			</fieldset>
+		{/if}
 	</div>
 {/snippet}
 
 {#if editing}
 	<Popover bind:open={showControls} trigger={boxes} content={controls} arrow />
+{:else if actionable}
+	<Popover
+		bind:open={showActions}
+		trigger={boxes}
+		content={actions}
+		triggerLabel="{trackLabel} actions"
+		arrow
+	/>
 {:else}
 	{@render boxes()}
 {/if}
