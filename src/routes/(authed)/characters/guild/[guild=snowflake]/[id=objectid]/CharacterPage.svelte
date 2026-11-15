@@ -77,7 +77,9 @@
 	/** Select a tab by putting it in the URL, without adding a history entry. */
 	const selectTab = (tab: string) => {
 		const url = tab === defaultTab ? `${pathname}${search}` : hashFor(tab);
-		// An aborted navigation (say, a quick second click) leaves the tab as the URL has it
+		// An aborted navigation (say, a quick second click) leaves the tab as the URL has it.
+		// The URL is the current page's own path or just a hash, so there's no route to resolve.
+		// eslint-disable-next-line svelte/no-navigation-without-resolve
 		goto(url, { replaceState: true, noScroll: true, keepFocus: true }).catch(() => {});
 	};
 

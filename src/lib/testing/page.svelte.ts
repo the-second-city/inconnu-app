@@ -4,12 +4,14 @@
  *
  * Use it with `vi.mock('$app/state', () => import('$lib/testing/page.svelte'))`.
  */
+import { SvelteURL } from 'svelte/reactivity';
+
 export const page = $state<{ url: URL; data: Record<string, unknown> }>({
-	url: new URL('http://localhost/'),
+	url: new SvelteURL('http://localhost/'),
 	data: { session: null }
 });
 
 /** Navigate to a URL, relative to the current one, as SvelteKit's router would. */
 export const navigate = (url: string): void => {
-	page.url = new URL(url, page.url);
+	page.url = new SvelteURL(url, page.url);
 };
