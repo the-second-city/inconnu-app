@@ -313,3 +313,23 @@ test.each([
 		expect(within(menu).queryByRole('button', { name: 'Rouse' })).not.toBeInTheDocument();
 	}
 );
+
+test.each([
+	['Superficial', 'superficial'],
+	['Aggravated', 'aggravated']
+] as const)("Health's Mend %s button opens the Mend modal for it", async (button, type) => {
+	const user = userEvent.setup();
+	const onMend = vi.fn();
+	render(Tracker, {
+		character: character('..//x'),
+		track: 'health',
+		editing: false,
+		actionable: true,
+		onMend
+	});
+	await user.click(screen.getByRole('button', { name: 'Health actions' }));
+
+	await user.click(within(await screen.findByRole('dialog')).getByRole('button', { name: button }));
+
+	expect(onMend).toHaveBeenCalledWith(type);
+});

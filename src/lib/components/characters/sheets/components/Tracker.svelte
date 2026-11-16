@@ -15,6 +15,7 @@
 		editing: boolean;
 		actionable?: boolean; // Outside edit mode, clicking the track offers actions (Take Damage, ...)
 		onRouse?: () => void; // A ghoul's Health menu offers Rouse, as ghouls pay for it in Health
+		onMend?: (type: 'superficial' | 'aggravated') => void; // Health's Mend buttons open the Mend modal
 	}
 
 	let {
@@ -22,8 +23,15 @@
 		track,
 		editing,
 		actionable = false,
-		onRouse
+		onRouse,
+		onMend
 	}: ComponentProps = $props();
+
+	/** Close the menu, and open the Mend modal for a kind of damage. */
+	const startMend = (type: 'superficial' | 'aggravated') => {
+		showActions = false;
+		onMend?.(type);
+	};
 
 	const offersRouse = $derived(
 		onRouse !== undefined && track === 'health' && character.splat === 'ghoul'
@@ -194,6 +202,7 @@
 						type="button"
 						class="btn preset-tonal-surface flex-1"
 						disabled={damageCounts['/'] === 0}
+						onclick={() => startMend('superficial')}
 					>
 						Superficial
 					</button>
@@ -201,6 +210,7 @@
 						type="button"
 						class="btn preset-tonal-surface flex-1"
 						disabled={damageCounts['x'] === 0}
+						onclick={() => startMend('aggravated')}
 					>
 						Aggravated
 					</button>

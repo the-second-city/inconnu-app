@@ -6,8 +6,8 @@
 	import { rouse } from '$lib/characterActions';
 	import type { Character, RouseResult } from '$lib/types';
 	import ClientPortal from '$lib/components/ClientPortal.svelte';
-	import EmptyHunger from './sheets/components/hunger/Empty.svelte';
-	import FilledHunger from './sheets/components/hunger/Filled.svelte';
+	import CountdownRing from './CountdownRing.svelte';
+	import HungerDrops from './HungerDrops.svelte';
 	import Humanity from './sheets/components/Humanity.svelte';
 
 	interface ComponentProps {
@@ -33,9 +33,6 @@
 	let rolling = $state(false);
 	let remaining = $state(0); // The countdown while rolling
 
-	// The countdown ring's size, in its SVG's 100-unit box
-	const RADIUS = 44;
-	const CIRCUMFERENCE = 2 * Math.PI * RADIUS;
 	let error: string | null = $state(null);
 	let result: RouseResult | null = $state(null);
 	let hungerBefore = $state(0);
@@ -113,43 +110,7 @@
 				</Dialog.Title>
 
 				{#if rolling}
-					<!-- Rolling: a countdown in a ring that starts full and sweeps empty over each step, then
-					     refills for the next number. At 0 (waiting on a slow API), it stays empty. -->
-					<div class="flex justify-center py-6">
-						<div class="relative size-28">
-							<svg viewBox="0 0 100 100" class="absolute inset-0 -rotate-90" aria-hidden="true">
-								<circle
-									cx="50"
-									cy="50"
-									r={RADIUS}
-									class="stroke-surface-400-600"
-									fill="none"
-									stroke-width="6"
-								/>
-								{#if remaining > 0}
-									{#key remaining}
-										<circle
-											cx="50"
-											cy="50"
-											r={RADIUS}
-											class="sweep stroke-primary-500"
-											fill="none"
-											stroke-width="6"
-											stroke-linecap="round"
-											stroke-dasharray={CIRCUMFERENCE}
-											style:--circumference={CIRCUMFERENCE}
-											style:--step="{stepDelay}ms"
-										/>
-									{/key}
-								{/if}
-							</svg>
-							<span
-								class="absolute inset-0 flex items-center justify-center text-4xl font-semibold"
-								aria-hidden="true">{remaining}</span
-							>
-						</div>
-						<p class="sr-only" aria-live="polite">Rolling…</p>
-					</div>
+					<CountdownRing {remaining} {stepDelay} />
 				{:else if result === null}
 					<!-- Options -->
 					{#if isGhoul}
@@ -224,22 +185,7 @@
 						{#if isGhoul}
 							<p>{character.name} took 1 Aggravated Health damage.</p>
 						{:else}
-							<!-- Hunger leads, across the width: the Hunger already there is solid, and the
-							     Hunger the Rouse added pulses (unless motion is reduced) -->
-							<p class="sr-only">Hunger {hungerBefore} → {result.hunger}</p>
-							<div class="flex justify-between px-4 py-2" aria-hidden="true">
-								{#each Array(5), i (i)}
-									{#if i < hungerBefore}
-										<FilledHunger size={44} />
-									{:else if i < result.hunger}
-										<span class="motion-safe:animate-pulse" data-gained>
-											<FilledHunger size={44} />
-										</span>
-									{:else}
-										<EmptyHunger size={44} />
-									{/if}
-								{/each}
-							</div>
+							<HungerDrops before={hungerBefore} after={result.hunger} />
 							{#if result.frenzy}
 								<p class="preset-tonal-error flex gap-2 rounded-md p-3 text-sm">
 									<TriangleAlert size={18} class="shrink-0" />
@@ -276,23 +222,3 @@
 		</Dialog.Positioner>
 	</ClientPortal>
 </Dialog>
-
-<style>
-	/* A full ring that empties over one countdown step, easing in and out */
-	.sweep {
-		stroke-dashoffset: 0;
-		animation: sweep var(--step) ease-in-out forwards;
-	}
-
-	@keyframes sweep {
-		to {
-			stroke-dashoffset: var(--circumference);
-		}
-	}
-
-	@media (prefers-reduced-motion: reduce) {
-		.sweep {
-			animation: none;
-		}
-	}
-</style>

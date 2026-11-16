@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, expect, test, vi, type Mock } from 'vitest';
 
-import { actionError, rouse } from '$lib/characterActions';
-import type { RouseResult } from '$lib/types';
+import { actionError, mend, rouse } from '$lib/characterActions';
+import type { MendResult, RouseResult } from '$lib/types';
 
 vi.mock('$app/paths', () => ({
 	resolve: (route: string, params: Record<string, string>) =>
@@ -73,4 +73,31 @@ test.each([
 	[500, null, 'Something went wrong. Try again.']
 ])('a %i is explained', (status, json, expected) => {
 	expect(actionError(status, json)).toBe(expected);
+});
+
+test("mend posts the request to the character's route and returns the result", async () => {
+	const result: MendResult = {
+		track: '.....x',
+		dice: [7],
+		hunger: 2,
+		frenzy: false,
+		torpor: false
+	};
+	fetchMock.mockResolvedValueOnce(Response.json(result));
+	const request = { type: 'superficial', track: 'health' } as const;
+
+	expect(await mend('abc', request)).toEqual({ result });
+	expect(fetchMock).toHaveBeenCalledWith('/api/characters/abc/mend', {
+		method: 'POST',
+		headers: { 'Content-Type': 'application/json' },
+		body: JSON.stringify(request)
+	});
+});
+
+test('mend says when Inconnu is unreachable', async () => {
+	fetchMock.mockRejectedValueOnce(new TypeError('fetch failed'));
+
+	expect(await mend('abc', { type: 'aggravated', track: 'health' })).toEqual({
+		error: "Couldn't reach Inconnu to mend."
+	});
 });

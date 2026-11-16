@@ -20,6 +20,7 @@
 	import CharLog from '$lib/components/characters/CharLog.svelte';
 	import CharExperience from '$lib/components/characters/CharExperience.svelte';
 	import RouseModal from '$lib/components/characters/RouseModal.svelte';
+	import MendModal from '$lib/components/characters/MendModal.svelte';
 
 	interface ComponentProps {
 		character: Character;
@@ -103,6 +104,13 @@
 	// that follows rebuilds the sheet, which would close it just as the result arrives
 	let rouseOpen = $state(false);
 	const openRouse = () => (rouseOpen = true);
+	// The Mend modal, likewise, for the kind of damage chosen in the Health menu
+	let mendOpen = $state(false);
+	let mendType: 'superficial' | 'aggravated' = $state('superficial');
+	const openMend = (type: 'superficial' | 'aggravated') => {
+		mendType = type;
+		mendOpen = true;
+	};
 	let editing = $state(false);
 
 	// Fresh data for the same character (such as a data refresh) replaces the copy. While it's
@@ -288,6 +296,7 @@
 			{editing}
 			{actionable}
 			onRouse={actionable ? openRouse : undefined}
+			onMend={actionable ? openMend : undefined}
 		/>
 	{/key}
 {/snippet}
@@ -396,6 +405,7 @@
 
 {#if actionable}
 	<RouseModal bind:open={rouseOpen} {character} />
+	<MendModal bind:open={mendOpen} {character} type={mendType} />
 {/if}
 
 <!-- The character changed while it was being edited -->

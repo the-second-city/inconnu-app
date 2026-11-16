@@ -985,3 +985,16 @@ test('without the tracker actions, there is no Rouse', () => {
 
 	expect(screen.queryByRole('button', { name: 'Rouse' })).not.toBeInTheDocument();
 });
+
+test('with the tracker actions, Mend in the Health menu opens the Mend modal', async () => {
+	const user = userEvent.setup();
+	const damaged = { ...vampire(), health: '....//' };
+	render(CharacterPage, { guild: GUILD, character: damaged, editable: true, actionable: true });
+
+	await user.click(screen.getByRole('button', { name: 'Health actions' }));
+	await user.click(
+		within(await screen.findByRole('dialog')).getByRole('button', { name: 'Superficial' })
+	);
+
+	expect(await screen.findByRole('dialog', { name: 'Mend Damage' })).toBeInTheDocument();
+});

@@ -10,14 +10,21 @@
 		editing: boolean;
 		actionable?: boolean; // Outside edit mode, the damage tracks offer actions
 		onRouse?: () => void; // Offered in a ghoul's Health menu
+		onMend?: (type: 'superficial' | 'aggravated') => void; // Health's Mend buttons
 	}
 
-	let { character = $bindable(), editing, actionable = false, onRouse }: ComponentProps = $props();
+	let {
+		character = $bindable(),
+		editing,
+		actionable = false,
+		onRouse,
+		onMend
+	}: ComponentProps = $props();
 </script>
 
 <Card alignment="center" extraClasses="px-2 h-full justify-center">
 	<div class="grid grid-cols-[120px_1fr] gap-2">
-		<Tracker bind:character track="health" {editing} {actionable} {onRouse} />
+		<Tracker bind:character track="health" {editing} {actionable} {onRouse} {onMend} />
 		<Tracker bind:character track="willpower" {editing} {actionable} />
 		<Humanity bind:character {editing} />
 	</div>

@@ -82,6 +82,21 @@ export interface RouseResult {
 	degeneration: number;
 }
 
+/** A request to heal damage. Mirrors the bot's `MendBody`; only Health can be healed. */
+export interface MendRequest {
+	type: 'superficial' | 'aggravated';
+	track: 'health';
+}
+
+/** The outcome of healing damage. Mirrors the bot's `MendResult`. */
+export interface MendResult {
+	track: string; // The healed track
+	dice: number[]; // Rouse dice: one to mend, three for Aggravated; none for non-vampires
+	hunger: number; // After the Rouse Checks
+	frenzy: boolean; // A failed mending Rouse at Hunger 5 calls for a frenzy check
+	torpor: boolean; // Healing Aggravated damage pushed Hunger past 5
+}
+
 /** A character's experience and its log. Mirrors the bot's `VCharExperience`. */
 export interface Experience {
 	current: number; // Unspent

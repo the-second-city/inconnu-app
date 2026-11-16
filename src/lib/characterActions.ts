@@ -1,10 +1,10 @@
 /**
- * Gameplay actions on a character (Rouse, and later Take Damage, Mend, Slake), sent through the
+ * Gameplay actions on a character (Rouse, Mend, and later Take Damage and Slake), sent through the
  * app's API routes to the Inconnu API, which logs them and posts them to the update channel.
  */
 
 import { resolve } from '$app/paths';
-import type { RouseRequest, RouseResult } from '$lib/types';
+import type { MendRequest, MendResult, RouseRequest, RouseResult } from '$lib/types';
 
 /** An action's outcome: its result, or why it failed, for the user. */
 export type ActionOutcome<T> = { result: T; error?: never } | { result?: never; error: string };
@@ -38,24 +38,44 @@ export const actionError = (status: number, json: unknown): string => {
 	return 'Something went wrong. Try again.';
 };
 
-/** Make Rouse checks for a character. */
-export const rouse = async (
-	characterId: string,
-	request: RouseRequest
-): Promise<ActionOutcome<RouseResult>> => {
+/** POST an action to one of a character's routes, returning its result or why it failed. */
+const postAction = async <T>(
+	url: string,
+	body: unknown,
+	unreachable: string
+): Promise<ActionOutcome<T>> => {
 	try {
-		const response = await fetch(
-			resolve('/api/characters/[id=objectid]/rouse', { id: characterId }),
-			{
-				method: 'POST',
-				headers: { 'Content-Type': 'application/json' },
-				body: JSON.stringify(request)
-			}
-		);
+		const response = await fetch(url, {
+			method: 'POST',
+			headers: { 'Content-Type': 'application/json' },
+			body: JSON.stringify(body)
+		});
 		const json = await response.json().catch(() => null);
-		if (response.ok && json) return { result: json as RouseResult };
+		if (response.ok && json) return { result: json as T };
 		return { error: actionError(response.status, json) };
 	} catch {
-		return { error: "Couldn't reach Inconnu to Rouse." };
+		return { error: unreachable };
 	}
 };
+
+/** Make Rouse checks for a character. */
+export const rouse = (
+	characterId: string,
+	request: RouseRequest
+): Promise<ActionOutcome<RouseResult>> =>
+	postAction(
+		resolve('/api/characters/[id=objectid]/rouse', { id: characterId }),
+		request,
+		"Couldn't reach Inconnu to Rouse."
+	);
+
+/** Heal a character's damage, as `/mend` (Superficial) and `/aggheal` (Aggravated) do. */
+export const mend = (
+	characterId: string,
+	request: MendRequest
+): Promise<ActionOutcome<MendResult>> =>
+	postAction(
+		resolve('/api/characters/[id=objectid]/mend', { id: characterId }),
+		request,
+		"Couldn't reach Inconnu to mend."
+	);
