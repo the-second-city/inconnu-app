@@ -112,6 +112,17 @@ test.each([
 	});
 });
 
+test('the API refusing our API key is a 502', async () => {
+	fetchMock.mockResolvedValueOnce(Response.json({ detail: 'Invalid API key' }, { status: 401 }));
+
+	const response = await GET(event());
+
+	expect(response.status).toBe(502);
+	expect(await response.json()).toEqual({
+		message: 'The character wizard is unavailable right now.'
+	});
+});
+
 test('POST rejects a body that is not JSON', async () => {
 	await expect(POST(event('not json'))).rejects.toMatchObject({ status: 400 });
 	expect(fetchMock).not.toHaveBeenCalled();
