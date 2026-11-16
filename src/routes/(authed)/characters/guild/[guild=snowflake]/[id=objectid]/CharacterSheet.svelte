@@ -1,5 +1,5 @@
 <script lang="ts">
-	import type { Character } from '$lib/types';
+	import type { Character, TrackType } from '$lib/types';
 
 	import TraitSheet from '$lib/components/characters/sheets/TraitSheet.svelte';
 	import MainTrackers from '$lib/components/characters/sheets/components/MainTrackers.svelte';
@@ -10,7 +10,7 @@
 		editing: boolean;
 		actionable?: boolean; // Outside edit mode, the damage tracks offer actions
 		onRouse?: () => void; // Opens the Rouse modal: from Hunger, or a ghoul's Health menu
-		onMend?: (type: 'superficial' | 'aggravated') => void; // Opens the Mend modal, from Health
+		onMend?: (type: 'superficial' | 'aggravated', track: TrackType) => void; // Opens the Mend modal
 	}
 
 	let {

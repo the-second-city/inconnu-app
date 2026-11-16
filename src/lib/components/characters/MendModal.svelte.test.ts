@@ -198,3 +198,49 @@ test('Done closes', async () => {
 
 	await waitFor(() => expect(bound.open).toBe(false));
 });
+
+/** Render the modal open for Willpower damage, for a vampire with Resolve 3 and Composure 2. */
+const renderWillpower = (type: DamageType): void => {
+	const char = {
+		...character('vampire'),
+		willpower: '..//x',
+		traits: [
+			{ name: 'Resolve', rating: 3, type: 'attribute', subtraits: [] },
+			{ name: 'Composure', rating: 2, type: 'attribute', subtraits: [] }
+		]
+	};
+	render(MendModal, { character: char, type, track: 'willpower', stepDelay: 0, open: true });
+};
+
+test.each([
+	['superficial', 'Recover Willpower', /Recovers 3 Superficial Willpower damage/, 'Recover'],
+	['aggravated', 'Heal Aggravated Willpower', /Heals one Aggravated Willpower damage/, 'Heal']
+] as [DamageType, string, RegExp, string][])(
+	'Willpower %s damage: titled %j, with what it heals and a %s button, and no Rouse',
+	async (type, title, cost, action) => {
+		renderWillpower(type);
+		const dialog = await modal();
+
+		expect(dialog).toHaveAccessibleName(title);
+		expect(within(dialog).getByText(cost)).toBeInTheDocument();
+		expect(within(dialog).queryByText(/Rouse/)).not.toBeInTheDocument();
+		expect(within(dialog).getByRole('button', { name: action })).toBeInTheDocument();
+	}
+);
+
+test('recovering Willpower sends the track, and shows it without Hunger', async () => {
+	const user = userEvent.setup();
+	mend.mockResolvedValueOnce({ result: result({ track: '....x', dice: [] }) });
+	renderWillpower('superficial');
+	const dialog = await modal();
+
+	await user.click(within(dialog).getByRole('button', { name: 'Recover' }));
+
+	expect(mend).toHaveBeenCalledWith('abc', { type: 'superficial', track: 'willpower' });
+	const status = await within(dialog).findByRole('status');
+	expect(dialog).toHaveAccessibleName('Willpower Recovered');
+	expect(status).toHaveTextContent('Willpower');
+	expect(status).not.toHaveTextContent('Hunger');
+	// ..//x became ....x: two more healthy boxes
+	expect(dialog.querySelectorAll('[data-healed]')).toHaveLength(2);
+});

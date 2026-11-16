@@ -4,7 +4,7 @@
 	import { TriangleAlert } from '@lucide/svelte';
 
 	import { mend } from '$lib/characterActions';
-	import type { Character, MendResult } from '$lib/types';
+	import type { Character, MendResult, TrackType } from '$lib/types';
 	import ClientPortal from '$lib/components/ClientPortal.svelte';
 	import CountdownRing from './CountdownRing.svelte';
 	import HungerDrops from './HungerDrops.svelte';
@@ -14,21 +14,41 @@
 		open: boolean;
 		character: Character;
 		type: 'superficial' | 'aggravated';
+		track?: TrackType; // Health mends as /mend and /aggheal do; Willpower recovers as /awaken does
 		stepDelay?: number; // ms each Rouse counts down, so mending takes a moment
 	}
 
-	let { open = $bindable(), character, type, stepDelay = 750 }: ComponentProps = $props();
+	let {
+		open = $bindable(),
+		character,
+		type,
+		track = 'health',
+		stepDelay = 750
+	}: ComponentProps = $props();
+
+	const isWillpower = $derived(track === 'willpower');
+	const trackLabel = $derived(isWillpower ? 'Willpower' : 'Health');
+	// Willpower recovers what a night's rest gives: the higher of Resolve and Composure
+	const willpowerRecovery = $derived(
+		Math.max(
+			0,
+			...character.traits
+				.filter((t) => ['resolve', 'composure'].includes(t.name.toLowerCase()))
+				.map((t) => t.rating)
+		)
+	);
 
 	const isVampire = $derived(character.splat === 'vampire' || character.splat === 'thin-blood');
 	const isAggravated = $derived(type === 'aggravated');
-	// Vampires Rouse to heal: once to mend, three times for Aggravated. Others take a single beat.
-	const rouses = $derived(isVampire ? (isAggravated ? 3 : 1) : 0);
+	// Vampires Rouse to heal Health: once to mend, three times for Aggravated. Others, and Willpower,
+	// take a single beat.
+	const rouses = $derived(isVampire && !isWillpower ? (isAggravated ? 3 : 1) : 0);
 
 	let mending = $state(false);
 	let remaining = $state(0); // The countdown while mending
 	let error: string | null = $state(null);
 	let result: MendResult | null = $state(null);
-	let healthBefore = $state('');
+	let trackBefore = $state('');
 	let hungerBefore = $state(0);
 
 	/** Back to the start, as when the modal opens. */
@@ -50,10 +70,10 @@
 		if (mending) return;
 		mending = true;
 		error = null;
-		healthBefore = character.health;
+		trackBefore = character[track];
 		hungerBefore = character.hunger ?? 0;
 		remaining = Math.max(rouses, 1);
-		const request = mend(character._id, { type, track: 'health' });
+		const request = mend(character._id, { type, track });
 		while (remaining > 0) {
 			await new Promise((resolve) => setTimeout(resolve, stepDelay));
 			remaining--;
@@ -83,22 +103,36 @@
 		});
 	};
 
-	const actionLabel = $derived(isAggravated ? 'Heal' : 'Mend');
-	const cost = $derived(
-		isVampire
-			? isAggravated
-				? 'Healing Aggravated damage costs three Rouse Checks.'
-				: 'Mending Superficial damage costs a Rouse Check.'
-			: `${character.name} heals without Rousing.`
+	const actionLabel = $derived(
+		isWillpower ? (isAggravated ? 'Heal' : 'Recover') : isAggravated ? 'Heal' : 'Mend'
 	);
+	const cost = $derived.by(() => {
+		if (isWillpower) {
+			return isAggravated
+				? 'Heals one Aggravated Willpower damage.'
+				: `Recovers ${willpowerRecovery} Superficial Willpower damage, as a night's rest does (the higher of Resolve and Composure).`;
+		}
+		if (!isVampire) return `${character.name} heals without Rousing.`;
+		return isAggravated
+			? 'Healing Aggravated damage costs three Rouse Checks.'
+			: 'Mending Superficial damage costs a Rouse Check.';
+	});
+	const title = $derived.by(() => {
+		if (isWillpower) {
+			if (result) return 'Willpower Recovered';
+			return isAggravated ? 'Heal Aggravated Willpower' : 'Recover Willpower';
+		}
+		if (result) return isAggravated ? 'Aggravated Damage Healed' : 'Damage Mended';
+		return isAggravated ? 'Heal Aggravated Damage' : 'Mend Damage';
+	});
 </script>
 
-<!-- Health, damage first as the sheet shows it; boxes that changed pulse -->
-{#snippet healthTrack(track: string, before?: string)}
+<!-- The track, damage first as the sheet shows it; boxes the healing produced pulse -->
+{#snippet damageTrack(boxString: string, before?: string)}
 	<div class="grid gap-1">
-		<span>Health</span>
+		<span>{trackLabel}</span>
 		<div class="flex flex-wrap gap-2">
-			{#each boxes(track, before) as box, i (i)}
+			{#each boxes(boxString, before) as box, i (i)}
 				{#if box.changed}
 					<span class="motion-safe:animate-pulse" data-healed>
 						<TrackBox value={box.value} />
@@ -124,18 +158,14 @@
 				class="card bg-surface-200-800 border-surface-400-600 w-full max-w-sm space-y-4 border p-6 shadow-2xl"
 			>
 				<Dialog.Title class="h5 text-center">
-					{#if result}
-						{isAggravated ? 'Aggravated Damage Healed' : 'Damage Mended'}
-					{:else}
-						{isAggravated ? 'Heal Aggravated Damage' : 'Mend Damage'}
-					{/if}
+					{title}
 				</Dialog.Title>
 
 				{#if mending}
 					<CountdownRing {remaining} {stepDelay} />
 				{:else if result === null}
 					<!-- Before healing -->
-					{@render healthTrack(character.health)}
+					{@render damageTrack(character[track])}
 					<p class="text-sm">{cost}</p>
 
 					{#if error}
@@ -153,10 +183,11 @@
 				{:else}
 					<!-- Result -->
 					<div class="space-y-3" role="status">
-						{#if isVampire}
+						<!-- Willpower doesn't Rouse, so it leaves Hunger alone -->
+						{#if isVampire && !isWillpower}
 							<HungerDrops before={hungerBefore} after={result.hunger} />
 						{/if}
-						{@render healthTrack(result.track, healthBefore)}
+						{@render damageTrack(result.track, trackBefore)}
 						{#if result.frenzy}
 							<p class="preset-tonal-error flex gap-2 rounded-md p-3 text-sm">
 								<TriangleAlert size={18} class="shrink-0" />

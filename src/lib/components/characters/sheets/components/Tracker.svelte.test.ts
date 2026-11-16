@@ -239,11 +239,11 @@ test('Health offers damage and mending', async () => {
 	expect(within(menu).getByRole('group', { name: 'Mend' })).toBeInTheDocument();
 });
 
-test('Willpower offers no mending', async () => {
+test('Willpower offers mending too', async () => {
 	const menu = await openActions('.....', 'willpower', '..//x');
 
-	expect(menuButtons(menu)).toEqual(['Take Damage']);
-	expect(within(menu).queryByRole('group', { name: 'Mend' })).not.toBeInTheDocument();
+	expect(menuButtons(menu)).toEqual(['Take Damage', 'Superficial', 'Aggravated']);
+	expect(within(menu).getByRole('group', { name: 'Mend' })).toBeInTheDocument();
 });
 
 test.each([
@@ -263,7 +263,7 @@ test.each([
 	],
 	[
 		'willpower',
-		"These changes won't appear in the Chronicle log. To log damage, exit edit mode first."
+		"These changes won't appear in the Chronicle log. To log damage or mending, exit edit mode first."
 	]
 ] as const)('the %s corrections say how to log changes instead', async (track, footnote) => {
 	const user = userEvent.setup();
@@ -331,5 +331,24 @@ test.each([
 
 	await user.click(within(await screen.findByRole('dialog')).getByRole('button', { name: button }));
 
-	expect(onMend).toHaveBeenCalledWith(type);
+	expect(onMend).toHaveBeenCalledWith(type, 'health');
+});
+
+test("Willpower's Mend buttons open the Mend modal for Willpower", async () => {
+	const user = userEvent.setup();
+	const onMend = vi.fn();
+	render(Tracker, {
+		character: character('......', '..//x'),
+		track: 'willpower',
+		editing: false,
+		actionable: true,
+		onMend
+	});
+	await user.click(screen.getByRole('button', { name: 'Willpower actions' }));
+
+	await user.click(
+		within(await screen.findByRole('dialog')).getByRole('button', { name: 'Aggravated' })
+	);
+
+	expect(onMend).toHaveBeenCalledWith('aggravated', 'willpower');
 });

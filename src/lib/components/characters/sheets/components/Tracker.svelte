@@ -15,7 +15,7 @@
 		editing: boolean;
 		actionable?: boolean; // Outside edit mode, clicking the track offers actions (Take Damage, ...)
 		onRouse?: () => void; // A ghoul's Health menu offers Rouse, as ghouls pay for it in Health
-		onMend?: (type: 'superficial' | 'aggravated') => void; // Health's Mend buttons open the Mend modal
+		onMend?: (type: 'superficial' | 'aggravated', track: TrackType) => void; // The Mend buttons open the Mend modal
 	}
 
 	let {
@@ -30,7 +30,7 @@
 	/** Close the menu, and open the Mend modal for a kind of damage. */
 	const startMend = (type: 'superficial' | 'aggravated') => {
 		showActions = false;
-		onMend?.(type);
+		onMend?.(type, track);
 	};
 
 	const offersRouse = $derived(
@@ -171,8 +171,8 @@
 		</div>
 		<!-- Corrections aren't logged; damage and mending are, through the actions outside edit mode -->
 		<p class="text-surface-200 mt-2 max-w-60 text-center text-xs">
-			These changes won't appear in the Chronicle log. To log
-			{track === 'health' ? 'damage or mending' : 'damage'}, exit edit mode first.
+			These changes won't appear in the Chronicle log. To log damage or mending, exit edit mode
+			first.
 		</p>
 	</div>
 {/snippet}
@@ -197,30 +197,28 @@
 				Rouse
 			</button>
 		{/if}
-		<!-- Willpower doesn't mend; the bot restores it through awaken -->
-		{#if track === 'health'}
-			<fieldset class="border-surface-400-600 rounded-base mt-2 border px-2 pb-2">
-				<legend class="mx-auto px-2 text-sm uppercase">Mend</legend>
-				<div class="flex gap-2">
-					<button
-						type="button"
-						class="btn preset-tonal-surface flex-1"
-						disabled={damageCounts['/'] === 0}
-						onclick={() => startMend('superficial')}
-					>
-						Superficial
-					</button>
-					<button
-						type="button"
-						class="btn preset-tonal-surface flex-1"
-						disabled={damageCounts['x'] === 0}
-						onclick={() => startMend('aggravated')}
-					>
-						Aggravated
-					</button>
-				</div>
-			</fieldset>
-		{/if}
+		<!-- Health mends as /mend and /aggheal do; Willpower recovers as /awaken does -->
+		<fieldset class="border-surface-400-600 rounded-base mt-2 border px-2 pb-2">
+			<legend class="mx-auto px-2 text-sm uppercase">Mend</legend>
+			<div class="flex gap-2">
+				<button
+					type="button"
+					class="btn preset-tonal-surface flex-1"
+					disabled={damageCounts['/'] === 0}
+					onclick={() => startMend('superficial')}
+				>
+					Superficial
+				</button>
+				<button
+					type="button"
+					class="btn preset-tonal-surface flex-1"
+					disabled={damageCounts['x'] === 0}
+					onclick={() => startMend('aggravated')}
+				>
+					Aggravated
+				</button>
+			</div>
+		</fieldset>
 	</div>
 {/snippet}
 

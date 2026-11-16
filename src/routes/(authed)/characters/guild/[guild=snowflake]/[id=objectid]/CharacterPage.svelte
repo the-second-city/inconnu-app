@@ -12,7 +12,7 @@
 	import { CHARACTER_DEPENDENCY } from '$lib/liveUpdates';
 	import { page } from '$app/state';
 	import type { Pathname } from '$app/types';
-	import type { Character, Guild, OwnerData } from '$lib/types';
+	import type { Character, Guild, OwnerData, TrackType } from '$lib/types';
 	import ClientPortal from '$lib/components/ClientPortal.svelte';
 	import CharacterSheet from './CharacterSheet.svelte';
 	import CharHeader from '$lib/components/characters/CharHeader.svelte';
@@ -104,11 +104,13 @@
 	// that follows rebuilds the sheet, which would close it just as the result arrives
 	let rouseOpen = $state(false);
 	const openRouse = () => (rouseOpen = true);
-	// The Mend modal, likewise, for the kind of damage chosen in the Health menu
+	// The Mend modal, likewise, for the kind of damage and track chosen in a track's menu
 	let mendOpen = $state(false);
 	let mendType: 'superficial' | 'aggravated' = $state('superficial');
-	const openMend = (type: 'superficial' | 'aggravated') => {
+	let mendTrack: TrackType = $state('health');
+	const openMend = (type: 'superficial' | 'aggravated', track: TrackType) => {
 		mendType = type;
+		mendTrack = track;
 		mendOpen = true;
 	};
 	let editing = $state(false);
@@ -405,7 +407,7 @@
 
 {#if actionable}
 	<RouseModal bind:open={rouseOpen} {character} />
-	<MendModal bind:open={mendOpen} {character} type={mendType} />
+	<MendModal bind:open={mendOpen} {character} type={mendType} track={mendTrack} />
 {/if}
 
 <!-- The character changed while it was being edited -->

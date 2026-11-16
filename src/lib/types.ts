@@ -82,16 +82,20 @@ export interface RouseResult {
 	degeneration: number;
 }
 
-/** A request to heal damage. Mirrors the bot's `MendBody`; only Health can be healed. */
+/**
+ * A request to heal damage. Mirrors the bot's `MendBody`. Health heals as `/mend` and `/aggheal`
+ * do (vampires Rouse); Willpower recovers what `/awaken` would (Superficial) or one Aggravated,
+ * without Rouses.
+ */
 export interface MendRequest {
 	type: 'superficial' | 'aggravated';
-	track: 'health';
+	track: TrackType;
 }
 
 /** The outcome of healing damage. Mirrors the bot's `MendResult`. */
 export interface MendResult {
 	track: string; // The healed track
-	dice: number[]; // Rouse dice: one to mend, three for Aggravated; none for non-vampires
+	dice: number[]; // Rouse dice: one to mend, three for Aggravated; none for non-vampires or Willpower
 	hunger: number; // After the Rouse Checks
 	frenzy: boolean; // A failed mending Rouse at Hunger 5 calls for a frenzy check
 	torpor: boolean; // Healing Aggravated damage pushed Hunger past 5

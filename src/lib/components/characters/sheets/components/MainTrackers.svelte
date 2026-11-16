@@ -1,5 +1,5 @@
 <script lang="ts">
-	import type { Character } from '$lib/types';
+	import type { Character, TrackType } from '$lib/types';
 
 	import Card from '$lib/components/Card.svelte';
 	import Tracker from './Tracker.svelte';
@@ -10,7 +10,7 @@
 		editing: boolean;
 		actionable?: boolean; // Outside edit mode, the damage tracks offer actions
 		onRouse?: () => void; // Offered in a ghoul's Health menu
-		onMend?: (type: 'superficial' | 'aggravated') => void; // Health's Mend buttons
+		onMend?: (type: 'superficial' | 'aggravated', track: TrackType) => void; // The Mend buttons
 	}
 
 	let {
@@ -25,7 +25,7 @@
 <Card alignment="center" extraClasses="px-2 h-full justify-center">
 	<div class="grid grid-cols-[120px_1fr] gap-2">
 		<Tracker bind:character track="health" {editing} {actionable} {onRouse} {onMend} />
-		<Tracker bind:character track="willpower" {editing} {actionable} />
+		<Tracker bind:character track="willpower" {editing} {actionable} {onMend} />
 		<Humanity bind:character {editing} />
 	</div>
 </Card>
