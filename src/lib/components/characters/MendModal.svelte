@@ -8,7 +8,7 @@
 	import ClientPortal from '$lib/components/ClientPortal.svelte';
 	import CountdownRing from './CountdownRing.svelte';
 	import HungerDrops from './HungerDrops.svelte';
-	import TrackBox from './sheets/components/damage/TrackBox.svelte';
+	import DamageTrack from './DamageTrack.svelte';
 
 	interface ComponentProps {
 		open: boolean;
@@ -84,25 +84,6 @@
 		else result = outcome.result;
 	};
 
-	/**
-	 * A track's boxes as the sheet shows them (damage first; tracks are stored healthy first), with
-	 * the ones the healing produced marked. Tracks are sorted, so comparing box by box would mark
-	 * every box after a change; instead, each kind that grew (say, one more healthy box) marks that
-	 * many of its boxes, starting from the damage side, where the healing happened.
-	 */
-	const boxes = (track: string, before = track): { value: string; changed: boolean }[] => {
-		const count = (t: string, kind: string): number => [...t].filter((b) => b === kind).length;
-		const gained: Record<string, number> = {};
-		for (const kind of ['.', '/', 'x']) {
-			gained[kind] = Math.max(0, count(track, kind) - count(before, kind));
-		}
-		return [...track].reverse().map((value) => {
-			const changed = gained[value] > 0;
-			if (changed) gained[value]--;
-			return { value, changed };
-		});
-	};
-
 	const actionLabel = $derived(
 		isWillpower ? (isAggravated ? 'Heal' : 'Recover') : isAggravated ? 'Heal' : 'Mend'
 	);
@@ -127,24 +108,6 @@
 	});
 </script>
 
-<!-- The track, damage first as the sheet shows it; boxes the healing produced pulse -->
-{#snippet damageTrack(boxString: string, before?: string)}
-	<div class="grid gap-1">
-		<span>{trackLabel}</span>
-		<div class="flex flex-wrap gap-2">
-			{#each boxes(boxString, before) as box, i (i)}
-				{#if box.changed}
-					<span class="motion-safe:animate-pulse" data-healed>
-						<TrackBox value={box.value} />
-					</span>
-				{:else}
-					<TrackBox value={box.value} />
-				{/if}
-			{/each}
-		</div>
-	</div>
-{/snippet}
-
 <Dialog
 	{open}
 	onOpenChange={(e) => (open = e.open)}
@@ -165,7 +128,7 @@
 					<CountdownRing {remaining} {stepDelay} />
 				{:else if result === null}
 					<!-- Before healing -->
-					{@render damageTrack(character[track])}
+					<DamageTrack label={trackLabel} track={character[track]} />
 					<p class="text-sm">{cost}</p>
 
 					{#if error}
@@ -187,7 +150,7 @@
 						{#if isVampire && !isWillpower}
 							<HungerDrops before={hungerBefore} after={result.hunger} />
 						{/if}
-						{@render damageTrack(result.track, trackBefore)}
+						<DamageTrack label={trackLabel} track={result.track} before={trackBefore} />
 						{#if result.frenzy}
 							<p class="preset-tonal-error flex gap-2 rounded-md p-3 text-sm">
 								<TriangleAlert size={18} class="shrink-0" />

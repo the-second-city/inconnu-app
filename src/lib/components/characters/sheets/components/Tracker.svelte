@@ -16,6 +16,7 @@
 		actionable?: boolean; // Outside edit mode, clicking the track offers actions (Take Damage, ...)
 		onRouse?: () => void; // A ghoul's Health menu offers Rouse, as ghouls pay for it in Health
 		onMend?: (type: 'superficial' | 'aggravated', track: TrackType) => void; // The Mend buttons open the Mend modal
+		onTakeDamage?: (track: TrackType) => void; // Take Damage opens the damage modal
 	}
 
 	let {
@@ -24,7 +25,8 @@
 		editing,
 		actionable = false,
 		onRouse,
-		onMend
+		onMend,
+		onTakeDamage
 	}: ComponentProps = $props();
 
 	/** Close the menu, and open the Mend modal for a kind of damage. */
@@ -182,7 +184,15 @@
 {#snippet actions()}
 	<div class="flex w-60 flex-col gap-2">
 		<div class="text-md text-center uppercase">{trackLabel}</div>
-		<button type="button" class="btn preset-tonal-surface" disabled={!canTakeDamage}>
+		<button
+			type="button"
+			class="btn preset-tonal-surface"
+			disabled={!canTakeDamage}
+			onclick={() => {
+				showActions = false;
+				onTakeDamage?.(track);
+			}}
+		>
 			Take Damage
 		</button>
 		{#if offersRouse}

@@ -104,7 +104,7 @@ test('mending sends the kind of damage, then shows the healed track', async () =
 	await within(dialog).findByRole('status');
 	expect(dialog).toHaveAccessibleName('Damage Mended');
 	// ...//x became ..../x: one box changed
-	expect(dialog.querySelectorAll('[data-healed]')).toHaveLength(1);
+	expect(dialog.querySelectorAll('[data-changed]')).toHaveLength(1);
 });
 
 test("a vampire's result shows Hunger, with what the Rouse added", async () => {
@@ -156,7 +156,7 @@ test('healing one Aggravated box marks only the box it freed, though the sorted 
 	await user.click(within(dialog).getByRole('button', { name: 'Heal' }));
 	await within(dialog).findByRole('status');
 
-	expect(dialog.querySelectorAll('[data-healed]')).toHaveLength(1);
+	expect(dialog.querySelectorAll('[data-changed]')).toHaveLength(1);
 });
 
 test('a failed mend says why, and keeps the start', async () => {
@@ -242,5 +242,5 @@ test('recovering Willpower sends the track, and shows it without Hunger', async 
 	expect(status).toHaveTextContent('Willpower');
 	expect(status).not.toHaveTextContent('Hunger');
 	// ..//x became ....x: two more healthy boxes
-	expect(dialog.querySelectorAll('[data-healed]')).toHaveLength(2);
+	expect(dialog.querySelectorAll('[data-changed]')).toHaveLength(2);
 });

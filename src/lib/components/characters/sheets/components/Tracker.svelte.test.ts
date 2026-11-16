@@ -352,3 +352,27 @@ test("Willpower's Mend buttons open the Mend modal for Willpower", async () => {
 
 	expect(onMend).toHaveBeenCalledWith('aggravated', 'willpower');
 });
+
+test.each(['health', 'willpower'] as const)(
+	"%s's Take Damage opens the damage modal for it",
+	async (track) => {
+		const user = userEvent.setup();
+		const onTakeDamage = vi.fn();
+		render(Tracker, {
+			character: character('......', '.....'),
+			track,
+			editing: false,
+			actionable: true,
+			onTakeDamage
+		});
+		await user.click(
+			screen.getByRole('button', { name: `${track === 'health' ? 'Health' : 'Willpower'} actions` })
+		);
+
+		await user.click(
+			within(await screen.findByRole('dialog')).getByRole('button', { name: 'Take Damage' })
+		);
+
+		expect(onTakeDamage).toHaveBeenCalledWith(track);
+	}
+);

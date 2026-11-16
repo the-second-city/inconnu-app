@@ -21,6 +21,7 @@
 	import CharExperience from '$lib/components/characters/CharExperience.svelte';
 	import RouseModal from '$lib/components/characters/RouseModal.svelte';
 	import MendModal from '$lib/components/characters/MendModal.svelte';
+	import DamageModal from '$lib/components/characters/DamageModal.svelte';
 
 	interface ComponentProps {
 		character: Character;
@@ -112,6 +113,13 @@
 		mendType = type;
 		mendTrack = track;
 		mendOpen = true;
+	};
+	// And the damage modal, for the track whose Take Damage was clicked
+	let damageOpen = $state(false);
+	let damageTrack: TrackType = $state('health');
+	const openDamage = (track: TrackType) => {
+		damageTrack = track;
+		damageOpen = true;
 	};
 	let editing = $state(false);
 
@@ -299,6 +307,7 @@
 			{actionable}
 			onRouse={actionable ? openRouse : undefined}
 			onMend={actionable ? openMend : undefined}
+			onTakeDamage={actionable ? openDamage : undefined}
 		/>
 	{/key}
 {/snippet}
@@ -408,6 +417,7 @@
 {#if actionable}
 	<RouseModal bind:open={rouseOpen} {character} />
 	<MendModal bind:open={mendOpen} {character} type={mendType} track={mendTrack} />
+	<DamageModal bind:open={damageOpen} {character} track={damageTrack} />
 {/if}
 
 <!-- The character changed while it was being edited -->
