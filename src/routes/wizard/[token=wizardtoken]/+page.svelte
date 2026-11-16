@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { untrack } from 'svelte';
 	import type { PageData } from './$types';
+	import type { TrackLimits } from './+page';
 	import type { Trait, Splat } from '$lib/types';
 	import { goto } from '$app/navigation';
 	import { resolve } from '$app/paths';
@@ -58,8 +59,11 @@
 		return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
 	};
 	const splatOptions = $derived(data.splats.map(formatSplat));
-	const healthOptions = Array.from({ length: 17 }, (_, i) => `${i + 4}`);
-	const willpowerOptions = Array.from({ length: 9 }, (_, i) => `${i + 2}`);
+	/** The ratings from a track's fewest to most boxes, as the bot allows. */
+	const trackOptions = ({ min, max }: TrackLimits): string[] =>
+		Array.from({ length: max - min + 1 }, (_, i) => `${i + min}`);
+	const healthOptions = $derived(trackOptions(data.limits.health));
+	const willpowerOptions = $derived(trackOptions(data.limits.willpower));
 	const humanityOptions = Array.from({ length: 10 }, (_, i) => `${i + 1}`);
 
 	// Character name validation
