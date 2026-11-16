@@ -7,14 +7,30 @@
 	import EmptyHunger from './hunger/Empty.svelte';
 	import FilledHunger from './hunger/Filled.svelte';
 	import PipSelector, { type PipState } from './PipSelector.svelte';
+	import Popover from '$lib/components/Popover.svelte';
+	import { CLICKABLE } from './clickable';
 
 	interface ComponentProps {
 		character: Character;
 		editing?: boolean;
-		onRouse?: () => void; // Outside edit mode, clicking Hunger opens the Rouse modal
+		// Outside edit mode, clicking Hunger offers these (the owner, or a Storyteller for an SPC)
+		onRouse?: () => void;
+		onSlake?: () => void;
 	}
 
-	let { character = $bindable(), editing = false, onRouse }: ComponentProps = $props();
+	let { character = $bindable(), editing = false, onRouse, onSlake }: ComponentProps = $props();
+
+	let showHungerMenu = $state(false);
+	// So the menu doesn't reopen by itself when edit mode ends
+	$effect(() => {
+		if (editing) showHungerMenu = false;
+	});
+
+	/** Close the Hunger menu, then run an action from it. */
+	const fromMenu = (action: (() => void) | undefined) => () => {
+		showHungerMenu = false;
+		action?.();
+	};
 
 	// Thin-bloods have 0-2; other vampires 1-10, like the wizard. Discord can set a vampire to 0,
 	// which the bot keeps as long as it isn't changed, so a vampire can return to its recorded
@@ -69,17 +85,36 @@
 				pip={hungerPip}
 			/>
 		{/snippet}
-		{#if onRouse && !editing}
-			<!-- Outside edit mode, the drops open the Rouse modal -->
-			<button
-				type="button"
-				class="hover:preset-tonal -mx-2 -my-1 w-fit cursor-pointer rounded-md px-2 py-1"
-				onclick={onRouse}
-				aria-label="Rouse"
-				title="Rouse"
-			>
-				{@render hungerPips()}
-			</button>
+		{#snippet hungerMenu()}
+			<div class="flex w-60 flex-col gap-2">
+				<div class="text-md text-center uppercase">Hunger</div>
+				{#if onRouse}
+					<button type="button" class="btn preset-tonal-surface" onclick={fromMenu(onRouse)}>
+						Rouse
+					</button>
+				{/if}
+				{#if onSlake}
+					<button
+						type="button"
+						class="btn preset-tonal-surface"
+						onclick={fromMenu(onSlake)}
+						disabled={(character.hunger ?? 0) === 0}
+					>
+						Slake
+					</button>
+				{/if}
+			</div>
+		{/snippet}
+		{#if (onRouse || onSlake) && !editing}
+			<!-- Outside edit mode, the drops open the Hunger menu -->
+			<Popover
+				bind:open={showHungerMenu}
+				trigger={hungerPips}
+				content={hungerMenu}
+				triggerLabel="Hunger actions"
+				triggerClass={CLICKABLE}
+				arrow
+			/>
 		{:else}
 			{@render hungerPips()}
 		{/if}

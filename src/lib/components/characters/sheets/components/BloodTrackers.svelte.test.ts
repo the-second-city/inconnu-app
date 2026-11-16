@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/svelte';
+import { render, screen, within } from '@testing-library/svelte';
 import userEvent from '@testing-library/user-event';
 import { expect, test, vi } from 'vitest';
 
@@ -124,22 +124,44 @@ test('a vampire at Blood Potency 0 (set in Discord) can return to 0 after a stra
 	expect(character.potency).toBe(0);
 });
 
-test('outside edit mode, Hunger opens the Rouse modal', async () => {
+/** Render the trackers at a Hunger, with Rouse and Slake, and open the Hunger menu. */
+const openHungerMenu = async (
+	hunger: number,
+	onRouse = vi.fn(),
+	onSlake = vi.fn()
+): Promise<HTMLElement> => {
 	const user = userEvent.setup();
-	const onRouse = vi.fn();
-	render(BloodTrackers, { character: vampire({ hunger: 2 }), onRouse });
+	render(BloodTrackers, { character: vampire({ hunger }), onRouse, onSlake });
+	await user.click(screen.getByRole('button', { name: 'Hunger actions' }));
+	return screen.findByRole('dialog');
+};
 
-	await user.click(screen.getByRole('button', { name: 'Rouse' }));
+test.each([
+	['Rouse', 'onRouse'],
+	['Slake', 'onSlake']
+] as const)("outside edit mode, Hunger's menu offers %s", async (action, prop) => {
+	const user = userEvent.setup();
+	const callbacks = { onRouse: vi.fn(), onSlake: vi.fn() };
+	const menu = await openHungerMenu(2, callbacks.onRouse, callbacks.onSlake);
 
-	expect(onRouse).toHaveBeenCalledOnce();
+	await user.click(within(menu).getByRole('button', { name: action }));
+
+	expect(callbacks[prop]).toHaveBeenCalledOnce();
 });
 
-test("while editing, Hunger isn't a Rouse button", () => {
+test('at Hunger 0, there is nothing to slake', async () => {
+	const menu = await openHungerMenu(0);
+
+	expect(within(menu).getByRole('button', { name: 'Slake' })).toBeDisabled();
+	expect(within(menu).getByRole('button', { name: 'Rouse' })).toBeEnabled();
+});
+
+test("while editing, Hunger doesn't open a menu", () => {
 	render(BloodTrackers, { character: vampire({ hunger: 2 }), editing: true, onRouse: vi.fn() });
-	expect(screen.queryByRole('button', { name: 'Rouse' })).not.toBeInTheDocument();
+	expect(screen.queryByRole('button', { name: 'Hunger actions' })).not.toBeInTheDocument();
 });
 
-test("without onRouse, Hunger isn't a Rouse button", () => {
+test("without Rouse or Slake, Hunger doesn't open a menu", () => {
 	render(BloodTrackers, { character: vampire({ hunger: 2 }) });
-	expect(screen.queryByRole('button', { name: 'Rouse' })).not.toBeInTheDocument();
+	expect(screen.queryByRole('button', { name: 'Hunger actions' })).not.toBeInTheDocument();
 });

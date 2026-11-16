@@ -1,5 +1,4 @@
 <script lang="ts">
-	import { dev } from '$app/environment';
 	import { invalidate } from '$app/navigation';
 	import { resolve } from '$app/paths';
 	import type { Pathname } from '$app/types';
@@ -38,13 +37,13 @@
 
 	const backUrl: Pathname = $derived(`/characters/guild/${characterData.guild.id}` as const);
 
-	// The tracker actions, dev-only for now. Anyone with full access (the owner or a Storyteller)
-	// may deal damage; Rouse and Mend are for the character's owner, or for an SPC, whose full
-	// access only Storytellers have: Storytellers can't roll for other players. The API enforces
-	// the same.
-	const actionable = dev;
+	// The tracker actions. Anyone with full access (the owner or a Storyteller, the only viewers of
+	// this page's full view) may deal damage; Rouse and Mend are for the character's owner, or for an
+	// SPC, whose full access only Storytellers have: Storytellers can't roll for other players. The
+	// API enforces the same.
+	const actionable = true;
 	const ownerActions = $derived(
-		dev && (characterData.spc || characterData.owner?.id === data.session?.user?.id)
+		characterData.spc || characterData.owner?.id === data.session?.user?.id
 	);
 </script>
 

@@ -12,6 +12,7 @@
 		onRouse?: () => void; // Offered in a ghoul's Health menu
 		onMend?: (type: 'superficial' | 'aggravated', track: TrackType) => void; // The Mend buttons
 		onTakeDamage?: (track: TrackType) => void; // Take Damage
+		onStain?: () => void; // Humanity's Apply Stains
 	}
 
 	let {
@@ -20,7 +21,8 @@
 		actionable = false,
 		onRouse,
 		onMend,
-		onTakeDamage
+		onTakeDamage,
+		onStain
 	}: ComponentProps = $props();
 </script>
 
@@ -36,6 +38,6 @@
 			{onTakeDamage}
 		/>
 		<Tracker bind:character track="willpower" {editing} {actionable} {onMend} {onTakeDamage} />
-		<Humanity bind:character {editing} />
+		<Humanity bind:character {editing} {onStain} />
 	</div>
 </Card>

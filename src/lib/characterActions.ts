@@ -1,10 +1,17 @@
 /**
- * Gameplay actions on a character (Rouse, Mend, Take Damage, and later Slake), sent through the
+ * Gameplay actions on a character (Rouse, Mend, Take Damage, Slake, Stains), sent through the
  * app's API routes to the Inconnu API, which logs them and posts them to the update channel.
  */
 
 import { resolve } from '$app/paths';
-import type { DamageRequest, MendRequest, MendResult, RouseRequest, RouseResult } from '$lib/types';
+import type {
+	AmountRequest,
+	DamageRequest,
+	MendRequest,
+	MendResult,
+	RouseRequest,
+	RouseResult
+} from '$lib/types';
 
 /** An action's outcome: its result, or why it failed, for the user. */
 export type ActionOutcome<T> = { result: T; error?: never } | { result?: never; error: string };
@@ -93,4 +100,23 @@ export const damage = (characterId: string, request: DamageRequest): Promise<Act
 		resolve('/api/characters/[id=objectid]/damage', { id: characterId }),
 		request,
 		"Couldn't reach Inconnu to deal damage."
+	);
+
+/** Slake a character's Hunger, as `/slake` does (down to 0). The API answers with no content. */
+export const slake = (characterId: string, request: AmountRequest): Promise<ActionOutcome<null>> =>
+	postAction(
+		resolve('/api/characters/[id=objectid]/slake', { id: characterId }),
+		request,
+		"Couldn't reach Inconnu to slake."
+	);
+
+/**
+ * Add Stains to a character, as `/stain` does (up to 10; overflowing Humanity deals Aggravated
+ * Willpower damage). The API answers with no content.
+ */
+export const stain = (characterId: string, request: AmountRequest): Promise<ActionOutcome<null>> =>
+	postAction(
+		resolve('/api/characters/[id=objectid]/stain', { id: characterId }),
+		request,
+		"Couldn't reach Inconnu to add Stains."
 	);

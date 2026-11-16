@@ -111,6 +111,11 @@ export interface DamageRequest {
 	aggravated: number;
 }
 
+/** An amount of Hunger to slake or Stains to add, 1-10. Mirrors the bot's `AmountBody`. */
+export interface AmountRequest {
+	amount: number;
+}
+
 /** A character's experience and its log. Mirrors the bot's `VCharExperience`. */
 export interface Experience {
 	current: number; // Unspent

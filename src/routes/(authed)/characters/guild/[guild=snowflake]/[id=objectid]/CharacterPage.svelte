@@ -22,6 +22,8 @@
 	import RouseModal from '$lib/components/characters/RouseModal.svelte';
 	import MendModal from '$lib/components/characters/MendModal.svelte';
 	import DamageModal from '$lib/components/characters/DamageModal.svelte';
+	import SlakeModal from '$lib/components/characters/SlakeModal.svelte';
+	import StainModal from '$lib/components/characters/StainModal.svelte';
 
 	interface ComponentProps {
 		character: Character;
@@ -123,6 +125,9 @@
 		damageTrack = track;
 		damageOpen = true;
 	};
+	// And the Slake (from Hunger) and Apply Stains (from Humanity) modals
+	let slakeOpen = $state(false);
+	let stainOpen = $state(false);
 	let editing = $state(false);
 
 	// Fresh data for the same character (such as a data refresh) replaces the copy. While it's
@@ -310,6 +315,8 @@
 			onRouse={ownerActions ? openRouse : undefined}
 			onMend={ownerActions ? openMend : undefined}
 			onTakeDamage={actionable ? openDamage : undefined}
+			onSlake={ownerActions ? () => (slakeOpen = true) : undefined}
+			onStain={actionable ? () => (stainOpen = true) : undefined}
 		/>
 	{/key}
 {/snippet}
@@ -420,6 +427,8 @@
 	<RouseModal bind:open={rouseOpen} {character} />
 	<MendModal bind:open={mendOpen} {character} type={mendType} track={mendTrack} />
 	<DamageModal bind:open={damageOpen} {character} track={damageTrack} />
+	<SlakeModal bind:open={slakeOpen} {character} />
+	<StainModal bind:open={stainOpen} {character} />
 {/if}
 
 <!-- The character changed while it was being edited -->

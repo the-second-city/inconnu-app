@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { page } from '$app/state';
-	import { resolve } from '$app/paths';
 	import type { Pathname } from '$app/types';
+	import { resolvePathname } from '$lib/paths';
 	import Avatar from '$lib/components/Avatar.svelte';
 	import { ChevronLeft } from '@lucide/svelte';
 
@@ -52,7 +52,9 @@
 	<div class="relative">
 		<h1 class="h1 flex items-center gap-4 font-black">
 			{#if backUrl}
-				<a href={resolve(backUrl)} class="opacity-60 transition-opacity hover:opacity-100">
+				<!-- resolvePathname() calls resolve(); the rule only recognizes resolve() itself -->
+				<!-- eslint-disable-next-line svelte/no-navigation-without-resolve -->
+				<a href={resolvePathname(backUrl)} class="opacity-60 transition-opacity hover:opacity-100">
 					<ChevronLeft size={32} />
 				</a>
 			{/if}

@@ -5,6 +5,7 @@
 	import type { Character, TrackType } from '$lib/types';
 
 	import TrackBox from './damage/TrackBox.svelte';
+	import { CLICKABLE } from './clickable';
 
 	type DamageSymbol = '.' | '/' | 'x';
 	type DamageAdjust = { title: string; symbol: DamageSymbol; dec: boolean; inc: boolean };
@@ -38,10 +39,6 @@
 	const offersRouse = $derived(
 		onRouse !== undefined && track === 'health' && character.splat === 'ghoul'
 	);
-
-	// A clickable track is highlighted on hover, like the Hunger drops' Rouse button. The padding is
-	// offset by a negative margin, so the boxes don't move.
-	const CLICKABLE = 'hover:preset-tonal -mx-2 -my-1 w-fit cursor-pointer rounded-md px-2 py-1';
 
 	let trackLabel = $derived(track.charAt(0).toUpperCase() + track.slice(1));
 	let showControls = $state(false);

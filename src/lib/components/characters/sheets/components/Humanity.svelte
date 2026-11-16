@@ -7,18 +7,22 @@
 	import Filled from './humanity/Filled.svelte';
 	import Stain from './humanity/Stain.svelte';
 	import Degeneration from './humanity/Degeneration.svelte';
+	import { CLICKABLE } from './clickable';
 
 	interface ComponentProps {
 		character: Character;
 		editing: boolean;
+		onStain?: () => void; // Outside edit mode, clicking Humanity offers Apply Stains
 	}
 
-	let { character = $bindable(), editing }: ComponentProps = $props();
+	let { character = $bindable(), editing, onStain }: ComponentProps = $props();
 
 	let showControls = $state(false);
-	// So the controls don't reopen by themselves when editing starts again
+	let showActions = $state(false);
+	// So neither popover reopens by itself when the mode switches back
 	$effect(() => {
 		if (!editing) showControls = false;
+		if (editing) showActions = false;
 	});
 
 	const totalBoxes = 10;
@@ -124,8 +128,40 @@ Humanity
 	</div>
 {/snippet}
 
+{#snippet actions()}
+	<div class="flex w-60 flex-col gap-2">
+		<div class="text-md text-center uppercase">Humanity</div>
+		<button
+			type="button"
+			class="btn preset-tonal-surface"
+			disabled={stains >= 10}
+			onclick={() => {
+				showActions = false;
+				onStain?.();
+			}}
+		>
+			Apply Stains
+		</button>
+	</div>
+{/snippet}
+
 {#if editing}
-	<Popover bind:open={showControls} trigger={boxes} content={controls} arrow />
+	<Popover
+		bind:open={showControls}
+		trigger={boxes}
+		content={controls}
+		triggerClass={CLICKABLE}
+		arrow
+	/>
+{:else if onStain}
+	<Popover
+		bind:open={showActions}
+		trigger={boxes}
+		content={actions}
+		triggerLabel="Humanity actions"
+		triggerClass={CLICKABLE}
+		arrow
+	/>
 {:else}
 	{@render boxes()}
 {/if}

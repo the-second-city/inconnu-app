@@ -981,15 +981,19 @@ test('with the tracker actions, Hunger opens the Rouse modal', async () => {
 		ownerActions: true
 	});
 
-	await user.click(screen.getByRole('button', { name: 'Rouse' }));
+	await user.click(screen.getByRole('button', { name: 'Hunger actions' }));
+	await user.click(
+		within(await screen.findByRole('dialog')).getByRole('button', { name: 'Rouse' })
+	);
 
 	expect(await screen.findByRole('dialog', { name: 'Rouse Check' })).toBeInTheDocument();
 });
 
-test('without the tracker actions, there is no Rouse', () => {
+test('without the tracker actions, Hunger and Humanity open no menus', () => {
 	render(CharacterPage, { guild: GUILD, character: vampire(), editable: true });
 
-	expect(screen.queryByRole('button', { name: 'Rouse' })).not.toBeInTheDocument();
+	expect(screen.queryByRole('button', { name: 'Hunger actions' })).not.toBeInTheDocument();
+	expect(screen.queryByRole('button', { name: 'Humanity actions' })).not.toBeInTheDocument();
 });
 
 test('with the tracker actions, Mend in the Health menu opens the Mend modal', async () => {
@@ -1011,9 +1015,29 @@ test('with the tracker actions, Mend in the Health menu opens the Mend modal', a
 	expect(await screen.findByRole('dialog', { name: 'Mend Damage' })).toBeInTheDocument();
 });
 
-test("a Storyteller on a player's character may deal damage, but not Rouse", () => {
+test("a Storyteller on a player's character may deal damage and Stains, but not Rouse or Slake", () => {
 	render(CharacterPage, { guild: GUILD, character: vampire(), editable: true, actionable: true });
 
 	expect(screen.getByRole('button', { name: 'Health actions' })).toBeInTheDocument();
-	expect(screen.queryByRole('button', { name: 'Rouse' })).not.toBeInTheDocument();
+	expect(screen.getByRole('button', { name: 'Humanity actions' })).toBeInTheDocument();
+	expect(screen.queryByRole('button', { name: 'Hunger actions' })).not.toBeInTheDocument();
+});
+
+test.each([
+	['Hunger actions', 'Slake', 'Slake Hunger'],
+	['Humanity actions', 'Apply Stains', 'Apply Stains']
+])('%s → %s opens its modal', async (trigger, action, title) => {
+	const user = userEvent.setup();
+	render(CharacterPage, {
+		guild: GUILD,
+		character: vampire(),
+		editable: true,
+		actionable: true,
+		ownerActions: true
+	});
+
+	await user.click(screen.getByRole('button', { name: trigger }));
+	await user.click(within(await screen.findByRole('dialog')).getByRole('button', { name: action }));
+
+	expect(await screen.findByRole('dialog', { name: title })).toBeInTheDocument();
 });

@@ -1,13 +1,14 @@
 <script lang="ts">
 	import { untrack } from 'svelte';
 	import { Dialog } from '@skeletonlabs/skeleton-svelte';
-	import { Loader2, Minus, Plus } from '@lucide/svelte';
+	import { Loader2 } from '@lucide/svelte';
 
 	import { damage } from '$lib/characterActions';
 	import { takeDamage } from '$lib/damage';
 	import type { Character, TrackType } from '$lib/types';
 	import ClientPortal from '$lib/components/ClientPortal.svelte';
 	import DamageTrack from './DamageTrack.svelte';
+	import Stepper from './Stepper.svelte';
 
 	interface ComponentProps {
 		open: boolean;
@@ -71,37 +72,6 @@
 	};
 </script>
 
-{#snippet stepper(label: string, value: number, canAdd: boolean, set: (n: number) => void)}
-	<div class="flex items-center justify-between">
-		<span id="damage-{label.toLowerCase()}">{label}</span>
-		<div
-			class="flex items-center gap-3"
-			role="group"
-			aria-labelledby="damage-{label.toLowerCase()}"
-		>
-			<button
-				type="button"
-				class="btn-icon preset-tonal-surface"
-				onclick={() => set(value - 1)}
-				disabled={value <= 0}
-				aria-label="Less {label}"
-			>
-				<Minus size={16} />
-			</button>
-			<span class="w-5 text-center" aria-live="polite">{value}</span>
-			<button
-				type="button"
-				class="btn-icon preset-tonal-surface"
-				onclick={() => set(value + 1)}
-				disabled={!canAdd}
-				aria-label="More {label}"
-			>
-				<Plus size={16} />
-			</button>
-		</div>
-	</div>
-{/snippet}
-
 <Dialog
 	{open}
 	onOpenChange={(e) => (open = e.open)}
@@ -119,8 +89,8 @@
 				<!-- The preview: the track as it would be, with the new damage pulsing -->
 				<DamageTrack label={trackLabel} track={preview} before={current} markFrom="healthy" />
 
-				{@render stepper('Superficial', superficial, !full, (n) => (superficial = n))}
-				{@render stepper('Aggravated', aggravated, !full, (n) => (aggravated = n))}
+				<Stepper label="Superficial" bind:value={superficial} canAdd={!full} disabled={applying} />
+				<Stepper label="Aggravated" bind:value={aggravated} canAdd={!full} disabled={applying} />
 
 				{#if error}
 					<p class="text-error-500 text-sm" role="alert">{error}</p>

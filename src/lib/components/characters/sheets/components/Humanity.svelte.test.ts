@@ -1,6 +1,6 @@
-import { render, screen } from '@testing-library/svelte';
+import { render, screen, within } from '@testing-library/svelte';
 import userEvent from '@testing-library/user-event';
-import { expect, test } from 'vitest';
+import { expect, test, vi } from 'vitest';
 
 import type { Character } from '$lib/types';
 import Humanity from './Humanity.svelte';
@@ -141,4 +141,33 @@ test.each([
 	await openControls(user);
 
 	expect(await screen.findByRole('button', { name })).toBeDisabled();
+});
+
+test("outside edit mode, Humanity's menu offers Apply Stains", async () => {
+	const user = userEvent.setup();
+	const onStain = vi.fn();
+	render(Humanity, { character: character(7, 2), editing: false, onStain });
+
+	await user.click(screen.getByRole('button', { name: 'Humanity actions' }));
+	await user.click(
+		within(await screen.findByRole('dialog')).getByRole('button', { name: 'Apply Stains' })
+	);
+
+	expect(onStain).toHaveBeenCalledOnce();
+});
+
+test('at 10 Stains, there are none to apply', async () => {
+	const user = userEvent.setup();
+	render(Humanity, { character: character(0, 10), editing: false, onStain: vi.fn() });
+
+	await user.click(screen.getByRole('button', { name: 'Humanity actions' }));
+
+	expect(
+		within(await screen.findByRole('dialog')).getByRole('button', { name: 'Apply Stains' })
+	).toBeDisabled();
+});
+
+test("without onStain, Humanity doesn't open a menu", () => {
+	render(Humanity, { character: character(7, 2), editing: false });
+	expect(screen.queryByRole('button', { name: 'Humanity actions' })).not.toBeInTheDocument();
 });

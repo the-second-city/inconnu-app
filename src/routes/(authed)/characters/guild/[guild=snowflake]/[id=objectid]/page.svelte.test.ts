@@ -16,10 +16,6 @@ vi.mock('$app/paths', () => ({
 		route.replace(/\[(\w+)(=\w+)?\]/g, (_, name: string) => params[name])
 }));
 vi.mock('$app/navigation', () => ({ goto: vi.fn(), invalidate, beforeNavigate: () => {} }));
-// As in production by default, so the tests see what's shipped (dev-only features stay hidden).
-// A test can switch to dev.
-const environment = vi.hoisted(() => ({ dev: false }));
-vi.mock('$app/environment', () => environment);
 // EventSource doesn't exist in jsdom; `liveUpdates.test.ts` tests the watcher itself
 vi.mock('$lib/liveUpdates', () => ({ CHARACTER_DEPENDENCY: 'app:character', watchCharacter }));
 
@@ -45,7 +41,6 @@ const characterData = (id: string, name: string): CharacterData => ({
 });
 
 beforeEach(() => {
-	environment.dev = false;
 	navigate('http://localhost/');
 	invalidate.mockReset().mockResolvedValue(undefined);
 	watchCharacter.mockReset().mockReturnValue(() => {});
@@ -144,10 +139,10 @@ test('full access (the owner or a Storyteller) can edit', () => {
 	expect(screen.getAllByRole('button', { name: 'Edit' }).length).toBeGreaterThan(0);
 });
 
-test("the tracker actions aren't offered outside dev", () => {
+test('full access gets the tracker actions', () => {
 	render(Page, pageProps(characterData('a', 'Nadia')));
 
-	expect(screen.queryByRole('button', { name: 'Health actions' })).not.toBeInTheDocument();
+	expect(screen.getByRole('button', { name: 'Health actions' })).toBeInTheDocument();
 });
 
 test("public access can't edit", () => {
@@ -178,20 +173,16 @@ test.each([
 	["the viewer's own character", '222', true],
 	["another player's character (a Storyteller's view)", '333', false],
 	['an SPC', null, true]
-])(
-	'in dev, the tracker actions are offered on %s, and mending too: %s',
-	async (_, ownerId, mending) => {
-		const user = userEvent.setup();
-		environment.dev = true;
-		const props = pageProps(ownedBy(ownerId));
-		props.data.session = { user: { id: '222' }, expires: '' } as typeof props.data.session;
-		render(Page, props);
+])('the tracker actions are offered on %s, and mending too: %s', async (_, ownerId, mending) => {
+	const user = userEvent.setup();
+	const props = pageProps(ownedBy(ownerId));
+	props.data.session = { user: { id: '222' }, expires: '' } as typeof props.data.session;
+	render(Page, props);
 
-		// Anyone with full access may deal damage; only the owner (or a Storyteller for an SPC) heals
-		await user.click(screen.getByRole('button', { name: 'Health actions' }));
+	// Anyone with full access may deal damage; only the owner (or a Storyteller for an SPC) heals
+	await user.click(screen.getByRole('button', { name: 'Health actions' }));
 
-		const menu = await screen.findByRole('dialog');
-		expect(within(menu).getByRole('button', { name: 'Take Damage' })).toBeInTheDocument();
-		expect(within(menu).queryByRole('group', { name: 'Mend' }) !== null).toBe(mending);
-	}
-);
+	const menu = await screen.findByRole('dialog');
+	expect(within(menu).getByRole('button', { name: 'Take Damage' })).toBeInTheDocument();
+	expect(within(menu).queryByRole('group', { name: 'Mend' }) !== null).toBe(mending);
+});

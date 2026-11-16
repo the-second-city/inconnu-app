@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, expect, test, vi, type Mock } from 'vitest';
 
-import { actionError, damage, mend, rouse } from '$lib/characterActions';
+import { actionError, damage, mend, rouse, slake, stain } from '$lib/characterActions';
 import type { MendResult, RouseResult } from '$lib/types';
 
 vi.mock('$app/paths', () => ({
@@ -124,3 +124,20 @@ test("damage returns the API's error", async () => {
 		error: 'Deal at least one damage.'
 	});
 });
+
+test.each([
+	['slake', slake],
+	['stain', stain]
+] as const)(
+	"%s posts the amount to the character's route, and a 204 is success",
+	async (route, action) => {
+		fetchMock.mockResolvedValueOnce(new Response(null, { status: 204 }));
+
+		expect(await action('abc', { amount: 2 })).toEqual({ result: null });
+		expect(fetchMock).toHaveBeenCalledWith(`/api/characters/abc/${route}`, {
+			method: 'POST',
+			headers: { 'Content-Type': 'application/json' },
+			body: JSON.stringify({ amount: 2 })
+		});
+	}
+);
