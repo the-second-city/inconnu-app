@@ -1,8 +1,8 @@
 import { render, screen, within } from '@testing-library/svelte';
 import userEvent from '@testing-library/user-event';
-import { expect, test } from 'vitest';
+import { expect, test, vi } from 'vitest';
 
-import type { Character } from '$lib/types';
+import type { Character, Splat } from '$lib/types';
 import Tracker from './Tracker.svelte';
 
 /** A character with the given Health and Willpower tracks. */
@@ -275,3 +275,41 @@ test.each([
 	expect(within(controls).getByText('Make Corrections')).toBeInTheDocument();
 	expect(within(controls).getByText(footnote)).toBeInTheDocument();
 });
+
+/** Render a track for a character of the given splat, with its actions, and open them. */
+const openSplatActions = async (
+	splat: Splat,
+	track: 'health' | 'willpower',
+	onRouse: () => void
+): Promise<HTMLElement> => {
+	const user = userEvent.setup();
+	const char = { ...character('......'), splat };
+	render(Tracker, { character: char, track, editing: false, actionable: true, onRouse });
+	await user.click(
+		screen.getByRole('button', { name: `${track === 'health' ? 'Health' : 'Willpower'} actions` })
+	);
+	return screen.findByRole('dialog');
+};
+
+test("a ghoul's Health menu offers Rouse, which opens the Rouse modal", async () => {
+	const user = userEvent.setup();
+	const onRouse = vi.fn();
+	const menu = await openSplatActions('ghoul', 'health', onRouse);
+
+	await user.click(within(menu).getByRole('button', { name: 'Rouse' }));
+
+	expect(onRouse).toHaveBeenCalledOnce();
+});
+
+test.each([
+	['vampire', 'health'],
+	['ghoul', 'willpower'],
+	['mortal', 'health']
+] as [Splat, 'health' | 'willpower'][])(
+	"a %s's %s menu doesn't offer Rouse",
+	async (splat, track) => {
+		const menu = await openSplatActions(splat, track, vi.fn());
+
+		expect(within(menu).queryByRole('button', { name: 'Rouse' })).not.toBeInTheDocument();
+	}
+);

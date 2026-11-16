@@ -61,6 +61,27 @@ export interface Character {
 	log?: CharacterLog;
 }
 
+/** A Rouse request. Mirrors the bot's `RouseBody`. */
+export interface RouseRequest {
+	count: number; // 1-3
+	reroll: boolean; // Re-roll failures, as high Blood Potency allows
+	oblivion_stains: boolean; // Apply the guild's Oblivion Stains, as for an Oblivion power
+}
+
+/**
+ * The outcome of Rouse checks. Mirrors the bot's `RouseResult`. Ghouls take one Aggravated Health
+ * damage instead (`aggravated`), with no successes or failures.
+ */
+export interface RouseResult {
+	successes: number;
+	failures: number;
+	hunger: number; // After the checks
+	frenzy: boolean; // A failure at Hunger 5
+	aggravated: number;
+	stains: number; // Oblivion Stains applied
+	degeneration: number;
+}
+
 /** A character's experience and its log. Mirrors the bot's `VCharExperience`. */
 export interface Experience {
 	current: number; // Unspent

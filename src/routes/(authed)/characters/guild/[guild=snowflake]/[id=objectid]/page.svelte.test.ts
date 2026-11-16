@@ -15,8 +15,10 @@ vi.mock('$app/paths', () => ({
 		route.replace(/\[(\w+)(=\w+)?\]/g, (_, name: string) => params[name])
 }));
 vi.mock('$app/navigation', () => ({ goto: vi.fn(), invalidate, beforeNavigate: () => {} }));
-// As in production, so the tests see what's shipped (dev-only features stay hidden)
-vi.mock('$app/environment', () => ({ dev: false }));
+// As in production by default, so the tests see what's shipped (dev-only features stay hidden).
+// A test can switch to dev.
+const environment = vi.hoisted(() => ({ dev: false }));
+vi.mock('$app/environment', () => environment);
 // EventSource doesn't exist in jsdom; `liveUpdates.test.ts` tests the watcher itself
 vi.mock('$lib/liveUpdates', () => ({ CHARACTER_DEPENDENCY: 'app:character', watchCharacter }));
 
@@ -42,6 +44,7 @@ const characterData = (id: string, name: string): CharacterData => ({
 });
 
 beforeEach(() => {
+	environment.dev = false;
 	navigate('http://localhost/');
 	invalidate.mockReset().mockResolvedValue(undefined);
 	watchCharacter.mockReset().mockReturnValue(() => {});
@@ -161,4 +164,25 @@ test("public access can't edit", () => {
 	render(Page, pageProps(data));
 
 	expect(screen.queryByRole('button', { name: 'Edit' })).not.toBeInTheDocument();
+});
+
+/** Full character data, owned by the given user (or an SPC), as the signed-in user '222' sees it. */
+const ownedBy = (ownerId: string | null): CharacterData => ({
+	...characterData('a', 'Nadia'),
+	spc: ownerId === null,
+	owner: ownerId === null ? null : { id: ownerId, name: 'Someone', icon: '' }
+});
+
+test.each([
+	["the viewer's own character", '222', true],
+	["another player's character (a Storyteller's view)", '333', false],
+	['an SPC', null, true]
+])('in dev, the tracker actions are offered on %s: %s', (_, ownerId, offered) => {
+	environment.dev = true;
+	const props = pageProps(ownedBy(ownerId));
+	props.data.session = { user: { id: '222' }, expires: '' } as typeof props.data.session;
+
+	render(Page, props);
+
+	expect(screen.queryByRole('button', { name: 'Health actions' }) !== null).toBe(offered);
 });

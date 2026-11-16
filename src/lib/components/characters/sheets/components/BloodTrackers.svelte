@@ -11,9 +11,10 @@
 	interface ComponentProps {
 		character: Character;
 		editing?: boolean;
+		onRouse?: () => void; // Outside edit mode, clicking Hunger opens the Rouse modal
 	}
 
-	let { character = $bindable(), editing = false }: ComponentProps = $props();
+	let { character = $bindable(), editing = false, onRouse }: ComponentProps = $props();
 
 	// Thin-bloods have 0-2; other vampires 1-10, like the wizard. Discord can set a vampire to 0,
 	// which the bot keeps as long as it isn't changed, so a vampire can return to its recorded
@@ -59,12 +60,28 @@
 		/>
 
 		<div>Hunger</div>
-		<PipSelector
-			label="Hunger"
-			bind:rating={() => character.hunger ?? 0, (value) => (character.hunger = value)}
-			max={5}
-			{editing}
-			pip={hungerPip}
-		/>
+		{#snippet hungerPips()}
+			<PipSelector
+				label="Hunger"
+				bind:rating={() => character.hunger ?? 0, (value) => (character.hunger = value)}
+				max={5}
+				{editing}
+				pip={hungerPip}
+			/>
+		{/snippet}
+		{#if onRouse && !editing}
+			<!-- Outside edit mode, the drops open the Rouse modal -->
+			<button
+				type="button"
+				class="hover:preset-tonal -m-1 w-fit cursor-pointer rounded-md p-1"
+				onclick={onRouse}
+				aria-label="Rouse"
+				title="Rouse"
+			>
+				{@render hungerPips()}
+			</button>
+		{:else}
+			{@render hungerPips()}
+		{/if}
 	</div>
 </Card>

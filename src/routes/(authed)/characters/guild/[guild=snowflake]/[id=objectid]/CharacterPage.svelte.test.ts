@@ -967,3 +967,21 @@ test("⌘S doesn't save while the notice asks whether to keep the edits", async 
 	expect(fetchMock).not.toHaveBeenCalled();
 	expect(nameBox()).toHaveValue('Nadiah');
 });
+
+/** A vampire version of the test character, at Hunger 2. */
+const vampire = (): Character => ({ ...character(), splat: 'vampire', potency: 1, hunger: 2 });
+
+test('with the tracker actions, Hunger opens the Rouse modal', async () => {
+	const user = userEvent.setup();
+	render(CharacterPage, { guild: GUILD, character: vampire(), editable: true, actionable: true });
+
+	await user.click(screen.getByRole('button', { name: 'Rouse' }));
+
+	expect(await screen.findByRole('dialog', { name: 'Rouse Check' })).toBeInTheDocument();
+});
+
+test('without the tracker actions, there is no Rouse', () => {
+	render(CharacterPage, { guild: GUILD, character: vampire(), editable: true });
+
+	expect(screen.queryByRole('button', { name: 'Rouse' })).not.toBeInTheDocument();
+});

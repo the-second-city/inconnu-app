@@ -1,6 +1,6 @@
 import { render, screen } from '@testing-library/svelte';
 import userEvent from '@testing-library/user-event';
-import { expect, test } from 'vitest';
+import { expect, test, vi } from 'vitest';
 
 import type { Character, Splat } from '$lib/types';
 import BloodTrackers from './BloodTrackers.svelte';
@@ -122,4 +122,24 @@ test('a vampire at Blood Potency 0 (set in Discord) can return to 0 after a stra
 	await user.click(screen.getByRole('button', { name: 'Set Blood Potency to 1' }));
 
 	expect(character.potency).toBe(0);
+});
+
+test('outside edit mode, Hunger opens the Rouse modal', async () => {
+	const user = userEvent.setup();
+	const onRouse = vi.fn();
+	render(BloodTrackers, { character: vampire({ hunger: 2 }), onRouse });
+
+	await user.click(screen.getByRole('button', { name: 'Rouse' }));
+
+	expect(onRouse).toHaveBeenCalledOnce();
+});
+
+test("while editing, Hunger isn't a Rouse button", () => {
+	render(BloodTrackers, { character: vampire({ hunger: 2 }), editing: true, onRouse: vi.fn() });
+	expect(screen.queryByRole('button', { name: 'Rouse' })).not.toBeInTheDocument();
+});
+
+test("without onRouse, Hunger isn't a Rouse button", () => {
+	render(BloodTrackers, { character: vampire({ hunger: 2 }) });
+	expect(screen.queryByRole('button', { name: 'Rouse' })).not.toBeInTheDocument();
 });

@@ -9,9 +9,10 @@
 		character: Character;
 		editing: boolean;
 		actionable?: boolean; // Outside edit mode, the damage tracks offer actions
+		onRouse?: () => void; // Opens the Rouse modal: from Hunger, or a ghoul's Health menu
 	}
 
-	let { character = $bindable(), editing, actionable = false }: ComponentProps = $props();
+	let { character = $bindable(), editing, actionable = false, onRouse }: ComponentProps = $props();
 
 	const isVampire = $derived(character.splat === 'vampire' || character.splat === 'thin-blood');
 </script>
@@ -20,10 +21,10 @@
 	{#if isVampire}
 		<div class="grid grid-cols-1 items-stretch gap-3 md:grid-cols-2">
 			<MainTrackers bind:character {editing} {actionable} />
-			<BloodTrackers bind:character {editing} />
+			<BloodTrackers bind:character {editing} {onRouse} />
 		</div>
 	{:else}
-		<MainTrackers bind:character {editing} {actionable} />
+		<MainTrackers bind:character {editing} {actionable} {onRouse} />
 	{/if}
 
 	<TraitSheet bind:traits={character.traits} splat={character.splat} {editing} />

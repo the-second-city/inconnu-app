@@ -37,6 +37,13 @@
 	});
 
 	const backUrl: Pathname = $derived(`/characters/guild/${characterData.guild.id}` as const);
+
+	// The tracker actions (Take Damage, Rouse, ...) are for the character's owner, or for an SPC,
+	// whose full access only Storytellers have: Storytellers can't act for other players. The API
+	// enforces the same. Dev-only until they're wired up.
+	const actionable = $derived(
+		dev && (characterData.spc || characterData.owner?.id === data.session?.user?.id)
+	);
 </script>
 
 <!-- Keyed on the guild and character, so a new character (or URL) starts fresh page state: its
@@ -44,8 +51,7 @@
      switch to the next page's values before this one is torn down. -->
 {#key pageKey}
 	{#if characterData.type === 'full'}
-		<!-- Full access means the owner or a Storyteller, who may edit. The tracker actions aren't
-		     wired up yet, so they're dev-only; they'll be for the owner alone. -->
+		<!-- Full access means the owner or a Storyteller, who may edit -->
 		<CharacterPage
 			character={characterData.character as Character}
 			guild={characterData.guild}
@@ -53,7 +59,7 @@
 			spc={characterData.spc}
 			{backUrl}
 			editable
-			actionable={dev}
+			{actionable}
 		/>
 	{:else}
 		<PublicCharacterView {characterData} {backUrl} />

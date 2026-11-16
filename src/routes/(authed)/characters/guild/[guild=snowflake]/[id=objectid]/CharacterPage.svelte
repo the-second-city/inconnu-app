@@ -19,6 +19,7 @@
 	import CharProfile from '$lib/components/characters/CharProfile.svelte';
 	import CharLog from '$lib/components/characters/CharLog.svelte';
 	import CharExperience from '$lib/components/characters/CharExperience.svelte';
+	import RouseModal from '$lib/components/characters/RouseModal.svelte';
 
 	interface ComponentProps {
 		character: Character;
@@ -97,6 +98,11 @@
 	});
 
 	let copy: Character | null = null;
+
+	// The Rouse modal lives here, not in the sheet: a Rouse saves the character, and the refetch
+	// that follows rebuilds the sheet, which would close it just as the result arrives
+	let rouseOpen = $state(false);
+	const openRouse = () => (rouseOpen = true);
 	let editing = $state(false);
 
 	// Fresh data for the same character (such as a data refresh) replaces the copy. While it's
@@ -277,7 +283,12 @@
 
 {#snippet sheetTab()}
 	{#key character}
-		<CharacterSheet bind:character {editing} {actionable} />
+		<CharacterSheet
+			bind:character
+			{editing}
+			{actionable}
+			onRouse={actionable ? openRouse : undefined}
+		/>
 	{/key}
 {/snippet}
 
@@ -383,6 +394,10 @@
 	</ClientPortal>
 {/if}
 
+{#if actionable}
+	<RouseModal bind:open={rouseOpen} {character} />
+{/if}
+
 <!-- The character changed while it was being edited -->
 <Dialog
 	role="alertdialog"
@@ -391,9 +406,11 @@
 	closeOnInteractOutside={false}
 >
 	<ClientPortal>
-		<Dialog.Backdrop class="bg-surface-50-950/50 fixed inset-0 z-50" />
+		<Dialog.Backdrop class="bg-surface-950/70 fixed inset-0 z-50 backdrop-blur-sm" />
 		<Dialog.Positioner class="fixed inset-0 z-50 flex items-center justify-center p-4">
-			<Dialog.Content class="card bg-surface-100-900 w-full max-w-md space-y-4 p-6 shadow-xl">
+			<Dialog.Content
+				class="card bg-surface-200-800 border-surface-400-600 w-full max-w-md space-y-4 border p-6 shadow-2xl"
+			>
 				<Dialog.Title class="h5">{character.name} was updated</Dialog.Title>
 				<Dialog.Description class="space-y-2">
 					<p>

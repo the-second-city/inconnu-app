@@ -1,0 +1,76 @@
+import { afterEach, beforeEach, expect, test, vi, type Mock } from 'vitest';
+
+import { actionError, rouse } from '$lib/characterActions';
+import type { RouseResult } from '$lib/types';
+
+vi.mock('$app/paths', () => ({
+	resolve: (route: string, params: Record<string, string>) =>
+		route.replace('[id=objectid]', params.id)
+}));
+
+let fetchMock: Mock<typeof fetch>;
+
+beforeEach(() => {
+	fetchMock = vi.fn<typeof fetch>();
+	vi.stubGlobal('fetch', fetchMock);
+});
+
+afterEach(() => {
+	vi.unstubAllGlobals();
+});
+
+const RESULT: RouseResult = {
+	successes: 1,
+	failures: 1,
+	hunger: 3,
+	frenzy: false,
+	aggravated: 0,
+	stains: 0,
+	degeneration: 0
+};
+
+test("rouse posts the request to the character's route and returns the result", async () => {
+	fetchMock.mockResolvedValueOnce(Response.json(RESULT));
+	const request = { count: 2, reroll: true, oblivion_stains: false };
+
+	expect(await rouse('abc', request)).toEqual({ result: RESULT });
+	expect(fetchMock).toHaveBeenCalledWith('/api/characters/abc/rouse', {
+		method: 'POST',
+		headers: { 'Content-Type': 'application/json' },
+		body: JSON.stringify(request)
+	});
+});
+
+test("rouse returns the API's error", async () => {
+	const detail = [{ loc: ['body'], msg: 'Nadia is a mortal.', type: 'value_error' }];
+	fetchMock.mockResolvedValueOnce(Response.json({ detail }, { status: 422 }));
+
+	expect(await rouse('abc', { count: 1, reroll: false, oblivion_stains: false })).toEqual({
+		error: 'Nadia is a mortal.'
+	});
+});
+
+test('rouse says when Inconnu is unreachable', async () => {
+	fetchMock.mockRejectedValueOnce(new TypeError('fetch failed'));
+
+	expect(await rouse('abc', { count: 1, reroll: false, oblivion_stains: false })).toEqual({
+		error: "Couldn't reach Inconnu to Rouse."
+	});
+});
+
+test.each([
+	[
+		422,
+		{ detail: [{ loc: ['body', 'count'], msg: 'Input should be less than or equal to 3' }] },
+		'Input should be less than or equal to 3'
+	],
+	[422, { detail: [{ loc: ['body'], msg: 'Value error, Nope.' }] }, 'Nope.'],
+	[401, null, 'Your session has ended. Sign in again.'],
+	[403, { detail: 'Only the owner' }, "You can't do that for this character."],
+	[404, null, "This character no longer exists, or you're no longer in its server."],
+	[503, null, 'Inconnu is starting up. Try again in a moment.'],
+	[502, { message: "Couldn't reach Inconnu to Rouse." }, "Couldn't reach Inconnu to Rouse."],
+	[500, null, 'Something went wrong. Try again.']
+])('a %i is explained', (status, json, expected) => {
+	expect(actionError(status, json)).toBe(expected);
+});

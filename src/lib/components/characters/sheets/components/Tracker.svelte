@@ -14,9 +14,20 @@
 		track: TrackType;
 		editing: boolean;
 		actionable?: boolean; // Outside edit mode, clicking the track offers actions (Take Damage, ...)
+		onRouse?: () => void; // A ghoul's Health menu offers Rouse, as ghouls pay for it in Health
 	}
 
-	let { character = $bindable(), track, editing, actionable = false }: ComponentProps = $props();
+	let {
+		character = $bindable(),
+		track,
+		editing,
+		actionable = false,
+		onRouse
+	}: ComponentProps = $props();
+
+	const offersRouse = $derived(
+		onRouse !== undefined && track === 'health' && character.splat === 'ghoul'
+	);
 
 	let trackLabel = $derived(track.charAt(0).toUpperCase() + track.slice(1));
 	let showControls = $state(false);
@@ -162,6 +173,18 @@
 		<button type="button" class="btn preset-tonal-surface" disabled={!canTakeDamage}>
 			Take Damage
 		</button>
+		{#if offersRouse}
+			<button
+				type="button"
+				class="btn preset-tonal-surface"
+				onclick={() => {
+					showActions = false;
+					onRouse?.();
+				}}
+			>
+				Rouse
+			</button>
+		{/if}
 		<!-- Willpower doesn't mend; the bot restores it through awaken -->
 		{#if track === 'health'}
 			<fieldset class="border-surface-400-600 rounded-base mt-2 border px-2 pb-2">
