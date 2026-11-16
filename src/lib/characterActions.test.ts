@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, expect, test, vi, type Mock } from 'vitest';
 
-import { actionError, mend, rouse } from '$lib/characterActions';
+import { actionError, damage, mend, rouse } from '$lib/characterActions';
 import type { MendResult, RouseResult } from '$lib/types';
 
 vi.mock('$app/paths', () => ({
@@ -99,5 +99,28 @@ test('mend says when Inconnu is unreachable', async () => {
 
 	expect(await mend('abc', { type: 'aggravated', track: 'health' })).toEqual({
 		error: "Couldn't reach Inconnu to mend."
+	});
+});
+
+test("damage posts the request to the character's route, and a 204 is success", async () => {
+	fetchMock.mockResolvedValueOnce(new Response(null, { status: 204 }));
+	const request = { track: 'health', superficial: 2, aggravated: 1 } as const;
+
+	expect(await damage('abc', request)).toEqual({ result: null });
+	expect(fetchMock).toHaveBeenCalledWith('/api/characters/abc/damage', {
+		method: 'POST',
+		headers: { 'Content-Type': 'application/json' },
+		body: JSON.stringify(request)
+	});
+});
+
+test("damage returns the API's error", async () => {
+	const detail = [
+		{ loc: ['body'], msg: 'Value error, Deal at least one damage.', type: 'value_error' }
+	];
+	fetchMock.mockResolvedValueOnce(Response.json({ detail }, { status: 422 }));
+
+	expect(await damage('abc', { track: 'health', superficial: 0, aggravated: 0 })).toEqual({
+		error: 'Deal at least one damage.'
 	});
 });

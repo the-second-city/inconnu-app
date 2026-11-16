@@ -207,28 +207,31 @@
 				Rouse
 			</button>
 		{/if}
-		<!-- Health mends as /mend and /aggheal do; Willpower recovers as /awaken does -->
-		<fieldset class="border-surface-400-600 rounded-base mt-2 border px-2 pb-2">
-			<legend class="mx-auto px-2 text-sm uppercase">Mend</legend>
-			<div class="flex gap-2">
-				<button
-					type="button"
-					class="btn preset-tonal-surface flex-1"
-					disabled={damageCounts['/'] === 0}
-					onclick={() => startMend('superficial')}
-				>
-					Superficial
-				</button>
-				<button
-					type="button"
-					class="btn preset-tonal-surface flex-1"
-					disabled={damageCounts['x'] === 0}
-					onclick={() => startMend('aggravated')}
-				>
-					Aggravated
-				</button>
-			</div>
-		</fieldset>
+		<!-- Health mends as /mend and /aggheal do; Willpower recovers as /awaken does. Only when the
+		     viewer may heal (the owner, or a Storyteller for an SPC). -->
+		{#if onMend}
+			<fieldset class="border-surface-400-600 rounded-base mt-2 border px-2 pb-2">
+				<legend class="mx-auto px-2 text-sm uppercase">Mend</legend>
+				<div class="flex gap-2">
+					<button
+						type="button"
+						class="btn preset-tonal-surface flex-1"
+						disabled={damageCounts['/'] === 0}
+						onclick={() => startMend('superficial')}
+					>
+						Superficial
+					</button>
+					<button
+						type="button"
+						class="btn preset-tonal-surface flex-1"
+						disabled={damageCounts['x'] === 0}
+						onclick={() => startMend('aggravated')}
+					>
+						Aggravated
+					</button>
+				</div>
+			</fieldset>
+		{/if}
 	</div>
 {/snippet}
 

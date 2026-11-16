@@ -1,4 +1,5 @@
-import { render, screen } from '@testing-library/svelte';
+import { render, screen, within } from '@testing-library/svelte';
+import userEvent from '@testing-library/user-event';
 import { beforeEach, expect, test, vi } from 'vitest';
 
 import type { Character, CharacterData, PublicCharacter } from '$lib/types';
@@ -177,12 +178,20 @@ test.each([
 	["the viewer's own character", '222', true],
 	["another player's character (a Storyteller's view)", '333', false],
 	['an SPC', null, true]
-])('in dev, the tracker actions are offered on %s: %s', (_, ownerId, offered) => {
-	environment.dev = true;
-	const props = pageProps(ownedBy(ownerId));
-	props.data.session = { user: { id: '222' }, expires: '' } as typeof props.data.session;
+])(
+	'in dev, the tracker actions are offered on %s, and mending too: %s',
+	async (_, ownerId, mending) => {
+		const user = userEvent.setup();
+		environment.dev = true;
+		const props = pageProps(ownedBy(ownerId));
+		props.data.session = { user: { id: '222' }, expires: '' } as typeof props.data.session;
+		render(Page, props);
 
-	render(Page, props);
+		// Anyone with full access may deal damage; only the owner (or a Storyteller for an SPC) heals
+		await user.click(screen.getByRole('button', { name: 'Health actions' }));
 
-	expect(screen.queryByRole('button', { name: 'Health actions' }) !== null).toBe(offered);
-});
+		const menu = await screen.findByRole('dialog');
+		expect(within(menu).getByRole('button', { name: 'Take Damage' })).toBeInTheDocument();
+		expect(within(menu).queryByRole('group', { name: 'Mend' }) !== null).toBe(mending);
+	}
+);

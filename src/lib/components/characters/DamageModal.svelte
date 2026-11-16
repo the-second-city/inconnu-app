@@ -1,8 +1,9 @@
 <script lang="ts">
 	import { untrack } from 'svelte';
 	import { Dialog } from '@skeletonlabs/skeleton-svelte';
-	import { Minus, Plus } from '@lucide/svelte';
+	import { Loader2, Minus, Plus } from '@lucide/svelte';
 
+	import { damage } from '$lib/characterActions';
 	import { takeDamage } from '$lib/damage';
 	import type { Character, TrackType } from '$lib/types';
 	import ClientPortal from '$lib/components/ClientPortal.svelte';
@@ -31,15 +32,33 @@
 	// Superficial box instead, but the next Superficial point does.)
 	const full = $derived(![...preview].some((box) => box !== 'x'));
 
+	let applying = $state(false);
+	let error: string | null = $state(null);
+
 	// Each opening starts with no damage queued (the parent opens it by setting `open`)
 	$effect(() => {
 		if (open) {
 			untrack(() => {
 				superficial = 0;
 				aggravated = 0;
+				error = null;
 			});
 		}
 	});
+
+	/**
+	 * Deal the queued damage. On success the modal closes, and the sheet updates through the live
+	 * update the save triggers; on failure it stays open, saying why.
+	 */
+	const apply = async () => {
+		if (applying || superficial + aggravated === 0) return;
+		applying = true;
+		error = null;
+		const outcome = await damage(character._id, { track, superficial, aggravated });
+		applying = false;
+		if (outcome.error !== undefined) error = outcome.error;
+		else open = false;
+	};
 </script>
 
 {#snippet stepper(label: string, value: number, canAdd: boolean, set: (n: number) => void)}
@@ -73,7 +92,12 @@
 	</div>
 {/snippet}
 
-<Dialog {open} onOpenChange={(e) => (open = e.open)} closeOnInteractOutside={false}>
+<Dialog
+	{open}
+	onOpenChange={(e) => (open = e.open)}
+	closeOnInteractOutside={false}
+	closeOnEscape={!applying}
+>
 	<ClientPortal>
 		<Dialog.Backdrop class="bg-surface-950/70 fixed inset-0 z-50 backdrop-blur-sm" />
 		<Dialog.Positioner class="fixed inset-0 z-50 flex items-center justify-center p-4">
@@ -88,14 +112,29 @@
 				{@render stepper('Superficial', superficial, !full, (n) => (superficial = n))}
 				{@render stepper('Aggravated', aggravated, !full, (n) => (aggravated = n))}
 
-				<!-- Not wired up yet: the bot's endpoint is still to come -->
-				<p class="text-surface-200 text-center text-xs">Applying damage isn't available yet.</p>
+				{#if error}
+					<p class="text-error-500 text-sm" role="alert">{error}</p>
+				{/if}
 
 				<div class="flex justify-end gap-2">
-					<button type="button" class="btn preset-tonal-surface" onclick={() => (open = false)}>
+					<button
+						type="button"
+						class="btn preset-tonal-surface"
+						onclick={() => (open = false)}
+						disabled={applying}
+					>
 						Cancel
 					</button>
-					<button type="button" class="btn preset-filled-primary-500" disabled>Apply</button>
+					<button
+						type="button"
+						class="btn preset-filled-primary-500"
+						onclick={apply}
+						disabled={applying || superficial + aggravated === 0}
+						aria-busy={applying}
+					>
+						{#if applying}<Loader2 size={18} class="animate-spin" />{/if}
+						<span>Apply</span>
+					</button>
 				</div>
 			</Dialog.Content>
 		</Dialog.Positioner>

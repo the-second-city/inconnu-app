@@ -1,10 +1,10 @@
 /**
- * Gameplay actions on a character (Rouse, Mend, and later Take Damage and Slake), sent through the
+ * Gameplay actions on a character (Rouse, Mend, Take Damage, and later Slake), sent through the
  * app's API routes to the Inconnu API, which logs them and posts them to the update channel.
  */
 
 import { resolve } from '$app/paths';
-import type { MendRequest, MendResult, RouseRequest, RouseResult } from '$lib/types';
+import type { DamageRequest, MendRequest, MendResult, RouseRequest, RouseResult } from '$lib/types';
 
 /** An action's outcome: its result, or why it failed, for the user. */
 export type ActionOutcome<T> = { result: T; error?: never } | { result?: never; error: string };
@@ -38,7 +38,10 @@ export const actionError = (status: number, json: unknown): string => {
 	return 'Something went wrong. Try again.';
 };
 
-/** POST an action to one of a character's routes, returning its result or why it failed. */
+/**
+ * POST an action to one of a character's routes, returning its result or why it failed. An action
+ * that answers 204 (no content) succeeds with a null result.
+ */
 const postAction = async <T>(
 	url: string,
 	body: unknown,
@@ -50,6 +53,7 @@ const postAction = async <T>(
 			headers: { 'Content-Type': 'application/json' },
 			body: JSON.stringify(body)
 		});
+		if (response.status === 204) return { result: null as T };
 		const json = await response.json().catch(() => null);
 		if (response.ok && json) return { result: json as T };
 		return { error: actionError(response.status, json) };
@@ -78,4 +82,15 @@ export const mend = (
 		resolve('/api/characters/[id=objectid]/mend', { id: characterId }),
 		request,
 		"Couldn't reach Inconnu to mend."
+	);
+
+/**
+ * Deal damage to one of a character's tracks: Superficial first, then Aggravated. The API answers
+ * with no content; the sheet updates through the live update the save triggers.
+ */
+export const damage = (characterId: string, request: DamageRequest): Promise<ActionOutcome<null>> =>
+	postAction(
+		resolve('/api/characters/[id=objectid]/damage', { id: characterId }),
+		request,
+		"Couldn't reach Inconnu to deal damage."
 	);

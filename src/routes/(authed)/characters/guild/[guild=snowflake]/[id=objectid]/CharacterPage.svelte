@@ -30,7 +30,8 @@
 		spc?: boolean;
 		backUrl?: Pathname;
 		editable?: boolean; // Shows the edit buttons
-		actionable?: boolean; // Clicking a damage track offers its actions (Take Damage, Mend)
+		actionable?: boolean; // Clicking a damage track offers its actions (Take Damage)
+		ownerActions?: boolean; // Plus Rouse and Mend (the owner, or a Storyteller for an SPC)
 	}
 
 	let {
@@ -40,7 +41,8 @@
 		spc = false,
 		backUrl,
 		editable = false,
-		actionable = false
+		actionable = false,
+		ownerActions = false
 	}: ComponentProps = $props();
 
 	// The page's own copy, for edits. The parent keys this component on the character's ID, so a
@@ -305,8 +307,8 @@
 			bind:character
 			{editing}
 			{actionable}
-			onRouse={actionable ? openRouse : undefined}
-			onMend={actionable ? openMend : undefined}
+			onRouse={ownerActions ? openRouse : undefined}
+			onMend={ownerActions ? openMend : undefined}
 			onTakeDamage={actionable ? openDamage : undefined}
 		/>
 	{/key}

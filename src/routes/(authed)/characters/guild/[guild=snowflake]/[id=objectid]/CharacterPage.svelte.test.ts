@@ -973,7 +973,13 @@ const vampire = (): Character => ({ ...character(), splat: 'vampire', potency: 1
 
 test('with the tracker actions, Hunger opens the Rouse modal', async () => {
 	const user = userEvent.setup();
-	render(CharacterPage, { guild: GUILD, character: vampire(), editable: true, actionable: true });
+	render(CharacterPage, {
+		guild: GUILD,
+		character: vampire(),
+		editable: true,
+		actionable: true,
+		ownerActions: true
+	});
 
 	await user.click(screen.getByRole('button', { name: 'Rouse' }));
 
@@ -989,7 +995,13 @@ test('without the tracker actions, there is no Rouse', () => {
 test('with the tracker actions, Mend in the Health menu opens the Mend modal', async () => {
 	const user = userEvent.setup();
 	const damaged = { ...vampire(), health: '....//' };
-	render(CharacterPage, { guild: GUILD, character: damaged, editable: true, actionable: true });
+	render(CharacterPage, {
+		guild: GUILD,
+		character: damaged,
+		editable: true,
+		actionable: true,
+		ownerActions: true
+	});
 
 	await user.click(screen.getByRole('button', { name: 'Health actions' }));
 	await user.click(
@@ -997,4 +1009,11 @@ test('with the tracker actions, Mend in the Health menu opens the Mend modal', a
 	);
 
 	expect(await screen.findByRole('dialog', { name: 'Mend Damage' })).toBeInTheDocument();
+});
+
+test("a Storyteller on a player's character may deal damage, but not Rouse", () => {
+	render(CharacterPage, { guild: GUILD, character: vampire(), editable: true, actionable: true });
+
+	expect(screen.getByRole('button', { name: 'Health actions' })).toBeInTheDocument();
+	expect(screen.queryByRole('button', { name: 'Rouse' })).not.toBeInTheDocument();
 });

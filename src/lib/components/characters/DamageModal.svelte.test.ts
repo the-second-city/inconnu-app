@@ -1,9 +1,16 @@
-import { render, screen, within } from '@testing-library/svelte';
+import { render, screen, waitFor, within } from '@testing-library/svelte';
 import userEvent from '@testing-library/user-event';
-import { expect, test } from 'vitest';
+import { beforeEach, expect, test, vi } from 'vitest';
 
 import type { Character, TrackType } from '$lib/types';
 import DamageModal from './DamageModal.svelte';
+
+const damage = vi.hoisted(() => vi.fn());
+vi.mock('$lib/characterActions', () => ({ damage }));
+
+beforeEach(() => {
+	damage.mockReset().mockResolvedValue({ result: null });
+});
 
 /** A character with a 5-box Health track (2 healthy, 3 Superficial) and 3-box Willpower. */
 const character = (): Character => ({
@@ -95,8 +102,77 @@ test('on a wrapped track, one more Aggravated adds one Aggravated box', async ()
 	expect(preview(dialog)).toBe('AASSS');
 });
 
-test("Apply isn't available yet", async () => {
+test('Apply needs some damage queued', async () => {
+	const user = userEvent.setup();
 	const dialog = await renderModal();
+	const apply = within(dialog).getByRole('button', { name: 'Apply' });
+	expect(apply).toBeDisabled();
+
+	await user.click(within(dialog).getByRole('button', { name: 'More Aggravated' }));
+
+	expect(apply).toBeEnabled();
+});
+
+/** Render the modal with `open` as state, so its closing shows. Returns that state. */
+const renderBound = (): { open: boolean } => {
+	const bound = $state({ open: true });
+	render(DamageModal, {
+		character: character(),
+		track: 'health',
+		get open() {
+			return bound.open;
+		},
+		set open(next: boolean) {
+			bound.open = next;
+		}
+	});
+	return bound;
+};
+
+test('Apply deals the queued damage, then closes', async () => {
+	const user = userEvent.setup();
+	const bound = renderBound();
+	const dialog = await screen.findByRole('dialog');
+	await user.click(within(dialog).getByRole('button', { name: 'More Superficial' }));
+	await user.click(within(dialog).getByRole('button', { name: 'More Superficial' }));
+	await user.click(within(dialog).getByRole('button', { name: 'More Aggravated' }));
+
+	await user.click(within(dialog).getByRole('button', { name: 'Apply' }));
+
+	expect(damage).toHaveBeenCalledWith('abc', { track: 'health', superficial: 2, aggravated: 1 });
+	await waitFor(() => expect(bound.open).toBe(false));
+});
+
+test('a failed Apply says why, and stays open', async () => {
+	const user = userEvent.setup();
+	damage.mockResolvedValueOnce({ error: "Couldn't reach Inconnu to deal damage." });
+	const bound = renderBound();
+	const dialog = await screen.findByRole('dialog');
+	await user.click(within(dialog).getByRole('button', { name: 'More Aggravated' }));
+
+	await user.click(within(dialog).getByRole('button', { name: 'Apply' }));
+
+	expect(await within(dialog).findByRole('alert')).toHaveTextContent(
+		"Couldn't reach Inconnu to deal damage."
+	);
+	expect(bound.open).toBe(true);
+});
+
+test('while applying, Apply and Cancel are disabled', async () => {
+	const user = userEvent.setup();
+	let answer: (outcome: unknown) => void = () => {};
+	damage.mockReturnValueOnce(new Promise((resolve) => (answer = resolve)));
+	renderBound();
+	const dialog = await screen.findByRole('dialog');
+	await user.click(within(dialog).getByRole('button', { name: 'More Aggravated' }));
+
+	await user.click(within(dialog).getByRole('button', { name: 'Apply' }));
 
 	expect(within(dialog).getByRole('button', { name: 'Apply' })).toBeDisabled();
+	expect(within(dialog).getByRole('button', { name: 'Apply' })).toHaveAttribute(
+		'aria-busy',
+		'true'
+	);
+	expect(within(dialog).getByRole('button', { name: 'Cancel' })).toBeDisabled();
+	answer({ result: null });
 });

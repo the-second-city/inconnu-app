@@ -101,6 +101,16 @@ export interface MendResult {
 	torpor: boolean; // Healing Aggravated damage pushed Hunger past 5
 }
 
+/**
+ * Damage to deal. Mirrors the bot's `DamageBody`: Superficial applies first (wrapping into
+ * Aggravated past the track's end), then Aggravated.
+ */
+export interface DamageRequest {
+	track: TrackType;
+	superficial: number;
+	aggravated: number;
+}
+
 /** A character's experience and its log. Mirrors the bot's `VCharExperience`. */
 export interface Experience {
 	current: number; // Unspent

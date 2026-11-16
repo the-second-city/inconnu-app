@@ -198,13 +198,30 @@ const openActions = async (
 		character: character(health, willpower),
 		track,
 		editing: false,
-		actionable: true
+		actionable: true,
+		onMend: vi.fn() // As for the owner, who may heal
 	});
 	await user.click(
 		screen.getByRole('button', { name: `${track === 'health' ? 'Health' : 'Willpower'} actions` })
 	);
 	return screen.findByRole('dialog');
 };
+
+test("without Mend (a Storyteller on a player's character), the menu only deals damage", async () => {
+	const user = userEvent.setup();
+	render(Tracker, {
+		character: character('..//x'),
+		track: 'health',
+		editing: false,
+		actionable: true,
+		onTakeDamage: vi.fn()
+	});
+	await user.click(screen.getByRole('button', { name: 'Health actions' }));
+
+	const menu = await screen.findByRole('dialog');
+	expect(within(menu).getByRole('button', { name: 'Take Damage' })).toBeInTheDocument();
+	expect(within(menu).queryByRole('group', { name: 'Mend' })).not.toBeInTheDocument();
+});
 
 /** The names of a menu's buttons, with "(disabled)" after those that are. */
 const menuButtons = (menu: HTMLElement): string[] =>

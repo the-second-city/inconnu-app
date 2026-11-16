@@ -38,10 +38,12 @@
 
 	const backUrl: Pathname = $derived(`/characters/guild/${characterData.guild.id}` as const);
 
-	// The tracker actions (Take Damage, Rouse, ...) are for the character's owner, or for an SPC,
-	// whose full access only Storytellers have: Storytellers can't act for other players. The API
-	// enforces the same. Dev-only until they're wired up.
-	const actionable = $derived(
+	// The tracker actions, dev-only for now. Anyone with full access (the owner or a Storyteller)
+	// may deal damage; Rouse and Mend are for the character's owner, or for an SPC, whose full
+	// access only Storytellers have: Storytellers can't roll for other players. The API enforces
+	// the same.
+	const actionable = dev;
+	const ownerActions = $derived(
 		dev && (characterData.spc || characterData.owner?.id === data.session?.user?.id)
 	);
 </script>
@@ -60,6 +62,7 @@
 			{backUrl}
 			editable
 			{actionable}
+			{ownerActions}
 		/>
 	{:else}
 		<PublicCharacterView {characterData} {backUrl} />
