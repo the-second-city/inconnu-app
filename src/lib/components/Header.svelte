@@ -4,7 +4,8 @@
 	import { afterNavigate } from '$app/navigation';
 	import { resolve } from '$app/paths';
 
-	import { ChevronDown, Github, Orbit, ScrollText, Users } from '@lucide/svelte';
+	import { ChevronDown, Orbit, ScrollText, Users } from '@lucide/svelte';
+	import GithubIcon from '$lib/components/GithubIcon.svelte';
 	import Popover from '$lib/components/Popover.svelte';
 
 	import DiscordButton from '$lib/components/DiscordButton.svelte';
@@ -38,7 +39,7 @@
 		color="preset-outlined-surface-800-200"
 		full={true}
 	>
-		GitHub <Github />
+		GitHub <GithubIcon />
 	</NavButton>
 {/snippet}
 

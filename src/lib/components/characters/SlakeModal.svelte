@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { untrack } from 'svelte';
 	import { Dialog } from '@skeletonlabs/skeleton-svelte';
-	import { Bone, Heart, Loader2, Skull } from '@lucide/svelte';
+	import { BoneFracture, Heart, Loader2, Skull } from '@lucide/svelte';
 
 	import { slake } from '$lib/characterActions';
 	import { animalBloodNote, feedingCost, type FeedingCost } from '$lib/feeding';
@@ -155,7 +155,7 @@
 								{:else if choice.cost === 'drain'}
 									<Skull size={18} />
 								{:else if choice.cost === 'harmful'}
-									<Bone size={18} />
+									<BoneFracture size={18} />
 								{:else}
 									<Heart size={18} />
 								{/if}
