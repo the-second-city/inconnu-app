@@ -73,7 +73,7 @@
 			<!-- Outside edit mode, the drops open the Rouse modal -->
 			<button
 				type="button"
-				class="hover:preset-tonal -m-1 w-fit cursor-pointer rounded-md p-1"
+				class="hover:preset-tonal -mx-2 -my-1 w-fit cursor-pointer rounded-md px-2 py-1"
 				onclick={onRouse}
 				aria-label="Rouse"
 				title="Rouse"

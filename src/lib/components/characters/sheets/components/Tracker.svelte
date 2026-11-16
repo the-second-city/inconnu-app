@@ -37,6 +37,10 @@
 		onRouse !== undefined && track === 'health' && character.splat === 'ghoul'
 	);
 
+	// A clickable track is highlighted on hover, like the Hunger drops' Rouse button. The padding is
+	// offset by a negative margin, so the boxes don't move.
+	const CLICKABLE = 'hover:preset-tonal -mx-2 -my-1 w-fit cursor-pointer rounded-md px-2 py-1';
+
 	let trackLabel = $derived(track.charAt(0).toUpperCase() + track.slice(1));
 	let showControls = $state(false);
 	let showActions = $state(false);
@@ -221,13 +225,20 @@
 {/snippet}
 
 {#if editing}
-	<Popover bind:open={showControls} trigger={boxes} content={controls} arrow />
+	<Popover
+		bind:open={showControls}
+		trigger={boxes}
+		content={controls}
+		triggerClass={CLICKABLE}
+		arrow
+	/>
 {:else if actionable}
 	<Popover
 		bind:open={showActions}
 		trigger={boxes}
 		content={actions}
 		triggerLabel="{trackLabel} actions"
+		triggerClass={CLICKABLE}
 		arrow
 	/>
 {:else}
