@@ -18,7 +18,11 @@
 	let { open = $bindable(), character, track }: ComponentProps = $props();
 
 	const trackLabel = $derived(track === 'willpower' ? 'Willpower' : 'Health');
-	const current = $derived(character[track]);
+	// The track the damage applies to. Applying freezes it: the save's live update brings the
+	// damaged track while the modal closes, and previewing the same damage on that would show it
+	// twice. Until then, it follows the character (say, damage taken in Discord meanwhile).
+	let frozen: string | null = $state(null);
+	const current = $derived(frozen ?? character[track]);
 
 	// The damage to take
 	let superficial = $state(0);
@@ -42,6 +46,7 @@
 				superficial = 0;
 				aggravated = 0;
 				error = null;
+				frozen = null;
 			});
 		}
 	});
@@ -54,10 +59,15 @@
 		if (applying || superficial + aggravated === 0) return;
 		applying = true;
 		error = null;
+		frozen = character[track];
 		const outcome = await damage(character._id, { track, superficial, aggravated });
 		applying = false;
-		if (outcome.error !== undefined) error = outcome.error;
-		else open = false;
+		if (outcome.error !== undefined) {
+			error = outcome.error;
+			frozen = null; // Nothing was saved, so follow the character again
+		} else {
+			open = false;
+		}
 	};
 </script>
 

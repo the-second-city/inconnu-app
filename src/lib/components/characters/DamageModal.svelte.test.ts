@@ -176,3 +176,29 @@ test('while applying, Apply and Cancel are disabled', async () => {
 	expect(within(dialog).getByRole('button', { name: 'Cancel' })).toBeDisabled();
 	answer({ result: null });
 });
+
+test("the damaged track arriving after Apply doesn't take the damage again in the preview", async () => {
+	const user = userEvent.setup();
+	let answer: (outcome: unknown) => void = () => {};
+	damage.mockReturnValueOnce(new Promise((resolve) => (answer = resolve)));
+	const { rerender } = render(DamageModal, { character: character(), track: 'health', open: true });
+	const dialog = await screen.findByRole('dialog');
+	await user.click(within(dialog).getByRole('button', { name: 'More Aggravated' }));
+	expect(preview(dialog)).toBe('ASSSH');
+
+	await user.click(within(dialog).getByRole('button', { name: 'Apply' }));
+	// The save's live update brings the damaged track before the modal closes
+	await rerender({ character: { ...character(), health: './//x' } });
+
+	expect(preview(dialog)).toBe('ASSSH');
+	answer({ result: null });
+});
+
+test('before Apply, the preview follows changes to the character', async () => {
+	const { rerender } = render(DamageModal, { character: character(), track: 'health', open: true });
+	const dialog = await screen.findByRole('dialog');
+
+	await rerender({ character: { ...character(), health: './//x' } });
+
+	expect(preview(dialog)).toBe('ASSSH');
+});
