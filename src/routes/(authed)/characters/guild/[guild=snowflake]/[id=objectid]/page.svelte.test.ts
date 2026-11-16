@@ -15,6 +15,8 @@ vi.mock('$app/paths', () => ({
 		route.replace(/\[(\w+)(=\w+)?\]/g, (_, name: string) => params[name])
 }));
 vi.mock('$app/navigation', () => ({ goto: vi.fn(), invalidate, beforeNavigate: () => {} }));
+// As in production, so the tests see what's shipped (dev-only features stay hidden)
+vi.mock('$app/environment', () => ({ dev: false }));
 // EventSource doesn't exist in jsdom; `liveUpdates.test.ts` tests the watcher itself
 vi.mock('$lib/liveUpdates', () => ({ CHARACTER_DEPENDENCY: 'app:character', watchCharacter }));
 
@@ -130,4 +132,33 @@ test('navigating to another character watches it instead', async () => {
 
 	expect(stop).toHaveBeenCalledOnce();
 	expect(watchCharacter).toHaveBeenLastCalledWith('/api/characters/b/events', expect.any(Function));
+});
+
+test('full access (the owner or a Storyteller) can edit', () => {
+	render(Page, pageProps(characterData('a', 'Nadia')));
+
+	expect(screen.getAllByRole('button', { name: 'Edit' }).length).toBeGreaterThan(0);
+});
+
+test("the tracker actions aren't offered outside dev", () => {
+	render(Page, pageProps(characterData('a', 'Nadia')));
+
+	expect(screen.queryByRole('button', { name: 'Health actions' })).not.toBeInTheDocument();
+});
+
+test("public access can't edit", () => {
+	const data: CharacterData = {
+		...characterData('a', 'Nadia'),
+		type: 'public',
+		character: {
+			id: 'a',
+			user: '222',
+			name: 'Nadia',
+			splat: 'mortal',
+			profile: { description: null, biography: null, images: [] }
+		} satisfies PublicCharacter
+	};
+	render(Page, pageProps(data));
+
+	expect(screen.queryByRole('button', { name: 'Edit' })).not.toBeInTheDocument();
 });

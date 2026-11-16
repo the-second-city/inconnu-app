@@ -44,13 +44,16 @@
      switch to the next page's values before this one is torn down. -->
 {#key pageKey}
 	{#if characterData.type === 'full'}
+		<!-- Full access means the owner or a Storyteller, who may edit. The tracker actions aren't
+		     wired up yet, so they're dev-only; they'll be for the owner alone. -->
 		<CharacterPage
 			character={characterData.character as Character}
 			guild={characterData.guild}
 			owner={characterData.owner}
 			spc={characterData.spc}
 			{backUrl}
-			editable={dev}
+			editable
+			actionable={dev}
 		/>
 	{:else}
 		<PublicCharacterView {characterData} {backUrl} />

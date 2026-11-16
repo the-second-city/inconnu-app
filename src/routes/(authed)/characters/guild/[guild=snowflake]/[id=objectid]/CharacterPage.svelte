@@ -27,6 +27,7 @@
 		spc?: boolean;
 		backUrl?: Pathname;
 		editable?: boolean; // Shows the edit buttons
+		actionable?: boolean; // Clicking a damage track offers its actions (Take Damage, Mend)
 	}
 
 	let {
@@ -35,7 +36,8 @@
 		owner,
 		spc = false,
 		backUrl,
-		editable = false
+		editable = false,
+		actionable = false
 	}: ComponentProps = $props();
 
 	// The page's own copy, for edits. The parent keys this component on the character's ID, so a
@@ -275,8 +277,7 @@
 
 {#snippet sheetTab()}
 	{#key character}
-		<!-- Tracker actions follow `editable` for now; they'll be for owners only (not STs) -->
-		<CharacterSheet bind:character {editing} actionable={editable} />
+		<CharacterSheet bind:character {editing} {actionable} />
 	{/key}
 {/snippet}
 
