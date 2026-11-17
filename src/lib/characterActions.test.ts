@@ -26,7 +26,8 @@ const RESULT: RouseResult = {
 	frenzy: false,
 	aggravated: 0,
 	stains: 0,
-	degeneration: 0
+	degeneration: 0,
+	dice: [[7]]
 };
 
 test("rouse posts the request to the character's route and returns the result", async () => {

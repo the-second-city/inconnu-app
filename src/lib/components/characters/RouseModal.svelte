@@ -8,6 +8,7 @@
 	import type { Character, RouseResult } from '$lib/types';
 	import ClientPortal from '$lib/components/ClientPortal.svelte';
 	import CountdownRing from './CountdownRing.svelte';
+	import RollingDice from './RollingDice.svelte';
 	import ToggleCard from './ToggleCard.svelte';
 	import HungerDrops from './HungerDrops.svelte';
 	import Humanity from './sheets/components/Humanity.svelte';
@@ -17,10 +18,18 @@
 	interface ComponentProps {
 		open: boolean;
 		character: Character;
-		stepDelay?: number; // ms each check counts down, so the roll takes a moment, like a roll
+		stepDelay?: number; // ms the dice tumble at least (a ghoul's countdown step)
+		revealDelay?: number; // ms each revealed face lingers before the next
+		handoffDelay?: number; // ms the revealed dice show before crossfading to Hunger
 	}
 
-	let { open = $bindable(), character, stepDelay = 750 }: ComponentProps = $props();
+	let {
+		open = $bindable(),
+		character,
+		stepDelay = 750,
+		revealDelay = 650,
+		handoffDelay = 1000
+	}: ComponentProps = $props();
 
 	const isGhoul = $derived(character.splat === 'ghoul');
 	const potency = $derived(character.potency ?? character.blood_potency ?? 0);
@@ -35,7 +44,15 @@
 	let reroll = $state(false);
 	let oblivion = $state(false);
 	let rolling = $state(false);
-	let remaining = $state(0); // The countdown while rolling
+	let remaining = $state(0); // A ghoul's countdown while rolling
+
+	// A vampire's dice, rolled in place, in the order rolled: blank faces tumble while the request
+	// runs, then each check reveals in turn. A re-rolled check shows its first face, lingers, tumbles
+	// again, and shows the second. With Oblivion Stains, a final 1 or 10 is red (it Stains).
+	let faces: (number | null)[] = $state([]);
+	let stained: boolean[] = $state([]);
+	let revealing = $state(false); // Past the first tumble: re-rolls tumble at once
+	let showHunger = $state(false); // The dice have given way to the Hunger they left
 
 	let error: string | null = $state(null);
 	let result: RouseResult | null = $state(null);
@@ -79,7 +96,10 @@
 		result = null;
 		error = null;
 		previewing = null;
+		showHunger = false;
 	};
+
+	const wait = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
 	// Each opening starts at the options (the parent opens it by setting `open`)
 	$effect(() => {
@@ -87,32 +107,75 @@
 	});
 
 	/**
-	 * Roll: the modal counts down from the number of checks (a ghoul's one Rouse) to 0, a step at a
-	 * time, while the request runs, then shows the result (or the options again, with the error).
-	 * If the API is slower than the countdown, it waits at 0.
+	 * Roll. A vampire's dice tumble for at least `stepDelay` while the request runs, then reveal one
+	 * check at a time, and the result shows; a moment later the dice give way to the Hunger they left.
+	 * A ghoul counts down one step instead. On an error, the options come back, saying why.
 	 */
 	const doRouse = async (checks = 1) => {
 		if (rolling) return;
 		count = checks;
 		rolling = true;
 		error = null;
+		showHunger = false;
 		hungerBefore = character.hunger ?? 0;
 		stainsBefore = character.stains ?? 0;
-		remaining = isGhoul ? 1 : count;
+		const staining = hasOblivion && oblivion;
 		const request = rouse(character._id, {
 			count,
 			reroll: canReroll && reroll,
-			oblivion_stains: hasOblivion && oblivion
+			oblivion_stains: staining
 		});
-		while (remaining > 0) {
-			await new Promise((resolve) => setTimeout(resolve, stepDelay));
-			remaining--;
+
+		if (isGhoul) {
+			remaining = 1;
+			await wait(stepDelay);
+			remaining = 0;
+		} else {
+			faces = Array(count).fill(null);
+			stained = Array(count).fill(false);
+			revealing = false;
+			await wait(stepDelay);
 		}
 		const outcome = await request;
+		if (outcome.error !== undefined) {
+			rolling = false;
+			error = outcome.error;
+			return;
+		}
+
+		if (!isGhoul) {
+			const rolled = outcome.result.dice ?? [];
+			faces = Array(rolled.length).fill(null);
+			stained = Array(rolled.length).fill(false);
+			revealing = true;
+			for (const [i, check] of rolled.entries()) {
+				for (const [roll, face] of check.entries()) {
+					if (roll > 0) {
+						// The re-roll: tumble again before the second face
+						faces[i] = null;
+						await wait(revealDelay / 2);
+					}
+					faces[i] = face;
+					// Only a check's final face counts, so only it can Stain
+					stained[i] = staining && roll === check.length - 1 && (face === 1 || face === 10);
+					await wait(revealDelay);
+				}
+			}
+		}
 		rolling = false;
-		if (outcome.error !== undefined) error = outcome.error;
-		else result = outcome.result;
+		result = outcome.result;
+
+		// After a moment with the dice, they crossfade to the Hunger they left
+		if (!isGhoul) {
+			const shown = result;
+			await wait(handoffDelay);
+			if (result === shown) showHunger = true;
+		}
 	};
+
+	/** The dice for screen readers: "3, then 8; 9". */
+	const diceLabel = (dice: number[][]): string =>
+		dice.map((check) => check.join(', then ')).join('; ');
 
 	// The choice rows and their icon badges, as the Slake modal's
 	const ROW =
@@ -145,8 +208,42 @@
 					{/if}
 				</Dialog.Title>
 
+				<!-- A vampire's dice, from the roll through the result (one element, so the revealed faces
+				     don't pop in again), then, a moment after, the Hunger they left in the same place:
+				     stacked in one grid cell, crossfading. The drops are there (unseen) from the start, so
+				     the height holds. -->
+				{#if !isGhoul && (rolling || result)}
+					<div class="grid items-center">
+						<div
+							class={[
+								'col-start-1 row-start-1 transition-opacity duration-500',
+								showHunger && 'opacity-0'
+							]}
+						>
+							<RollingDice
+								{faces}
+								rolling
+								{stained}
+								stagger={!revealing}
+								label={result
+									? `Rouse dice: ${diceLabel(result.dice ?? [])}`
+									: `Rolling ${plural(count, 'Rouse die', 'Rouse dice')}`}
+							/>
+						</div>
+						<div
+							class={[
+								'col-start-1 row-start-1 transition-opacity duration-500',
+								showHunger ? 'opacity-100' : 'opacity-0'
+							]}
+							aria-hidden="true"
+						>
+							<HungerDrops before={hungerBefore} after={result?.hunger ?? hungerBefore} />
+						</div>
+					</div>
+				{/if}
+
 				{#if rolling}
-					<CountdownRing {remaining} {stepDelay} />
+					{#if isGhoul}<CountdownRing {remaining} {stepDelay} />{/if}
 				{:else if result === null}
 					<!-- Options -->
 					{#if isGhoul}
@@ -266,7 +363,7 @@
 						{#if isGhoul}
 							<p>{character.name} took 1 Aggravated Health damage.</p>
 						{:else}
-							<HungerDrops before={hungerBefore} after={result.hunger} />
+							<p class="sr-only">Hunger {hungerBefore} → {result.hunger}</p>
 							{#if result.frenzy}
 								<p class="preset-tonal-error flex gap-2 rounded-md p-3 text-sm">
 									<Flame size={18} class="shrink-0" />

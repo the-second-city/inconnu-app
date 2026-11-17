@@ -36,6 +36,7 @@ const result = (fields: Partial<RouseResult> = {}): RouseResult => ({
 	aggravated: 0,
 	stains: 0,
 	degeneration: 0,
+	dice: [[7]],
 	...fields
 });
 
@@ -45,6 +46,8 @@ const renderModal = (char: Character = character()): { open: boolean } => {
 	render(RouseModal, {
 		character: char,
 		stepDelay: 0,
+		revealDelay: 0,
+		handoffDelay: 0,
 		get open() {
 			return bound.open;
 		},
@@ -270,7 +273,7 @@ test.each([
 	expect(dialog).toHaveAccessibleName(label);
 });
 
-test('rolling hides the options and buttons, and counts down from the number of checks', async () => {
+test('rolling hides the options and buttons, and tumbles a die per check', async () => {
 	const user = userEvent.setup();
 	let answer: (outcome: unknown) => void = () => {};
 	rouse.mockReturnValueOnce(new Promise((resolve) => (answer = resolve)));
@@ -280,12 +283,75 @@ test('rolling hides the options and buttons, and counts down from the number of 
 	await user.click(within(dialog).getByRole('button', { name: 'Rouse 3 Checks' }));
 
 	expect(within(dialog).queryByRole('button')).not.toBeInTheDocument();
-	expect(within(dialog).getByText('Rolling…')).toBeInTheDocument();
-	// The countdown runs out (no delay in tests) and waits at 0 for the API
-	await waitFor(() => expect(within(dialog).getByText('0')).toBeInTheDocument());
-	answer({ result: result() });
+	expect(within(dialog).getByRole('img', { name: 'Rolling 3 Rouse dice' })).toBeInTheDocument();
+	answer({ result: result({ successes: 3, dice: [[7], [8], [9]] }) });
 	await within(dialog).findByRole('status');
 	expect(dialog).toHaveAccessibleName('Success');
+});
+
+test('the dice show in the order rolled, re-rolls after their first face', async () => {
+	const user = userEvent.setup();
+	rouse.mockResolvedValueOnce({
+		result: result({ successes: 2, failures: 1, hunger: 3, dice: [[9], [3, 8], [2]] })
+	});
+	renderModal(character('vampire', 2));
+	const dialog = await modal();
+	await user.click(within(dialog).getByRole('checkbox', { name: 'Re-roll failures' }));
+
+	await user.click(within(dialog).getByRole('button', { name: 'Rouse 3 Checks' }));
+
+	expect(
+		await within(dialog).findByRole('img', { name: 'Rouse dice: 9; 3, then 8; 2' })
+	).toBeInTheDocument();
+	// Each check shows its final face, in place
+	const shown = [...within(dialog).getByRole('img', { name: /^Rouse dice/ }).children].map((die) =>
+		die.textContent?.trim()
+	);
+	expect(shown).toEqual(['9', '8', '2']);
+});
+
+test("with Oblivion Stains, a check's final 1 or 10 is red, and a re-rolled first face isn't", async () => {
+	const user = userEvent.setup();
+	rouse.mockResolvedValueOnce({
+		result: result({ successes: 1, failures: 2, stains: 2, dice: [[10], [1, 1], [1, 7]] })
+	});
+	renderModal(character('vampire', 2, [OBLIVION]));
+	const dialog = await modal();
+	await user.click(within(dialog).getByRole('checkbox', { name: 'Apply Oblivion Stains' }));
+
+	await user.click(within(dialog).getByRole('button', { name: 'Rouse 3 Checks' }));
+
+	await within(dialog).findByRole('status');
+	const dice = [...within(dialog).getByRole('img', { name: /^Rouse dice/ }).children];
+	expect(dice.map((die) => die.classList.contains('preset-filled-error-500'))).toEqual([
+		true,
+		true,
+		false
+	]);
+});
+
+test('without Oblivion Stains, 1s and 10s are plain', async () => {
+	const user = userEvent.setup();
+	rouse.mockResolvedValueOnce({ result: result({ successes: 1, failures: 1, dice: [[10], [1]] }) });
+	renderModal(character('vampire', 2, [OBLIVION]));
+	const dialog = await modal();
+
+	await user.click(within(dialog).getByRole('button', { name: 'Rouse 2 Checks' }));
+
+	await within(dialog).findByRole('status');
+	const dice = [...within(dialog).getByRole('img', { name: /^Rouse dice/ }).children];
+	expect(dice.some((die) => die.classList.contains('preset-filled-error-500'))).toBe(false);
+});
+
+test('a moment after the result, the dice give way to the Hunger they left', async () => {
+	const user = userEvent.setup();
+	renderModal();
+	const dialog = await modal();
+
+	await user.click(within(dialog).getByRole('button', { name: 'Rouse 1 Check' }));
+
+	const dice = await within(dialog).findByRole('img', { name: 'Rouse dice: 7' });
+	await waitFor(() => expect(dice.parentElement).toHaveClass('opacity-0'));
 });
 
 test('when Stains are applied, the result shows Humanity with them', async () => {

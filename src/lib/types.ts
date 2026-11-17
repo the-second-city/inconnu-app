@@ -80,6 +80,7 @@ export interface RouseResult {
 	aggravated: number;
 	stains: number; // Oblivion Stains applied
 	degeneration: number;
+	dice: number[][]; // Each check's faces: the first, then any re-roll (none for ghouls)
 }
 
 /**
