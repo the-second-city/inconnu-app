@@ -52,6 +52,7 @@
 	let faces: (number | null)[] = $state([]);
 	let stained: boolean[] = $state([]);
 	let revealing = $state(false); // Past the first tumble: re-rolls tumble at once
+	let staining = $state(false); // This roll applies Oblivion Stains, so Humanity shows with the dice
 	let showHunger = $state(false); // The dice have given way to the Hunger they left
 
 	let error: string | null = $state(null);
@@ -59,11 +60,12 @@
 	let hungerBefore = $state(0);
 	let stainsBefore = $state(0);
 
-	// The character as the Rouse left it, for the Humanity tracker when it applied Stains. (The
-	// character itself only updates once it's refetched.) The bot caps Stains at 10.
+	// The character with the Rouse's Stains, for the Humanity tracker: each red die's Stain as it's
+	// revealed, then the bot's count. (The character itself only updates once it's refetched.) The
+	// bot caps Stains at 10.
 	const afterRouse: Character = $derived.by(() => ({
 		...character,
-		stains: Math.min(10, stainsBefore + (result?.stains ?? 0))
+		stains: Math.min(10, stainsBefore + (result?.stains ?? stained.filter(Boolean).length))
 	}));
 
 	const hunger = $derived(character.hunger ?? 0);
@@ -119,7 +121,7 @@
 		showHunger = false;
 		hungerBefore = character.hunger ?? 0;
 		stainsBefore = character.stains ?? 0;
-		const staining = hasOblivion && oblivion;
+		staining = hasOblivion && oblivion;
 		const request = rouse(character._id, {
 			count,
 			reroll: canReroll && reroll,
@@ -238,6 +240,26 @@
 							aria-hidden="true"
 						>
 							<HungerDrops before={hungerBefore} after={result?.hunger ?? hungerBefore} />
+						</div>
+					</div>
+				{/if}
+
+				<!-- With Oblivion Stains, Humanity shows under the dice through the roll, each red die's
+				     Stain landing as it's revealed. The label goes above the track, since beside it, ten
+				     boxes don't fit the modal. -->
+				{#if !isGhoul && staining && (rolling || result)}
+					<!-- Centered under the centered dice, as a block whose label and Stains line start at the
+					     track's left edge -->
+					<div class="flex justify-center">
+						<div class="grid gap-1">
+							<Humanity character={afterRouse} editing={false} />
+							{#if result}
+								<p class="text-sm" role="status">
+									{result.stains > 0
+										? `${plural(result.stains, 'Oblivion Stain', 'Oblivion Stains')} applied.`
+										: 'No Oblivion Stains.'}
+								</p>
+							{/if}
 						</div>
 					</div>
 				{/if}
@@ -370,13 +392,7 @@
 									<span>A check failed at Hunger 5: test for Hunger frenzy.</span>
 								</p>
 							{/if}
-							{#if result.stains > 0}
-								<!-- The label above the track: beside it, ten boxes don't fit the modal -->
-								<div class="grid gap-1">
-									<Humanity character={afterRouse} editing={false} />
-								</div>
-								<p>{plural(result.stains, 'Oblivion Stain', 'Oblivion Stains')} applied.</p>
-							{/if}
+
 							{#if result.degeneration > 0}
 								<p>Degeneration: {result.degeneration} Aggravated Willpower damage.</p>
 							{/if}

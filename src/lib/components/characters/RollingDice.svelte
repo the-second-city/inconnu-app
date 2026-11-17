@@ -21,7 +21,7 @@
 </script>
 
 <!-- Dice rolled in place: blank dashed faces until rolled, tumbling one after another while the roll
-     is out, then each showing its number as it's revealed, successes (6+) in blue, stained faces red.
+     is out, then each showing its number as it's revealed, successes (6+) in blue, stained faces the theme's crimson.
      A face can go blank again to re-roll. -->
 <div class="flex flex-wrap justify-center gap-2" role="img" aria-label={label}>
 	{#each faces as face, i (i)}
@@ -40,7 +40,7 @@
 				class={[
 					'reveal flex size-10 items-center justify-center rounded-md text-lg font-semibold',
 					stained[i]
-						? 'preset-filled-error-500'
+						? 'preset-filled-primary-500'
 						: isSuccess(face)
 							? 'preset-filled-secondary-500'
 							: 'preset-tonal-surface'

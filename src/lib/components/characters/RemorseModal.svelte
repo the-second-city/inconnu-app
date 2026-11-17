@@ -144,9 +144,11 @@
 				</Dialog.Title>
 
 				<!-- Humanity: as it is, then as the test left it. The label goes above the track, since
-				     beside it, ten boxes don't fit. -->
-				<div class="grid gap-1">
-					<Humanity character={phase === 'done' ? afterTest : shown} editing={false} />
+				     beside it, ten boxes don't fit; centered as a block, the label at the track's edge. -->
+				<div class="flex justify-center">
+					<div class="grid gap-1">
+						<Humanity character={phase === 'done' ? afterTest : shown} editing={false} />
+					</div>
 				</div>
 
 				<!-- The dice: blank faces until rolled (any the Lasombra Bane removes crossed out), then

@@ -181,13 +181,16 @@ test('the result warns of frenzy, and shows Stains and degeneration only when th
 	});
 	renderModal(character('vampire', 2, [OBLIVION]));
 	const dialog = await modal();
+	await user.click(within(dialog).getByRole('checkbox', { name: 'Apply Oblivion Stains' }));
 
 	await user.click(within(dialog).getByRole('button', { name: 'Rouse 1 Check' }));
 
-	const status = await within(dialog).findByRole('status');
-	expect(status).toHaveTextContent('test for Hunger frenzy');
-	expect(status).toHaveTextContent('2 Oblivion Stains applied.');
-	expect(status).toHaveTextContent('Degeneration: 1 Aggravated Willpower damage.');
+	// With Stains, the result has two live regions: the Stains (under Humanity) and the rest
+	const statuses = await within(dialog).findAllByRole('status');
+	const said = statuses.map((status) => status.textContent).join(' ');
+	expect(said).toContain('test for Hunger frenzy');
+	expect(said).toContain('2 Oblivion Stains applied.');
+	expect(said).toContain('Degeneration: 1 Aggravated Willpower damage.');
 });
 
 test('a plain result has no frenzy, Stains, or degeneration', async () => {
@@ -321,9 +324,9 @@ test("with Oblivion Stains, a check's final 1 or 10 is red, and a re-rolled firs
 
 	await user.click(within(dialog).getByRole('button', { name: 'Rouse 3 Checks' }));
 
-	await within(dialog).findByRole('status');
+	await within(dialog).findByRole('button', { name: 'Done' });
 	const dice = [...within(dialog).getByRole('img', { name: /^Rouse dice/ }).children];
-	expect(dice.map((die) => die.classList.contains('preset-filled-error-500'))).toEqual([
+	expect(dice.map((die) => die.classList.contains('preset-filled-primary-500'))).toEqual([
 		true,
 		true,
 		false
@@ -340,7 +343,7 @@ test('without Oblivion Stains, 1s and 10s are plain', async () => {
 
 	await within(dialog).findByRole('status');
 	const dice = [...within(dialog).getByRole('img', { name: /^Rouse dice/ }).children];
-	expect(dice.some((die) => die.classList.contains('preset-filled-error-500'))).toBe(false);
+	expect(dice.some((die) => die.classList.contains('preset-filled-primary-500'))).toBe(false);
 });
 
 test('a moment after the result, the dice give way to the Hunger they left', async () => {
@@ -354,26 +357,39 @@ test('a moment after the result, the dice give way to the Hunger they left', asy
 	await waitFor(() => expect(dice.parentElement).toHaveClass('opacity-0'));
 });
 
-test('when Stains are applied, the result shows Humanity with them', async () => {
+test('with Oblivion Stains, Humanity shows with the dice, and the result with its Stains', async () => {
 	const user = userEvent.setup();
-	rouse.mockResolvedValueOnce({ result: result({ stains: 2 }) });
+	rouse.mockResolvedValueOnce({ result: result({ stains: 2, dice: [[10], [1]] }) });
 	renderModal(character('vampire', 2, [OBLIVION])); // Humanity 7, no Stains
 	const dialog = await modal();
+	await user.click(within(dialog).getByRole('checkbox', { name: 'Apply Oblivion Stains' }));
+
+	await user.click(within(dialog).getByRole('button', { name: 'Rouse 2 Checks' }));
+
+	expect(await within(dialog).findByText('2 Oblivion Stains applied.')).toBeInTheDocument();
+	expect(within(dialog).getByText('Humanity')).toBeInTheDocument();
+	expect(within(dialog).getAllByRole('img', { name: 'Stain' })).toHaveLength(2);
+});
+
+test('with Oblivion Stains but none landing, Humanity still shows, and says so', async () => {
+	const user = userEvent.setup();
+	renderModal(character('vampire', 2, [OBLIVION]));
+	const dialog = await modal();
+	await user.click(within(dialog).getByRole('checkbox', { name: 'Apply Oblivion Stains' }));
 
 	await user.click(within(dialog).getByRole('button', { name: 'Rouse 1 Check' }));
 
-	const status = await within(dialog).findByRole('status');
-	expect(within(status).getByText('Humanity')).toBeInTheDocument();
-	expect(within(status).getAllByRole('img', { name: /Stain/ })).toHaveLength(2);
+	expect(await within(dialog).findByText('No Oblivion Stains.')).toBeInTheDocument();
+	expect(within(dialog).getByText('Humanity')).toBeInTheDocument();
 });
 
-test("without Stains, the result doesn't show Humanity", async () => {
+test("without Oblivion Stains, the roll doesn't show Humanity", async () => {
 	const user = userEvent.setup();
 	renderModal();
 	const dialog = await modal();
 
 	await user.click(within(dialog).getByRole('button', { name: 'Rouse 1 Check' }));
 
-	const status = await within(dialog).findByRole('status');
-	expect(within(status).queryByText('Humanity')).not.toBeInTheDocument();
+	await within(dialog).findByRole('status');
+	expect(within(dialog).queryByText('Humanity')).not.toBeInTheDocument();
 });

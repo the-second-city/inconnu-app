@@ -84,9 +84,12 @@
 					<BusySpinner label="Applying Stains…" />
 				{:else}
 					<!-- The preview: Humanity with the new Stains. The label goes above the track, since
-				     beside it, ten boxes don't fit the modal. -->
-					<div class="grid gap-1">
-						<Humanity character={preview} editing={false} />
+				     beside it, ten boxes don't fit the modal; centered as a block, the label at the
+				     track's edge. -->
+					<div class="flex justify-center">
+						<div class="grid gap-1">
+							<Humanity character={preview} editing={false} />
+						</div>
 					</div>
 
 					<Stepper label="Stains" bind:value={amount} min={1} {max} />
