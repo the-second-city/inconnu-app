@@ -1,5 +1,5 @@
 <script lang="ts">
-	let { size = 30, color = '#09CF09', strokeWidth = 10 } = $props();
+	let { size = 30, color = '#ccc', strokeWidth = 10 } = $props();
 </script>
 
 <svg
@@ -10,5 +10,13 @@
 	role="img"
 	aria-label="Healthy"
 >
-	<rect x="5" y="5" width="90" height="90" fill="none" stroke={color} stroke-width={strokeWidth} />
+	<rect
+		x="5"
+		y="5"
+		width="90"
+		height="90"
+		fill="none"
+		style:stroke={color}
+		stroke-width={strokeWidth}
+	/>
 </svg>
