@@ -2,6 +2,7 @@
 	import { untrack } from 'svelte';
 	import { Droplets, Mouth } from '@lucide/svelte';
 
+	import { bloodPotency } from '$lib/vampire';
 	import type { Character } from '$lib/types';
 
 	import Card from '$lib/components/Card.svelte';
@@ -39,7 +40,7 @@
 	// Thin-bloods have 0-2; other vampires 1-10, like the wizard. Discord can set a vampire to 0,
 	// which the bot keeps as long as it isn't changed, so a vampire can return to its recorded
 	// value. (The sheet is rebuilt for each new character copy, so this is the saved value.)
-	const recordedPotency = untrack(() => character.potency ?? character.blood_potency ?? 0);
+	const recordedPotency = untrack(() => bloodPotency(character));
 	const isThinBlood = $derived(character.splat === 'thin-blood');
 	const minBloodPotency = $derived(isThinBlood ? 0 : Math.min(1, recordedPotency));
 	const maxBloodPotency = $derived(isThinBlood ? 2 : 10);
@@ -69,10 +70,7 @@
 		<!-- The API sends `potency`; `blood_potency` is the wizard's name for it -->
 		<PipSelector
 			label="Blood Potency"
-			bind:rating={
-				() => character.potency ?? character.blood_potency ?? 0,
-				(value) => (character.potency = value)
-			}
+			bind:rating={() => bloodPotency(character), (value) => (character.potency = value)}
 			min={minBloodPotency}
 			max={maxBloodPotency}
 			{editing}

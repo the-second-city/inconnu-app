@@ -3,6 +3,8 @@
 	import { Dialog } from '@skeletonlabs/skeleton-svelte';
 	import { Droplets, Flame, HeartPlus, Moon, Tombstone } from '@lucide/svelte';
 
+	import { isVampiric } from '$lib/vampire';
+	import { atLeast, wait } from '$lib/busy';
 	import { mend } from '$lib/characterActions';
 	import { countBoxes, healDamage, mendAmount } from '$lib/damage';
 	import { isSuccess, successesLast } from '$lib/dice';
@@ -49,7 +51,7 @@
 
 	const isWillpower = $derived(track === 'willpower');
 	const trackLabel = $derived(isWillpower ? 'Willpower' : 'Health');
-	const isVampire = $derived(shown.splat === 'vampire' || shown.splat === 'thin-blood');
+	const isVampire = $derived(isVampiric(shown.splat));
 	const isAggravated = $derived(type === 'aggravated');
 	// Vampires Rouse to heal Health: once to mend, three times for Aggravated. Others, and Willpower,
 	// don't.
@@ -81,8 +83,6 @@
 		}
 	});
 
-	const wait = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
-
 	/**
 	 * Heal in place: the Rouse dice tumble for at least `stepDelay` while the request runs (a beat
 	 * without them), then reveal one at a time (failures first, then successes), and the outcome
@@ -93,7 +93,7 @@
 		phase = 'rolling';
 		error = null;
 		healedFrom = $state.snapshot(character);
-		const [outcome] = await Promise.all([mend(character._id, { type, track }), wait(stepDelay)]);
+		const outcome = await atLeast(mend(character._id, { type, track }), stepDelay);
 		if (outcome.error !== undefined) {
 			error = outcome.error;
 			healedFrom = null;

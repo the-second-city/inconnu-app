@@ -194,15 +194,18 @@
 	const hasChanges = $derived(editing && comparable(character, newName) !== baseline);
 
 	// Fresh data that changes what edit mode can (say, damage taken in Discord) while editing asks
-	// whether to reload it, discarding the edits, or keep editing. Each version asks once.
+	// whether to reload it, discarding the edits, or keep editing. Each version is compared with the
+	// last one seen while editing, not with the data editing began with: after Proceed Anyway, a later
+	// version that changes only the log shouldn't ask again about the change already kept.
 	let showStaleNotice = $state(false);
-	let noticed: Character | null = null;
+	let seen: Character | null = null; // The last version seen this edit (null: none since `applied`)
 	$effect(() => {
 		const fresh = initialCharacter;
 		// Not while saving: the save's own "changed" event would bring it
-		if (!editing || saving || fresh === applied || fresh === noticed) return;
-		noticed = fresh;
-		if (untrack(() => comparable(fresh, fresh.name) !== comparable(applied, applied.name))) {
+		if (!editing || saving || fresh === applied || fresh === seen) return;
+		const previous = seen ?? applied;
+		seen = fresh;
+		if (untrack(() => comparable(fresh, fresh.name) !== comparable(previous, previous.name))) {
 			showStaleNotice = true;
 		}
 	});
@@ -220,6 +223,7 @@
 	const enterEditMode = () => {
 		saveError = null; // A failed save's errors belong to that edit
 		editing = true;
+		seen = null;
 		copy = $state.snapshot(character);
 		baseline = comparable(copy, copy.name);
 		newName = character.name;

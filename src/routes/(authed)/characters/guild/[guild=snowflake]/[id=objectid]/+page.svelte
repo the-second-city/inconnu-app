@@ -40,7 +40,8 @@
 	// The tracker actions. Anyone with full access (the owner or a Storyteller, the only viewers of
 	// this page's full view) may deal damage; Rouse and Mend are for the character's owner, or for an
 	// SPC, whose full access only Storytellers have: Storytellers can't roll for other players. The
-	// API enforces the same.
+	// API enforces the same. Ownership is `owner.id`, not the character's own `user`, which the API
+	// sends as a JSON number: a Discord ID is past Number.MAX_SAFE_INTEGER, so it arrives rounded.
 	const actionable = true;
 	const ownerActions = $derived(
 		characterData.spc || characterData.owner?.id === data.session?.user?.id

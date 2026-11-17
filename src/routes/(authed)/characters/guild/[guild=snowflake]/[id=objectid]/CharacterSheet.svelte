@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { isVampiric } from '$lib/vampire';
 	import type { Character, TrackType } from '$lib/types';
 
 	import TraitSheet from '$lib/components/characters/sheets/TraitSheet.svelte';
@@ -29,7 +30,7 @@
 		onRemorse
 	}: ComponentProps = $props();
 
-	const isVampire = $derived(character.splat === 'vampire' || character.splat === 'thin-blood');
+	const isVampire = $derived(isVampiric(character.splat));
 </script>
 
 <div class="flex flex-col gap-3">

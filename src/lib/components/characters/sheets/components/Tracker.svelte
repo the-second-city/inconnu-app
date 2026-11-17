@@ -1,8 +1,10 @@
 <script lang="ts">
 	import { untrack } from 'svelte';
 	import { Bandage, Droplets, HandFist, HeartPlus } from '@lucide/svelte';
+	import { isVampiric } from '$lib/vampire';
 	import Popover from '$lib/components/Popover.svelte';
 
+	import { mendAmount, TRACK_LIMITS } from '$lib/damage';
 	import type { Character, TrackType } from '$lib/types';
 
 	import MenuAction from './MenuAction.svelte';
@@ -106,28 +108,23 @@
 	const canTakeDamage = $derived(damageCounts['x'] < trackArray.length);
 
 	// What mending costs or does, for the menu (MendModal explains it in full)
-	const isVampire = $derived(character.splat === 'vampire' || character.splat === 'thin-blood');
+	const isVampire = $derived(isVampiric(character.splat));
 	const mendDetail = (type: 'superficial' | 'aggravated'): string => {
 		const symbol = type === 'superficial' ? '/' : 'x';
 		if (damageCounts[symbol] === 0)
 			return `No ${type === 'superficial' ? 'Superficial' : 'Aggravated'} damage`;
 		if (track === 'willpower') {
 			// A night's rest: the higher of Resolve and Composure
-			const recovery = Math.max(
-				0,
-				...character.traits
-					.filter((t) => ['resolve', 'composure'].includes(t.name.toLowerCase()))
-					.map((t) => t.rating)
-			);
+			const recovery = mendAmount(character, type, track);
 			return type === 'superficial' ? `Recovers ${recovery}, as a night's rest` : 'Recovers 1';
 		}
 		if (!isVampire) return 'Heals without Rousing';
 		return type === 'superficial' ? 'Costs a Rouse Check' : 'Costs 3 Rouse Checks';
 	};
 
-	// Box counts: Health 4-20, Willpower 3-20
-	const minBoxes = $derived(track === 'willpower' ? 3 : 4);
-	const MAX_BOXES = 20;
+	// Box counts, within the bot's limits
+	const minBoxes = $derived(TRACK_LIMITS[track].min);
+	const maxBoxes = $derived(TRACK_LIMITS[track].max);
 
 	function incBoxes() {
 		trackArray.unshift('.');
@@ -179,7 +176,7 @@
 				() => trackArray.length, (next) => (next > trackArray.length ? incBoxes() : decBoxes())
 			}
 			min={minBoxes}
-			max={MAX_BOXES}
+			max={maxBoxes}
 		>
 			{#snippet icon()}<HaleBox size={20} />{/snippet}
 		</Stepper>

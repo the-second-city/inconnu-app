@@ -4,6 +4,7 @@
  */
 
 import { normalize } from '$lib';
+import { bloodPotency, isVampiric } from '$lib/vampire';
 import type { Character, Trait } from '$lib/types';
 
 /** The edit body: every editable field, all at once. */
@@ -20,10 +21,6 @@ export interface CharacterEdit {
 	traits: Trait[];
 }
 
-/** Whether a character has Blood Potency and Hunger. */
-const isVampiric = (char: Character): boolean =>
-	char.splat === 'vampire' || char.splat === 'thin-blood';
-
 /**
  * The edit body for a character, with its (edited) name. The API includes Blood Potency and
  * Hunger for every character, but the bot refuses them for mortals and ghouls, and requires them
@@ -36,9 +33,7 @@ export const editBody = (char: Character, name: string): CharacterEdit => ({
 	willpower: char.willpower,
 	humanity: char.humanity,
 	stains: char.stains,
-	...(isVampiric(char)
-		? { potency: char.potency ?? char.blood_potency ?? 0, hunger: char.hunger ?? 0 }
-		: {}),
+	...(isVampiric(char.splat) ? { potency: bloodPotency(char), hunger: char.hunger ?? 0 } : {}),
 	convictions: (char.convictions ?? []).map(normalize), // The bot drops blank ones
 	profile: {
 		description: char.profile.description ?? '',

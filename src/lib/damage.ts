@@ -4,6 +4,22 @@
  * will save.
  */
 
+import { bloodPotency, isVampiric } from '$lib/vampire';
+import type { TrackType } from '$lib/types';
+
+/** The fewest and most boxes a track may have. */
+export interface TrackLimits {
+	min: number;
+	max: number;
+}
+
+/** The bot's track limits (`VChar.tracker_limits`) when this was written. The wizard takes the
+ * bot's own, falling back to these; the character page's corrections use these. */
+export const TRACK_LIMITS: Record<TrackType, TrackLimits> = {
+	health: { min: 4, max: 20 },
+	willpower: { min: 3, max: 20 }
+};
+
 /** A track of a length with these amounts of damage, as the bot builds it: healthy first, keeping
  * the rightmost boxes when the damage outgrows the track (so Aggravated outlasts Superficial). */
 const build = (length: number, superficial: number, aggravated: number): string =>
@@ -82,9 +98,8 @@ export const mendAmount = (
 	if (track === 'willpower') {
 		return Math.max(rating(character.traits, 'resolve'), rating(character.traits, 'composure'));
 	}
-	if (character.splat === 'vampire' || character.splat === 'thin-blood') {
-		const potency = character.potency ?? character.blood_potency ?? 0;
-		return VAMPIRE_MENDS[Math.max(0, Math.min(10, potency))];
+	if (isVampiric(character.splat)) {
+		return VAMPIRE_MENDS[Math.max(0, Math.min(10, bloodPotency(character)))];
 	}
 	return rating(character.traits, 'stamina');
 };

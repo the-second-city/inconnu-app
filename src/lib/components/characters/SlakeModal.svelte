@@ -3,6 +3,7 @@
 	import { Dialog } from '@skeletonlabs/skeleton-svelte';
 	import { BoneFracture, Flame, Heart, IvBag, Skull } from '@lucide/svelte';
 
+	import { bloodPotency } from '$lib/vampire';
 	import { atLeast } from '$lib/busy';
 	import { slake } from '$lib/characterActions';
 	import { animalBloodNote, feedingCost, type FeedingCost } from '$lib/feeding';
@@ -30,7 +31,7 @@
 	// One choice per amount there is to slake, each with what it costs one human victim (as the game
 	// assumes), by Blood Potency. A drain always takes Hunger to 0, so amounts that would need one
 	// short of that are left out, leaving one drain: the slake to 0.
-	const potency = $derived(character.potency ?? character.blood_potency ?? 0);
+	const potency = $derived(bloodPotency(character));
 	const choices = $derived(
 		Array.from({ length: Math.min(5, hunger) }, (_, i) => {
 			const amount = i + 1;

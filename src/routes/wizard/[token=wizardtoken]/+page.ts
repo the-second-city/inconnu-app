@@ -1,12 +1,7 @@
 import { error } from '@sveltejs/kit';
 import type { PageLoad } from './$types';
+import { TRACK_LIMITS, type TrackLimits } from '$lib/damage';
 import type { Trait, Guild, TrackType } from '$lib/types';
-
-/** The fewest and most boxes a track may have. */
-export interface TrackLimits {
-	min: number;
-	max: number;
-}
 
 interface WizardData {
 	spc: boolean;
@@ -15,12 +10,6 @@ interface WizardData {
 	limits?: Record<TrackType, TrackLimits>; // The bot's Health and Willpower limits
 	traits: Trait[];
 }
-
-/** The bot's limits when this was written, should it not send them (an older bot, say). */
-const DEFAULT_LIMITS: Record<TrackType, TrackLimits> = {
-	health: { min: 4, max: 20 },
-	willpower: { min: 3, max: 20 }
-};
 
 export const load: PageLoad = async ({ params, fetch }) => {
 	const { token } = params;
@@ -42,7 +31,7 @@ export const load: PageLoad = async ({ params, fetch }) => {
 			spc: data.spc,
 			guild: data.guild,
 			splats: data.splats,
-			limits: data.limits ?? DEFAULT_LIMITS,
+			limits: data.limits ?? TRACK_LIMITS, // Should the bot not send them (an older bot, say)
 			traits: data.traits
 		};
 	} catch (err) {

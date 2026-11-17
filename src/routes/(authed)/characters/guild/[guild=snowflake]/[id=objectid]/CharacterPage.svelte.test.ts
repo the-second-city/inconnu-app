@@ -739,6 +739,20 @@ test('the notice opens once for each new version', async () => {
 	expect(await staleNotice()).toBeInTheDocument();
 });
 
+test("after Proceed Anyway, a version that changes only the log doesn't ask again", async () => {
+	const user = userEvent.setup();
+	const damaged = { ...character(), health: '....//' };
+	const { rerender } = renderPage();
+	await user.click(editButton('Edit'));
+
+	await rerender({ guild: GUILD, character: damaged });
+	await user.click(within(await staleNotice()).getByRole('button', { name: 'Proceed Anyway' }));
+	const log = { created: '2024-01-01T00:00:00', left: null } as unknown as Character['log'];
+	await rerender({ guild: GUILD, character: { ...damaged, log } });
+
+	expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument();
+});
+
 /** Press a key on the page, as a keyboard shortcut. */
 const press = (
 	key: string,

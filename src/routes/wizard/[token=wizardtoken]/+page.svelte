@@ -1,7 +1,8 @@
 <script lang="ts">
 	import { untrack } from 'svelte';
 	import type { PageData } from './$types';
-	import type { TrackLimits } from './+page';
+	import { isVampiric } from '$lib/vampire';
+	import type { TrackLimits } from '$lib/damage';
 	import type { Trait, Splat } from '$lib/types';
 	import { goto } from '$app/navigation';
 	import { resolve } from '$app/paths';
@@ -128,7 +129,7 @@
 			health: parseInt(health),
 			willpower: parseInt(willpower),
 			humanity: parseInt(humanity),
-			blood_potency: splat === 'vampire' || splat === 'thin-blood' ? blood_potency : 0,
+			blood_potency: isVampiric(splat) ? blood_potency : 0,
 			convictions: [conviction1, conviction2, conviction3],
 			biography: history,
 			description,
@@ -323,7 +324,7 @@
 	{#if splat !== ''}
 		<TraitSheet bind:traits splat={splat as Splat} editing={true} />
 
-		{#if splat === 'vampire' || splat === 'thin-blood'}
+		{#if isVampiric(splat)}
 			<div class="mt-3">
 				<Card>
 					<h3 class="h3 mb-2 text-center text-xl font-semibold uppercase">Blood Potency</h3>

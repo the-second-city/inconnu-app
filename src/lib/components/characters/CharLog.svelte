@@ -12,6 +12,7 @@
 	import { onMount, type Component } from 'svelte';
 
 	import { parseApiDate } from '$lib';
+	import { isVampiric } from '$lib/vampire';
 	import Popover from '$lib/components/Popover.svelte';
 	import TrackBox from '$lib/components/characters/sheets/components/damage/TrackBox.svelte';
 	import type {
@@ -159,7 +160,7 @@
 	const hasCount = (key: CharacterLogStat): boolean =>
 		isTrack(key) ? (log[key] ?? '').length > 0 : (log[key] ?? 0) > 0;
 
-	const isVampire = $derived(splat === 'vampire' || splat === 'thin-blood');
+	const isVampire = $derived(isVampiric(splat));
 
 	const groups = $derived(
 		GROUPS.filter(

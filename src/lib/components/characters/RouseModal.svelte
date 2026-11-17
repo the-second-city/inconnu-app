@@ -3,6 +3,8 @@
 	import { Dialog } from '@skeletonlabs/skeleton-svelte';
 	import { Droplets, Flame, Ghost, HandFist, RefreshCcw } from '@lucide/svelte';
 
+	import { bloodPotency } from '$lib/vampire';
+	import { atLeast, wait } from '$lib/busy';
 	import { rouse } from '$lib/characterActions';
 	import { hungerRiseChance, percent } from '$lib/rouse';
 	import type { Character, RouseResult } from '$lib/types';
@@ -32,7 +34,7 @@
 	}: ComponentProps = $props();
 
 	const isGhoul = $derived(character.splat === 'ghoul');
-	const potency = $derived(character.potency ?? character.blood_potency ?? 0);
+	const potency = $derived(bloodPotency(character));
 	// The options are shown only where they can matter: Blood Potency 0 never re-rolls, and Oblivion
 	// Stains only come from Oblivion
 	const canReroll = $derived(potency >= 1);
@@ -101,8 +103,6 @@
 		showHunger = false;
 	};
 
-	const wait = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
-
 	// Each opening starts at the options (the parent opens it by setting `open`)
 	$effect(() => {
 		if (open) untrack(reset);
@@ -130,15 +130,13 @@
 
 		if (isGhoul) {
 			remaining = 1;
-			await wait(stepDelay);
-			remaining = 0;
 		} else {
 			faces = Array(count).fill(null);
 			stained = Array(count).fill(false);
 			revealing = false;
-			await wait(stepDelay);
 		}
-		const outcome = await request;
+		const outcome = await atLeast(request, stepDelay);
+		remaining = 0;
 		if (outcome.error !== undefined) {
 			rolling = false;
 			error = outcome.error;

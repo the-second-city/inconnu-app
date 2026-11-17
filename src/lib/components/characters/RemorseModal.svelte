@@ -3,6 +3,8 @@
 	import { Dialog } from '@skeletonlabs/skeleton-svelte';
 	import { Eclipse } from '@lucide/svelte';
 
+	import { bloodPotency } from '$lib/vampire';
+	import { atLeast, wait } from '$lib/busy';
 	import { remorse } from '$lib/characterActions';
 	import { successesLast } from '$lib/dice';
 	import { baneSeverity, remorseDice } from '$lib/remorse';
@@ -42,9 +44,7 @@
 
 	// The Lasombra alternative Bane rolls Bane Severity fewer dice. Only vampires have a clan Bane
 	// (the app doesn't know the clan, so it's up to the player).
-	const severity = $derived(
-		shown.splat === 'vampire' ? baneSeverity(shown.potency ?? shown.blood_potency ?? 0) : 0
-	);
+	const severity = $derived(shown.splat === 'vampire' ? baneSeverity(bloodPotency(shown)) : 0);
 	let lasombra = $state(false);
 	const dice = $derived(
 		remorseDice(humanity, stains, { lasombraBane: lasombra && severity > 0 ? severity : null })
@@ -85,8 +85,6 @@
 		}
 	});
 
-	const wait = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
-
 	/**
 	 * Roll in place: the dice tumble for at least `stepDelay` while the request runs, then reveal one
 	 * at a time (failures first, then successes), and the outcome paints in. On an error, the options unlock again, saying why.
@@ -96,11 +94,10 @@
 		phase = 'rolling';
 		error = null;
 		rolledFrom = $state.snapshot(character);
-		const request = remorse(character._id, {
-			min_override: 1,
-			lasombra_alt: lasombra && severity > 0
-		});
-		const [outcome] = await Promise.all([request, wait(stepDelay)]);
+		const outcome = await atLeast(
+			remorse(character._id, { min_override: 1, lasombra_alt: lasombra && severity > 0 }),
+			stepDelay
+		);
 		if (outcome.error !== undefined) {
 			error = outcome.error;
 			rolledFrom = null;
