@@ -7,6 +7,7 @@
 	import Card from '$lib/components/Card.svelte';
 	import EmptyHunger from './hunger/Empty.svelte';
 	import FilledHunger from './hunger/Filled.svelte';
+	import MenuAction from './MenuAction.svelte';
 	import PipSelector, { type PipState } from './PipSelector.svelte';
 	import Popover from '$lib/components/Popover.svelte';
 	import { CLICKABLE } from './clickable';
@@ -28,6 +29,8 @@
 	});
 
 	/** Close the Hunger menu, then run an action from it. */
+	const hunger = $derived(character.hunger ?? 0);
+
 	const fromMenu = (action: (() => void) | undefined) => () => {
 		showHungerMenu = false;
 		action?.();
@@ -87,24 +90,26 @@
 			/>
 		{/snippet}
 		{#snippet hungerMenu()}
-			<div class="flex w-60 flex-col gap-2">
+			<div class="flex w-64 flex-col gap-2">
 				<div class="text-md text-center uppercase">Hunger</div>
 				{#if onRouse}
-					<button type="button" class="btn preset-tonal-surface" onclick={fromMenu(onRouse)}>
-						<Droplets size={18} />
-						Rouse
-					</button>
+					<MenuAction
+						icon={Droplets}
+						label="Rouse"
+						detail={hunger >= 5 ? 'At Hunger 5, a failure risks frenzy' : 'Hunger may rise'}
+						tone={hunger >= 5 ? 'warning' : 'primary'}
+						onclick={fromMenu(onRouse)}
+					/>
 				{/if}
 				{#if onSlake}
-					<button
-						type="button"
-						class="btn preset-tonal-surface"
+					<MenuAction
+						icon={Mouth}
+						label="Slake"
+						detail={hunger === 0 ? 'No Hunger to slake' : 'Feed to lower Hunger'}
+						tone="secondary"
+						disabled={hunger === 0}
 						onclick={fromMenu(onSlake)}
-						disabled={(character.hunger ?? 0) === 0}
-					>
-						<Mouth size={18} />
-						Slake
-					</button>
+					/>
 				{/if}
 			</div>
 		{/snippet}

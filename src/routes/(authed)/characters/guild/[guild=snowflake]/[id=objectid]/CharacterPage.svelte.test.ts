@@ -1017,7 +1017,7 @@ test('with the tracker actions, Mend in the Health menu opens the Mend modal', a
 
 	await user.click(screen.getByRole('button', { name: 'Health actions' }));
 	await user.click(
-		within(await screen.findByRole('dialog')).getByRole('button', { name: 'Superficial' })
+		within(await screen.findByRole('dialog')).getByRole('button', { name: 'Mend Superficial' })
 	);
 
 	expect(await screen.findByRole('dialog', { name: 'Mend Damage' })).toBeInTheDocument();

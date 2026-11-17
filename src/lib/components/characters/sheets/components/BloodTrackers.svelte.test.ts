@@ -165,3 +165,18 @@ test("without Rouse or Slake, Hunger doesn't open a menu", () => {
 	render(BloodTrackers, { character: vampire({ hunger: 2 }) });
 	expect(screen.queryByRole('button', { name: 'Hunger actions' })).not.toBeInTheDocument();
 });
+
+test.each([
+	[2, 'Rouse', 'Hunger may rise'],
+	[5, 'Rouse', 'At Hunger 5, a failure risks frenzy'],
+	[2, 'Slake', 'Feed to lower Hunger'],
+	[0, 'Slake', 'No Hunger to slake']
+])('at Hunger %i, %s says %j', async (hunger, button, detail) => {
+	const user = userEvent.setup();
+	render(BloodTrackers, { character: vampire({ hunger }), onRouse: vi.fn(), onSlake: vi.fn() });
+	await user.click(screen.getByRole('button', { name: 'Hunger actions' }));
+
+	expect(
+		within(await screen.findByRole('dialog')).getByRole('button', { name: button })
+	).toHaveAccessibleDescription(detail);
+});

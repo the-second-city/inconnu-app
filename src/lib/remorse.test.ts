@@ -1,6 +1,6 @@
 import { expect, test } from 'vitest';
 
-import { baneSeverity, remorseDice, remorseSuccess } from '$lib/remorse';
+import { baneSeverity, remorseDice } from '$lib/remorse';
 
 test.each([
 	[0, 0],
@@ -42,11 +42,3 @@ test.each([
 		expect(remorseDice(humanity, stains, { lasombraBane: bane })).toBe(dice);
 	}
 );
-
-test.each([
-	[5, false],
-	[6, true],
-	[10, true]
-])('a Remorse die of %i succeeds: %s', (die, success) => {
-	expect(remorseSuccess(die)).toBe(success);
-});

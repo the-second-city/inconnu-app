@@ -10,6 +10,8 @@
 	import BusySpinner from './BusySpinner.svelte';
 	import DamageTrack from './DamageTrack.svelte';
 	import Stepper from './Stepper.svelte';
+	import AggravatedBox from './sheets/components/damage/Aggravated.svelte';
+	import SuperficialBox from './sheets/components/damage/Superficial.svelte';
 
 	interface ComponentProps {
 		open: boolean;
@@ -91,8 +93,13 @@
 					<!-- The preview: the track as it would be, with the new damage pulsing -->
 					<DamageTrack label={trackLabel} track={preview} before={current} markFrom="healthy" />
 
-					<Stepper label="Superficial" bind:value={superficial} canAdd={!full} />
-					<Stepper label="Aggravated" bind:value={aggravated} canAdd={!full} />
+					<!-- Each amount with the box it adds, as the track draws it -->
+					<Stepper label="Superficial" bind:value={superficial} canAdd={!full}>
+						{#snippet icon()}<SuperficialBox size={20} />{/snippet}
+					</Stepper>
+					<Stepper label="Aggravated" bind:value={aggravated} canAdd={!full}>
+						{#snippet icon()}<AggravatedBox size={20} />{/snippet}
+					</Stepper>
 
 					{#if error}
 						<p class="text-error-500 text-sm" role="alert">{error}</p>

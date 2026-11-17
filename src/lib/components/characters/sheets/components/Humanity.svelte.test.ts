@@ -81,12 +81,12 @@ test('the controls stay closed when editing starts again', async () => {
 	const user = userEvent.setup();
 	const { rerender } = render(Humanity, { character: character(7, 0), editing: true });
 	await openControls(user);
-	expect(await screen.findByRole('button', { name: 'Increase Humanity' })).toBeInTheDocument();
+	expect(await screen.findByRole('button', { name: 'More Humanity' })).toBeInTheDocument();
 
 	await rerender({ editing: false });
 	await rerender({ editing: true });
 
-	expect(screen.queryByRole('button', { name: 'Increase Humanity' })).not.toBeInTheDocument();
+	expect(screen.queryByRole('button', { name: 'More Humanity' })).not.toBeInTheDocument();
 });
 
 test('changes Humanity and Stains', async () => {
@@ -94,9 +94,9 @@ test('changes Humanity and Stains', async () => {
 	const bound = renderHumanity(7, 0);
 	await openControls(user);
 
-	await user.click(await screen.findByRole('button', { name: 'Decrease Humanity' }));
-	await user.click(screen.getByRole('button', { name: 'Increase Stains' }));
-	await user.click(screen.getByRole('button', { name: 'Increase Stains' }));
+	await user.click(await screen.findByRole('button', { name: 'Less Humanity' }));
+	await user.click(screen.getByRole('button', { name: 'More Stains' }));
+	await user.click(screen.getByRole('button', { name: 'More Stains' }));
 
 	expect(bound).toMatchObject({ humanity: 6, stains: 2 });
 	expect(boxes()).toEqual([...times(6, 'Humanity'), ...times(2, 'Empty'), ...times(2, 'Stain')]);
@@ -113,7 +113,7 @@ test('Humanity can be lowered to 0', async () => {
 	const bound = renderHumanity(1, 0);
 	await openControls(user);
 
-	await user.click(await screen.findByRole('button', { name: 'Decrease Humanity' }));
+	await user.click(await screen.findByRole('button', { name: 'Less Humanity' }));
 
 	expect(bound.humanity).toBe(0);
 	expect(boxes()).toEqual(times(10, 'Empty'));
@@ -124,16 +124,16 @@ test('Humanity of 0 can be raised to 1', async () => {
 	const bound = renderHumanity(0, 0);
 	await openControls(user);
 
-	await user.click(await screen.findByRole('button', { name: 'Increase Humanity' }));
+	await user.click(await screen.findByRole('button', { name: 'More Humanity' }));
 
 	expect(bound.humanity).toBe(1);
 });
 
 test.each([
-	['Decrease Humanity', 0, 0],
-	['Increase Humanity', 10, 0],
-	['Decrease Stains', 7, 0],
-	['Increase Stains', 7, 10]
+	['Less Humanity', 0, 0],
+	['More Humanity', 10, 0],
+	['Less Stains', 7, 0],
+	['More Stains', 7, 10]
 ])('%s is disabled at its limit', async (name, humanity, stains) => {
 	const user = userEvent.setup();
 	renderHumanity(humanity, stains);
@@ -195,4 +195,25 @@ test('without Stains, there is no Remorse to test', async () => {
 test("without onStain or onRemorse, Humanity doesn't open a menu", () => {
 	render(Humanity, { character: character(7, 2), editing: false });
 	expect(screen.queryByRole('button', { name: 'Humanity actions' })).not.toBeInTheDocument();
+});
+
+test.each([
+	[7, 0, 'Apply Stains', 'No Stains yet'],
+	[7, 2, 'Apply Stains', '2 Stains so far'],
+	[0, 10, 'Apply Stains', 'Already 10 Stains'],
+	[7, 1, 'Remorse', 'Roll 2 dice'],
+	[7, 0, 'Remorse', 'No Stains to atone for']
+])('at Humanity %i with %i Stains, %s says %j', async (humanity, stains, button, detail) => {
+	const user = userEvent.setup();
+	render(Humanity, {
+		character: character(humanity, stains),
+		editing: false,
+		onStain: vi.fn(),
+		onRemorse: vi.fn()
+	});
+	await user.click(screen.getByRole('button', { name: 'Humanity actions' }));
+
+	expect(
+		within(await screen.findByRole('dialog')).getByRole('button', { name: button })
+	).toHaveAccessibleDescription(detail);
 });

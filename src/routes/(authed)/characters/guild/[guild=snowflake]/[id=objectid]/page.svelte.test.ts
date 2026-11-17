@@ -184,5 +184,5 @@ test.each([
 
 	const menu = await screen.findByRole('dialog');
 	expect(within(menu).getByRole('button', { name: 'Take Damage' })).toBeInTheDocument();
-	expect(within(menu).queryByRole('group', { name: 'Mend' }) !== null).toBe(mending);
+	expect(within(menu).queryByRole('button', { name: 'Mend Superficial' }) !== null).toBe(mending);
 });

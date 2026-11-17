@@ -3,6 +3,7 @@
 
 	import Popover from '$lib/components/Popover.svelte';
 
+	import { remorseDice } from '$lib/remorse';
 	import type { Character } from '$lib/types';
 
 	import Empty from './humanity/Empty.svelte';
@@ -10,6 +11,8 @@
 	import Stain from './humanity/Stain.svelte';
 	import Degeneration from './humanity/Degeneration.svelte';
 	import { CLICKABLE } from './clickable';
+	import MenuAction from './MenuAction.svelte';
+	import Stepper from '$lib/components/characters/Stepper.svelte';
 
 	interface ComponentProps {
 		character: Character;
@@ -52,22 +55,6 @@
 			stains: normalStains
 		};
 	});
-
-	function incHumanity() {
-		if (humanity < 10) character.humanity = humanity + 1;
-	}
-
-	function decHumanity() {
-		if (humanity > 0) character.humanity = humanity - 1;
-	}
-
-	function incStains() {
-		if (stains < 10) character.stains = stains + 1;
-	}
-
-	function decStains() {
-		if (stains > 0) character.stains = stains - 1;
-	}
 </script>
 
 Humanity
@@ -90,79 +77,57 @@ Humanity
 {/snippet}
 
 {#snippet controls()}
-	<div class="flex flex-col gap-2">
-		<div class="text-md text-center uppercase">Humanity</div>
-		<div class="flex items-center justify-between gap-3">
-			<button
-				class="btn preset-tonal-surface"
-				disabled={humanity <= 0}
-				onclick={decHumanity}
-				aria-label="Decrease Humanity"
-			>
-				-
-			</button>
-			Rating
-			<button
-				class="btn preset-tonal-surface"
-				disabled={humanity >= 10}
-				onclick={incHumanity}
-				aria-label="Increase Humanity"
-			>
-				+
-			</button>
-		</div>
-		<div class="flex items-center justify-between gap-3">
-			<button
-				class="btn preset-tonal-surface"
-				disabled={stains <= 0}
-				onclick={decStains}
-				aria-label="Decrease Stains"
-			>
-				-
-			</button>
-			Stains
-			<button
-				class="btn preset-tonal-surface"
-				disabled={stains >= 10}
-				onclick={incStains}
-				aria-label="Increase Stains"
-			>
-				+
-			</button>
-		</div>
+	<div class="flex w-56 flex-col gap-3">
+		<div class="text-md text-center uppercase">Make Corrections</div>
+		<!-- Each with the box it draws, as the track shows them -->
+		<Stepper
+			label="Humanity"
+			bind:value={() => humanity, (next) => (character.humanity = next)}
+			max={10}
+		>
+			{#snippet icon()}<Filled size={20} />{/snippet}
+		</Stepper>
+		<Stepper label="Stains" bind:value={() => stains, (next) => (character.stains = next)} max={10}>
+			{#snippet icon()}<Stain size={20} />{/snippet}
+		</Stepper>
 	</div>
 {/snippet}
 
 {#snippet actions()}
-	<div class="flex w-60 flex-col gap-2">
+	{@const dice = remorseDice(humanity, stains)}
+	<div class="flex w-64 flex-col gap-2">
 		<div class="text-md text-center uppercase">Humanity</div>
 		{#if onStain}
-			<button
-				type="button"
-				class="btn preset-tonal-surface"
+			<MenuAction
+				icon={HeartCrack}
+				label="Apply Stains"
+				detail={stains >= 10
+					? 'Already 10 Stains'
+					: stains === 0
+						? 'No Stains yet'
+						: `${stains} ${stains === 1 ? 'Stain' : 'Stains'} so far`}
+				tone="warning"
 				disabled={stains >= 10}
 				onclick={() => {
 					showActions = false;
 					onStain();
 				}}
-			>
-				<HeartCrack size={18} />
-				Apply Stains
-			</button>
+			/>
 		{/if}
 		{#if onRemorse}
-			<button
-				type="button"
-				class="btn preset-tonal-surface"
+			<MenuAction
+				icon={HandHeart}
+				label="Remorse"
+				detail={stains === 0
+					? 'No Stains to atone for'
+					: `Roll ${dice} ${dice === 1 ? 'die' : 'dice'}`}
+				tone="secondary"
 				disabled={stains === 0}
 				onclick={() => {
 					showActions = false;
 					onRemorse();
 				}}
-			>
-				<HandHeart size={18} />
-				Remorse
-			</button>
+			/>
 		{/if}
 	</div>
 {/snippet}

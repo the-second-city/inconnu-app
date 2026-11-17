@@ -37,6 +37,7 @@ const renderModal = (char: Character = character()): { open: boolean } => {
 	render(RemorseModal, {
 		character: char,
 		stepDelay: 0,
+		revealDelay: 0,
 		get open() {
 			return bound.open;
 		},
@@ -131,4 +132,73 @@ test('without Stains, there is nothing to roll', async () => {
 	renderModal(character(0));
 
 	expect(within(await modal()).getByRole('button', { name: 'Roll' })).toBeDisabled();
+});
+
+test('the dice to roll show as blank faces, with any the Lasombra Bane removes crossed out', async () => {
+	const user = userEvent.setup();
+	renderModal({ ...character(1, 'vampire', 1), humanity: 4 }); // 5 dice; Bane Severity 2
+	const dialog = await modal();
+
+	expect(within(dialog).getByRole('img', { name: 'Rolling 5 dice' })).toBeInTheDocument();
+	await user.click(within(dialog).getByRole('checkbox', { name: 'Lasombra alternative Bane' }));
+
+	expect(
+		within(dialog).getByRole('img', { name: 'Rolling 3 dice, 2 removed by the Lasombra Bane' })
+	).toBeInTheDocument();
+});
+
+test('rolling locks the options and buttons until the outcome paints in, in the same view', async () => {
+	const user = userEvent.setup();
+	let answer: (outcome: unknown) => void = () => {};
+	remorse.mockReturnValueOnce(new Promise((resolve) => (answer = resolve)));
+	renderModal(character(1, 'vampire', 1));
+	const dialog = await modal();
+
+	await user.click(within(dialog).getByRole('button', { name: 'Roll' }));
+
+	expect(within(dialog).getByRole('button', { name: 'Roll' })).toBeDisabled();
+	expect(within(dialog).getByRole('button', { name: 'Cancel' })).toBeDisabled();
+	expect(
+		within(dialog).getByRole('checkbox', { name: 'Lasombra alternative Bane' })
+	).toBeDisabled();
+	expect(within(dialog).getByRole('img', { name: 'Rolling 2 dice' })).toBeInTheDocument();
+
+	answer({ result: { remorseful: false, dice: [2, 4], humanity: 6 } });
+	const done = await screen.findByRole('dialog', { name: 'Remorse Failure' });
+	expect(within(done).getByRole('img', { name: 'Dice: 2, 4' })).toBeInTheDocument();
+	// Humanity stays on screen, now as the test left it, the Lasombra card stays locked (so the
+	// modal keeps its height), and the buttons give way to Done
+	expect(within(done).getByText('Humanity')).toBeInTheDocument();
+	expect(within(done).getByRole('checkbox', { name: 'Lasombra alternative Bane' })).toBeDisabled();
+	expect(within(done).getByRole('button', { name: 'Done' })).toBeInTheDocument();
+});
+
+test("the character's live update during the reveal doesn't change the roll's text", async () => {
+	const user = userEvent.setup();
+	remorse.mockResolvedValueOnce({ result: { remorseful: false, dice: [2, 4], humanity: 6 } });
+	const { rerender } = render(RemorseModal, {
+		character: character(1),
+		stepDelay: 0,
+		revealDelay: 0,
+		open: true
+	});
+	const dialog = await modal();
+
+	await user.click(within(dialog).getByRole('button', { name: 'Roll' }));
+	// The test's own save arrives: Humanity 6, no Stains
+	await rerender({ character: { ...character(0), humanity: 6 } });
+
+	expect(await within(dialog).findByRole('status')).toHaveTextContent(
+		'Humanity drops from 7 to 6.'
+	);
+});
+
+test('the successes move to the end, each group in the order rolled', async () => {
+	const user = userEvent.setup();
+	remorse.mockResolvedValueOnce({ result: { remorseful: true, dice: [8, 2, 6, 4], humanity: 7 } });
+	renderModal({ ...character(1), humanity: 5 }); // 4 dice
+	await user.click(within(await modal()).getByRole('button', { name: 'Roll' }));
+
+	const dialog = await screen.findByRole('dialog', { name: 'Remorse Success' });
+	expect(within(dialog).getByRole('img', { name: 'Dice: 2, 4, 8, 6' })).toBeInTheDocument();
 });

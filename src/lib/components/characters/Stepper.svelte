@@ -1,4 +1,5 @@
 <script lang="ts">
+	import type { Snippet } from 'svelte';
 	import { Minus, Plus } from '@lucide/svelte';
 
 	interface ComponentProps {
@@ -8,6 +9,7 @@
 		max?: number; // The most it goes up to (omit for canAdd alone)
 		canAdd?: boolean; // Whether it may go up at all, for limits a maximum can't express
 		disabled?: boolean;
+		icon?: Snippet; // Drawn before the label (say, the track box the amount adds)
 	}
 
 	let {
@@ -16,15 +18,20 @@
 		min = 0,
 		max = Infinity,
 		canAdd = true,
-		disabled = false
+		disabled = false,
+		icon
 	}: ComponentProps = $props();
 
-	const id = $derived(`stepper-${label.toLowerCase().replace(/\W+/g, '-')}`);
+	// Unique per stepper, as two can share a label (Superficial in a popover and a modal)
+	const id = $props.id();
 </script>
 
 <!-- A labelled number with - and + buttons -->
 <div class="flex items-center justify-between">
-	<span {id}>{label}</span>
+	<span class="flex items-center gap-2">
+		{#if icon}<span class="flex shrink-0" aria-hidden="true">{@render icon()}</span>{/if}
+		<span {id}>{label}</span>
+	</span>
 	<div class="flex items-center gap-3" role="group" aria-labelledby={id}>
 		<button
 			type="button"

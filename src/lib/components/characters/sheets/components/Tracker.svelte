@@ -1,10 +1,15 @@
 <script lang="ts">
 	import { untrack } from 'svelte';
-	import { Droplets, HandFist, HeartPlus } from '@lucide/svelte';
+	import { Bandage, Droplets, HandFist, HeartPlus } from '@lucide/svelte';
 	import Popover from '$lib/components/Popover.svelte';
 
 	import type { Character, TrackType } from '$lib/types';
 
+	import MenuAction from './MenuAction.svelte';
+	import Stepper from '$lib/components/characters/Stepper.svelte';
+	import AggravatedBox from './damage/Aggravated.svelte';
+	import SuperficialBox from './damage/Superficial.svelte';
+	import HaleBox from './damage/Hale.svelte';
 	import TrackBox from './damage/TrackBox.svelte';
 	import { CLICKABLE } from './clickable';
 
@@ -100,6 +105,26 @@
 	// Superficial damage on a full track becomes aggravated, so damage lands until it's all aggravated
 	const canTakeDamage = $derived(damageCounts['x'] < trackArray.length);
 
+	// What mending costs or does, for the menu (MendModal explains it in full)
+	const isVampire = $derived(character.splat === 'vampire' || character.splat === 'thin-blood');
+	const mendDetail = (type: 'superficial' | 'aggravated'): string => {
+		const symbol = type === 'superficial' ? '/' : 'x';
+		if (damageCounts[symbol] === 0)
+			return `No ${type === 'superficial' ? 'Superficial' : 'Aggravated'} damage`;
+		if (track === 'willpower') {
+			// A night's rest: the higher of Resolve and Composure
+			const recovery = Math.max(
+				0,
+				...character.traits
+					.filter((t) => ['resolve', 'composure'].includes(t.name.toLowerCase()))
+					.map((t) => t.rating)
+			);
+			return type === 'superficial' ? `Recovers ${recovery}, as a night's rest` : 'Recovers 1';
+		}
+		if (!isVampire) return 'Heals without Rousing';
+		return type === 'superficial' ? 'Costs a Rouse Check' : 'Costs 3 Rouse Checks';
+	};
+
 	// Box counts: Health 4-20, Willpower 3-20
 	const minBoxes = $derived(track === 'willpower' ? 3 : 4);
 	const MAX_BOXES = 20;
@@ -124,116 +149,95 @@
 {/snippet}
 
 {#snippet controls()}
-	<div class="flex flex-col gap-2">
-		<div class="text-md text-center uppercase">Make Corrections</div>
-		{#each levels as level (level.symbol)}
-			<div class="flex items-center justify-between gap-3">
-				<button
-					class="btn preset-tonal-surface"
-					disabled={!level.dec}
-					onclick={() => adjustTrack(level.symbol, -1)}
-					aria-label="Decrease {level.title}"
-				>
-					-
-				</button>
-				{level.title}
-				{trackLabel}
-				<button
-					class="btn preset-tonal-surface"
-					disabled={!level.inc}
-					onclick={() => adjustTrack(level.symbol, 1)}
-					aria-label="Increase {level.title}"
-				>
-					+
-				</button>
-			</div>
-		{/each}
+	<div class="flex w-64 flex-col gap-3">
+		<!-- The heading, with the track it corrects under it -->
+		<div class="text-center leading-tight">
+			<div class="text-md uppercase">Make Corrections</div>
+			<div class="text-surface-200 text-sm">{trackLabel}</div>
+		</div>
+		<!-- Each kind of damage with the box it draws, as Take Damage's steppers. Setting a count
+		     rebuilds the track around it. -->
+		<Stepper
+			label="Superficial"
+			bind:value={() => damageCounts['/'], (next) => adjustTrack('/', next - damageCounts['/'])}
+			canAdd={levels[0].inc}
+		>
+			{#snippet icon()}<SuperficialBox size={20} />{/snippet}
+		</Stepper>
+		<Stepper
+			label="Aggravated"
+			bind:value={() => damageCounts['x'], (next) => adjustTrack('x', next - damageCounts['x'])}
+			canAdd={levels[1].inc}
+		>
+			{#snippet icon()}<AggravatedBox size={20} />{/snippet}
+		</Stepper>
 
 		<hr class="hr" />
-		<div class="flex items-center justify-between gap-3">
-			<button
-				class="btn preset-tonal-surface"
-				onclick={decBoxes}
-				disabled={trackArray.length <= minBoxes}
-				aria-label="Decrease Boxes"
-			>
-				-
-			</button>
-			Boxes
-			<button
-				class="btn preset-tonal-surface"
-				onclick={incBoxes}
-				disabled={trackArray.length >= MAX_BOXES}
-				aria-label="Increase Boxes"
-			>
-				+
-			</button>
-		</div>
+		<Stepper
+			label="Boxes"
+			bind:value={
+				() => trackArray.length, (next) => (next > trackArray.length ? incBoxes() : decBoxes())
+			}
+			min={minBoxes}
+			max={MAX_BOXES}
+		>
+			{#snippet icon()}<HaleBox size={20} />{/snippet}
+		</Stepper>
 		<!-- Corrections aren't logged; damage and mending are, through the actions outside edit mode -->
-		<p class="text-surface-200 mt-2 max-w-60 text-center text-xs">
+		<p class="text-surface-200 text-center text-xs">
 			These changes won't appear in the Chronicle log. To log damage or mending, exit edit mode
 			first.
 		</p>
 	</div>
 {/snippet}
 
-<!-- Not wired up yet: these will call the bot, which logs and reports them. Corrections are in
-     edit mode instead. -->
+<!-- Damage and mending go through the bot, which logs and reports them. Corrections are in edit
+     mode instead. -->
 {#snippet actions()}
-	<div class="flex w-60 flex-col gap-2">
+	<div class="flex w-64 flex-col gap-2">
 		<div class="text-md text-center uppercase">{trackLabel}</div>
-		<button
-			type="button"
-			class="btn preset-tonal-surface"
+		<MenuAction
+			icon={HandFist}
+			label="Take Damage"
+			detail={canTakeDamage ? 'Superficial or Aggravated' : 'Already all Aggravated'}
+			tone="error"
 			disabled={!canTakeDamage}
 			onclick={() => {
 				showActions = false;
 				onTakeDamage?.(track);
 			}}
-		>
-			<HandFist size={18} />
-			Take Damage
-		</button>
+		/>
 		{#if offersRouse}
-			<button
-				type="button"
-				class="btn preset-tonal-surface"
+			<MenuAction
+				icon={Droplets}
+				label="Rouse"
+				detail="Costs 1 Aggravated Health"
+				tone="primary"
 				onclick={() => {
 					showActions = false;
 					onRouse?.();
 				}}
-			>
-				<Droplets size={18} />
-				Rouse
-			</button>
+			/>
 		{/if}
 		<!-- Health mends as /mend and /aggheal do; Willpower recovers as /awaken does. Only when the
 		     viewer may heal (the owner, or a Storyteller for an SPC). -->
 		{#if onMend}
-			<fieldset class="border-surface-400-600 rounded-base mt-2 border px-2 pb-2">
-				<legend class="mx-auto flex items-center gap-1 px-2 text-sm uppercase">
-					<HeartPlus size={14} />
-					Mend
-				</legend>
-				<div class="flex gap-2">
-					<button
-						type="button"
-						class="btn preset-tonal-surface flex-1"
-						disabled={damageCounts['/'] === 0}
-						onclick={() => startMend('superficial')}
-					>
-						Superficial
-					</button>
-					<button
-						type="button"
-						class="btn preset-tonal-surface flex-1"
-						disabled={damageCounts['x'] === 0}
-						onclick={() => startMend('aggravated')}
-					>
-						Aggravated
-					</button>
-				</div>
-			</fieldset>
+			<MenuAction
+				icon={Bandage}
+				label="Mend Superficial"
+				detail={mendDetail('superficial')}
+				tone="success"
+				disabled={damageCounts['/'] === 0}
+				onclick={() => startMend('superficial')}
+			/>
+			<MenuAction
+				icon={HeartPlus}
+				label="Mend Aggravated"
+				detail={mendDetail('aggravated')}
+				tone="success"
+				disabled={damageCounts['x'] === 0}
+				onclick={() => startMend('aggravated')}
+			/>
 		{/if}
 	</div>
 {/snippet}

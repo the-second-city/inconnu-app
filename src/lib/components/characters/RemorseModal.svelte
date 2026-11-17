@@ -1,46 +1,72 @@
 <script lang="ts">
 	import { untrack } from 'svelte';
 	import { Dialog } from '@skeletonlabs/skeleton-svelte';
+	import { Eclipse } from '@lucide/svelte';
 
 	import { remorse } from '$lib/characterActions';
-	import { baneSeverity, remorseDice, remorseSuccess } from '$lib/remorse';
+	import { successesLast } from '$lib/dice';
+	import { baneSeverity, remorseDice } from '$lib/remorse';
 	import type { Character, RemorseResult } from '$lib/types';
 	import ClientPortal from '$lib/components/ClientPortal.svelte';
-	import CountdownRing from './CountdownRing.svelte';
+	import RollingDice from './RollingDice.svelte';
+	import ToggleCard from './ToggleCard.svelte';
 	import Humanity from './sheets/components/Humanity.svelte';
 
 	interface ComponentProps {
 		open: boolean;
 		character: Character;
-		stepDelay?: number; // ms the roll counts down, as a Rouse check does
+		stepDelay?: number; // ms the dice tumble at least, as a Rouse check counts down
+		revealDelay?: number; // ms between dice revealing their numbers
 	}
 
-	let { open = $bindable(), character, stepDelay = 750 }: ComponentProps = $props();
+	let {
+		open = $bindable(),
+		character,
+		stepDelay = 750,
+		revealDelay = 650
+	}: ComponentProps = $props();
 
-	const humanity = $derived(character.humanity ?? 7);
-	const stains = $derived(character.stains ?? 0);
+	// The roll happens in place: Roll locks the options, the ghost dice start tumbling one after
+	// another, and once the bot answers, each reveals its number in turn; then the title, Humanity,
+	// and text become the outcome's.
+	type Phase = 'options' | 'rolling' | 'revealing' | 'done';
+	let phase = $state<Phase>('options');
+	const locked = $derived(phase !== 'options');
+
+	// The character as the roll began. The test's live update brings the new Humanity (and clears the
+	// Stains) while the dice are still revealing, which would change the dice and the text under them.
+	let rolledFrom: Character | null = $state(null);
+	const shown = $derived(rolledFrom ?? character);
+	const humanity = $derived(shown.humanity ?? 7);
+	const stains = $derived(shown.stains ?? 0);
 
 	// The Lasombra alternative Bane rolls Bane Severity fewer dice. Only vampires have a clan Bane
 	// (the app doesn't know the clan, so it's up to the player).
 	const severity = $derived(
-		character.splat === 'vampire'
-			? baneSeverity(character.potency ?? character.blood_potency ?? 0)
-			: 0
+		shown.splat === 'vampire' ? baneSeverity(shown.potency ?? shown.blood_potency ?? 0) : 0
 	);
 	let lasombra = $state(false);
 	const dice = $derived(
 		remorseDice(humanity, stains, { lasombraBane: lasombra && severity > 0 ? severity : null })
 	);
+	// The dice without the Bane, so the ones it removes can show, crossed out
+	const baseDice = $derived(remorseDice(humanity, stains));
+	const removed = $derived(baseDice - dice);
 
-	let rolling = $state(false);
 	let error: string | null = $state(null);
-	let result: RemorseResult | null = $state(null);
-	let humanityBefore = $state(0);
+	let result = $state<RemorseResult | null>(null);
+	let revealed = $state(0); // How many of the result's dice show their numbers
 
-	// The character as the test left it, for the Humanity tracker: the Stains clear either way. (The
-	// character itself only updates once it's refetched.)
+	// The faces in the row: the result's dice once known (they decide the count), else ghosts
+	const faces: (number | null)[] = $derived.by(() => {
+		const rolled = result?.dice;
+		if (!rolled) return Array(dice).fill(null);
+		return rolled.map((die, i) => (i < revealed ? die : null));
+	});
+
+	// The character as the test left it, for the Humanity tracker: the Stains clear either way
 	const afterTest: Character = $derived.by(() => ({
-		...character,
+		...shown,
 		humanity: result?.humanity ?? humanity,
 		stains: 0
 	}));
@@ -49,31 +75,47 @@
 	$effect(() => {
 		if (open) {
 			untrack(() => {
+				phase = 'options';
+				rolledFrom = null;
 				result = null;
+				revealed = 0;
 				error = null;
 				lasombra = false;
 			});
 		}
 	});
 
+	const wait = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+
 	/**
-	 * Roll: the modal counts down one step, as a Rouse check does, while the request runs, then shows
-	 * the result (or the options again, with the error). If the API is slower, it waits at 0.
+	 * Roll in place: the dice tumble for at least `stepDelay` while the request runs, then reveal one
+	 * at a time (failures first, then successes), and the outcome paints in. On an error, the options unlock again, saying why.
 	 */
 	const doRemorse = async () => {
-		if (rolling || stains === 0) return;
-		rolling = true;
+		if (locked || stains === 0) return;
+		phase = 'rolling';
 		error = null;
-		humanityBefore = humanity;
+		rolledFrom = $state.snapshot(character);
 		const request = remorse(character._id, {
 			min_override: 1,
 			lasombra_alt: lasombra && severity > 0
 		});
-		await new Promise((resolve) => setTimeout(resolve, stepDelay));
-		const outcome = await request;
-		rolling = false;
-		if (outcome.error !== undefined) error = outcome.error;
-		else result = outcome.result;
+		const [outcome] = await Promise.all([request, wait(stepDelay)]);
+		if (outcome.error !== undefined) {
+			error = outcome.error;
+			rolledFrom = null;
+			phase = 'options';
+			return;
+		}
+		// Successes move to the end, so the reveal builds to them
+		result = { ...outcome.result, dice: successesLast(outcome.result.dice) };
+		phase = 'revealing';
+		revealed = 0;
+		while (revealed < outcome.result.dice.length) {
+			await wait(revealDelay);
+			revealed++;
+		}
+		phase = 'done';
 	};
 
 	/** "1 die", "2 dice" */
@@ -84,7 +126,7 @@
 	{open}
 	onOpenChange={(e) => (open = e.open)}
 	closeOnInteractOutside={false}
-	closeOnEscape={!rolling}
+	closeOnEscape={!locked || phase === 'done'}
 >
 	<ClientPortal>
 		<Dialog.Backdrop class="bg-surface-950/70 fixed inset-0 z-50 backdrop-blur-sm" />
@@ -92,87 +134,67 @@
 			<Dialog.Content
 				class="card bg-surface-200-800 border-surface-400-600 w-full max-w-sm space-y-4 border p-6 shadow-2xl"
 			>
-				<!-- The result is titled with its outcome, as /remorse's is -->
+				<!-- Once the dice are in, titled with the outcome, as /remorse's is -->
 				<Dialog.Title class="h5 text-center">
-					{#if result}
+					{#if phase === 'done' && result}
 						{result.remorseful ? 'Remorse Success' : 'Remorse Failure'}
 					{:else}
 						Remorse Test
 					{/if}
 				</Dialog.Title>
 
-				{#if rolling}
-					<CountdownRing remaining={1} {stepDelay} />
-				{:else if result === null}
-					<!-- Options. The label goes above the track, since beside it, ten boxes don't fit. -->
-					<div class="grid gap-1">
-						<Humanity {character} editing={false} />
-					</div>
+				<!-- Humanity: as it is, then as the test left it. The label goes above the track, since
+				     beside it, ten boxes don't fit. -->
+				<div class="grid gap-1">
+					<Humanity character={phase === 'done' ? afterTest : shown} editing={false} />
+				</div>
 
+				<!-- The dice: blank faces until rolled (any the Lasombra Bane removes crossed out), then
+				     tumbling, then revealed -->
+				<RollingDice
+					{faces}
+					rolling={locked}
+					removed={result ? 0 : removed}
+					label={phase === 'done' && result
+						? `Dice: ${result.dice.join(', ')}`
+						: `Rolling ${plural(dice, 'die', 'dice')}${
+								removed > 0 ? `, ${removed} removed by the Lasombra Bane` : ''
+							}`}
+				/>
+
+				<!-- The outcome takes the description's place, in the same size, and the Lasombra card
+				     stays (locked), so the modal keeps its height -->
+				{#if phase === 'done' && result}
+					<p class="text-sm" role="status">
+						{#if result.remorseful}
+							You keep the Beast at bay. For now. Humanity remains at {result.humanity}.
+						{:else}
+							The downward spiral continues… Humanity drops from {humanity} to {result.humanity}.
+						{/if}
+					</p>
+				{:else}
 					<p class="text-sm">
 						Roll {plural(dice, 'die', 'dice')}. Any 6 or higher keeps Humanity at {humanity};
 						otherwise it drops to {Math.max(0, humanity - 1)}. Either way, the Stains clear.
 					</p>
+				{/if}
 
-					{#if severity > 0}
-						<label class="flex items-center gap-2">
-							<input type="checkbox" class="checkbox" bind:checked={lasombra} />
-							<span>Lasombra alternative Bane ({severity} fewer dice)</span>
-						</label>
-					{/if}
+				{#if severity > 0}
+					<ToggleCard
+						icon={Eclipse}
+						label="Lasombra alternative Bane"
+						detail="{plural(severity, 'die', 'dice')} fewer (Bane Severity), at least 1"
+						bind:checked={lasombra}
+						disabled={locked}
+					/>
+				{/if}
 
-					{#if error}
-						<p class="text-error-500 text-sm" role="alert">{error}</p>
-					{/if}
+				{#if error}
+					<p class="text-error-500 text-sm" role="alert">{error}</p>
+				{/if}
 
-					<div class="flex justify-end gap-2">
-						<button type="button" class="btn preset-tonal-surface" onclick={() => (open = false)}>
-							Cancel
-						</button>
-						<button
-							type="button"
-							class="btn preset-filled-primary-500"
-							onclick={doRemorse}
-							disabled={stains === 0}
-						>
-							Roll
-						</button>
-					</div>
-				{:else}
-					<!-- Result -->
-					<div class="space-y-3" role="status">
-						<!-- The dice, successes (6+) in blue, as /remorse's success color -->
-						<div
-							class="flex flex-wrap justify-center gap-2"
-							role="img"
-							aria-label="Dice: {result.dice.join(', ')}"
-						>
-							{#each result.dice as die, i (i)}
-								<span
-									class={[
-										'flex size-10 items-center justify-center rounded-md text-lg font-semibold',
-										remorseSuccess(die) ? 'preset-filled-secondary-500' : 'preset-tonal-surface'
-									]}
-								>
-									{die}
-								</span>
-							{/each}
-						</div>
-
-						<div class="grid gap-1">
-							<Humanity character={afterTest} editing={false} />
-						</div>
-
-						{#if result.remorseful}
-							<p>You keep the Beast at bay. For now. Humanity remains at {result.humanity}.</p>
-						{:else}
-							<p>
-								The downward spiral continues… Humanity drops from {humanityBefore} to {result.humanity}.
-							</p>
-						{/if}
-					</div>
-
-					<div class="flex justify-end gap-2">
+				<div class="flex justify-end gap-2">
+					{#if phase === 'done'}
 						<button
 							type="button"
 							class="btn preset-filled-primary-500"
@@ -180,8 +202,26 @@
 						>
 							Done
 						</button>
-					</div>
-				{/if}
+					{:else}
+						<button
+							type="button"
+							class="btn preset-tonal-surface"
+							onclick={() => (open = false)}
+							disabled={locked}
+						>
+							Cancel
+						</button>
+						<button
+							type="button"
+							class="btn preset-filled-primary-500"
+							onclick={doRemorse}
+							disabled={locked || stains === 0}
+							aria-busy={locked}
+						>
+							Roll
+						</button>
+					{/if}
+				</div>
 			</Dialog.Content>
 		</Dialog.Positioner>
 	</ClientPortal>

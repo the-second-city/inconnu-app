@@ -16,6 +16,3 @@ export const remorseDice = (
 	const dice = Math.max(10 - humanity - stains, minimum);
 	return lasombraBane === null ? dice : Math.max(1, dice - lasombraBane);
 };
-
-/** Whether a Remorse die succeeds (6 or more), keeping Humanity. */
-export const remorseSuccess = (die: number): boolean => die >= 6;

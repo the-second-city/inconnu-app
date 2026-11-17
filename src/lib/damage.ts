@@ -42,3 +42,49 @@ export const takeDamage = (track: string, superficial: number, aggravated: numbe
 	agg += aggravated;
 	return build(length, sup, agg);
 };
+
+/** A track after healing up to `amount` boxes of one kind, as the bot mends them. */
+export const healDamage = (
+	track: string,
+	kind: 'superficial' | 'aggravated',
+	amount: number
+): string => {
+	let sup = countBoxes(track, '/');
+	let agg = countBoxes(track, 'x');
+	if (kind === 'superficial') sup = Math.max(0, sup - amount);
+	else agg = Math.max(0, agg - amount);
+	return build(track.length, sup, agg);
+};
+
+// Superficial Health a vampire mends, by Blood Potency (the bot's `VChar.mend_amount`)
+const VAMPIRE_MENDS = [1, 1, 2, 2, 3, 3, 3, 3, 4, 4, 5];
+
+/** A character's rating in a trait, or 0. */
+const rating = (traits: { name: string; rating: number }[], name: string): number =>
+	traits.find((t) => t.name.toLowerCase() === name)?.rating ?? 0;
+
+/**
+ * How many boxes a heal can mend, as the bot heals them: Aggravated, one; Superficial Health, by
+ * Blood Potency for vampires (thin-bloods too), or Stamina for others; Superficial Willpower, what a
+ * night's rest gives (the higher of Resolve and Composure).
+ */
+export const mendAmount = (
+	character: {
+		splat: string;
+		potency?: number;
+		blood_potency?: number;
+		traits: { name: string; rating: number }[];
+	},
+	kind: 'superficial' | 'aggravated',
+	track: 'health' | 'willpower'
+): number => {
+	if (kind === 'aggravated') return 1;
+	if (track === 'willpower') {
+		return Math.max(rating(character.traits, 'resolve'), rating(character.traits, 'composure'));
+	}
+	if (character.splat === 'vampire' || character.splat === 'thin-blood') {
+		const potency = character.potency ?? character.blood_potency ?? 0;
+		return VAMPIRE_MENDS[Math.max(0, Math.min(10, potency))];
+	}
+	return rating(character.traits, 'stamina');
+};

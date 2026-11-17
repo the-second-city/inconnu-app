@@ -91,12 +91,12 @@ test('the controls stay closed when editing starts again', async () => {
 		editing: true
 	});
 	await openControls(user);
-	expect(await screen.findByRole('button', { name: 'Increase Superficial' })).toBeInTheDocument();
+	expect(await screen.findByRole('button', { name: 'More Superficial' })).toBeInTheDocument();
 
 	await rerender({ editing: false });
 	await rerender({ editing: true });
 
-	expect(screen.queryByRole('button', { name: 'Increase Superficial' })).not.toBeInTheDocument();
+	expect(screen.queryByRole('button', { name: 'More Superficial' })).not.toBeInTheDocument();
 });
 
 test.each(['health', 'willpower'] as const)(
@@ -108,8 +108,8 @@ test.each(['health', 'willpower'] as const)(
 		await openControls(user);
 
 		for (const level of ['Superficial', 'Aggravated', 'Boxes']) {
-			expect(await screen.findByRole('button', { name: `Increase ${level}` })).toBeInTheDocument();
-			expect(screen.getByRole('button', { name: `Decrease ${level}` })).toBeInTheDocument();
+			expect(await screen.findByRole('button', { name: `More ${level}` })).toBeInTheDocument();
+			expect(screen.getByRole('button', { name: `Less ${level}` })).toBeInTheDocument();
 		}
 	}
 );
@@ -119,8 +119,8 @@ test('adding damage updates the track and the character', async () => {
 	const bound = renderTrack('.....');
 	await openControls(user);
 
-	await user.click(await screen.findByRole('button', { name: 'Increase Aggravated' }));
-	await user.click(screen.getByRole('button', { name: 'Increase Superficial' }));
+	await user.click(await screen.findByRole('button', { name: 'More Aggravated' }));
+	await user.click(screen.getByRole('button', { name: 'More Superficial' }));
 
 	expect(boxes()).toEqual(['Aggravated damage', 'Superficial damage', ...Array(3).fill('Healthy')]);
 	expect(bound.health).toBe('.../x');
@@ -131,11 +131,11 @@ test('damage can be removed only when there is some', async () => {
 	renderTrack('..../');
 	await openControls(user);
 
-	expect(await screen.findByRole('button', { name: 'Decrease Aggravated' })).toBeDisabled();
-	await user.click(screen.getByRole('button', { name: 'Decrease Superficial' }));
+	expect(await screen.findByRole('button', { name: 'Less Aggravated' })).toBeDisabled();
+	await user.click(screen.getByRole('button', { name: 'Less Superficial' }));
 
 	expect(boxes()).toEqual(Array(5).fill('Healthy'));
-	expect(screen.getByRole('button', { name: 'Decrease Superficial' })).toBeDisabled();
+	expect(screen.getByRole('button', { name: 'Less Superficial' })).toBeDisabled();
 });
 
 test('a full track takes no more damage', async () => {
@@ -143,8 +143,8 @@ test('a full track takes no more damage', async () => {
 	renderTrack('xxx');
 	await openControls(user);
 
-	expect(await screen.findByRole('button', { name: 'Increase Aggravated' })).toBeDisabled();
-	expect(screen.getByRole('button', { name: 'Increase Superficial' })).toBeDisabled();
+	expect(await screen.findByRole('button', { name: 'More Aggravated' })).toBeDisabled();
+	expect(screen.getByRole('button', { name: 'More Superficial' })).toBeDisabled();
 });
 
 test('box controls add and remove boxes', async () => {
@@ -152,11 +152,11 @@ test('box controls add and remove boxes', async () => {
 	const bound = renderTrack('.....');
 	await openControls(user);
 
-	await user.click(await screen.findByRole('button', { name: 'Increase Boxes' }));
+	await user.click(await screen.findByRole('button', { name: 'More Boxes' }));
 	expect(boxes()).toHaveLength(6);
 
-	await user.click(screen.getByRole('button', { name: 'Decrease Boxes' }));
-	await user.click(screen.getByRole('button', { name: 'Decrease Boxes' }));
+	await user.click(screen.getByRole('button', { name: 'Less Boxes' }));
+	await user.click(screen.getByRole('button', { name: 'Less Boxes' }));
 	expect(boxes()).toHaveLength(4);
 	expect(bound.health).toBe('....');
 });
@@ -170,8 +170,8 @@ test.each([
 	render(Tracker, { character: character(shortest, shortest), track, editing: true });
 	await openControls(user);
 
-	expect(await screen.findByRole('button', { name: 'Decrease Boxes' })).toBeDisabled();
-	expect(screen.getByRole('button', { name: 'Increase Boxes' })).toBeEnabled();
+	expect(await screen.findByRole('button', { name: 'Less Boxes' })).toBeDisabled();
+	expect(screen.getByRole('button', { name: 'More Boxes' })).toBeEnabled();
 });
 
 test.each([
@@ -183,8 +183,8 @@ test.each([
 	render(Tracker, { character: character(full, full), track, editing: true });
 	await openControls(user);
 
-	expect(await screen.findByRole('button', { name: 'Increase Boxes' })).toBeDisabled();
-	expect(screen.getByRole('button', { name: 'Decrease Boxes' })).toBeEnabled();
+	expect(await screen.findByRole('button', { name: 'More Boxes' })).toBeDisabled();
+	expect(screen.getByRole('button', { name: 'Less Boxes' })).toBeEnabled();
 });
 
 /** Render a track in view mode, offering its actions, and open them. Returns the action menu. */
@@ -229,7 +229,7 @@ const menuButtons = (menu: HTMLElement): string[] =>
 		.getAllByRole('button')
 		.map(
 			(button) =>
-				`${button.textContent?.trim()}${button.hasAttribute('disabled') ? ' (disabled)' : ''}`
+				`${button.getAttribute('aria-label')}${button.hasAttribute('disabled') ? ' (disabled)' : ''}`
 		);
 
 test('the track offers no actions unless actionable', () => {
@@ -252,23 +252,21 @@ test('while editing, an actionable track opens the corrections, not the actions'
 test('Health offers damage and mending', async () => {
 	const menu = await openActions('..//x');
 
-	expect(menuButtons(menu)).toEqual(['Take Damage', 'Superficial', 'Aggravated']);
-	expect(within(menu).getByRole('group', { name: 'Mend' })).toBeInTheDocument();
+	expect(menuButtons(menu)).toEqual(['Take Damage', 'Mend Superficial', 'Mend Aggravated']);
 });
 
 test('Willpower offers mending too', async () => {
 	const menu = await openActions('.....', 'willpower', '..//x');
 
-	expect(menuButtons(menu)).toEqual(['Take Damage', 'Superficial', 'Aggravated']);
-	expect(within(menu).getByRole('group', { name: 'Mend' })).toBeInTheDocument();
+	expect(menuButtons(menu)).toEqual(['Take Damage', 'Mend Superficial', 'Mend Aggravated']);
 });
 
 test.each([
-	['.....', ['Take Damage', 'Superficial (disabled)', 'Aggravated (disabled)']],
-	['...//', ['Take Damage', 'Superficial', 'Aggravated (disabled)']],
-	['...xx', ['Take Damage', 'Superficial (disabled)', 'Aggravated']],
-	['/////', ['Take Damage', 'Superficial', 'Aggravated (disabled)']],
-	['xxxxx', ['Take Damage (disabled)', 'Superficial (disabled)', 'Aggravated']]
+	['.....', ['Take Damage', 'Mend Superficial (disabled)', 'Mend Aggravated (disabled)']],
+	['...//', ['Take Damage', 'Mend Superficial', 'Mend Aggravated (disabled)']],
+	['...xx', ['Take Damage', 'Mend Superficial (disabled)', 'Mend Aggravated']],
+	['/////', ['Take Damage', 'Mend Superficial', 'Mend Aggravated (disabled)']],
+	['xxxxx', ['Take Damage (disabled)', 'Mend Superficial (disabled)', 'Mend Aggravated']]
 ])('with Health %j, the actions are %j', async (health, expected) => {
 	expect(menuButtons(await openActions(health))).toEqual(expected);
 });
@@ -332,9 +330,9 @@ test.each([
 );
 
 test.each([
-	['Superficial', 'superficial'],
-	['Aggravated', 'aggravated']
-] as const)("Health's Mend %s button opens the Mend modal for it", async (button, type) => {
+	['Mend Superficial', 'superficial'],
+	['Mend Aggravated', 'aggravated']
+] as const)("Health's %s button opens the Mend modal for it", async (button, type) => {
 	const user = userEvent.setup();
 	const onMend = vi.fn();
 	render(Tracker, {
@@ -364,7 +362,7 @@ test("Willpower's Mend buttons open the Mend modal for Willpower", async () => {
 	await user.click(screen.getByRole('button', { name: 'Willpower actions' }));
 
 	await user.click(
-		within(await screen.findByRole('dialog')).getByRole('button', { name: 'Aggravated' })
+		within(await screen.findByRole('dialog')).getByRole('button', { name: 'Mend Aggravated' })
 	);
 
 	expect(onMend).toHaveBeenCalledWith('aggravated', 'willpower');
@@ -391,5 +389,44 @@ test.each(['health', 'willpower'] as const)(
 		);
 
 		expect(onTakeDamage).toHaveBeenCalledWith(track);
+	}
+);
+
+test.each([
+	// [splat, track, health, button, detail]
+	['vampire', 'health', '..//x', 'Mend Superficial', 'Costs a Rouse Check'],
+	['vampire', 'health', '..//x', 'Mend Aggravated', 'Costs 3 Rouse Checks'],
+	['mortal', 'health', '..//x', 'Mend Aggravated', 'Heals without Rousing'],
+	['vampire', 'health', '.....', 'Mend Superficial', 'No Superficial damage'],
+	['vampire', 'health', 'xxxxx', 'Take Damage', 'Already all Aggravated'],
+	['vampire', 'health', '.....', 'Take Damage', 'Superficial or Aggravated']
+] as const)("a %s's %s %j menu describes %s: %s", async (splat, track, health, button, detail) => {
+	const user = userEvent.setup();
+	render(Tracker, {
+		character: { ...character(health), splat },
+		track,
+		editing: false,
+		actionable: true,
+		onMend: vi.fn()
+	});
+	await user.click(screen.getByRole('button', { name: 'Health actions' }));
+
+	expect(
+		within(await screen.findByRole('dialog')).getByRole('button', { name: button })
+	).toHaveAccessibleDescription(detail);
+});
+
+test.each(['health', 'willpower'] as const)(
+	'the %s corrections name the track under their heading',
+	async (track) => {
+		const user = userEvent.setup();
+		render(Tracker, { character: character('..//x', '..//x'), track, editing: true });
+		await openControls(user);
+
+		const popover = await screen.findByRole('dialog');
+		const label = track === 'health' ? 'Health' : 'Willpower';
+		expect(within(popover).getByText('Make Corrections').nextElementSibling).toHaveTextContent(
+			label
+		);
 	}
 );
