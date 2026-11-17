@@ -7,6 +7,8 @@ import DamageModal from './DamageModal.svelte';
 
 const damage = vi.hoisted(() => vi.fn());
 vi.mock('$lib/characterActions', () => ({ damage }));
+// No busy delay: the work's own promise decides when it's done
+vi.mock('$lib/busy', () => ({ atLeast: <T>(work: Promise<T>): Promise<T> => work }));
 
 beforeEach(() => {
 	damage.mockReset().mockResolvedValue({ result: null });
@@ -158,40 +160,20 @@ test('a failed Apply says why, and stays open', async () => {
 	expect(bound.open).toBe(true);
 });
 
-test('while applying, Apply and Cancel are disabled', async () => {
+test('while applying, a spinner takes the place of the content, until the modal closes', async () => {
 	const user = userEvent.setup();
 	let answer: (outcome: unknown) => void = () => {};
 	damage.mockReturnValueOnce(new Promise((resolve) => (answer = resolve)));
-	renderBound();
+	const bound = renderBound();
 	const dialog = await screen.findByRole('dialog');
 	await user.click(within(dialog).getByRole('button', { name: 'More Aggravated' }));
 
 	await user.click(within(dialog).getByRole('button', { name: 'Apply' }));
 
-	expect(within(dialog).getByRole('button', { name: 'Apply' })).toBeDisabled();
-	expect(within(dialog).getByRole('button', { name: 'Apply' })).toHaveAttribute(
-		'aria-busy',
-		'true'
-	);
-	expect(within(dialog).getByRole('button', { name: 'Cancel' })).toBeDisabled();
+	expect(within(dialog).getByRole('status')).toHaveTextContent('Applying damage…');
+	expect(within(dialog).queryByRole('button')).not.toBeInTheDocument();
 	answer({ result: null });
-});
-
-test("the damaged track arriving after Apply doesn't take the damage again in the preview", async () => {
-	const user = userEvent.setup();
-	let answer: (outcome: unknown) => void = () => {};
-	damage.mockReturnValueOnce(new Promise((resolve) => (answer = resolve)));
-	const { rerender } = render(DamageModal, { character: character(), track: 'health', open: true });
-	const dialog = await screen.findByRole('dialog');
-	await user.click(within(dialog).getByRole('button', { name: 'More Aggravated' }));
-	expect(preview(dialog)).toBe('ASSSH');
-
-	await user.click(within(dialog).getByRole('button', { name: 'Apply' }));
-	// The save's live update brings the damaged track before the modal closes
-	await rerender({ character: { ...character(), health: './//x' } });
-
-	expect(preview(dialog)).toBe('ASSSH');
-	answer({ result: null });
+	await waitFor(() => expect(bound.open).toBe(false));
 });
 
 test('before Apply, the preview follows changes to the character', async () => {

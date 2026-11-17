@@ -1,5 +1,7 @@
 <script lang="ts">
 	import { resolve } from '$app/paths';
+	import { ChartBellCurve, PawPrint } from '@lucide/svelte';
+	import type { Component } from 'svelte';
 	import Card from '$lib/components/Card.svelte';
 	import Meta from '$lib/components/Meta.svelte';
 </script>
@@ -9,15 +11,15 @@
 	description="Utilities and tools for Vampire: The Masquerade 5th Edition."
 />
 
-{#snippet heading(title: string)}
-	<h2 class="h3">{title}</h2>
+{#snippet heading(title: string, Icon: Component)}
+	<h2 class="h3 flex items-center gap-2"><Icon size={26} class="text-primary-500" />{title}</h2>
 	<hr class="text-surface-300 py-2" />
 {/snippet}
 
 <h1 class="h1 font-black">Utilities</h1>
 
 <p class="px-2">
-	A small but growing collection of random play aids for <em>Vampore: The Masquerade</em>.
+	A small but growing collection of random play aids for <em>Vampire: The Masquerade</em>.
 </p>
 
 <a
@@ -26,14 +28,11 @@
 	title="Beasty"
 >
 	<Card>
-		{@render heading('Beasty')}
+		{@render heading('Beasty', PawPrint)}
 		<p>
-			For fans of Discord play-by-post (or anywhere that accepts <a
-				class="anchor"
-				href="https://support.discord.com/hc/en-us/articles/210298617-Markdown-Text-101-Chat-Formatting-Bold-Italic-Underline"
-				title="Markdown overview">Markdown</a
-			>), give your writing some flair by formatting your character's internal monologue as "Beast
-			speak," alternating between bold and italics.
+			For fans of Discord play-by-post (or anywhere that accepts Markdown), give your writing some
+			flair by formatting your character's internal monologue as "Beast speak," alternating between
+			bold and italics.
 		</p>
 	</Card>
 </a>
@@ -44,7 +43,7 @@
 	title="Probability Calculator"
 >
 	<Card>
-		{@render heading('Probability Calculator')}
+		{@render heading('Probability Calculator', ChartBellCurve)}
 		<p>
 			See the exact odds of every outcome of a roll, from messy criticals to bestial failures,
 			including the effect of each Willpower re-roll strategy.

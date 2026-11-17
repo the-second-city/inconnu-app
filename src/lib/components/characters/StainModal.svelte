@@ -1,11 +1,13 @@
 <script lang="ts">
 	import { untrack } from 'svelte';
 	import { Dialog } from '@skeletonlabs/skeleton-svelte';
-	import { Loader2, TriangleAlert } from '@lucide/svelte';
+	import { TriangleAlert } from '@lucide/svelte';
 
+	import { atLeast } from '$lib/busy';
 	import { stain } from '$lib/characterActions';
 	import type { Character } from '$lib/types';
 	import ClientPortal from '$lib/components/ClientPortal.svelte';
+	import BusySpinner from './BusySpinner.svelte';
 	import Humanity from './sheets/components/Humanity.svelte';
 	import Stepper from './Stepper.svelte';
 
@@ -16,10 +18,9 @@
 
 	let { open = $bindable(), character }: ComponentProps = $props();
 
-	// The Stains added to. Applying freezes them: the save's live update brings the new Stains while
-	// the modal closes, and previewing the same Stains on those would show them twice.
-	let frozen: number | null = $state(null);
-	const stains = $derived(frozen ?? character.stains ?? 0);
+	// The Stains added to. The save's own live update arrives behind the spinner, so the preview
+	// never shows the same Stains twice.
+	const stains = $derived(character.stains ?? 0);
 
 	let amount = $state(1);
 	let applying = $state(false);
@@ -42,24 +43,25 @@
 			untrack(() => {
 				amount = 1;
 				error = null;
-				frozen = null;
+				applying = false;
 			});
 		}
 	});
 
-	/** Add the Stains. On success the modal closes, and the live update refreshes the sheet. */
+	/**
+	 * Add the Stains, with a spinner in place of the modal's content for at least the busy delay. On
+	 * success the modal closes, and the live update refreshes the sheet.
+	 */
 	const apply = async () => {
 		if (applying || amount < 1) return;
 		applying = true;
 		error = null;
-		frozen = character.stains ?? 0;
-		const outcome = await stain(character._id, { amount });
-		applying = false;
+		const outcome = await atLeast(stain(character._id, { amount }));
 		if (outcome.error !== undefined) {
+			applying = false;
 			error = outcome.error;
-			frozen = null; // Nothing was saved, so follow the character again
 		} else {
-			open = false;
+			open = false; // Still spinning, so the content doesn't flash back as it closes
 		}
 	};
 </script>
@@ -78,45 +80,42 @@
 			>
 				<Dialog.Title class="h5 text-center">Apply Stains</Dialog.Title>
 
-				<!-- The preview: Humanity with the new Stains. The label goes above the track, since
+				{#if applying}
+					<BusySpinner label="Applying Stains…" />
+				{:else}
+					<!-- The preview: Humanity with the new Stains. The label goes above the track, since
 				     beside it, ten boxes don't fit the modal. -->
-				<div class="grid gap-1">
-					<Humanity character={preview} editing={false} />
-				</div>
+					<div class="grid gap-1">
+						<Humanity character={preview} editing={false} />
+					</div>
 
-				<Stepper label="Stains" bind:value={amount} min={1} {max} disabled={applying} />
+					<Stepper label="Stains" bind:value={amount} min={1} {max} />
 
-				{#if degeneration > 0}
-					<p class="preset-tonal-error flex gap-2 rounded-md p-3 text-sm" role="status">
-						<TriangleAlert size={18} class="shrink-0" />
-						<span>Degeneration: {degeneration} Aggravated Willpower damage.</span>
-					</p>
+					{#if degeneration > 0}
+						<p class="preset-tonal-error flex gap-2 rounded-md p-3 text-sm" role="status">
+							<TriangleAlert size={18} class="shrink-0" />
+							<span>Degeneration: {degeneration} Aggravated Willpower damage.</span>
+						</p>
+					{/if}
+
+					{#if error}
+						<p class="text-error-500 text-sm" role="alert">{error}</p>
+					{/if}
+
+					<div class="flex justify-end gap-2">
+						<button type="button" class="btn preset-tonal-surface" onclick={() => (open = false)}>
+							Cancel
+						</button>
+						<button
+							type="button"
+							class="btn preset-filled-primary-500"
+							onclick={apply}
+							disabled={max === 0}
+						>
+							Apply
+						</button>
+					</div>
 				{/if}
-
-				{#if error}
-					<p class="text-error-500 text-sm" role="alert">{error}</p>
-				{/if}
-
-				<div class="flex justify-end gap-2">
-					<button
-						type="button"
-						class="btn preset-tonal-surface"
-						onclick={() => (open = false)}
-						disabled={applying}
-					>
-						Cancel
-					</button>
-					<button
-						type="button"
-						class="btn preset-filled-primary-500"
-						onclick={apply}
-						disabled={applying || max === 0}
-						aria-busy={applying}
-					>
-						{#if applying}<Loader2 size={18} class="animate-spin" />{/if}
-						<span>Apply</span>
-					</button>
-				</div>
 			</Dialog.Content>
 		</Dialog.Positioner>
 	</ClientPortal>

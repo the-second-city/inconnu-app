@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { untrack } from 'svelte';
+	import { Droplets, Mouth } from '@lucide/svelte';
 
 	import type { Character } from '$lib/types';
 
@@ -90,6 +91,7 @@
 				<div class="text-md text-center uppercase">Hunger</div>
 				{#if onRouse}
 					<button type="button" class="btn preset-tonal-surface" onclick={fromMenu(onRouse)}>
+						<Droplets size={18} />
 						Rouse
 					</button>
 				{/if}
@@ -100,6 +102,7 @@
 						onclick={fromMenu(onSlake)}
 						disabled={(character.hunger ?? 0) === 0}
 					>
+						<Mouth size={18} />
 						Slake
 					</button>
 				{/if}

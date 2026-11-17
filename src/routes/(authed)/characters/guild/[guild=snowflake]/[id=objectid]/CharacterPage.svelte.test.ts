@@ -15,6 +15,8 @@ const invalidate = vi.hoisted(() => vi.fn(async () => {}));
 const navigation = vi.hoisted(() => ({ before: null as ((nav: unknown) => void) | null }));
 vi.mock('$app/state', () => import('$lib/testing/page.svelte'));
 vi.mock('$app/paths', () => ({ resolve: (route: string) => route }));
+// No busy delay: the save's own promise decides when it's done
+vi.mock('$lib/busy', () => ({ atLeast: <T>(work: Promise<T>): Promise<T> => work }));
 vi.mock('$app/navigation', () => ({
 	goto,
 	invalidate,

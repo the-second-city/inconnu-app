@@ -7,6 +7,8 @@ import SlakeModal from './SlakeModal.svelte';
 
 const slake = vi.hoisted(() => vi.fn());
 vi.mock('$lib/characterActions', () => ({ slake }));
+// No busy delay: the work's own promise decides when it's done
+vi.mock('$lib/busy', () => ({ atLeast: <T>(work: Promise<T>): Promise<T> => work }));
 
 beforeEach(() => {
 	slake.mockReset().mockResolvedValue({ result: null });
@@ -103,22 +105,19 @@ test('clicking an amount slakes it, then closes', async () => {
 	await waitFor(() => expect(bound.open).toBe(false));
 });
 
-test('while slaking, the buttons are disabled, and the clicked one is busy', async () => {
+test('while slaking, a spinner takes the place of the choices, until the modal closes', async () => {
 	const user = userEvent.setup();
 	let answer: (outcome: unknown) => void = () => {};
 	slake.mockReturnValueOnce(new Promise((resolve) => (answer = resolve)));
-	renderModal(3);
+	const bound = renderModal(3);
 	const dialog = await screen.findByRole('dialog');
 
 	await user.click(within(dialog).getByRole('button', { name: /^Slake 2:/ }));
 
-	expect(within(dialog).getByRole('button', { name: /^Slake 2:/ })).toHaveAttribute(
-		'aria-busy',
-		'true'
-	);
-	expect(within(dialog).getByRole('button', { name: /^Slake 1:/ })).toBeDisabled();
-	expect(within(dialog).getByRole('button', { name: 'Cancel' })).toBeDisabled();
+	expect(within(dialog).getByRole('status')).toHaveTextContent('Slaking…');
+	expect(within(dialog).queryByRole('button')).not.toBeInTheDocument();
 	answer({ result: null });
+	await waitFor(() => expect(bound.open).toBe(false));
 });
 
 test('a failed Slake says why, and stays open', async () => {
@@ -131,6 +130,8 @@ test('a failed Slake says why, and stays open', async () => {
 
 	expect(await within(dialog).findByRole('alert')).toHaveTextContent('Nadia has no Hunger.');
 	expect(bound.open).toBe(true);
+	// The choices come back, to try again
+	expect(within(dialog).getByRole('button', { name: /^Slake 1:/ })).toBeInTheDocument();
 });
 
 test.each([
@@ -142,7 +143,7 @@ test.each([
 	const dialog = await screen.findByRole('dialog');
 
 	const shown = within(dialog).queryByText(/Animal and bagged blood/);
-	expect(shown?.textContent ?? null).toBe(note);
+	expect(shown?.textContent?.trim() ?? null).toBe(note);
 });
 
 test('each choice says what it costs the victim, and a drain says so, not how much it slakes', async () => {

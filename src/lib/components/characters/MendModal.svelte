@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { untrack } from 'svelte';
 	import { Dialog } from '@skeletonlabs/skeleton-svelte';
-	import { TriangleAlert } from '@lucide/svelte';
+	import { Flame, Tombstone } from '@lucide/svelte';
 
 	import { mend } from '$lib/characterActions';
 	import type { Character, MendResult, TrackType } from '$lib/types';
@@ -153,13 +153,13 @@
 						<DamageTrack label={trackLabel} track={result.track} before={trackBefore} />
 						{#if result.frenzy}
 							<p class="preset-tonal-error flex gap-2 rounded-md p-3 text-sm">
-								<TriangleAlert size={18} class="shrink-0" />
+								<Flame size={18} class="shrink-0" />
 								<span>A Rouse failed at Hunger 5: test for Hunger frenzy.</span>
 							</p>
 						{/if}
 						{#if result.torpor}
 							<p class="preset-tonal-error flex gap-2 rounded-md p-3 text-sm">
-								<TriangleAlert size={18} class="shrink-0" />
+								<Tombstone size={18} class="shrink-0" />
 								<span>Hunger would pass 5: {character.name} falls into torpor.</span>
 							</p>
 						{/if}

@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { untrack } from 'svelte';
 	import { Dialog } from '@skeletonlabs/skeleton-svelte';
-	import { Minus, Plus, TriangleAlert } from '@lucide/svelte';
+	import { Flame, HandFist, Minus, Plus } from '@lucide/svelte';
 
 	import { rouse } from '$lib/characterActions';
 	import type { Character, RouseResult } from '$lib/types';
@@ -115,7 +115,7 @@
 					<!-- Options -->
 					{#if isGhoul}
 						<p class="preset-tonal-warning flex gap-2 rounded-md p-3 text-sm">
-							<TriangleAlert size={18} class="shrink-0" />
+							<HandFist size={18} class="shrink-0" />
 							<span>Ghouls don't roll: Rousing deals 1 Aggravated Health damage.</span>
 						</p>
 					{:else}
@@ -188,7 +188,7 @@
 							<HungerDrops before={hungerBefore} after={result.hunger} />
 							{#if result.frenzy}
 								<p class="preset-tonal-error flex gap-2 rounded-md p-3 text-sm">
-									<TriangleAlert size={18} class="shrink-0" />
+									<Flame size={18} class="shrink-0" />
 									<span>A check failed at Hunger 5: test for Hunger frenzy.</span>
 								</p>
 							{/if}

@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { untrack } from 'svelte';
+	import { Droplets, HandFist, HeartPlus } from '@lucide/svelte';
 	import Popover from '$lib/components/Popover.svelte';
 
 	import type { Character, TrackType } from '$lib/types';
@@ -190,6 +191,7 @@
 				onTakeDamage?.(track);
 			}}
 		>
+			<HandFist size={18} />
 			Take Damage
 		</button>
 		{#if offersRouse}
@@ -201,6 +203,7 @@
 					onRouse?.();
 				}}
 			>
+				<Droplets size={18} />
 				Rouse
 			</button>
 		{/if}
@@ -208,7 +211,10 @@
 		     viewer may heal (the owner, or a Storyteller for an SPC). -->
 		{#if onMend}
 			<fieldset class="border-surface-400-600 rounded-base mt-2 border px-2 pb-2">
-				<legend class="mx-auto px-2 text-sm uppercase">Mend</legend>
+				<legend class="mx-auto flex items-center gap-1 px-2 text-sm uppercase">
+					<HeartPlus size={14} />
+					Mend
+				</legend>
 				<div class="flex gap-2">
 					<button
 						type="button"

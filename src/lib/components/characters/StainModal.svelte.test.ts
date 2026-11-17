@@ -7,6 +7,8 @@ import StainModal from './StainModal.svelte';
 
 const stain = vi.hoisted(() => vi.fn());
 vi.mock('$lib/characterActions', () => ({ stain }));
+// No busy delay: the work's own promise decides when it's done
+vi.mock('$lib/busy', () => ({ atLeast: <T>(work: Promise<T>): Promise<T> => work }));
 
 beforeEach(() => {
 	stain.mockReset().mockResolvedValue({ result: null });
@@ -93,6 +95,21 @@ test('Apply sends the amount, then closes', async () => {
 	await waitFor(() => expect(bound.open).toBe(false));
 });
 
+test('while applying, a spinner takes the place of the content, until the modal closes', async () => {
+	const user = userEvent.setup();
+	let answer: (outcome: unknown) => void = () => {};
+	stain.mockReturnValueOnce(new Promise((resolve) => (answer = resolve)));
+	const bound = renderModal();
+	const dialog = await screen.findByRole('dialog');
+
+	await user.click(within(dialog).getByRole('button', { name: 'Apply' }));
+
+	expect(within(dialog).getByRole('status')).toHaveTextContent('Applying Stains…');
+	expect(within(dialog).queryByRole('button')).not.toBeInTheDocument();
+	answer({ result: null });
+	await waitFor(() => expect(bound.open).toBe(false));
+});
+
 test('a failed Apply says why, and stays open', async () => {
 	const user = userEvent.setup();
 	stain.mockResolvedValueOnce({ error: "Couldn't reach Inconnu to add Stains." });
@@ -105,4 +122,6 @@ test('a failed Apply says why, and stays open', async () => {
 		"Couldn't reach Inconnu to add Stains."
 	);
 	expect(bound.open).toBe(true);
+	// The content comes back, to try again
+	expect(within(dialog).getByRole('button', { name: 'Apply' })).toBeEnabled();
 });

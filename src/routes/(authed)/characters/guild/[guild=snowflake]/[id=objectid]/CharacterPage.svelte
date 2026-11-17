@@ -1,14 +1,24 @@
 <script lang="ts">
-	import { onMount, untrack, type Snippet } from 'svelte';
+	import { onMount, untrack, type Component, type Snippet } from 'svelte';
 	import { fade } from 'svelte/transition';
 	import { Dialog, Tabs } from '@skeletonlabs/skeleton-svelte';
-	import { Ban, Check, Loader2, Pencil } from '@lucide/svelte';
+	import {
+		Ban,
+		IdCardLanyard,
+		Loader2,
+		Pencil,
+		SaveCheck,
+		ScrollText,
+		StarPlus,
+		Timeline
+	} from '@lucide/svelte';
 
 	import { characterNameError, normalize } from '$lib';
 
 	import { beforeNavigate, goto, invalidate } from '$app/navigation';
 	import { resolve } from '$app/paths';
-	import { editBody, saveErrors, type SaveErrors } from '$lib/characterEdit';
+	import { atLeast } from '$lib/busy';
+	import { editBody, saveErrors, type CharacterEdit, type SaveErrors } from '$lib/characterEdit';
 	import { CHARACTER_DEPENDENCY } from '$lib/liveUpdates';
 	import { page } from '$app/state';
 	import type { Pathname } from '$app/types';
@@ -55,16 +65,27 @@
 		value: string;
 		label: string;
 		ariaLabel?: string; // When the label is an abbreviation
+		icon: Component;
 		content: Snippet;
 	}
 
 	// The one list of tabs, which renders their triggers and panels. The first is the default.
 	const tabs: Tab[] = $derived([
-		{ value: 'sheet', label: 'Sheet', content: sheetTab },
-		{ value: 'profile', label: 'Profile', content: profileTab },
-		...(character.log ? [{ value: 'chronicle', label: 'Chronicle', content: chronicleTab }] : []),
+		{ value: 'sheet', label: 'Sheet', icon: ScrollText, content: sheetTab },
+		{ value: 'profile', label: 'Profile', icon: IdCardLanyard, content: profileTab },
+		...(character.log
+			? [{ value: 'chronicle', label: 'Chronicle', icon: Timeline, content: chronicleTab }]
+			: []),
 		...(character.experience
-			? [{ value: 'experience', label: 'XP', ariaLabel: 'Experience', content: experienceTab }]
+			? [
+					{
+						value: 'experience',
+						label: 'XP',
+						ariaLabel: 'Experience',
+						icon: StarPlus,
+						content: experienceTab
+					}
+				]
 			: [])
 	]);
 	const defaultTab = $derived(tabs[0].value);
@@ -221,16 +242,8 @@
 		if (copy) character = copy;
 		copy = null;
 	};
-	/**
-	 * Send the edits to the bot. On success, leave edit mode and refetch the character, so the page
-	 * shows what the bot stored. On failure, stay in edit mode and show why.
-	 */
-	const saveChanges = async () => {
-		if (saving || nameError || !hasChanges) return;
-		saving = true;
-		saveError = null;
-		const body = editBody($state.snapshot(character), newName);
-
+	/** Send the edits to the bot: the errors it gave, or null when it saved them. */
+	const sendEdits = async (body: CharacterEdit): Promise<SaveErrors | null> => {
 		try {
 			const url = resolve('/api/characters/[id=objectid]', { id: character._id });
 			const response = await fetch(url, {
@@ -238,26 +251,39 @@
 				headers: { 'Content-Type': 'application/json' },
 				body: JSON.stringify(body)
 			});
-
-			if (response.ok) {
-				character.name = body.name;
-				character.convictions = body.convictions.filter(Boolean);
-				applied = initialCharacter; // Until the refetch, the edits stand
-				editing = false;
-				copy = null;
-				// A failed refetch shows itself (the error page)
-				invalidate(CHARACTER_DEPENDENCY).catch(() => {});
-				return;
-			}
-
+			if (response.ok) return null;
 			const json = await response.json().catch(() => null);
-			saveError = saveErrors(response.status, json, body);
-			rejectedName = body.name;
+			return saveErrors(response.status, json, body);
 		} catch {
-			saveError = { name: null, messages: ["Couldn't reach Inconnu to save your changes."] };
-		} finally {
-			saving = false;
+			return { name: null, messages: ["Couldn't reach Inconnu to save your changes."] };
 		}
+	};
+
+	/**
+	 * Save the edits, spinning for at least the busy delay. On success, leave edit mode and refetch
+	 * the character, so the page shows what the bot stored. On failure, stay in edit mode and show
+	 * why.
+	 */
+	const saveChanges = async () => {
+		if (saving || nameError || !hasChanges) return;
+		saving = true;
+		saveError = null;
+		const body = editBody($state.snapshot(character), newName);
+		const errors = await atLeast(sendEdits(body));
+		saving = false;
+
+		if (errors) {
+			saveError = errors;
+			rejectedName = body.name;
+			return;
+		}
+		character.name = body.name;
+		character.convictions = body.convictions.filter(Boolean);
+		applied = initialCharacter; // Until the refetch, the edits stand
+		editing = false;
+		copy = null;
+		// A failed refetch shows itself (the error page)
+		invalidate(CHARACTER_DEPENDENCY).catch(() => {});
 	};
 
 	// Keyboard shortcuts while editing: ⌘/Ctrl+S or ⌘/Ctrl+Enter saves, Escape cancels. The
@@ -350,7 +376,14 @@
 	<div class="relative">
 		<Tabs.List>
 			{#each tabs as tab (tab.value)}
-				<Tabs.Trigger value={tab.value} aria-label={tab.ariaLabel}>{tab.label}</Tabs.Trigger>
+				<Tabs.Trigger
+					value={tab.value}
+					aria-label={tab.ariaLabel}
+					class="flex items-center gap-1.5"
+				>
+					<!-- Not on phones, where the tabs wouldn't fit with them -->
+					<tab.icon size={16} class="hidden shrink-0 sm:block" />{tab.label}
+				</Tabs.Trigger>
 			{/each}
 			<Tabs.Indicator />
 		</Tabs.List>
@@ -380,7 +413,7 @@
 						{#if saving}
 							<Loader2 size={18} class="animate-spin" />
 						{:else}
-							<Check size={18} />
+							<SaveCheck size={18} />
 						{/if}
 						<span>Save</span>
 					</button>
@@ -496,7 +529,7 @@
 						{#if saving}
 							<Loader2 color="#000" strokeWidth={3} class="animate-spin drop-shadow-md" size={24} />
 						{:else}
-							<Check color="#000" strokeWidth={3} class="drop-shadow-md" size={24} />
+							<SaveCheck color="#000" strokeWidth={2.5} class="drop-shadow-md" size={24} />
 						{/if}
 					</button>
 				{:else}

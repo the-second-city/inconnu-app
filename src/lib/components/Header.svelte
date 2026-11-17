@@ -4,7 +4,7 @@
 	import { afterNavigate } from '$app/navigation';
 	import { resolve } from '$app/paths';
 
-	import { ChevronDown, Orbit, ScrollText, Users } from '@lucide/svelte';
+	import { BookOpenText, ChevronDown, Orbit, Users } from '@lucide/svelte';
 	import GithubIcon from '$lib/components/GithubIcon.svelte';
 	import Popover from '$lib/components/Popover.svelte';
 
@@ -28,7 +28,7 @@
 		color="preset-filled-surface-500"
 		full={true}
 	>
-		Docs <ScrollText size={18} />
+		Docs <BookOpenText size={18} />
 	</NavButton>
 {/snippet}
 
@@ -85,7 +85,7 @@
 			Utilities <Orbit size={18} />
 		</NavLink>
 		<NavLink href="/docs" title="Read the docs">
-			Docs <ScrollText size={18} />
+			Docs <BookOpenText size={18} />
 		</NavLink>
 
 		<DiscordButton full={false} />

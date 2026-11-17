@@ -1,12 +1,13 @@
 <script lang="ts">
 	import { untrack } from 'svelte';
 	import { Dialog } from '@skeletonlabs/skeleton-svelte';
-	import { Loader2 } from '@lucide/svelte';
 
+	import { atLeast } from '$lib/busy';
 	import { damage } from '$lib/characterActions';
 	import { takeDamage } from '$lib/damage';
 	import type { Character, TrackType } from '$lib/types';
 	import ClientPortal from '$lib/components/ClientPortal.svelte';
+	import BusySpinner from './BusySpinner.svelte';
 	import DamageTrack from './DamageTrack.svelte';
 	import Stepper from './Stepper.svelte';
 
@@ -19,11 +20,10 @@
 	let { open = $bindable(), character, track }: ComponentProps = $props();
 
 	const trackLabel = $derived(track === 'willpower' ? 'Willpower' : 'Health');
-	// The track the damage applies to. Applying freezes it: the save's live update brings the
-	// damaged track while the modal closes, and previewing the same damage on that would show it
-	// twice. Until then, it follows the character (say, damage taken in Discord meanwhile).
-	let frozen: string | null = $state(null);
-	const current = $derived(frozen ?? character[track]);
+	// The track the damage applies to. It follows the character (say, damage taken in Discord
+	// meanwhile); the save's own live update arrives behind the spinner, so the preview never shows
+	// the same damage twice.
+	const current = $derived(character[track]);
 
 	// The damage to take
 	let superficial = $state(0);
@@ -47,27 +47,26 @@
 				superficial = 0;
 				aggravated = 0;
 				error = null;
-				frozen = null;
+				applying = false;
 			});
 		}
 	});
 
 	/**
-	 * Deal the queued damage. On success the modal closes, and the sheet updates through the live
-	 * update the save triggers; on failure it stays open, saying why.
+	 * Deal the queued damage, with a spinner in place of the modal's content for at least the busy
+	 * delay. On success the modal closes, and the sheet updates through the live update the save
+	 * triggers; on failure it shows its content again, saying why.
 	 */
 	const apply = async () => {
 		if (applying || superficial + aggravated === 0) return;
 		applying = true;
 		error = null;
-		frozen = character[track];
-		const outcome = await damage(character._id, { track, superficial, aggravated });
-		applying = false;
+		const outcome = await atLeast(damage(character._id, { track, superficial, aggravated }));
 		if (outcome.error !== undefined) {
+			applying = false;
 			error = outcome.error;
-			frozen = null; // Nothing was saved, so follow the character again
 		} else {
-			open = false;
+			open = false; // Still spinning, so the content doesn't flash back as it closes
 		}
 	};
 </script>
@@ -86,36 +85,33 @@
 			>
 				<Dialog.Title class="h5 text-center">Take {trackLabel} Damage</Dialog.Title>
 
-				<!-- The preview: the track as it would be, with the new damage pulsing -->
-				<DamageTrack label={trackLabel} track={preview} before={current} markFrom="healthy" />
+				{#if applying}
+					<BusySpinner label="Applying damage…" />
+				{:else}
+					<!-- The preview: the track as it would be, with the new damage pulsing -->
+					<DamageTrack label={trackLabel} track={preview} before={current} markFrom="healthy" />
 
-				<Stepper label="Superficial" bind:value={superficial} canAdd={!full} disabled={applying} />
-				<Stepper label="Aggravated" bind:value={aggravated} canAdd={!full} disabled={applying} />
+					<Stepper label="Superficial" bind:value={superficial} canAdd={!full} />
+					<Stepper label="Aggravated" bind:value={aggravated} canAdd={!full} />
 
-				{#if error}
-					<p class="text-error-500 text-sm" role="alert">{error}</p>
+					{#if error}
+						<p class="text-error-500 text-sm" role="alert">{error}</p>
+					{/if}
+
+					<div class="flex justify-end gap-2">
+						<button type="button" class="btn preset-tonal-surface" onclick={() => (open = false)}>
+							Cancel
+						</button>
+						<button
+							type="button"
+							class="btn preset-filled-primary-500"
+							onclick={apply}
+							disabled={superficial + aggravated === 0}
+						>
+							Apply
+						</button>
+					</div>
 				{/if}
-
-				<div class="flex justify-end gap-2">
-					<button
-						type="button"
-						class="btn preset-tonal-surface"
-						onclick={() => (open = false)}
-						disabled={applying}
-					>
-						Cancel
-					</button>
-					<button
-						type="button"
-						class="btn preset-filled-primary-500"
-						onclick={apply}
-						disabled={applying || superficial + aggravated === 0}
-						aria-busy={applying}
-					>
-						{#if applying}<Loader2 size={18} class="animate-spin" />{/if}
-						<span>Apply</span>
-					</button>
-				</div>
 			</Dialog.Content>
 		</Dialog.Positioner>
 	</ClientPortal>

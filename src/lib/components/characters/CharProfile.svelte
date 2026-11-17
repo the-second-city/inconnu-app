@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { Dialog } from '@skeletonlabs/skeleton-svelte';
 	import ClientPortal from '$lib/components/ClientPortal.svelte';
-	import { ChevronLeft, ChevronRight, Eye, Scale, Skull } from '@lucide/svelte';
+	import { ChevronLeft, ChevronRight, Eye, Scale, Tombstone } from '@lucide/svelte';
 
 	import type { Profile, Splat } from '$lib/types';
 	import { DISCORD_URL } from '$lib/index';
@@ -142,7 +142,7 @@
 			<section class="space-y-2">
 				<header class="border-surface-300-700 flex items-center gap-2 border-b pb-2">
 					<span class="text-primary-500">
-						<Skull size={18} />
+						<Tombstone size={18} />
 					</span>
 					<h2 class="h6">History</h2>
 				</header>
