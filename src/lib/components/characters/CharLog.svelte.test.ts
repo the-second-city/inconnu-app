@@ -17,6 +17,7 @@ const log = (overrides: Partial<CharacterLog> = {}): CharacterLog => ({
 	hunger_gained: 0,
 	hunger_slaked: 0,
 	hunts: 0,
+	num_victims_drained: 0,
 	remorse_checks: 0,
 	remorse_failures: 0,
 	remorse_successes: 0,
@@ -77,12 +78,19 @@ test('a non-vampire shows vampiric groups that have counts', () => {
 
 test('shows counts under their groups', () => {
 	render(CharLog, {
-		log: log({ rouse_checks: 12, hunger_slaked: 4, remorse_successes: 2, health_aggravated: 3 }),
+		log: log({
+			rouse_checks: 12,
+			hunger_slaked: 4,
+			num_victims_drained: 1,
+			remorse_successes: 2,
+			health_aggravated: 3
+		}),
 		splat: 'vampire'
 	});
 
 	expect(value('Blood', 'Rouse checks')).toBe('12');
 	expect(value('Hunger', 'Total Hunger slaked')).toBe('4');
+	expect(value('Hunger', 'Victims drained')).toBe('1');
 	expect(value('Humanity', 'Remorse successes')).toBe('2');
 	expect(value('Damage', 'Aggravated Health')).toBe('3');
 });

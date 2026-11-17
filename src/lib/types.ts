@@ -174,6 +174,7 @@ export interface CharacterLog {
 	hunger_gained: number;
 	hunger_slaked: number;
 	hunts: number;
+	num_victims_drained: number; // Drains chosen in a hunt's Slake menu
 	remorse_checks: number;
 	remorse_failures: number;
 	remorse_successes: number;

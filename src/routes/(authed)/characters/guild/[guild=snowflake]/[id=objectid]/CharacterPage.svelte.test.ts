@@ -266,6 +266,7 @@ const characterWithLog = (): Character => ({
 		hunger_gained: 0,
 		hunger_slaked: 0,
 		hunts: 0,
+		num_victims_drained: 0,
 		remorse_checks: 0,
 		remorse_failures: 0,
 		remorse_successes: 0,

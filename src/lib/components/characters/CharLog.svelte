@@ -56,7 +56,8 @@
 				['hunger_gained', 'Hunger gained'],
 				['hunger_slaked', 'Total Hunger slaked'],
 				['times_slaked', 'Times slaked'],
-				['hunts', 'Hunts']
+				['hunts', 'Hunts'],
+				['num_victims_drained', 'Victims drained']
 			]
 		},
 		{
