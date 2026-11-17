@@ -14,7 +14,10 @@
 		triggerClass?: string;
 		/** The trigger's accessible name, when its content doesn't give it one */
 		triggerLabel?: string;
-		/** Classes for the popover's panel. A z-index here applies to the whole popover */
+		/** The trigger's hover text (its `title`). Word it differently from `triggerLabel`, which
+		 * screen readers announce too, as the title becomes the trigger's description */
+		triggerTitle?: string;
+		/** Classes for the popover's panel (default `card popover-gothic p-4`). A z-index here applies to the whole popover */
 		contentClass?: string;
 		/** Whether an arrow points at the trigger */
 		arrow?: boolean;
@@ -38,10 +41,11 @@
 		positioning,
 		triggerClass = '',
 		triggerLabel,
-		contentClass = 'card bg-surface-500 p-4',
+		triggerTitle,
+		contentClass = 'card popover-gothic p-4',
 		arrow = false,
-		arrowColor = 'var(--color-surface-500)',
-		arrowTipClass = '',
+		arrowColor = 'var(--color-surface-900)',
+		arrowTipClass = 'border-t border-l border-surface-400',
 		trigger,
 		content
 	}: ComponentProps = $props();
@@ -60,7 +64,7 @@ Wraps Skeleton's Popover so its anatomy lives in one place.
 	}}
 	{positioning}
 >
-	<SkeletonPopover.Trigger class={triggerClass} aria-label={triggerLabel}>
+	<SkeletonPopover.Trigger class={triggerClass} aria-label={triggerLabel} title={triggerTitle}>
 		{@render trigger()}
 	</SkeletonPopover.Trigger>
 	<ClientPortal>

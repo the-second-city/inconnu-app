@@ -66,7 +66,7 @@
 	</NavButton>
 {/snippet}
 
-<header class="bg-surface-50-950 flex items-center justify-between p-4 shadow-md">
+<header class="site-header flex items-center justify-between p-4">
 	<a
 		href={resolve('/')}
 		class="anchor text-primary-500 flex items-center gap-2 text-3xl font-bold"
@@ -93,7 +93,7 @@
 		<Popover
 			bind:open={isMoreMenuOpen}
 			triggerClass="btn p-1.5 rounded-full border-2 flex items-stretch border-surface-700-300 hover:brightness-125"
-			contentClass="bg-black w-64 p-4"
+			contentClass="card popover-gothic w-64 p-4"
 		>
 			{#snippet trigger()}
 				<span class="sr-only">More</span>
@@ -115,7 +115,7 @@
 
 	{#if isMenuOpen}
 		<div
-			class="bg-surface-50-950 fixed inset-x-0 top-[4rem] z-50 p-4 shadow-lg sm:hidden"
+			class="bg-surface-950 border-surface-700 fixed inset-x-0 top-[4rem] z-50 border-b p-4 shadow-lg sm:hidden"
 			transition:slide={{ duration: 200 }}
 		>
 			<nav class="flex flex-col items-end gap-4">
@@ -147,3 +147,28 @@
 	{/if}
 	<!-- End mobile menu -->
 </header>
+
+<style>
+	/* Black, with a hairline of blood along its lower edge that pools brightest at the center */
+	.site-header {
+		position: relative;
+		background: linear-gradient(to bottom, oklch(0% 0 0 / 0.85), oklch(0% 0 0 / 0.6));
+		box-shadow: 0 10px 30px -10px oklch(0% 0 0 / 0.9);
+	}
+	.site-header::after {
+		content: '';
+		position: absolute;
+		inset-inline: 0;
+		bottom: 0;
+		height: 1px;
+		background: linear-gradient(
+			to right,
+			transparent,
+			var(--blood) 20%,
+			var(--blood-bright) 50%,
+			var(--blood) 80%,
+			transparent
+		);
+		box-shadow: 0 0 8px var(--blood);
+	}
+</style>

@@ -80,12 +80,12 @@
 	closeOnEscape={!applying}
 >
 	<ClientPortal>
-		<Dialog.Backdrop class="bg-surface-950/70 fixed inset-0 z-50 backdrop-blur-sm" />
+		<Dialog.Backdrop class="modal-backdrop-gothic fixed inset-0 z-50" />
 		<Dialog.Positioner class="fixed inset-0 z-50 flex items-center justify-center p-4">
-			<Dialog.Content
-				class="card bg-surface-200-800 border-surface-400-600 w-full max-w-sm space-y-4 border p-6 shadow-2xl"
-			>
-				<Dialog.Title class="h5 text-center">Take {trackLabel} Damage</Dialog.Title>
+			<Dialog.Content class="card modal-gothic w-full max-w-sm space-y-4 p-6">
+				<Dialog.Title class="h5 font-display text-center tracking-[0.02em]"
+					>Take {trackLabel} Damage</Dialog.Title
+				>
 
 				{#if applying}
 					<BusySpinner label="Applying damage…" />

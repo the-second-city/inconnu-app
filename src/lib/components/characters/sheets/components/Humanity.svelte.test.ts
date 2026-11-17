@@ -217,3 +217,21 @@ test.each([
 		within(await screen.findByRole('dialog')).getByRole('button', { name: button })
 	).toHaveAccessibleDescription(detail);
 });
+
+test.each([
+	['the owner', true, 'Apply Stains or test Remorse'],
+	["a Storyteller, on a player's character", false, 'Apply Stains']
+])("the Humanity menu's hover text lists what %s can do", (_, owner, title) => {
+	render(Humanity, {
+		character: character(7, 1),
+		editing: false,
+		onStain: vi.fn(),
+		...(owner ? { onRemorse: vi.fn() } : {})
+	});
+	expect(screen.getByRole('button', { name: 'Humanity actions' })).toHaveAttribute('title', title);
+});
+
+test("while editing, Humanity's hover text offers corrections", () => {
+	render(Humanity, { character: character(7, 1), editing: true });
+	expect(screen.getByTitle('Correct Humanity')).toBeInTheDocument();
+});

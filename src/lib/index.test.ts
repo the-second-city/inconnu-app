@@ -1,7 +1,9 @@
 import { expect, test } from 'vitest';
 
 import {
+	capitalize,
 	characterNameError,
+	orList,
 	getErrorDetail,
 	isHttpsUrl,
 	hasProfileContent,
@@ -136,4 +138,21 @@ test.each([
 	['2024-03-05T12:00:00-05:00', '2024-03-05T17:00:00.000Z']
 ])('parseApiDate(%j) is %s', (date: string, expected: string) => {
 	expect(parseApiDate(date).toISOString()).toBe(expected);
+});
+
+test.each([
+	[[], ''],
+	[['Rouse'], 'Rouse'],
+	[['Rouse', 'slake'], 'Rouse or slake'],
+	[['take damage', 'mend', 'Rouse'], 'take damage, mend, or Rouse']
+])('orList(%j) is %j', (items, expected) => {
+	expect(orList(items)).toBe(expected);
+});
+
+test.each([
+	['', ''],
+	['take damage', 'Take damage'],
+	['Rouse or slake', 'Rouse or slake']
+])('capitalize(%j) is %j', (text, expected) => {
+	expect(capitalize(text)).toBe(expected);
 });

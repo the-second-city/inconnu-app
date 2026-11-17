@@ -32,7 +32,7 @@
 		bind:open={showLogoutButton}
 		positioning={{ placement: 'bottom-end' }}
 		{triggerClass}
-		contentClass="card bg-black p-2 z-60"
+		contentClass="card popover-gothic p-2 z-60"
 	>
 		{#snippet trigger()}
 			{#if full}

@@ -189,26 +189,40 @@
 		width: 1.45rem;
 		height: 1.45rem;
 		border-radius: 50%;
-		border: 2px solid #ccc;
-		background-color: transparent;
+		/* An empty socket: a bone-colored ring, sunk into the panel */
+		border: 2px solid color-mix(in oklab, var(--color-surface-200) 70%, transparent);
+		background-color: oklch(0% 0 0 / 0.25);
+		box-shadow: inset 0 1px 3px oklch(0% 0 0 / 0.6);
 		padding: 0;
 		transition: all 0.3s ease;
 	}
 
-	.rating-circle.selected {
-		background-color: #ff0000;
-		background-color: var(--color-secondary-500) !important;
-		border-color: var(--color-secondary-500) !important;
+	/* A bead of blood: lit from the upper left, darkening to the rim */
+	.rating-circle.selected,
+	.rating-circle.hovered {
+		background: radial-gradient(
+			circle at 35% 30%,
+			oklch(72% 0.17 25deg) 0%,
+			var(--blood-bright) 22%,
+			var(--blood) 60%,
+			var(--blood-dark) 100%
+		);
+		border-color: var(--blood-dark);
+		box-shadow:
+			0 0 6px color-mix(in oklab, var(--blood-bright) 40%, transparent),
+			inset 0 -1px 2px oklch(0% 0 0 / 0.5);
 	}
 
 	.rating-circle.hovered {
-		background-color: var(--color-secondary-500) !important;
-		border-color: var(--color-secondary-500) !important;
 		opacity: 0.5;
 	}
 
 	.rating-circle.editable:focus {
 		outline: none;
-		box-shadow: 0 0 0 2px rgba(var(--color-secondary-500), 0.3) !important;
+	}
+
+	.rating-circle.editable:focus-visible {
+		outline: 2px solid var(--color-primary-300);
+		outline-offset: 2px;
 	}
 </style>

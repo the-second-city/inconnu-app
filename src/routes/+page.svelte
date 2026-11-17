@@ -4,7 +4,7 @@
 	import Ankh from '$lib/components/Ankh.svelte';
 	import Meta from '$lib/components/Meta.svelte';
 
-	const premiumLinkClasses = 'text-secondary-300 font-semibold underline hover:no-underline';
+	const premiumLinkClasses = 'text-primary-300 font-semibold underline hover:no-underline';
 </script>
 
 <Meta
@@ -13,17 +13,17 @@
 />
 
 <div class="mx-auto max-w-3xl text-center">
-	<h1 class="h1 text-primary-500 text-5xl font-black tracking-tighter sm:text-6xl">
+	<h1 class="h1 text-blood text-5xl font-black tracking-tighter sm:text-6xl">
 		Less bookkeeping. More bloodshed.
 	</h1>
 
 	<p class="mt-6 text-xl">
 		Stay in the shadows with <strong>Inconnu</strong>, a Discord dice bot for
-		<em class="text-secondary-100">Vampire: The Masquerade 5th Edition</em>
+		<em class="text-primary-200">Vampire: The Masquerade 5th Edition</em>
 		featuring full character management, character sheets, smart rolls, macros, and more.
 	</p>
 
-	<div class="card preset-outlined-surface-500 mt-6 p-6">
+	<div class="card panel-gothic mt-8 p-6">
 		<p class="text-surface-100 -mt-1 text-2xl leading-none font-semibold">
 			Don't frenzy over the dice. Get started now.
 		</p>
@@ -86,7 +86,9 @@
 		</div>
 	</div>
 
-	<hr class="border-surface-400 mx-auto my-12 w-4/5" />
+	<div class="heading-ornate mx-auto my-12 w-4/5" role="separator">
+		<Ankh size={18} class="text-primary-500" />
+	</div>
 
 	<!-- For Storytellers -->
 	<div class="grid items-center gap-8 md:grid-cols-2">
@@ -114,9 +116,9 @@
 	</div>
 
 	<!-- Premium -->
-	<div class="card preset-glass-secondary flex flex-col items-center gap-6 p-8 md:flex-row">
+	<div class="card panel-gothic premium flex flex-col items-center gap-6 p-8 md:flex-row">
 		<div class="text-center md:text-left">
-			<h2 class="h2 text-secondary-300 mb-3 font-semibold">Premium Features</h2>
+			<h2 class="h2 text-primary-300 mb-3 font-semibold">Premium Features</h2>
 			<p class="text-lg">
 				Avoid the Second Inquisition with Premium! As a thank-you for helping <strong
 					>Inconnu's</strong
@@ -156,9 +158,13 @@
 </section>
 
 <style>
-	.preset-glass-secondary {
-		background: color-mix(in oklab, var(--color-secondary-500) 40%, transparent);
-		box-shadow: 0 0px 30px color-mix(in oklab, var(--color-secondary-500) 50%, transparent) inset;
-		backdrop-filter: blur(16px);
+	/* Lit from within by a low crimson glow, like a shrine */
+	.premium {
+		box-shadow:
+			inset 0 0 0 3px oklch(0% 0 0 / 0.5),
+			inset 0 0 0 4px color-mix(in oklab, var(--blood) 45%, transparent),
+			inset 0 0 60px color-mix(in oklab, var(--blood) 30%, transparent),
+			0 0 40px -10px color-mix(in oklab, var(--blood) 50%, transparent);
+		border-color: color-mix(in oklab, var(--blood-bright) 50%, transparent);
 	}
 </style>

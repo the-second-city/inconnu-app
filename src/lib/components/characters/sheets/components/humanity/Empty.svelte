@@ -1,5 +1,5 @@
 <script lang="ts">
-	let { size = 30, color = '#AA00AA', strokeWidth = 10 } = $props();
+	let { size = 30, color = 'oklch(70% 0.03 70deg)', strokeWidth = 10 } = $props();
 </script>
 
 <svg

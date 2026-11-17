@@ -126,13 +126,11 @@
 	closeOnEscape={!locked || phase === 'done'}
 >
 	<ClientPortal>
-		<Dialog.Backdrop class="bg-surface-950/70 fixed inset-0 z-50 backdrop-blur-sm" />
+		<Dialog.Backdrop class="modal-backdrop-gothic fixed inset-0 z-50" />
 		<Dialog.Positioner class="fixed inset-0 z-50 flex items-center justify-center p-4">
-			<Dialog.Content
-				class="card bg-surface-200-800 border-surface-400-600 w-full max-w-sm space-y-4 border p-6 shadow-2xl"
-			>
+			<Dialog.Content class="card modal-gothic w-full max-w-sm space-y-4 p-6">
 				<!-- Once the dice are in, titled with the outcome, as /remorse's is -->
-				<Dialog.Title class="h5 text-center">
+				<Dialog.Title class="h5 font-display text-center tracking-[0.02em]">
 					{#if phase === 'done' && result}
 						{result.remorseful ? 'Remorse Success' : 'Remorse Failure'}
 					{:else}

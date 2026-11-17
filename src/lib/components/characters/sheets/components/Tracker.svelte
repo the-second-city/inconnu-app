@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { capitalize, orList } from '$lib';
 	import { untrack } from 'svelte';
 	import { Bandage, Droplets, HandFist, HeartPlus } from '@lucide/svelte';
 	import { isVampiric } from '$lib/vampire';
@@ -48,7 +49,13 @@
 		onRouse !== undefined && track === 'health' && character.splat === 'ghoul'
 	);
 
-	let trackLabel = $derived(track.charAt(0).toUpperCase() + track.slice(1));
+	let trackLabel = $derived(capitalize(track));
+	// The actions menu's hover text: what it offers this viewer
+	const actionsTitle = $derived(
+		capitalize(
+			orList(['take damage', ...(onMend ? ['mend'] : []), ...(offersRouse ? ['Rouse'] : [])])
+		)
+	);
 	let showControls = $state(false);
 	let showActions = $state(false);
 	// So neither popover reopens by itself when the mode switches back
@@ -149,7 +156,7 @@
 	<div class="flex w-64 flex-col gap-3">
 		<!-- The heading, with the track it corrects under it -->
 		<div class="text-center leading-tight">
-			<div class="text-md uppercase">Make Corrections</div>
+			<div class="font-display text-md tracking-[0.02em] uppercase">Make Corrections</div>
 			<div class="text-surface-200 text-sm">{trackLabel}</div>
 		</div>
 		<!-- Each kind of damage with the box it draws, as Take Damage's steppers. Setting a count
@@ -192,7 +199,7 @@
      mode instead. -->
 {#snippet actions()}
 	<div class="flex w-64 flex-col gap-2">
-		<div class="text-md text-center uppercase">{trackLabel}</div>
+		<div class="font-display text-md text-center tracking-[0.02em] uppercase">{trackLabel}</div>
 		<MenuAction
 			icon={HandFist}
 			label="Take Damage"
@@ -244,6 +251,7 @@
 		bind:open={showControls}
 		trigger={boxes}
 		content={controls}
+		triggerTitle="Correct {trackLabel}"
 		triggerClass={CLICKABLE}
 		arrow
 	/>
@@ -253,6 +261,7 @@
 		trigger={boxes}
 		content={actions}
 		triggerLabel="{trackLabel} actions"
+		triggerTitle={actionsTitle}
 		triggerClass={CLICKABLE}
 		arrow
 	/>

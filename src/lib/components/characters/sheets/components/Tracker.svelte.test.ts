@@ -430,3 +430,23 @@ test.each(['health', 'willpower'] as const)(
 		);
 	}
 );
+
+test.each([
+	["the owner's", 'vampire', true, 'Take damage or mend'],
+	["a Storyteller's, on a player's character", 'vampire', false, 'Take damage'],
+	["a ghoul owner's", 'ghoul', true, 'Take damage, mend, or Rouse']
+] as const)("the Health menu's hover text lists %s actions", (_, splat, owner, title) => {
+	render(Tracker, {
+		character: { ...character('......'), splat },
+		track: 'health',
+		editing: false,
+		actionable: true,
+		...(owner ? { onMend: vi.fn(), onRouse: vi.fn() } : {})
+	});
+	expect(screen.getByRole('button', { name: 'Health actions' })).toHaveAttribute('title', title);
+});
+
+test("while editing, the track's hover text offers corrections", () => {
+	render(Tracker, { character: character('......'), track: 'willpower', editing: true });
+	expect(screen.getByTitle('Correct Willpower')).toBeInTheDocument();
+});

@@ -205,7 +205,7 @@
 											arrow
 											triggerClass="text-surface-400 hover:text-surface-200 transition-colors"
 											triggerLabel="About {label}"
-											contentClass="card bg-surface-500 max-w-xs p-3 text-sm"
+											contentClass="card popover-gothic max-w-xs p-3 text-sm"
 										>
 											{#snippet trigger()}<Info size={14} />{/snippet}
 											{#snippet content()}

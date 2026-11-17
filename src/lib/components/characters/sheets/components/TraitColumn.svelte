@@ -105,7 +105,9 @@
 </script>
 
 <Card>
-	<h3 class="h3 mb-2 text-xl font-semibold uppercase">
+	<h3
+		class="h3 font-display text-primary-300 mb-2 text-base font-semibold tracking-[0.02em] uppercase"
+	>
 		{name}
 	</h3>
 	{#if orderedIndices.length > 0}

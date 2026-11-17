@@ -246,7 +246,7 @@
 			finalFocusEl={() => thumbnails[viewing] ?? null}
 		>
 			<ClientPortal>
-				<Dialog.Backdrop class="bg-surface-50-950/50 fixed inset-0 z-50" />
+				<Dialog.Backdrop class="modal-backdrop-gothic fixed inset-0 z-50" />
 				<Dialog.Positioner class="fixed inset-0 z-50 flex items-center justify-center p-4">
 					<Dialog.Content
 						class="card bg-surface-100-900 max-w-full p-2 shadow-xl"

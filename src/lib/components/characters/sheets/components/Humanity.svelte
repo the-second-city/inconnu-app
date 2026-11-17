@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { capitalize, orList } from '$lib';
 	import { HandHeart, HeartCrack } from '@lucide/svelte';
 
 	import Popover from '$lib/components/Popover.svelte';
@@ -24,6 +25,13 @@
 	}
 
 	let { character = $bindable(), editing, onStain, onRemorse }: ComponentProps = $props();
+
+	// The actions menu's hover text: what it offers this viewer
+	const actionsTitle = $derived(
+		capitalize(
+			orList([...(onStain ? ['apply Stains'] : []), ...(onRemorse ? ['test Remorse'] : [])])
+		)
+	);
 
 	let showControls = $state(false);
 	let showActions = $state(false);
@@ -78,7 +86,7 @@ Humanity
 
 {#snippet controls()}
 	<div class="flex w-56 flex-col gap-3">
-		<div class="text-md text-center uppercase">Make Corrections</div>
+		<div class="font-display text-md text-center tracking-[0.02em] uppercase">Make Corrections</div>
 		<!-- Each with the box it draws, as the track shows them -->
 		<Stepper
 			label="Humanity"
@@ -96,7 +104,7 @@ Humanity
 {#snippet actions()}
 	{@const dice = remorseDice(humanity, stains)}
 	<div class="flex w-64 flex-col gap-2">
-		<div class="text-md text-center uppercase">Humanity</div>
+		<div class="font-display text-md text-center tracking-[0.02em] uppercase">Humanity</div>
 		{#if onStain}
 			<MenuAction
 				icon={HeartCrack}
@@ -137,6 +145,7 @@ Humanity
 		bind:open={showControls}
 		trigger={boxes}
 		content={controls}
+		triggerTitle="Correct Humanity"
 		triggerClass={CLICKABLE}
 		arrow
 	/>
@@ -146,6 +155,7 @@ Humanity
 		trigger={boxes}
 		content={actions}
 		triggerLabel="Humanity actions"
+		triggerTitle={actionsTitle}
 		triggerClass={CLICKABLE}
 		arrow
 	/>

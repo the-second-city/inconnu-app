@@ -180,3 +180,11 @@ test.each([
 		within(await screen.findByRole('dialog')).getByRole('button', { name: button })
 	).toHaveAccessibleDescription(detail);
 });
+
+test("the Hunger menu's hover text lists its actions", () => {
+	render(BloodTrackers, { character: vampire({ hunger: 2 }), onRouse: vi.fn(), onSlake: vi.fn() });
+	expect(screen.getByRole('button', { name: 'Hunger actions' })).toHaveAttribute(
+		'title',
+		'Rouse or slake'
+	);
+});

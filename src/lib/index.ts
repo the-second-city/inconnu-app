@@ -114,3 +114,15 @@ export const hasProfileContent = (profile: Profile): boolean => {
  * is UTC. */
 export const parseApiDate = (date: string): Date =>
 	new Date(/T[^Z+-]*$/.test(date) ? `${date}Z` : date);
+
+/**
+ * Join items into a phrase of alternatives: "A", "A or B", "A, B, or C" (with the serial
+ * comma). Empty for no items.
+ */
+export const orList = (items: string[]): string => {
+	if (items.length <= 2) return items.join(' or ');
+	return `${items.slice(0, -1).join(', ')}, or ${items.at(-1)}`;
+};
+
+/** Uppercase the first letter of some text, leaving the rest as it is. */
+export const capitalize = (text: string): string => text.charAt(0).toUpperCase() + text.slice(1);

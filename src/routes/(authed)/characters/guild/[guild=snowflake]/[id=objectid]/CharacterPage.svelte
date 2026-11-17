@@ -400,7 +400,7 @@
 			<div class="absolute top-0 right-0 hidden gap-2 sm:flex">
 				{#if editing}
 					<button
-						class="btn preset-tonal-error"
+						class="btn btn-gothic btn-gothic-ash"
 						onclick={cancelEditing}
 						disabled={saving}
 						title="Cancel (Esc)"
@@ -410,7 +410,7 @@
 						<span>Cancel</span>
 					</button>
 					<button
-						class="btn preset-filled-success-500"
+						class="btn btn-gothic btn-gothic-blood"
 						onclick={saveChanges}
 						disabled={saving || nameError !== null || !hasChanges}
 						aria-busy={saving}
@@ -425,7 +425,7 @@
 						<span>Save</span>
 					</button>
 				{:else}
-					<button class="btn preset-tonal-secondary" onclick={enterEditMode}>
+					<button class="btn btn-gothic btn-gothic-bone" onclick={enterEditMode}>
 						<Pencil size={18} />
 						<span>Edit</span>
 					</button>
@@ -480,12 +480,12 @@
 	closeOnInteractOutside={false}
 >
 	<ClientPortal>
-		<Dialog.Backdrop class="bg-surface-950/70 fixed inset-0 z-50 backdrop-blur-sm" />
+		<Dialog.Backdrop class="modal-backdrop-gothic fixed inset-0 z-50" />
 		<Dialog.Positioner class="fixed inset-0 z-50 flex items-center justify-center p-4">
-			<Dialog.Content
-				class="card bg-surface-200-800 border-surface-400-600 w-full max-w-md space-y-4 border p-6 shadow-2xl"
-			>
-				<Dialog.Title class="h5">{character.name} was updated</Dialog.Title>
+			<Dialog.Content class="card modal-gothic w-full max-w-md space-y-4 p-6">
+				<Dialog.Title class="h5 font-display tracking-[0.02em]"
+					>{character.name} was updated</Dialog.Title
+				>
 				<Dialog.Description class="space-y-2">
 					<p>
 						This character changed while you were editing, perhaps in Discord. Reload to see the
@@ -520,33 +520,33 @@
 			<div class="container mx-auto flex justify-center gap-4">
 				{#if editing}
 					<button
-						class="from-error-400 to-error-600 border-surface-50/20 hover:shadow-error-500/50 relative flex aspect-square size-14 items-center justify-center overflow-hidden !rounded-full border-2 bg-gradient-to-br text-white shadow-xl transition-all duration-300 ease-out hover:scale-110 active:scale-95"
+						class="fab-gothic btn-gothic btn-gothic-ash"
 						onclick={cancelEditing}
 						disabled={saving}
 						aria-label="Cancel"
 					>
-						<Ban strokeWidth={3} class="drop-shadow-md" size={24} />
+						<Ban strokeWidth={2.5} size={22} />
 					</button>
 					<button
-						class="from-success-400 to-success-600 border-surface-50/20 hover:shadow-success-500/50 relative flex aspect-square size-14 items-center justify-center overflow-hidden !rounded-full border-2 bg-gradient-to-br text-white shadow-xl transition-all duration-300 ease-out hover:scale-110 active:scale-95"
+						class="fab-gothic btn-gothic btn-gothic-blood"
 						onclick={saveChanges}
 						disabled={saving || nameError !== null || !hasChanges}
 						aria-busy={saving}
 						aria-label="Save"
 					>
 						{#if saving}
-							<Loader2 color="#000" strokeWidth={3} class="animate-spin drop-shadow-md" size={24} />
+							<Loader2 strokeWidth={2.5} class="animate-spin" size={24} />
 						{:else}
-							<SaveCheck color="#000" strokeWidth={2.5} class="drop-shadow-md" size={24} />
+							<SaveCheck strokeWidth={2.5} size={24} />
 						{/if}
 					</button>
 				{:else}
 					<button
-						class="from-secondary-500 to-secondary-700 border-surface-50/20 hover:shadow-secondary-500/50 relative flex aspect-square size-14 items-center justify-center overflow-hidden !rounded-full border-2 bg-gradient-to-br text-white shadow-xl transition-all duration-300 ease-out hover:scale-110 active:scale-95"
+						class="fab-gothic btn-gothic btn-gothic-bone"
 						onclick={enterEditMode}
 						aria-label="Edit"
 					>
-						<Pencil class="drop-shadow-md" size={24} />
+						<Pencil size={24} />
 					</button>
 				{/if}
 			</div>
@@ -556,7 +556,8 @@
 
 <style>
 	.edit-edge {
-		/* A glow only, no hard line: a line would be clipped by rounded window corners */
-		box-shadow: inset 0 0 48px color-mix(in oklab, var(--color-secondary-500) 75%, transparent);
+		/* A glow only, no hard line: a line would be clipped by rounded window corners. Bone, like
+		   the Edit button: candlelight at the window's edge. */
+		box-shadow: inset 0 0 48px color-mix(in oklab, oklch(86% 0.035 80deg) 45%, transparent);
 	}
 </style>

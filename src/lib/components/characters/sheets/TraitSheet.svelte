@@ -35,7 +35,7 @@
 	/>
 
 	{#if hasDisciplines || hasCustomTraits || editing}
-		<h2 class="h2 text-2xl uppercase">Advantages</h2>
+		<h2 class="h2 heading-ornate font-display text-xl tracking-[0.02em] uppercase">Advantages</h2>
 		<div class="flex flex-col gap-3 sm:flex-row">
 			{#if splat != 'mortal'}
 				<TraitColumn
