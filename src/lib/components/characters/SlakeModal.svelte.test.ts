@@ -11,7 +11,7 @@ vi.mock('$lib/characterActions', () => ({ slake }));
 vi.mock('$lib/busy', () => ({ atLeast: <T>(work: Promise<T>): Promise<T> => work }));
 
 beforeEach(() => {
-	slake.mockReset().mockResolvedValue({ result: null });
+	slake.mockReset().mockResolvedValue({ result: { frenzy: false } });
 });
 
 /** A vampire at a Hunger. */
@@ -116,7 +116,7 @@ test('while slaking, a spinner takes the place of the choices, until the modal c
 
 	expect(within(dialog).getByRole('status')).toHaveTextContent('Slaking…');
 	expect(within(dialog).queryByRole('button')).not.toBeInTheDocument();
-	answer({ result: null });
+	answer({ result: { frenzy: false } });
 	await waitFor(() => expect(bound.open).toBe(false));
 });
 
@@ -186,4 +186,32 @@ test('the current Hunger shows above the choices', async () => {
 	const dialog = await screen.findByRole('dialog');
 
 	expect(within(dialog).getByRole('img', { name: 'Current Hunger 3' })).toBeInTheDocument();
+});
+
+test.each([
+	[3, false],
+	[4, true],
+	[5, true]
+])('at Hunger %i, the frenzy test is warned of: %s', async (hunger, warned) => {
+	renderModal(hunger);
+	const dialog = await screen.findByRole('dialog');
+
+	expect(within(dialog).queryByText(/calls for a frenzy test/) !== null).toBe(warned);
+});
+
+test('a slake that calls for a frenzy test stays open to say so, then Done closes', async () => {
+	const user = userEvent.setup();
+	slake.mockResolvedValueOnce({ result: { frenzy: true } });
+	const bound = renderModal(4);
+	const dialog = await screen.findByRole('dialog');
+
+	await user.click(within(dialog).getByRole('button', { name: /^Slake 2:/ }));
+
+	const result = await screen.findByRole('dialog', { name: 'Hunger Slaked' });
+	const status = within(result).getByRole('status');
+	expect(status).toHaveTextContent('Hunger 4 → 2');
+	expect(status).toHaveTextContent('Slaking from Hunger 4: test for Hunger frenzy (Difficulty 3).');
+	expect(bound.open).toBe(true);
+	await user.click(within(result).getByRole('button', { name: 'Done' }));
+	await waitFor(() => expect(bound.open).toBe(false));
 });

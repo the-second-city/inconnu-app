@@ -125,10 +125,18 @@ test("damage returns the API's error", async () => {
 	});
 });
 
-test.each([
-	['slake', slake],
-	['stain', stain]
-] as const)(
+test("slake posts the amount to the character's route and returns whether to test for frenzy", async () => {
+	fetchMock.mockResolvedValueOnce(Response.json({ frenzy: true }));
+
+	expect(await slake('abc', { amount: 2 })).toEqual({ result: { frenzy: true } });
+	expect(fetchMock).toHaveBeenCalledWith('/api/characters/abc/slake', {
+		method: 'POST',
+		headers: { 'Content-Type': 'application/json' },
+		body: JSON.stringify({ amount: 2 })
+	});
+});
+
+test.each([['stain', stain]] as const)(
 	"%s posts the amount to the character's route, and a 204 is success",
 	async (route, action) => {
 		fetchMock.mockResolvedValueOnce(new Response(null, { status: 204 }));

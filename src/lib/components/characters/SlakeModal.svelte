@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { untrack } from 'svelte';
 	import { Dialog } from '@skeletonlabs/skeleton-svelte';
-	import { BoneFracture, Heart, IvBag, Skull } from '@lucide/svelte';
+	import { BoneFracture, Flame, Heart, IvBag, Skull } from '@lucide/svelte';
 
 	import { atLeast } from '$lib/busy';
 	import { slake } from '$lib/characterActions';
@@ -9,6 +9,7 @@
 	import type { Character } from '$lib/types';
 	import ClientPortal from '$lib/components/ClientPortal.svelte';
 	import BusySpinner from './BusySpinner.svelte';
+	import HungerDrops from './HungerDrops.svelte';
 	import EmptyHunger from './sheets/components/hunger/Empty.svelte';
 	import FilledHunger from './sheets/components/hunger/Filled.svelte';
 
@@ -67,10 +68,16 @@
 	};
 	let error: string | null = $state(null);
 
+	// Slaking from Hunger 4 or more calls for a frenzy test (Difficulty 3). The bot says so too; when
+	// it does, the modal stays open after slaking to say what to roll, with the Hunger slaked.
+	const frenzyRisk = $derived(hunger >= 4);
+	let frenzied: { before: number; after: number } | null = $state(null);
+
 	// Each opening starts over (the parent opens it by setting `open`)
 	$effect(() => {
 		if (open) {
 			untrack(() => {
+				frenzied = null;
 				error = null;
 				previewing = null;
 				applying = false;
@@ -80,16 +87,21 @@
 
 	/**
 	 * Slake an amount, with a spinner in place of the modal's content for at least the busy delay. On
-	 * success the modal closes, and the live update refreshes the sheet.
+	 * success the modal closes, and the live update refreshes the sheet; unless it calls for a
+	 * frenzy test, which the modal then shows.
 	 */
 	const apply = async (amount: number) => {
 		if (applying) return;
 		applying = true;
 		error = null;
+		const before = hunger;
 		const outcome = await atLeast(slake(character._id, { amount }));
 		if (outcome.error !== undefined) {
 			applying = false;
 			error = outcome.error;
+		} else if (outcome.result?.frenzy) {
+			frenzied = { before, after: Math.max(0, before - amount) };
+			applying = false;
 		} else {
 			open = false; // Still spinning, so the content doesn't flash back as it closes
 		}
@@ -108,10 +120,33 @@
 			<Dialog.Content
 				class="card bg-surface-200-800 border-surface-400-600 w-full max-w-sm space-y-4 border p-6 shadow-2xl"
 			>
-				<Dialog.Title class="h5 text-center">Slake Hunger</Dialog.Title>
+				<Dialog.Title class="h5 text-center">
+					{frenzied ? 'Hunger Slaked' : 'Slake Hunger'}
+				</Dialog.Title>
 
 				{#if applying}
 					<BusySpinner label="Slaking…" />
+				{:else if frenzied}
+					<!-- Slaked, but from Hunger 4+: the Hunger slaked (the drops it took pulsing), and the
+					     frenzy test it calls for -->
+					<div class="space-y-3" role="status">
+						<HungerDrops before={frenzied.before} after={frenzied.after} />
+						<p class="preset-tonal-error flex gap-2 rounded-md p-3 text-sm">
+							<Flame size={18} class="shrink-0" />
+							<span
+								>Slaking from Hunger {frenzied.before}: test for Hunger frenzy (Difficulty 3).</span
+							>
+						</p>
+					</div>
+					<div class="flex justify-end">
+						<button
+							type="button"
+							class="btn preset-filled-primary-500"
+							onclick={() => (open = false)}
+						>
+							Done
+						</button>
+					</div>
 				{:else}
 					<!-- The Hunger there is now -->
 					<div class="flex justify-center gap-2" role="img" aria-label="Current Hunger {hunger}">
@@ -180,6 +215,13 @@
 							</button>
 						{/each}
 					</div>
+
+					{#if frenzyRisk}
+						<p class="text-warning-600-400 flex items-center justify-center gap-1.5 text-xs">
+							<Flame size={14} class="shrink-0" />
+							At Hunger {hunger}, slaking calls for a frenzy test (Difficulty 3).
+						</p>
+					{/if}
 
 					{#if error}
 						<p class="text-error-500 text-sm" role="alert">{error}</p>

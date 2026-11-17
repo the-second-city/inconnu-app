@@ -116,6 +116,11 @@ export interface AmountRequest {
 	amount: number;
 }
 
+/** The outcome of slaking Hunger. Mirrors the bot's `SlakeResult`. */
+export interface SlakeResult {
+	frenzy: boolean; // Slaking from Hunger 4 or more calls for a frenzy test (Difficulty 3)
+}
+
 /** A Remorse test's options, as `/remorse`'s. Mirrors the bot's `RemorseBody`. */
 export interface RemorseRequest {
 	min_override: number; // The fewest dice to roll, 1-5; normally 1

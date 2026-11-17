@@ -5,7 +5,8 @@ import { relay } from '$lib/server/relay';
 
 /**
  * Slake Hunger: relays `{ amount }` to the Inconnu API's `POST /characters/{id}/slake`, which slakes
- * as `/slake` does (down to 0), logs it, posts it to the update channel, and answers 204. The API
+ * as `/slake` does (down to 0), logs it, posts it to the update channel, and answers with a
+ * `SlakeResult` (whether to test for frenzy). The API
  * checks that the viewer may slake the character (the owner, or a Storyteller for an SPC). See
  * `relay` for what becomes a 502. Only a viewer without a session gets a 401.
  */

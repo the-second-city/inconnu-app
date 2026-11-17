@@ -12,7 +12,8 @@ import type {
 	RemorseRequest,
 	RemorseResult,
 	RouseRequest,
-	RouseResult
+	RouseResult,
+	SlakeResult
 } from '$lib/types';
 
 /** An action's outcome: its result, or why it failed, for the user. */
@@ -104,8 +105,14 @@ export const damage = (characterId: string, request: DamageRequest): Promise<Act
 		"Couldn't reach Inconnu to deal damage."
 	);
 
-/** Slake a character's Hunger, as `/slake` does (down to 0). The API answers with no content. */
-export const slake = (characterId: string, request: AmountRequest): Promise<ActionOutcome<null>> =>
+/**
+ * Slake a character's Hunger, as `/slake` does (down to 0). The result says whether it calls for a
+ * frenzy test (slaking from Hunger 4 or more).
+ */
+export const slake = (
+	characterId: string,
+	request: AmountRequest
+): Promise<ActionOutcome<SlakeResult>> =>
 	postAction(
 		resolve('/api/characters/[id=objectid]/slake', { id: characterId }),
 		request,

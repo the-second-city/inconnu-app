@@ -33,8 +33,8 @@ afterEach(() => {
 	vi.restoreAllMocks();
 });
 
-test('relays the slake to the API as the signed-in user, and its 204', async () => {
-	fetchMock.mockResolvedValueOnce(new Response(null, { status: 204 }));
+test('relays the slake to the API as the signed-in user, and its result', async () => {
+	fetchMock.mockResolvedValueOnce(Response.json({ frenzy: true }));
 	const body = '{"amount":2}';
 
 	const response = await POST(event(body));
@@ -48,8 +48,8 @@ test('relays the slake to the API as the signed-in user, and its 204', async () 
 		},
 		body
 	});
-	expect(response.status).toBe(204);
-	expect(await response.text()).toBe('');
+	expect(response.status).toBe(200);
+	expect(await response.json()).toEqual({ frenzy: true });
 });
 
 test('a signed-out viewer gets a 401, without asking the API', async () => {
