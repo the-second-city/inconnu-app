@@ -167,7 +167,32 @@ test('at 10 Stains, there are none to apply', async () => {
 	).toBeDisabled();
 });
 
-test("without onStain, Humanity doesn't open a menu", () => {
+test("outside edit mode, Humanity's menu offers Remorse, with Stains to test", async () => {
+	const user = userEvent.setup();
+	const onRemorse = vi.fn();
+	render(Humanity, { character: character(7, 2), editing: false, onRemorse });
+
+	await user.click(screen.getByRole('button', { name: 'Humanity actions' }));
+	const menu = await screen.findByRole('dialog');
+	// Only what's given: here, a Storyteller's Apply Stains isn't
+	expect(within(menu).queryByRole('button', { name: 'Apply Stains' })).not.toBeInTheDocument();
+	await user.click(within(menu).getByRole('button', { name: 'Remorse' }));
+
+	expect(onRemorse).toHaveBeenCalledOnce();
+});
+
+test('without Stains, there is no Remorse to test', async () => {
+	const user = userEvent.setup();
+	render(Humanity, { character: character(7, 0), editing: false, onRemorse: vi.fn() });
+
+	await user.click(screen.getByRole('button', { name: 'Humanity actions' }));
+
+	expect(
+		within(await screen.findByRole('dialog')).getByRole('button', { name: 'Remorse' })
+	).toBeDisabled();
+});
+
+test("without onStain or onRemorse, Humanity doesn't open a menu", () => {
 	render(Humanity, { character: character(7, 2), editing: false });
 	expect(screen.queryByRole('button', { name: 'Humanity actions' })).not.toBeInTheDocument();
 });

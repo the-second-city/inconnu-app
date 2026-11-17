@@ -971,7 +971,13 @@ test("⌘S doesn't save while the notice asks whether to keep the edits", async 
 });
 
 /** A vampire version of the test character, at Hunger 2. */
-const vampire = (): Character => ({ ...character(), splat: 'vampire', potency: 1, hunger: 2 });
+const vampire = (): Character => ({
+	...character(),
+	splat: 'vampire',
+	potency: 1,
+	hunger: 2,
+	stains: 1
+});
 
 test('with the tracker actions, Hunger opens the Rouse modal', async () => {
 	const user = userEvent.setup();
@@ -1017,17 +1023,22 @@ test('with the tracker actions, Mend in the Health menu opens the Mend modal', a
 	expect(await screen.findByRole('dialog', { name: 'Mend Damage' })).toBeInTheDocument();
 });
 
-test("a Storyteller on a player's character may deal damage and Stains, but not Rouse or Slake", () => {
+test("a Storyteller on a player's character may deal damage and Stains, but not Rouse, Slake or Remorse", async () => {
+	const user = userEvent.setup();
 	render(CharacterPage, { guild: GUILD, character: vampire(), editable: true, actionable: true });
 
 	expect(screen.getByRole('button', { name: 'Health actions' })).toBeInTheDocument();
-	expect(screen.getByRole('button', { name: 'Humanity actions' })).toBeInTheDocument();
 	expect(screen.queryByRole('button', { name: 'Hunger actions' })).not.toBeInTheDocument();
+	await user.click(screen.getByRole('button', { name: 'Humanity actions' }));
+	const menu = await screen.findByRole('dialog');
+	expect(within(menu).getByRole('button', { name: 'Apply Stains' })).toBeInTheDocument();
+	expect(within(menu).queryByRole('button', { name: 'Remorse' })).not.toBeInTheDocument();
 });
 
 test.each([
 	['Hunger actions', 'Slake', 'Slake Hunger'],
-	['Humanity actions', 'Apply Stains', 'Apply Stains']
+	['Humanity actions', 'Apply Stains', 'Apply Stains'],
+	['Humanity actions', 'Remorse', 'Remorse Test']
 ])('%s → %s opens its modal', async (trigger, action, title) => {
 	const user = userEvent.setup();
 	render(CharacterPage, {

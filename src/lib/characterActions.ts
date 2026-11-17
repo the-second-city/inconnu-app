@@ -1,5 +1,5 @@
 /**
- * Gameplay actions on a character (Rouse, Mend, Take Damage, Slake, Stains), sent through the
+ * Gameplay actions on a character (Rouse, Mend, Take Damage, Slake, Stains, Remorse), sent through the
  * app's API routes to the Inconnu API, which logs them and posts them to the update channel.
  */
 
@@ -9,6 +9,8 @@ import type {
 	DamageRequest,
 	MendRequest,
 	MendResult,
+	RemorseRequest,
+	RemorseResult,
 	RouseRequest,
 	RouseResult
 } from '$lib/types';
@@ -119,4 +121,15 @@ export const stain = (characterId: string, request: AmountRequest): Promise<Acti
 		resolve('/api/characters/[id=objectid]/stain', { id: characterId }),
 		request,
 		"Couldn't reach Inconnu to add Stains."
+	);
+
+/** Make a Remorse test, as `/remorse` does: failing costs a Humanity, and either way Stains clear. */
+export const remorse = (
+	characterId: string,
+	request: RemorseRequest
+): Promise<ActionOutcome<RemorseResult>> =>
+	postAction(
+		resolve('/api/characters/[id=objectid]/remorse', { id: characterId }),
+		request,
+		"Couldn't reach Inconnu to test Remorse."
 	);

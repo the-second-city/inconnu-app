@@ -116,6 +116,19 @@ export interface AmountRequest {
 	amount: number;
 }
 
+/** A Remorse test's options, as `/remorse`'s. Mirrors the bot's `RemorseBody`. */
+export interface RemorseRequest {
+	min_override: number; // The fewest dice to roll, 1-5; normally 1
+	lasombra_alt: boolean; // The Lasombra alternative Bane: Bane Severity fewer dice (at least 1)
+}
+
+/** The outcome of a Remorse test. Mirrors the bot's `RemorseResult`. Either way, Stains clear. */
+export interface RemorseResult {
+	remorseful: boolean; // Passed, keeping Humanity
+	dice: number[];
+	humanity: number; // After the test
+}
+
 /** A character's experience and its log. Mirrors the bot's `VCharExperience`. */
 export interface Experience {
 	current: number; // Unspent

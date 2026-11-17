@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, expect, test, vi, type Mock } from 'vitest';
 
-import { actionError, damage, mend, rouse, slake, stain } from '$lib/characterActions';
+import { actionError, damage, mend, remorse, rouse, slake, stain } from '$lib/characterActions';
 import type { MendResult, RouseResult } from '$lib/types';
 
 vi.mock('$app/paths', () => ({
@@ -141,3 +141,24 @@ test.each([
 		});
 	}
 );
+
+test("remorse posts the options to the character's route and returns the result", async () => {
+	const result = { remorseful: true, dice: [2, 7], humanity: 7 };
+	fetchMock.mockResolvedValueOnce(Response.json(result));
+	const request = { min_override: 1, lasombra_alt: true };
+
+	expect(await remorse('abc', request)).toEqual({ result });
+	expect(fetchMock).toHaveBeenCalledWith('/api/characters/abc/remorse', {
+		method: 'POST',
+		headers: { 'Content-Type': 'application/json' },
+		body: JSON.stringify(request)
+	});
+});
+
+test('remorse says when Inconnu is unreachable', async () => {
+	fetchMock.mockRejectedValueOnce(new TypeError('fetch failed'));
+
+	expect(await remorse('abc', { min_override: 1, lasombra_alt: false })).toEqual({
+		error: "Couldn't reach Inconnu to test Remorse."
+	});
+});

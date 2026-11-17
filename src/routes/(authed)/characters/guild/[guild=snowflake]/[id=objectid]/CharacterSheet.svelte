@@ -14,6 +14,7 @@
 		onTakeDamage?: (track: TrackType) => void; // Opens the damage modal
 		onSlake?: () => void; // Opens the Slake modal, from Hunger
 		onStain?: () => void; // Opens the Apply Stains modal, from Humanity
+		onRemorse?: () => void; // Opens the Remorse modal, from Humanity
 	}
 
 	let {
@@ -24,7 +25,8 @@
 		onMend,
 		onTakeDamage,
 		onSlake,
-		onStain
+		onStain,
+		onRemorse
 	}: ComponentProps = $props();
 
 	const isVampire = $derived(character.splat === 'vampire' || character.splat === 'thin-blood');
@@ -33,7 +35,15 @@
 <div class="flex flex-col gap-3">
 	{#if isVampire}
 		<div class="grid grid-cols-1 items-stretch gap-3 md:grid-cols-2">
-			<MainTrackers bind:character {editing} {actionable} {onMend} {onTakeDamage} {onStain} />
+			<MainTrackers
+				bind:character
+				{editing}
+				{actionable}
+				{onMend}
+				{onTakeDamage}
+				{onStain}
+				{onRemorse}
+			/>
 			<BloodTrackers bind:character {editing} {onRouse} {onSlake} />
 		</div>
 	{:else}
@@ -45,6 +55,7 @@
 			{onMend}
 			{onTakeDamage}
 			{onStain}
+			{onRemorse}
 		/>
 	{/if}
 

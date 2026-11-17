@@ -1,4 +1,6 @@
 <script lang="ts">
+	import { HandHeart, HeartCrack } from '@lucide/svelte';
+
 	import Popover from '$lib/components/Popover.svelte';
 
 	import type { Character } from '$lib/types';
@@ -12,10 +14,13 @@
 	interface ComponentProps {
 		character: Character;
 		editing: boolean;
-		onStain?: () => void; // Outside edit mode, clicking Humanity offers Apply Stains
+		// Outside edit mode, clicking Humanity offers these: Apply Stains (anyone with full access) and
+		// Remorse (the owner, or a Storyteller for an SPC)
+		onStain?: () => void;
+		onRemorse?: () => void;
 	}
 
-	let { character = $bindable(), editing, onStain }: ComponentProps = $props();
+	let { character = $bindable(), editing, onStain, onRemorse }: ComponentProps = $props();
 
 	let showControls = $state(false);
 	let showActions = $state(false);
@@ -131,17 +136,34 @@ Humanity
 {#snippet actions()}
 	<div class="flex w-60 flex-col gap-2">
 		<div class="text-md text-center uppercase">Humanity</div>
-		<button
-			type="button"
-			class="btn preset-tonal-surface"
-			disabled={stains >= 10}
-			onclick={() => {
-				showActions = false;
-				onStain?.();
-			}}
-		>
-			Apply Stains
-		</button>
+		{#if onStain}
+			<button
+				type="button"
+				class="btn preset-tonal-surface"
+				disabled={stains >= 10}
+				onclick={() => {
+					showActions = false;
+					onStain();
+				}}
+			>
+				<HeartCrack size={18} />
+				Apply Stains
+			</button>
+		{/if}
+		{#if onRemorse}
+			<button
+				type="button"
+				class="btn preset-tonal-surface"
+				disabled={stains === 0}
+				onclick={() => {
+					showActions = false;
+					onRemorse();
+				}}
+			>
+				<HandHeart size={18} />
+				Remorse
+			</button>
+		{/if}
 	</div>
 {/snippet}
 
@@ -153,7 +175,7 @@ Humanity
 		triggerClass={CLICKABLE}
 		arrow
 	/>
-{:else if onStain}
+{:else if onStain || onRemorse}
 	<Popover
 		bind:open={showActions}
 		trigger={boxes}
