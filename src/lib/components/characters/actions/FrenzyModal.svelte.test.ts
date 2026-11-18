@@ -235,3 +235,32 @@ test("the final faces are the bot's, even for a die the app didn't expect re-rol
 	const done = await screen.findByRole('dialog', { name: 'Frenzy Failure' });
 	expect(within(done).getByText('8')).toBeInTheDocument();
 });
+
+test('rolling hides all but the options chosen', async () => {
+	const user = userEvent.setup();
+	renderModal();
+	const dialog = await modal();
+
+	await user.click(within(dialog).getByRole('button', { name: /^Cold Dead Hunger/ }));
+	await user.click(within(dialog).getByRole('checkbox', { name: 'Malkavian Terror' }));
+	await user.click(within(dialog).getByRole('button', { name: 'Roll' }));
+
+	const done = await screen.findByRole('dialog', { name: 'Frenzy Success' });
+	expect(within(done).getByRole('checkbox', { name: 'Malkavian Terror' })).toBeChecked();
+	expect(within(done).getByRole('button', { name: /^Cold Dead Hunger/ })).toBeInTheDocument();
+	expect(within(done).queryByRole('checkbox', { name: 'Brujah Fury' })).not.toBeInTheDocument();
+	expect(within(done).queryByRole('button', { name: /^The Dream/ })).not.toBeInTheDocument();
+	expect(within(done).queryByRole('group', { name: 'Bonus Dice' })).not.toBeInTheDocument();
+});
+
+test('rolling with no options chosen hides them all', async () => {
+	const user = userEvent.setup();
+	renderModal();
+	await user.click(within(await modal()).getByRole('button', { name: 'Roll' }));
+
+	const done = await screen.findByRole('dialog', { name: 'Frenzy Success' });
+	expect(within(done).queryByRole('checkbox')).not.toBeInTheDocument();
+	expect(within(done).queryByRole('group', { name: 'Advantages' })).not.toBeInTheDocument();
+	expect(within(done).queryByRole('group', { name: 'Bonus Dice' })).not.toBeInTheDocument();
+	expect(within(done).getByRole('group', { name: 'Difficulty' })).toBeInTheDocument();
+});

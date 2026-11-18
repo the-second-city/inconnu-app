@@ -240,9 +240,10 @@
 		</p>
 	{/if}
 
-	{#if clanned}
+	<!-- Once rolling, only the options chosen stay, so the result reads as what was rolled -->
+	{#if clanned && (!roll.locked || penalty)}
 		<div class="space-y-2">
-			{#if severity > 0}
+			{#if severity > 0 && (!roll.locked || penalty === 'brujah')}
 				<ToggleCard
 					icon={HandFist}
 					label="Brujah Fury"
@@ -251,44 +252,52 @@
 					disabled={roll.locked}
 				/>
 			{/if}
-			<ToggleCard
-				icon={Brain}
-				label="Malkavian Terror"
-				detail="−2 dice (Compulsion), at least 1"
-				bind:checked={() => penalty === 'malkavian', (on) => setPenalty('malkavian', on)}
-				disabled={roll.locked}
-			/>
+			{#if !roll.locked || penalty === 'malkavian'}
+				<ToggleCard
+					icon={Brain}
+					label="Malkavian Terror"
+					detail="−2 dice (Compulsion), at least 1"
+					bind:checked={() => penalty === 'malkavian', (on) => setPenalty('malkavian', on)}
+					disabled={roll.locked}
+				/>
+			{/if}
 		</div>
 	{/if}
 
-	<Stepper label="Bonus Dice" bind:value={bonus} max={MAX_FRENZY_BONUS} disabled={roll.locked} />
+	{#if !roll.locked || bonus > 0}
+		<Stepper label="Bonus Dice" bind:value={bonus} max={MAX_FRENZY_BONUS} disabled={roll.locked} />
+	{/if}
 
 	<!-- Advantages toggle as chips, any number at once -->
-	<div class="space-y-2">
-		<div id="frenzy-advantages">Advantages</div>
-		<div class="flex flex-wrap gap-2" role="group" aria-labelledby="frenzy-advantages">
-			{#each FRENZY_ADVANTAGES as advantage (advantage.value)}
-				{@const on = advantages.includes(advantage.value)}
-				<button
-					type="button"
-					class={[
-						'chip border transition-colors',
-						on
-							? 'border-secondary-500 bg-secondary-500/10'
-							: 'border-surface-600-400 enabled:hover:bg-surface-300-700/40'
-					]}
-					aria-pressed={on}
-					disabled={roll.locked}
-					onclick={() => toggleAdvantage(advantage.value)}
-				>
-					{advantage.name}
-					<span class="text-surface-800-200 text-xs">
-						{advantage.dice > 0 ? `+${advantage.dice}` : 're-roll'}
-					</span>
-				</button>
-			{/each}
+	{#if !roll.locked || advantages.length > 0}
+		<div class="space-y-2">
+			<div id="frenzy-advantages">Advantages</div>
+			<div class="flex flex-wrap gap-2" role="group" aria-labelledby="frenzy-advantages">
+				{#each FRENZY_ADVANTAGES as advantage (advantage.value)}
+					{@const on = advantages.includes(advantage.value)}
+					{#if !roll.locked || on}
+						<button
+							type="button"
+							class={[
+								'chip border transition-colors',
+								on
+									? 'border-secondary-500 bg-secondary-500/10'
+									: 'border-surface-600-400 enabled:hover:bg-surface-300-700/40'
+							]}
+							aria-pressed={on}
+							disabled={roll.locked}
+							onclick={() => toggleAdvantage(advantage.value)}
+						>
+							{advantage.name}
+							<span class="text-surface-800-200 text-xs">
+								{advantage.dice > 0 ? `+${advantage.dice}` : 're-roll'}
+							</span>
+						</button>
+					{/if}
+				{/each}
+			</div>
 		</div>
-	</div>
+	{/if}
 
 	{#if roll.error}
 		<p class="text-error-500 text-sm" role="alert">{roll.error}</p>
