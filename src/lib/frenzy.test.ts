@@ -1,6 +1,6 @@
 import { expect, test } from 'vitest';
 
-import { countSuccesses, dreamRerolled, frenzyPool, penaltyDice } from './frenzy';
+import { dreamRerolled, frenzyPool, penaltyDice } from './frenzy';
 import type { Character, FrenzyPenalty, FrenzyAdvantage } from './types';
 
 /** A vampire with a Willpower track, Humanity, and Blood Potency. */
@@ -51,16 +51,6 @@ test.each<[FrenzyAdvantage, number]>([
 	['the_heart_of_darkness', 2]
 ])('%s adds %i dice', (advantage, dice) => {
 	expect(frenzyPool(character('...', 6), { advantages: [advantage] }).advantageDice).toBe(dice);
-});
-
-test.each<[number[], number]>([
-	[[], 0],
-	[[1, 5, 6, 9], 2],
-	[[10, 3], 1],
-	[[10, 10, 2], 4], // A critical pair
-	[[10, 10, 10], 5]
-])('%j has %i successes', (dice, successes) => {
-	expect(countSuccesses(dice)).toBe(successes);
 });
 
 test("The Dream re-rolls the first 3 failures, as the bot's reroll_failures", () => {

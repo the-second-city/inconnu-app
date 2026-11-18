@@ -262,7 +262,7 @@
 								rolling={locked}
 								label={outcome
 									? `Rouse dice: ${outcome.dice.join(', ')}`
-									: `Rolling ${rouses === 1 ? '1 Rouse die' : `${rouses} Rouse dice`}`}
+									: `${locked ? 'Rolling ' : ''}${rouses === 1 ? '1 Rouse die' : `${rouses} Rouse dice`}`}
 							/>
 						</div>
 						<!-- Always there (unseen until the crossfade), so its height is reserved from the start -->

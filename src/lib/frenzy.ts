@@ -34,8 +34,11 @@ export const FRENZY_ADVANTAGES: FrenzyAdvantageOption[] = [
 export interface FrenzyPool {
 	resist: number; // Undamaged Willpower plus a third of Humanity, at least 1
 	willpower: number;
+	humanity: number;
 	humanityThird: number;
 	removed: number; // Taken by the penalty (the pool keeps at least 1)
+	bonus: number; // Flat bonus dice
+	applied: FrenzyAdvantageOption[]; // The advantages taken, in display order
 	advantageDice: number; // Added by advantages
 	total: number;
 }
@@ -61,26 +64,23 @@ export const frenzyPool = (
 	}: { penalty?: FrenzyPenalty | null; bonus?: number; advantages?: FrenzyAdvantage[] } = {}
 ): FrenzyPool => {
 	const willpower = [...character.willpower].filter((box) => box === '.').length;
-	const humanityThird = Math.floor((character.humanity ?? 7) / 3);
+	const humanity = character.humanity ?? 7;
+	const humanityThird = Math.floor(humanity / 3);
 	const resist = Math.max(willpower + humanityThird, 1);
 	const penalized = Math.max(resist - penaltyDice(penalty, bloodPotency(character)), 1);
-	const advantageDice = FRENZY_ADVANTAGES.filter((advantage) =>
-		advantages.includes(advantage.value)
-	).reduce((sum, advantage) => sum + advantage.dice, 0);
+	const applied = FRENZY_ADVANTAGES.filter((advantage) => advantages.includes(advantage.value));
+	const advantageDice = applied.reduce((sum, advantage) => sum + advantage.dice, 0);
 	return {
 		resist,
 		willpower,
+		humanity,
 		humanityThird,
 		removed: resist - penalized,
+		bonus,
+		applied,
 		advantageDice,
 		total: penalized + bonus + advantageDice
 	};
-};
-
-/** Successes among dice: one per 6 or more, and two more for each pair of 10s (a critical). */
-export const countSuccesses = (dice: number[]): number => {
-	const tens = dice.filter((die) => die === 10).length;
-	return dice.filter(isSuccess).length + 2 * Math.floor(tens / 2);
 };
 
 /**

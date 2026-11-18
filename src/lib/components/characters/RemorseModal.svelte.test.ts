@@ -139,11 +139,11 @@ test('the dice to roll show as blank faces, with any the Lasombra Bane removes c
 	renderModal({ ...character(1, 'vampire', 1), humanity: 4 }); // 5 dice; Bane Severity 2
 	const dialog = await modal();
 
-	expect(within(dialog).getByRole('img', { name: 'Rolling 5 dice' })).toBeInTheDocument();
+	expect(within(dialog).getByRole('img', { name: '5 dice' })).toBeInTheDocument();
 	await user.click(within(dialog).getByRole('checkbox', { name: 'Lasombra alternative Bane' }));
 
 	expect(
-		within(dialog).getByRole('img', { name: 'Rolling 3 dice, 2 removed by the Lasombra Bane' })
+		within(dialog).getByRole('img', { name: '3 dice, 2 removed by the Lasombra Bane' })
 	).toBeInTheDocument();
 });
 

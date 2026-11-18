@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { plural } from '$lib';
 	import { untrack } from 'svelte';
 	import { Dialog } from '@skeletonlabs/skeleton-svelte';
 	import { Droplets, Flame, Ghost, HandFist, RefreshCcw } from '@lucide/svelte';
@@ -181,9 +182,6 @@
 	const ROW =
 		'flex w-full items-center gap-3 rounded-lg border px-3 py-2 text-left transition-colors hover:bg-surface-300-700/40';
 	const BADGE = 'flex size-9 shrink-0 items-center justify-center rounded-full';
-
-	/** "1 success", "2 successes" */
-	const plural = (n: number, one: string, many: string): string => `${n} ${n === 1 ? one : many}`;
 </script>
 
 <Dialog

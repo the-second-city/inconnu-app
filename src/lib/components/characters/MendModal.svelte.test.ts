@@ -247,10 +247,11 @@ test('healing locks the buttons while the Rouse dice roll, then paints the outco
 	mend.mockReturnValueOnce(new Promise((resolve) => (answer = resolve)));
 	renderModal('aggravated');
 	const dialog = await modal();
-	expect(within(dialog).getByRole('img', { name: 'Rolling 3 Rouse dice' })).toBeInTheDocument();
+	expect(within(dialog).getByRole('img', { name: '3 Rouse dice' })).toBeInTheDocument();
 
 	await user.click(within(dialog).getByRole('button', { name: 'Heal' }));
 
+	expect(within(dialog).getByRole('img', { name: 'Rolling 3 Rouse dice' })).toBeInTheDocument();
 	expect(within(dialog).getByRole('button', { name: 'Heal' })).toBeDisabled();
 	expect(within(dialog).getByRole('button', { name: 'Cancel' })).toBeDisabled();
 	answer({ result: result({ dice: [8, 2, 6], hunger: 3, track: '....//' }) });

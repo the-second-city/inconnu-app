@@ -2,7 +2,7 @@ import { render, screen, waitFor, within } from '@testing-library/svelte';
 import userEvent from '@testing-library/user-event';
 import { beforeEach, expect, test, vi } from 'vitest';
 
-import type { Character } from '$lib/types';
+import type { Character, Splat } from '$lib/types';
 import FrenzyModal from './FrenzyModal.svelte';
 
 const frenzy = vi.hoisted(() => vi.fn());
@@ -15,12 +15,12 @@ beforeEach(() => {
 });
 
 /** A vampire with 3 undamaged Willpower at Humanity 7 (5 dice to resist), at a Blood Potency. */
-const character = (potency = 3): Character => ({
+const character = (potency = 3, splat: Splat = 'vampire'): Character => ({
 	_id: 'abc',
 	name: 'Nadia',
 	guild: '111',
 	user: '222',
-	splat: 'vampire',
+	splat,
 	profile: { description: null, biography: null, images: [] },
 	health: '......',
 	willpower: '.../x',
@@ -95,12 +95,40 @@ test('the penalties are exclusive, and each takes its dice', async () => {
 	expect(within(dialog).getByText(/^Roll 5 dice/)).toBeInTheDocument();
 });
 
+test('the dice say they are rolling only once they are', async () => {
+	const user = userEvent.setup();
+	let answer: (outcome: unknown) => void = () => {};
+	frenzy.mockReturnValueOnce(new Promise((resolve) => (answer = resolve)));
+	renderModal();
+	const dialog = await modal();
+	expect(within(dialog).getByRole('img', { name: '5 dice' })).toBeInTheDocument();
+
+	await user.click(within(dialog).getByRole('button', { name: 'Roll' }));
+	expect(within(dialog).getByRole('img', { name: 'Rolling 5 dice' })).toBeInTheDocument();
+	answer({ result: { passed: true, critical: false, pool: 2, dice: [6, 7], original: null } });
+	expect(
+		await within(await screen.findByRole('dialog', { name: 'Frenzy Success' })).findByRole('img', {
+			name: 'Dice: 6, 7'
+		})
+	).toBeInTheDocument();
+});
+
 test('Brujah Fury is only offered with a Bane', async () => {
 	renderModal(character(0));
 	const dialog = await modal();
 
 	expect(within(dialog).queryByRole('checkbox', { name: 'Brujah Fury' })).not.toBeInTheDocument();
 	expect(within(dialog).getByRole('checkbox', { name: 'Malkavian Terror' })).toBeInTheDocument();
+});
+
+test('thin-bloods, being clanless, get no penalties', async () => {
+	renderModal(character(2, 'thin-blood'));
+	const dialog = await modal();
+
+	expect(within(dialog).queryByRole('checkbox', { name: 'Brujah Fury' })).not.toBeInTheDocument();
+	expect(
+		within(dialog).queryByRole('checkbox', { name: 'Malkavian Terror' })
+	).not.toBeInTheDocument();
 });
 
 test('bonus dice and advantages combine, and the options are sent', async () => {
@@ -193,4 +221,17 @@ test('an error unlocks the options, saying why', async () => {
 
 	expect(await within(dialog).findByRole('alert')).toHaveTextContent('Nope.');
 	await waitFor(() => expect(within(dialog).getByRole('button', { name: 'Roll' })).toBeEnabled());
+});
+
+test("the final faces are the bot's, even for a die the app didn't expect re-rolled", async () => {
+	// The app expects the first 3 failures re-rolled; here the 4th changed
+	frenzy.mockResolvedValue({
+		result: { passed: false, critical: false, pool: 4, dice: [2, 3, 4, 8], original: [2, 3, 4, 5] }
+	});
+	const user = userEvent.setup();
+	renderModal();
+	await user.click(within(await modal()).getByRole('button', { name: 'Roll' }));
+
+	const done = await screen.findByRole('dialog', { name: 'Frenzy Failure' });
+	expect(within(done).getByText('8')).toBeInTheDocument();
 });

@@ -1,21 +1,22 @@
 <script lang="ts">
+	import { plural } from '$lib';
 	import { untrack } from 'svelte';
 	import { Dialog } from '@skeletonlabs/skeleton-svelte';
 	import { Brain, HandFist, Minus, Plus } from '@lucide/svelte';
 
 	import { bloodPotency } from '$lib/vampire';
 	import { atLeast, wait } from '$lib/busy';
+	import { countSuccesses } from '$lib/dice';
 	import { frenzy } from '$lib/characterActions';
 	import {
-		countSuccesses,
 		DREAM_REROLLS,
 		dreamRerolled,
 		FRENZY_DIFFICULTY,
 		FRENZY_ADVANTAGES,
 		frenzyPool,
+		penaltyDice,
 		MAX_FRENZY_BONUS
 	} from '$lib/frenzy';
-	import { baneSeverity } from '$lib/remorse';
 	import type { Character, FrenzyPenalty, FrenzyAdvantage, FrenzyResult } from '$lib/types';
 	import ClientPortal from '$lib/components/ClientPortal.svelte';
 	import RollingDice from './RollingDice.svelte';
@@ -60,8 +61,11 @@
 			: [...advantages, advantage];
 	};
 
-	// Brujah Fury takes Bane Severity, so it's offered only with a Bane
-	const severity = $derived(baneSeverity(bloodPotency(shown)));
+	// The penalties are clan Banes and Compulsions, so thin-bloods (clanless) get neither. Brujah
+	// Fury takes Bane Severity, so it's offered only with a Bane. The app doesn't know clans, so
+	// it's up to the player, as with Remorse's Lasombra Bane.
+	const clanned = $derived(shown.splat === 'vampire');
+	const severity = $derived(penaltyDice('brujah', bloodPotency(shown)));
 	const pool = $derived(frenzyPool(shown, { penalty, bonus, advantages }));
 
 	/** Check or uncheck a penalty card: checking one unchecks the other. */
@@ -143,28 +147,25 @@
 				await wait(revealDelay);
 			}
 		}
+		// The bot's final faces, whichever dice it re-rolled
+		revealedFaces = [...dice];
 		phase = 'done';
 	};
-
-	/** "1 die", "2 dice" */
-	const plural = (n: number, one: string, many: string): string => `${n} ${n === 1 ? one : many}`;
 
 	// How the pool is made, for the description
 	const poolParts = $derived.by(() => {
 		const parts = [
 			`Willpower ${pool.willpower}`,
-			`${pool.humanityThird} for Humanity ${shown.humanity ?? 7}`
+			`${pool.humanityThird} for Humanity ${pool.humanity}`
 		];
 		if (pool.removed > 0) {
 			parts.push(
 				`−${pool.removed} for ${penalty === 'brujah' ? 'Brujah Fury' : 'Malkavian Terror'}`
 			);
 		}
-		if (bonus > 0) parts.push(`+${bonus}`);
-		for (const advantage of FRENZY_ADVANTAGES) {
-			if (advantage.dice > 0 && advantages.includes(advantage.value)) {
-				parts.push(`+${advantage.dice} from ${advantage.name}`);
-			}
+		if (pool.bonus > 0) parts.push(`+${pool.bonus}`);
+		for (const advantage of pool.applied) {
+			if (advantage.dice > 0) parts.push(`+${advantage.dice} from ${advantage.name}`);
 		}
 		return parts.join(', ');
 	});
@@ -242,7 +243,7 @@
 					removed={result ? 0 : pool.removed}
 					label={phase === 'done' && result
 						? `Dice: ${result.dice.join(', ')}`
-						: `Rolling ${plural(pool.total, 'die', 'dice')}${
+						: `${locked ? 'Rolling ' : ''}${plural(pool.total, 'die', 'dice')}${
 								pool.removed > 0 ? `, ${pool.removed} removed by the penalty` : ''
 							}`}
 				/>
@@ -267,24 +268,26 @@
 					</p>
 				{/if}
 
-				<div class="space-y-2">
-					{#if severity > 0}
+				{#if clanned}
+					<div class="space-y-2">
+						{#if severity > 0}
+							<ToggleCard
+								icon={HandFist}
+								label="Brujah Fury"
+								detail="−{plural(severity, 'die', 'dice')} (Bane Severity), at least 1"
+								bind:checked={() => penalty === 'brujah', (on) => setPenalty('brujah', on)}
+								disabled={locked}
+							/>
+						{/if}
 						<ToggleCard
-							icon={HandFist}
-							label="Brujah Fury"
-							detail="−{plural(severity, 'die', 'dice')} (Bane Severity), at least 1"
-							bind:checked={() => penalty === 'brujah', (on) => setPenalty('brujah', on)}
+							icon={Brain}
+							label="Malkavian Terror"
+							detail="−2 dice (Compulsion), at least 1"
+							bind:checked={() => penalty === 'malkavian', (on) => setPenalty('malkavian', on)}
 							disabled={locked}
 						/>
-					{/if}
-					<ToggleCard
-						icon={Brain}
-						label="Malkavian Terror"
-						detail="−2 dice (Compulsion), at least 1"
-						bind:checked={() => penalty === 'malkavian', (on) => setPenalty('malkavian', on)}
-						disabled={locked}
-					/>
-				</div>
+					</div>
+				{/if}
 
 				<Stepper label="Bonus Dice" bind:value={bonus} max={MAX_FRENZY_BONUS} disabled={locked} />
 

@@ -4,6 +4,7 @@ import {
 	capitalize,
 	characterNameError,
 	orList,
+	plural,
 	getErrorDetail,
 	isHttpsUrl,
 	hasProfileContent,
@@ -155,4 +156,12 @@ test.each([
 	['Rouse or slake', 'Rouse or slake']
 ])('capitalize(%j) is %j', (text, expected) => {
 	expect(capitalize(text)).toBe(expected);
+});
+
+test.each<[number, string]>([
+	[0, '0 dice'],
+	[1, '1 die'],
+	[2, '2 dice']
+])('plural(%i) is %j', (n, expected) => {
+	expect(plural(n, 'die', 'dice')).toBe(expected);
 });

@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { plural } from '$lib';
 	import { untrack } from 'svelte';
 	import { Dialog } from '@skeletonlabs/skeleton-svelte';
 	import { Eclipse } from '@lucide/svelte';
@@ -114,9 +115,6 @@
 		}
 		phase = 'done';
 	};
-
-	/** "1 die", "2 dice" */
-	const plural = (n: number, one: string, many: string): string => `${n} ${n === 1 ? one : many}`;
 </script>
 
 <Dialog
@@ -154,7 +152,7 @@
 					removed={result ? 0 : removed}
 					label={phase === 'done' && result
 						? `Dice: ${result.dice.join(', ')}`
-						: `Rolling ${plural(dice, 'die', 'dice')}${
+						: `${locked ? 'Rolling ' : ''}${plural(dice, 'die', 'dice')}${
 								removed > 0 ? `, ${removed} removed by the Lasombra Bane` : ''
 							}`}
 				/>

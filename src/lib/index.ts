@@ -116,6 +116,10 @@ export const hasProfileContent = (profile: Profile): boolean => {
 export const parseApiDate = (date: string): Date =>
 	new Date(/T[^Z+-]*$/.test(date) ? `${date}Z` : date);
 
+/** A count with its noun, singular or plural: "1 die", "2 dice". */
+export const plural = (n: number, one: string, many: string): string =>
+	`${n} ${n === 1 ? one : many}`;
+
 /**
  * Join items into a phrase of alternatives: "A", "A or B", "A, B, or C" (with the serial
  * comma). Empty for no items.
