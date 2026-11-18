@@ -14,6 +14,7 @@
 		onMend?: (type: 'superficial' | 'aggravated', track: TrackType) => void; // Opens the Mend modal
 		onTakeDamage?: (track: TrackType) => void; // Opens the damage modal
 		onSlake?: () => void; // Opens the Slake modal, from Hunger
+		onFrenzy?: () => void; // Opens the frenzy test, from below Hunger
 		onStain?: () => void; // Opens the Apply Stains modal, from Humanity
 		onRemorse?: () => void; // Opens the Remorse modal, from Humanity
 	}
@@ -26,6 +27,7 @@
 		onMend,
 		onTakeDamage,
 		onSlake,
+		onFrenzy,
 		onStain,
 		onRemorse
 	}: ComponentProps = $props();
@@ -45,7 +47,7 @@
 				{onStain}
 				{onRemorse}
 			/>
-			<BloodTrackers bind:character {editing} {onRouse} {onSlake} />
+			<BloodTrackers bind:character {editing} {onRouse} {onSlake} {onFrenzy} />
 		</div>
 	{:else}
 		<MainTrackers

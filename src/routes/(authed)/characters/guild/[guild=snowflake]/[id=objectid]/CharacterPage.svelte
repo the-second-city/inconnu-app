@@ -35,6 +35,7 @@
 	import SlakeModal from '$lib/components/characters/SlakeModal.svelte';
 	import StainModal from '$lib/components/characters/StainModal.svelte';
 	import RemorseModal from '$lib/components/characters/RemorseModal.svelte';
+	import FrenzyModal from '$lib/components/characters/FrenzyModal.svelte';
 	import PremiumModal from '$lib/components/characters/PremiumModal.svelte';
 	import { isSupporter, refusedForPremium, showUpsell, upsell } from '$lib/premium.svelte';
 
@@ -46,7 +47,7 @@
 		backUrl?: Pathname;
 		editable?: boolean; // Shows the edit buttons
 		actionable?: boolean; // Clicking a damage track offers its actions (Take Damage)
-		ownerActions?: boolean; // Plus Rouse, Mend, Slake and Remorse (the owner, or a Storyteller for an SPC)
+		ownerActions?: boolean; // Plus Rouse, Mend, Slake, Remorse and Frenzy (the owner, or a Storyteller for an SPC)
 	}
 
 	let {
@@ -174,6 +175,8 @@
 	let slakeOpen = $state(false);
 	let stainOpen = $state(false);
 	let remorseOpen = $state(false);
+	// And the frenzy test (below Hunger)
+	let frenzyOpen = $state(false);
 	let editing = $state(false);
 
 	// Fresh data for the same character (such as a data refresh) replaces the copy. While it's
@@ -373,6 +376,7 @@
 			onMend={ownerActions ? gameplay(openMend) : undefined}
 			onTakeDamage={actionable ? gameplay(openDamage) : undefined}
 			onSlake={ownerActions ? gameplay(() => (slakeOpen = true)) : undefined}
+			onFrenzy={ownerActions ? gameplay(() => (frenzyOpen = true)) : undefined}
 			onStain={actionable ? gameplay(() => (stainOpen = true)) : undefined}
 			onRemorse={ownerActions ? gameplay(() => (remorseOpen = true)) : undefined}
 		/>
@@ -499,6 +503,7 @@
 	<SlakeModal bind:open={slakeOpen} {character} />
 	<StainModal bind:open={stainOpen} {character} />
 	<RemorseModal bind:open={remorseOpen} {character} />
+	<FrenzyModal bind:open={frenzyOpen} {character} />
 {/if}
 
 {#if editable || actionable}

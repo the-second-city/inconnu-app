@@ -135,6 +135,34 @@ export interface RemorseResult {
 	humanity: number; // After the test
 }
 
+/** A frenzy test's dice penalty: Brujah Fury (Bane Severity) or Malkavian Terror (2). */
+export type FrenzyPenalty = 'brujah' | 'malkavian';
+
+/** An advantage that aids in resisting frenzy. Mirrors the bot's `FrenzyAdvantage`. */
+export type FrenzyAdvantage =
+	| 'cold_dead_hunger'
+	| 'gentle_mind'
+	| 'jewel_in_the_garden'
+	| 'the_dream'
+	| 'the_heart_of_darkness';
+
+/** A frenzy test's options. Mirrors the bot's `FrenzyBody`: bonus dice and advantages may combine. */
+export interface FrenzyRequest {
+	difficulty: number; // 1-10
+	penalty: FrenzyPenalty | null;
+	bonus: number; // Flat bonus dice, 0-7
+	advantages: FrenzyAdvantage[]; // Advantages' bonus dice, or The Dream's re-roll
+}
+
+/** The outcome of a frenzy test. Mirrors the bot's `FrenzyResult`. */
+export interface FrenzyResult {
+	passed: boolean; // Resisted frenzy
+	critical: boolean; // Resisted without losing a turn
+	pool: number; // After the penalty and bonuses
+	dice: number[]; // The final faces
+	original: number[] | null; // The faces before The Dream's re-roll, if used
+}
+
 /** A character's experience and its log. Mirrors the bot's `VCharExperience`. */
 export interface Experience {
 	current: number; // Unspent

@@ -1,8 +1,9 @@
 <script lang="ts">
 	import { capitalize, orList } from '$lib';
 	import { untrack } from 'svelte';
-	import { Droplets, Mouth } from '@lucide/svelte';
+	import { Droplets, Flame, Mouth } from '@lucide/svelte';
 
+	import { frenzyPool } from '$lib/frenzy';
 	import { bloodPotency } from '$lib/vampire';
 	import type { Character } from '$lib/types';
 
@@ -20,9 +21,19 @@
 		// Outside edit mode, clicking Hunger offers these (the owner, or a Storyteller for an SPC)
 		onRouse?: () => void;
 		onSlake?: () => void;
+		onFrenzy?: () => void; // Likewise, clicking Frenzy (below Hunger) opens the frenzy test
 	}
 
-	let { character = $bindable(), editing = false, onRouse, onSlake }: ComponentProps = $props();
+	let {
+		character = $bindable(),
+		editing = false,
+		onRouse,
+		onSlake,
+		onFrenzy
+	}: ComponentProps = $props();
+
+	// The dice to resist frenzy with, before any penalty or bonus
+	const resistDice = $derived(frenzyPool(character).total);
 
 	// The Hunger menu's hover text: what it offers this viewer
 	const hungerTitle = $derived(
@@ -130,6 +141,20 @@
 			/>
 		{:else}
 			{@render hungerPips()}
+		{/if}
+
+		{#if onFrenzy && !editing}
+			<div>Frenzy</div>
+			<button
+				type="button"
+				class={[CLICKABLE, 'flex items-center gap-1.5 text-left']}
+				title="Test for frenzy"
+				onclick={onFrenzy}
+			>
+				<Flame size={16} class="text-primary-500" aria-hidden="true" />
+				Resist with {resistDice}
+				{resistDice === 1 ? 'die' : 'dice'}
+			</button>
 		{/if}
 	</div>
 </Card>

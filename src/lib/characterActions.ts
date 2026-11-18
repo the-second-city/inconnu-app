@@ -1,6 +1,7 @@
 /**
- * Gameplay actions on a character (Rouse, Mend, Take Damage, Slake, Stains, Remorse), sent through the
- * app's API routes to the Inconnu API, which logs them and posts them to the update channel.
+ * Gameplay actions on a character (Rouse, Mend, Take Damage, Slake, Stains, Remorse, Frenzy), sent
+ * through the app's API routes to the Inconnu API, which logs them and posts them to the update
+ * channel.
  */
 
 import { resolve } from '$app/paths';
@@ -8,6 +9,8 @@ import { refusedForPremium, showUpsell, SUPPORTERS_ONLY } from '$lib/premium.sve
 import type {
 	AmountRequest,
 	DamageRequest,
+	FrenzyRequest,
+	FrenzyResult,
 	MendRequest,
 	MendResult,
 	RemorseRequest,
@@ -144,4 +147,15 @@ export const remorse = (
 		resolve('/api/characters/[id=objectid]/remorse', { id: characterId }),
 		request,
 		"Couldn't reach Inconnu to test Remorse."
+	);
+
+/** Make a frenzy test, as `/frenzy` does. */
+export const frenzy = (
+	characterId: string,
+	request: FrenzyRequest
+): Promise<ActionOutcome<FrenzyResult>> =>
+	postAction(
+		resolve('/api/characters/[id=objectid]/frenzy', { id: characterId }),
+		request,
+		"Couldn't reach Inconnu to test for frenzy."
 	);
