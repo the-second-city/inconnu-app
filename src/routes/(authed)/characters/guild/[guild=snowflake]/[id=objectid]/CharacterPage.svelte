@@ -35,6 +35,8 @@
 	import SlakeModal from '$lib/components/characters/SlakeModal.svelte';
 	import StainModal from '$lib/components/characters/StainModal.svelte';
 	import RemorseModal from '$lib/components/characters/RemorseModal.svelte';
+	import PremiumModal from '$lib/components/characters/PremiumModal.svelte';
+	import { isSupporter } from '$lib/premium';
 
 	interface ComponentProps {
 		character: Character;
@@ -126,6 +128,30 @@
 	});
 
 	let copy: Character | null = null;
+
+	// Editing and the tracker actions are for supporters. Each click asks the API first, and a
+	// non-supporter gets the upsell instead. One check at a time, so a double click can't start two.
+	let checkingPremium = $state(false);
+	let upsellOpen = $state(false);
+	let upsellFeature = $state('');
+	/** Wrap an action so it runs only for a supporter; others see the upsell, naming `feature`. */
+	const forSupporters =
+		<A extends unknown[]>(feature: string, action: (...args: A) => void) =>
+		async (...args: A): Promise<void> => {
+			if (checkingPremium) return;
+			checkingPremium = true;
+			const supporter = await isSupporter();
+			checkingPremium = false;
+			if (supporter) {
+				action(...args);
+			} else {
+				upsellFeature = feature;
+				upsellOpen = true;
+			}
+		};
+	/** Wrap a tracker action so it runs only for a supporter. */
+	const gameplay = <A extends unknown[]>(action: (...args: A) => void) =>
+		forSupporters('Using gameplay actions', action);
 
 	// The Rouse modal lives here, not in the sheet: a Rouse saves the character, and the refetch
 	// that follows rebuilds the sheet, which would close it just as the result arrives
@@ -230,6 +256,7 @@
 		// Three conviction slots to fill in, like the wizard's. Cancel restores the original list.
 		character.convictions = [...(character.convictions ?? []), '', '', ''].slice(0, 3);
 	};
+	const startEditing = forSupporters('Editing characters', enterEditMode);
 	/** Ask before discarding unsaved edits. True when there are none, or the user agrees. */
 	const confirmDiscard = (): boolean => !hasChanges || confirm('Discard your unsaved changes?');
 
@@ -344,12 +371,12 @@
 			bind:character
 			{editing}
 			{actionable}
-			onRouse={ownerActions ? openRouse : undefined}
-			onMend={ownerActions ? openMend : undefined}
-			onTakeDamage={actionable ? openDamage : undefined}
-			onSlake={ownerActions ? () => (slakeOpen = true) : undefined}
-			onStain={actionable ? () => (stainOpen = true) : undefined}
-			onRemorse={ownerActions ? () => (remorseOpen = true) : undefined}
+			onRouse={ownerActions ? gameplay(openRouse) : undefined}
+			onMend={ownerActions ? gameplay(openMend) : undefined}
+			onTakeDamage={actionable ? gameplay(openDamage) : undefined}
+			onSlake={ownerActions ? gameplay(() => (slakeOpen = true)) : undefined}
+			onStain={actionable ? gameplay(() => (stainOpen = true)) : undefined}
+			onRemorse={ownerActions ? gameplay(() => (remorseOpen = true)) : undefined}
 		/>
 	{/key}
 {/snippet}
@@ -425,7 +452,11 @@
 						<span>Save</span>
 					</button>
 				{:else}
-					<button class="btn btn-gothic btn-gothic-bone" onclick={enterEditMode}>
+					<button
+						class="btn btn-gothic btn-gothic-bone"
+						onclick={startEditing}
+						disabled={checkingPremium}
+					>
 						<Pencil size={18} />
 						<span>Edit</span>
 					</button>
@@ -470,6 +501,10 @@
 	<SlakeModal bind:open={slakeOpen} {character} />
 	<StainModal bind:open={stainOpen} {character} />
 	<RemorseModal bind:open={remorseOpen} {character} />
+{/if}
+
+{#if editable || actionable}
+	<PremiumModal bind:open={upsellOpen} feature={upsellFeature} />
 {/if}
 
 <!-- The character changed while it was being edited -->
@@ -543,7 +578,8 @@
 				{:else}
 					<button
 						class="fab-gothic btn-gothic btn-gothic-bone"
-						onclick={enterEditMode}
+						onclick={startEditing}
+						disabled={checkingPremium}
 						aria-label="Edit"
 					>
 						<Pencil size={24} />

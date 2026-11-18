@@ -25,6 +25,10 @@ vi.mock('$app/navigation', () => ({
 	}
 }));
 
+// The viewer is a supporter unless a test says otherwise
+const isSupporter = vi.hoisted(() => vi.fn(async () => true));
+vi.mock('$lib/premium', () => ({ isSupporter }));
+
 // The API, for saves
 const fetchMock = vi.hoisted(() => vi.fn<typeof fetch>());
 vi.stubGlobal('fetch', fetchMock);
@@ -38,6 +42,7 @@ beforeEach(() => {
 	vi.spyOn(window, 'confirm').mockReturnValue(true);
 	// Saves succeed unless a test says otherwise
 	invalidate.mockClear();
+	isSupporter.mockReset().mockResolvedValue(true);
 	fetchMock.mockReset().mockResolvedValue(new Response(null, { status: 204 }));
 });
 
@@ -1068,4 +1073,72 @@ test.each([
 	await user.click(within(await screen.findByRole('dialog')).getByRole('button', { name: action }));
 
 	expect(await screen.findByRole('dialog', { name: title })).toBeInTheDocument();
+});
+
+test('a supporter clicking Edit enters edit mode', async () => {
+	const user = userEvent.setup();
+	renderPage();
+
+	await user.click(screen.getAllByRole('button', { name: 'Edit' })[0]);
+
+	expect(isSupporter).toHaveBeenCalledOnce();
+	expect(await screen.findAllByRole('button', { name: 'Save' })).not.toHaveLength(0);
+});
+
+test('a non-supporter clicking Edit sees the upsell, and stays out of edit mode', async () => {
+	const user = userEvent.setup();
+	isSupporter.mockResolvedValue(false);
+	renderPage();
+
+	await user.click(screen.getAllByRole('button', { name: 'Edit' })[0]);
+
+	const upsell = await screen.findByRole('dialog', { name: 'A Premium Feature' });
+	expect(within(upsell).getByText(/Editing characters/)).toBeInTheDocument();
+	expect(within(upsell).getByRole('link', { name: 'Become a Supporter' })).toHaveAttribute(
+		'href',
+		'https://patreon.com/tiltowait'
+	);
+	const learnMore = within(upsell).getByRole('link', { name: 'Learn more.' });
+	expect(learnMore).toHaveAttribute('href', '/docs/[...path]');
+	expect(learnMore).toHaveAttribute('target', '_blank');
+	expect(screen.queryByRole('button', { name: 'Save' })).not.toBeInTheDocument();
+});
+
+test.each([
+	['Hunger actions', 'Rouse', 'Rouse Check'],
+	['Hunger actions', 'Slake', 'Slake Hunger'],
+	['Humanity actions', 'Apply Stains', 'Apply Stains'],
+	['Humanity actions', 'Remorse', 'Remorse Test'],
+	['Health actions', 'Take Damage', 'Take Damage']
+])('a non-supporter choosing %s → %s sees the upsell instead', async (trigger, action, title) => {
+	const user = userEvent.setup();
+	isSupporter.mockResolvedValue(false);
+	render(CharacterPage, {
+		guild: GUILD,
+		character: vampire(),
+		editable: true,
+		actionable: true,
+		ownerActions: true
+	});
+
+	await user.click(screen.getByRole('button', { name: trigger }));
+	await user.click(within(await screen.findByRole('dialog')).getByRole('button', { name: action }));
+
+	const upsell = await screen.findByRole('dialog', { name: 'A Premium Feature' });
+	expect(within(upsell).getByText(/Using gameplay actions/)).toBeInTheDocument();
+	expect(screen.queryByRole('dialog', { name: title })).not.toBeInTheDocument();
+});
+
+test('the upsell closes with Not Now', async () => {
+	const user = userEvent.setup();
+	isSupporter.mockResolvedValue(false);
+	renderPage();
+
+	await user.click(screen.getAllByRole('button', { name: 'Edit' })[0]);
+	const upsell = await screen.findByRole('dialog', { name: 'A Premium Feature' });
+	await user.click(within(upsell).getByRole('button', { name: 'Not Now' }));
+
+	await waitFor(() =>
+		expect(screen.queryByRole('dialog', { name: 'A Premium Feature' })).not.toBeInTheDocument()
+	);
 });
