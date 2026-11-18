@@ -6,7 +6,6 @@ import { beforeEach, expect, test, vi } from 'vitest';
 import type { Character, Guild } from '$lib/types';
 import { navigate, page } from '$lib/testing/page.svelte';
 import CharacterPage from './CharacterPage.svelte';
-import { CHARACTER_DEPENDENCY } from '$lib/api/liveUpdates';
 import { upsell } from '$lib/state/premium.svelte';
 
 // SvelteKit's router doesn't run in tests: `page` is reactive state, which `goto` updates
@@ -854,7 +853,7 @@ const sentBody = (): Record<string, unknown> =>
 const invalidResponse = (loc: (string | number)[], msg: string): Response =>
 	Response.json({ detail: [{ loc, msg, type: 'value_error' }] }, { status: 422 });
 
-test('saving sends the edits to the API, then refetches the character', async () => {
+test('saving sends the edits to the API, leaving the refetch to the live update', async () => {
 	const user = userEvent.setup();
 	renderPage();
 	await makeChange(user);
@@ -868,7 +867,7 @@ test('saving sends the edits to the API, then refetches the character', async ()
 	);
 	expect(sentBody()).toMatchObject({ name: 'Nadiah', health: '......', humanity: 7 });
 	expect(sentBody()).not.toHaveProperty('potency'); // A mortal
-	expect(invalidate).toHaveBeenCalledWith(CHARACTER_DEPENDENCY);
+	expect(invalidate).not.toHaveBeenCalled();
 });
 
 test('while saving, Save and Cancel are disabled', async () => {

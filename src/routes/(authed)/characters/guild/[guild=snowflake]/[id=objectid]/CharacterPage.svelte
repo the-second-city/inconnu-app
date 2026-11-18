@@ -15,7 +15,7 @@
 
 	import { characterNameError, normalize } from '$lib';
 
-	import { beforeNavigate, goto, invalidate } from '$app/navigation';
+	import { beforeNavigate, goto } from '$app/navigation';
 	import { resolve } from '$app/paths';
 	import { atLeast } from '$lib/state/busy';
 	import {
@@ -24,7 +24,6 @@
 		type CharacterEdit,
 		type SaveErrors
 	} from '$lib/api/characterEdit';
-	import { CHARACTER_DEPENDENCY } from '$lib/api/liveUpdates';
 	import { page } from '$app/state';
 	import type { Pathname } from '$app/types';
 	import type { Character, Guild, OwnerData, TrackType } from '$lib/types';
@@ -301,9 +300,9 @@
 	};
 
 	/**
-	 * Save the edits, spinning for at least the busy delay. On success, leave edit mode and refetch
-	 * the character, so the page shows what the bot stored. On failure, stay in edit mode and show
-	 * why.
+	 * Save the edits, spinning for at least the busy delay. On success, leave edit mode, keeping the
+	 * edits: the save's own live update (`changed`) refetches the character, so the page then shows
+	 * what the bot stored. On failure, stay in edit mode and show why.
 	 */
 	const saveChanges = async () => {
 		if (saving || nameError || !hasChanges) return;
@@ -320,11 +319,9 @@
 		}
 		character.name = body.name;
 		character.convictions = body.convictions.filter(Boolean);
-		applied = initialCharacter; // Until the refetch, the edits stand
+		applied = initialCharacter; // Until the live update's refetch, the edits stand
 		editing = false;
 		copy = null;
-		// A failed refetch shows itself (the error page)
-		invalidate(CHARACTER_DEPENDENCY).catch(() => {});
 	};
 
 	// Keyboard shortcuts while editing: ⌘/Ctrl+S or ⌘/Ctrl+Enter saves, Escape cancels. The
