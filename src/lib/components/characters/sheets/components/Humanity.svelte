@@ -114,7 +114,7 @@ Humanity
 					: stains === 0
 						? 'No Stains yet'
 						: `${stains} ${stains === 1 ? 'Stain' : 'Stains'} so far`}
-				tone="warning"
+				badge="warning"
 				disabled={stains >= 10}
 				onclick={() => {
 					showActions = false;
@@ -129,7 +129,7 @@ Humanity
 				detail={stains === 0
 					? 'No Stains to atone for'
 					: `Roll ${dice} ${dice === 1 ? 'die' : 'dice'}`}
-				tone="secondary"
+				badge="secondary"
 				disabled={stains === 0}
 				onclick={() => {
 					showActions = false;

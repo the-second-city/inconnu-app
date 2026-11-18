@@ -112,7 +112,7 @@
 						icon={Droplets}
 						label="Rouse"
 						detail={hunger >= 5 ? 'At Hunger 5, a failure risks frenzy' : 'Hunger may rise'}
-						tone={hunger >= 5 ? 'warning' : 'primary'}
+						badge={hunger >= 5 ? 'warning' : 'primary'}
 						onclick={fromMenu(onRouse)}
 					/>
 				{/if}
@@ -121,7 +121,7 @@
 						icon={Mouth}
 						label="Slake"
 						detail={hunger === 0 ? 'No Hunger to slake' : 'Feed to lower Hunger'}
-						tone="secondary"
+						badge="secondary"
 						disabled={hunger === 0}
 						onclick={fromMenu(onSlake)}
 					/>

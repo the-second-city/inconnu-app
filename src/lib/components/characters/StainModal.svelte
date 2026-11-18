@@ -1,15 +1,16 @@
 <script lang="ts">
 	import { untrack } from 'svelte';
-	import { Dialog } from '@skeletonlabs/skeleton-svelte';
 	import { TriangleAlert } from '@lucide/svelte';
 
-	import { atLeast } from '$lib/busy';
+	import { BusySubmit } from '$lib/busySubmit.svelte';
 	import { stain } from '$lib/characterActions';
 	import type { Character } from '$lib/types';
-	import ClientPortal from '$lib/components/ClientPortal.svelte';
+	import Modal from '$lib/components/Modal.svelte';
+	import ModalActions from '$lib/components/ModalActions.svelte';
 	import BusySpinner from './BusySpinner.svelte';
-	import Humanity from './sheets/components/Humanity.svelte';
+	import HumanityBlock from './HumanityBlock.svelte';
 	import Stepper from './Stepper.svelte';
+	import Warning from './Warning.svelte';
 
 	interface ComponentProps {
 		open: boolean;
@@ -23,8 +24,7 @@
 	const stains = $derived(character.stains ?? 0);
 
 	let amount = $state(1);
-	let applying = $state(false);
-	let error: string | null = $state(null);
+	const submit = new BusySubmit();
 
 	// The bot caps Stains at 10
 	const max = $derived(10 - stains);
@@ -42,8 +42,7 @@
 		if (open) {
 			untrack(() => {
 				amount = 1;
-				error = null;
-				applying = false;
+				submit.reset();
 			});
 		}
 	});
@@ -53,73 +52,32 @@
 	 * success the modal closes, and the live update refreshes the sheet.
 	 */
 	const apply = async () => {
-		if (applying || amount < 1) return;
-		applying = true;
-		error = null;
-		const outcome = await atLeast(stain(character._id, { amount }));
-		if (outcome.error !== undefined) {
-			applying = false;
-			error = outcome.error;
-		} else {
+		if (amount < 1) return;
+		if (await submit.run(() => stain(character._id, { amount }))) {
 			open = false; // Still spinning, so the content doesn't flash back as it closes
 		}
 	};
 </script>
 
-<Dialog
-	{open}
-	onOpenChange={(e) => (open = e.open)}
-	closeOnInteractOutside={false}
-	closeOnEscape={!applying}
->
-	<ClientPortal>
-		<Dialog.Backdrop class="modal-backdrop-gothic fixed inset-0 z-50" />
-		<Dialog.Positioner class="fixed inset-0 z-50 flex items-center justify-center p-4">
-			<Dialog.Content class="card modal-gothic w-full max-w-sm space-y-4 p-6">
-				<Dialog.Title class="h5 font-display text-center tracking-[0.02em]"
-					>Apply Stains</Dialog.Title
-				>
+<Modal bind:open title="Apply Stains" closeOnEscape={!submit.busy}>
+	{#if submit.busy}
+		<BusySpinner label="Applying Stains…" />
+	{:else}
+		<!-- The preview: Humanity with the new Stains -->
+		<HumanityBlock character={preview} />
 
-				{#if applying}
-					<BusySpinner label="Applying Stains…" />
-				{:else}
-					<!-- The preview: Humanity with the new Stains. The label goes above the track, since
-				     beside it, ten boxes don't fit the modal; centered as a block, the label at the
-				     track's edge. -->
-					<div class="flex justify-center">
-						<div class="grid gap-1">
-							<Humanity character={preview} editing={false} />
-						</div>
-					</div>
+		<Stepper label="Stains" bind:value={amount} min={1} {max} />
 
-					<Stepper label="Stains" bind:value={amount} min={1} {max} />
+		{#if degeneration > 0}
+			<Warning icon={TriangleAlert} role="status">
+				Degeneration: {degeneration} Aggravated Willpower damage.
+			</Warning>
+		{/if}
 
-					{#if degeneration > 0}
-						<p class="preset-tonal-error flex gap-2 rounded-md p-3 text-sm" role="status">
-							<TriangleAlert size={18} class="shrink-0" />
-							<span>Degeneration: {degeneration} Aggravated Willpower damage.</span>
-						</p>
-					{/if}
+		{#if submit.error}
+			<p class="text-error-500 text-sm" role="alert">{submit.error}</p>
+		{/if}
 
-					{#if error}
-						<p class="text-error-500 text-sm" role="alert">{error}</p>
-					{/if}
-
-					<div class="flex justify-end gap-2">
-						<button type="button" class="btn preset-tonal-surface" onclick={() => (open = false)}>
-							Cancel
-						</button>
-						<button
-							type="button"
-							class="btn preset-filled-primary-500"
-							onclick={apply}
-							disabled={max === 0}
-						>
-							Apply
-						</button>
-					</div>
-				{/if}
-			</Dialog.Content>
-		</Dialog.Positioner>
-	</ClientPortal>
-</Dialog>
+		<ModalActions bind:open action="Apply" onaction={apply} disabled={max === 0} />
+	{/if}
+</Modal>

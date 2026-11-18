@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { onMount, untrack, type Component, type Snippet } from 'svelte';
 	import { fade } from 'svelte/transition';
-	import { Dialog, Tabs } from '@skeletonlabs/skeleton-svelte';
+	import { Tabs } from '@skeletonlabs/skeleton-svelte';
 	import {
 		Ban,
 		IdCardLanyard,
@@ -24,6 +24,8 @@
 	import type { Pathname } from '$app/types';
 	import type { Character, Guild, OwnerData, TrackType } from '$lib/types';
 	import ClientPortal from '$lib/components/ClientPortal.svelte';
+	import Modal from '$lib/components/Modal.svelte';
+	import ModalActions from '$lib/components/ModalActions.svelte';
 	import CharacterSheet from './CharacterSheet.svelte';
 	import CharHeader from '$lib/components/characters/CharHeader.svelte';
 	import CharProfile from '$lib/components/characters/CharProfile.svelte';
@@ -511,42 +513,27 @@
 {/if}
 
 <!-- The character changed while it was being edited -->
-<Dialog
+<Modal
 	role="alertdialog"
-	open={showStaleNotice}
-	onOpenChange={(e) => (showStaleNotice = e.open)}
-	closeOnInteractOutside={false}
+	bind:open={showStaleNotice}
+	title="{character.name} was updated"
+	size="md"
+	centered={false}
 >
-	<ClientPortal>
-		<Dialog.Backdrop class="modal-backdrop-gothic fixed inset-0 z-50" />
-		<Dialog.Positioner class="fixed inset-0 z-50 flex items-center justify-center p-4">
-			<Dialog.Content class="card modal-gothic w-full max-w-md space-y-4 p-6">
-				<Dialog.Title class="h5 font-display tracking-[0.02em]"
-					>{character.name} was updated</Dialog.Title
-				>
-				<Dialog.Description class="space-y-2">
-					<p>
-						This character changed while you were editing, perhaps in Discord. Reload to see the
-						changes, which discards your edits.
-					</p>
-					<p>If you proceed anyway, saving will overwrite those changes.</p>
-				</Dialog.Description>
-				<div class="flex justify-end gap-2">
-					<button
-						type="button"
-						class="btn preset-tonal-surface"
-						onclick={() => (showStaleNotice = false)}
-					>
-						Proceed Anyway
-					</button>
-					<button type="button" class="btn preset-filled-primary-500" onclick={reloadFresh}>
-						Reload
-					</button>
-				</div>
-			</Dialog.Content>
-		</Dialog.Positioner>
-	</ClientPortal>
-</Dialog>
+	{#snippet description()}
+		<p>
+			This character changed while you were editing, perhaps in Discord. Reload to see the changes,
+			which discards your edits.
+		</p>
+		<p>If you proceed anyway, saving will overwrite those changes.</p>
+	{/snippet}
+	<ModalActions
+		bind:open={showStaleNotice}
+		cancelLabel="Proceed Anyway"
+		action="Reload"
+		onaction={reloadFresh}
+	/>
+</Modal>
 
 {#if editable}
 	<!-- Room at the end of the page, so its last rows can scroll clear of the floating buttons -->

@@ -204,7 +204,7 @@
 			icon={HandFist}
 			label="Take Damage"
 			detail={canTakeDamage ? 'Superficial or Aggravated' : 'Already all Aggravated'}
-			tone="error"
+			badge="error"
 			disabled={!canTakeDamage}
 			onclick={() => {
 				showActions = false;
@@ -216,7 +216,7 @@
 				icon={Droplets}
 				label="Rouse"
 				detail="Costs 1 Aggravated Health"
-				tone="primary"
+				badge="primary"
 				onclick={() => {
 					showActions = false;
 					onRouse?.();
@@ -230,7 +230,7 @@
 				icon={Bandage}
 				label="Mend Superficial"
 				detail={mendDetail('superficial')}
-				tone="success"
+				badge="success"
 				disabled={damageCounts['/'] === 0}
 				onclick={() => startMend('superficial')}
 			/>
@@ -238,7 +238,7 @@
 				icon={HeartPlus}
 				label="Mend Aggravated"
 				detail={mendDetail('aggravated')}
-				tone="success"
+				badge="success"
 				disabled={damageCounts['x'] === 0}
 				onclick={() => startMend('aggravated')}
 			/>

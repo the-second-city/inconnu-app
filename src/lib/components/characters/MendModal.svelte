@@ -1,21 +1,23 @@
 <script lang="ts">
 	import { untrack } from 'svelte';
-	import { Dialog } from '@skeletonlabs/skeleton-svelte';
 	import { Droplets, Flame, HeartPlus, Moon, Tombstone } from '@lucide/svelte';
 
 	import { isVampiric } from '$lib/vampire';
-	import { atLeast, wait } from '$lib/busy';
+	import { wait } from '$lib/busy';
 	import { mend } from '$lib/characterActions';
 	import { countBoxes, healDamage, mendAmount } from '$lib/damage';
 	import { isSuccess, successesLast } from '$lib/dice';
 	import { hungerRiseChance, percent } from '$lib/rouse';
 	import type { Character, MendResult, TrackType } from '$lib/types';
-	import ClientPortal from '$lib/components/ClientPortal.svelte';
+	import { RollInPlace } from '$lib/rollInPlace.svelte';
+	import Modal from '$lib/components/Modal.svelte';
+	import ModalActions from '$lib/components/ModalActions.svelte';
+	import ChoiceRow from './ChoiceRow.svelte';
 	import DamageTrack from './DamageTrack.svelte';
-	import HungerDrops from './HungerDrops.svelte';
+	import DiceHandoff from './DiceHandoff.svelte';
+	import HungerMeter from './HungerMeter.svelte';
 	import RollingDice from './RollingDice.svelte';
-	import EmptyHunger from './sheets/components/hunger/Empty.svelte';
-	import FilledHunger from './sheets/components/hunger/Filled.svelte';
+	import Warning from './Warning.svelte';
 
 	interface ComponentProps {
 		open: boolean;
@@ -40,24 +42,19 @@
 	// The heal happens in place, as Remorse rolls: Mend locks the buttons, the Rouse dice (if any)
 	// tumble and then reveal one at a time, and the outcome paints in: the title, the healed track,
 	// what it healed, and the cost card's Hunger.
-	type Phase = 'start' | 'rolling' | 'revealing' | 'done';
-	let phase = $state<Phase>('start');
-	const locked = $derived(phase !== 'start');
+	const roll = new RollInPlace(() => character);
 
 	// The character as the heal began. Its live update arrives while the dice are still revealing,
 	// which would change the track and Hunger under them.
-	let healedFrom: Character | null = $state(null);
-	const shown = $derived(healedFrom ?? character);
 
 	const isWillpower = $derived(track === 'willpower');
 	const trackLabel = $derived(isWillpower ? 'Willpower' : 'Health');
-	const isVampire = $derived(isVampiric(shown.splat));
+	const isVampire = $derived(isVampiric(roll.shown.splat));
 	const isAggravated = $derived(type === 'aggravated');
 	// Vampires Rouse to heal Health: once to mend, three times for Aggravated. Others, and Willpower,
 	// don't.
 	const rouses = $derived(isVampire && !isWillpower ? (isAggravated ? 3 : 1) : 0);
 
-	let error: string | null = $state(null);
 	let result = $state<MendResult | null>(null);
 	let revealed = $state(0); // How many of the Rouse dice show their numbers
 	let showHunger = $state(false); // The revealed dice have given way to the Hunger they left
@@ -73,12 +70,10 @@
 	$effect(() => {
 		if (open) {
 			untrack(() => {
-				phase = 'start';
-				healedFrom = null;
+				roll.reset();
 				result = null;
 				revealed = 0;
 				showHunger = false;
-				error = null;
 			});
 		}
 	});
@@ -89,25 +84,15 @@
 	 * paints in. On an error, the buttons unlock again, saying why.
 	 */
 	const doMend = async () => {
-		if (locked) return;
-		phase = 'rolling';
-		error = null;
-		healedFrom = $state.snapshot(character);
-		const outcome = await atLeast(mend(character._id, { type, track }), stepDelay);
-		if (outcome.error !== undefined) {
-			error = outcome.error;
-			healedFrom = null;
-			phase = 'start';
-			return;
-		}
-		result = { ...outcome.result, dice: successesLast(outcome.result.dice) };
-		phase = 'revealing';
+		const healed = await roll.roll(() => mend(character._id, { type, track }), stepDelay);
+		if (!healed) return;
+		result = { ...healed, dice: successesLast(healed.dice) };
 		revealed = 0;
 		while (revealed < result.dice.length) {
 			await wait(revealDelay);
 			revealed++;
 		}
-		phase = 'done';
+		roll.finish();
 		// After a moment with the dice, they crossfade to the Hunger they left
 		const shownResult = result;
 		if (rouses > 0) {
@@ -117,17 +102,21 @@
 	};
 
 	// Once the dice are in, the outcome
-	const outcome = $derived(phase === 'done' ? result : null);
+	const outcome = $derived(roll.done ? result : null);
 
 	const actionLabel = $derived(
 		isWillpower ? (isAggravated ? 'Heal' : 'Recover') : isAggravated ? 'Heal' : 'Mend'
 	);
 	// The track as the heal would leave it, to mark the damage it takes away, and how much it heals
 	const preview = $derived(
-		healDamage(shown[track], type, mendAmount(shown, type, isWillpower ? 'willpower' : 'health'))
+		healDamage(
+			roll.shown[track],
+			type,
+			mendAmount(roll.shown, type, isWillpower ? 'willpower' : 'health')
+		)
 	);
 	const healed = $derived(
-		countBoxes(outcome?.track ?? preview, '.') - countBoxes(shown[track], '.')
+		countBoxes(outcome?.track ?? preview, '.') - countBoxes(roll.shown[track], '.')
 	);
 	const kind = $derived(isAggravated ? 'Aggravated' : 'Superficial');
 	const healing = $derived.by(() => {
@@ -140,7 +129,7 @@
 	// the chance Hunger rises and the Hunger it could reach. A failure at Hunger 5 risks frenzy when
 	// mending; healing Aggravated past Hunger 5 means torpor. Once healed, it says how the Rouses
 	// went, and its meter shows the Hunger they left.
-	const hunger = $derived(shown.hunger ?? 0);
+	const hunger = $derived(roll.shown.hunger ?? 0);
 	const worstHunger = $derived(Math.min(5, hunger + rouses));
 	const cost = $derived.by(() => {
 		if (rouses > 0) {
@@ -156,11 +145,7 @@
 			const failed = outcome?.dice.some((die) => !isSuccess(die)) ?? true;
 			return {
 				icon: risky ? (isAggravated ? Tombstone : Flame) : Droplets,
-				badge: risky
-					? 'preset-tonal-warning'
-					: failed
-						? 'preset-tonal-primary'
-						: 'preset-tonal-success',
+				badge: risky ? ('warning' as const) : failed ? ('primary' as const) : ('success' as const),
 				title: rouses === 1 ? '1 Rouse Check' : `${rouses} Rouse Checks`,
 				detail: outcome
 					? rouseOutcome(outcome)
@@ -170,7 +155,7 @@
 				risky
 			};
 		}
-		const free = { icon: HeartPlus, badge: 'preset-tonal-success', risky: false };
+		const free = { icon: HeartPlus, badge: 'success' as const, risky: false };
 		if (isWillpower && !isAggravated) {
 			return {
 				...free,
@@ -184,10 +169,9 @@
 			title: isWillpower ? 'No cost' : 'No Rouse Check',
 			detail: isWillpower
 				? 'Willpower heals without Rousing'
-				: `${shown.splat === 'ghoul' ? 'Ghouls' : 'Mortals'} heal without Rousing`
+				: `${roll.shown.splat === 'ghoul' ? 'Ghouls' : 'Mortals'} heal without Rousing`
 		};
 	});
-	const costId = $props.id();
 
 	/** What the Rouses did: whether any failed, and what that did to Hunger. */
 	function rouseOutcome(healedWith: MendResult): string {
@@ -220,162 +204,68 @@
 	});
 </script>
 
-<Dialog
-	{open}
-	onOpenChange={(e) => (open = e.open)}
-	closeOnInteractOutside={false}
-	closeOnEscape={!locked || phase === 'done'}
->
-	<ClientPortal>
-		<Dialog.Backdrop class="modal-backdrop-gothic fixed inset-0 z-50" />
-		<Dialog.Positioner class="fixed inset-0 z-50 flex items-center justify-center p-4">
-			<Dialog.Content class="card modal-gothic w-full max-w-sm space-y-4 p-6">
-				<Dialog.Title class="h5 font-display text-center tracking-[0.02em]">
-					{title}
-				</Dialog.Title>
+<Modal bind:open {title} closeOnEscape={roll.closable}>
+	<!-- The track: as it is, the damage the heal would take away pulsing (the heal frees the
+	     boxes next to the healthy ones); then as healed, the freed boxes pulsing -->
+	{#if outcome}
+		<DamageTrack label={trackLabel} track={outcome.track} before={roll.shown[track]} />
+	{:else}
+		<DamageTrack label={trackLabel} track={roll.shown[track]} before={preview} markFrom="healthy" />
+	{/if}
 
-				<!-- The track: as it is, the damage the heal would take away pulsing (the heal frees the
-				     boxes next to the healthy ones); then as healed, the freed boxes pulsing -->
-				{#if outcome}
-					<DamageTrack label={trackLabel} track={outcome.track} before={shown[track]} />
-				{:else}
-					<DamageTrack
-						label={trackLabel}
-						track={shown[track]}
-						before={preview}
-						markFrom="healthy"
-					/>
-				{/if}
+	{#if rouses > 0}
+		<!-- The dice, then, a moment after they're in, the Hunger they left -->
+		<DiceHandoff show={showHunger} before={hunger} after={outcome?.hunger ?? hunger}>
+			<RollingDice
+				{faces}
+				rolling={roll.rolling}
+				label={outcome
+					? `Rouse dice: ${outcome.dice.join(', ')}`
+					: `${roll.locked ? 'Rolling ' : ''}${rouses === 1 ? '1 Rouse die' : `${rouses} Rouse dice`}`}
+			/>
+		</DiceHandoff>
+	{/if}
 
+	<!-- What it heals and costs; once healed, what it did -->
+	<div class="space-y-4" role={outcome ? 'status' : undefined}>
+		<p class="text-sm">{healing}</p>
+
+		<!-- The detail holds two lines for the Rouses' outcome, which runs longer than the odds -->
+		<ChoiceRow
+			icon={cost.icon}
+			label={cost.title}
+			name="Cost: {cost.title}"
+			detail={cost.detail}
+			badge={cost.badge}
+			tone={cost.risky ? 'warning' : 'surface'}
+			outline={cost.risky ? 'warning' : 'surface'}
+			detailClass={rouses > 0 ? 'min-h-[2lh]' : undefined}
+		>
+			{#snippet trailing()}
 				{#if rouses > 0}
-					<!-- The dice, then, a moment after they're in, the Hunger they left (gains pulsing), in
-					     the same place: stacked in one grid cell, crossfading, so the height holds -->
-					<div class="grid items-center">
-						<div
-							class={[
-								'col-start-1 row-start-1 transition-opacity duration-500',
-								showHunger && 'opacity-0'
-							]}
-						>
-							<RollingDice
-								{faces}
-								rolling={locked}
-								label={outcome
-									? `Rouse dice: ${outcome.dice.join(', ')}`
-									: `${locked ? 'Rolling ' : ''}${rouses === 1 ? '1 Rouse die' : `${rouses} Rouse dice`}`}
-							/>
-						</div>
-						<!-- Always there (unseen until the crossfade), so its height is reserved from the start -->
-						<div
-							class={[
-								'col-start-1 row-start-1 transition-opacity duration-500',
-								showHunger ? 'opacity-100' : 'opacity-0'
-							]}
-							aria-hidden="true"
-						>
-							<HungerDrops before={hunger} after={outcome?.hunger ?? hunger} />
-						</div>
-					</div>
+					{#if outcome}<span class="sr-only">Hunger {hunger} → {outcome.hunger}</span>{/if}
+					<HungerMeter {hunger} to={meterHunger} mark={outcome ? 'pulse' : 'preview'} />
 				{/if}
+			{/snippet}
+		</ChoiceRow>
 
-				<!-- What it heals and costs; once healed, what it did -->
-				<div class="space-y-4" role={outcome ? 'status' : undefined}>
-					<p class="text-sm">{healing}</p>
+		{#if outcome?.frenzy}
+			<Warning icon={Flame}>A Rouse failed at Hunger 5: test for Hunger frenzy.</Warning>
+		{/if}
+		{#if outcome?.torpor}
+			<Warning icon={Tombstone}>Hunger would pass 5: {roll.shown.name} falls into torpor.</Warning>
+		{/if}
+	</div>
 
-					<div
-						class={[
-							'flex items-center gap-3 rounded-lg border px-3 py-2',
-							cost.risky ? 'border-warning-500' : 'border-surface-600-400'
-						]}
-						role="group"
-						aria-label="Cost: {cost.title}"
-						aria-describedby="{costId}-cost"
-					>
-						<span
-							class="flex size-9 shrink-0 items-center justify-center rounded-full {cost.badge}"
-						>
-							<cost.icon size={18} />
-						</span>
-						<span class="flex grow flex-col leading-tight">
-							<span class="font-semibold">{cost.title}</span>
-							<span
-								id="{costId}-cost"
-								class={[
-									'text-sm',
-									cost.risky ? 'text-warning-600-400' : 'text-surface-800-200',
-									// Two lines held for the Rouses' outcome, which runs longer than the odds
-									rouses > 0 && 'min-h-[2lh]'
-								]}>{cost.detail}</span
-							>
-						</span>
-						{#if rouses > 0}
-							{#if outcome}<span class="sr-only">Hunger {hunger} → {outcome.hunger}</span>{/if}
-							<span class="flex shrink-0 gap-0.5" aria-hidden="true">
-								{#each Array(5), i (i)}
-									{#if i < hunger}
-										<FilledHunger size={14} />
-									{:else if i < meterHunger && outcome}
-										<span class="motion-safe:animate-pulse" data-gained>
-											<FilledHunger size={14} />
-										</span>
-									{:else if i < meterHunger}
-										<span class="opacity-40"><FilledHunger size={14} /></span>
-									{:else}
-										<EmptyHunger size={14} />
-									{/if}
-								{/each}
-							</span>
-						{/if}
-					</div>
+	{#if roll.error}
+		<p class="text-error-500 text-sm" role="alert">{roll.error}</p>
+	{/if}
 
-					{#if outcome?.frenzy}
-						<p class="preset-tonal-error flex gap-2 rounded-md p-3 text-sm">
-							<Flame size={18} class="shrink-0" />
-							<span>A Rouse failed at Hunger 5: test for Hunger frenzy.</span>
-						</p>
-					{/if}
-					{#if outcome?.torpor}
-						<p class="preset-tonal-error flex gap-2 rounded-md p-3 text-sm">
-							<Tombstone size={18} class="shrink-0" />
-							<span>Hunger would pass 5: {shown.name} falls into torpor.</span>
-						</p>
-					{/if}
-				</div>
-
-				{#if error}
-					<p class="text-error-500 text-sm" role="alert">{error}</p>
-				{/if}
-
-				<div class="flex justify-end gap-2">
-					{#if phase === 'done'}
-						<button
-							type="button"
-							class="btn preset-filled-primary-500"
-							onclick={() => (open = false)}
-						>
-							Done
-						</button>
-					{:else}
-						<button
-							type="button"
-							class="btn preset-tonal-surface"
-							onclick={() => (open = false)}
-							disabled={locked}
-						>
-							Cancel
-						</button>
-						<button
-							type="button"
-							class="btn preset-filled-primary-500"
-							onclick={doMend}
-							disabled={locked}
-							aria-busy={locked}
-						>
-							{actionLabel}
-						</button>
-					{/if}
-				</div>
-			</Dialog.Content>
-		</Dialog.Positioner>
-	</ClientPortal>
-</Dialog>
+	<ModalActions
+		bind:open
+		done={roll.done}
+		locked={roll.locked}
+		action={actionLabel}
+		onaction={doMend}
+	/>
+</Modal>

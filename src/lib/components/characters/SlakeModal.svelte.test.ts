@@ -46,22 +46,25 @@ const renderModal = (hunger = 3, potency = 1): { open: boolean } => {
 	return bound;
 };
 
-/** The modal's slake buttons' names, in order. */
+/** The modal's slake buttons, in order, as "name (description)": the amount, then its cost. */
 const choices = (dialog: HTMLElement): string[] =>
 	within(dialog)
 		.getAllByRole('button', { name: /^Slake \d/ })
-		.map((button) => button.getAttribute('aria-label') ?? '');
+		.map((button) => {
+			const described = document.getElementById(button.getAttribute('aria-describedby') ?? '');
+			return `${button.getAttribute('aria-label')} (${described?.textContent?.trim()})`;
+		});
 
 test('there is one button per amount there is to slake, each with its cost and the Hunger left', async () => {
 	renderModal(5, 1);
 	const dialog = await screen.findByRole('dialog', { name: 'Slake Hunger' });
 
 	expect(choices(dialog)).toEqual([
-		'Slake 1: harmless, Hunger 4 left',
-		'Slake 2: harmless, Hunger 3 left',
-		'Slake 3: harmful drink, Hunger 2 left',
-		'Slake 4: harmful drink, Hunger 1 left',
-		'Slake 5: full drain, the victim dies, Hunger 0 left'
+		'Slake 1: Hunger 4 left (Harmless)',
+		'Slake 2: Hunger 3 left (Harmless)',
+		'Slake 3: Hunger 2 left (Harms the victim)',
+		'Slake 4: Hunger 1 left (Harms the victim)',
+		'Slake 5: Hunger 0 left (Kills the victim)'
 	]);
 });
 
@@ -70,8 +73,8 @@ test('there are only as many buttons as the Hunger there is', async () => {
 	const dialog = await screen.findByRole('dialog');
 
 	expect(choices(dialog)).toEqual([
-		'Slake 1: harmless, Hunger 1 left',
-		'Slake 2: full drain, the victim dies, Hunger 0 left'
+		'Slake 1: Hunger 1 left (Harmless)',
+		'Slake 2: Hunger 0 left (Kills the victim)'
 	]);
 });
 
@@ -81,9 +84,9 @@ test('at high Blood Potency, every drink is harmful, and the only drain takes Hu
 
 	// Slaking 3 or 4 would need a drain too, but a drain takes Hunger to 0
 	expect(choices(dialog)).toEqual([
-		'Slake 1: harmful drink, Hunger 4 left',
-		'Slake 2: harmful drink, Hunger 3 left',
-		'Slake 5: full drain, the victim dies, Hunger 0 left'
+		'Slake 1: Hunger 4 left (Harms the victim)',
+		'Slake 2: Hunger 3 left (Harms the victim)',
+		'Slake 5: Hunger 0 left (Kills the victim)'
 	]);
 });
 
@@ -91,7 +94,7 @@ test('below the drain floor, only the drain to 0 is offered', async () => {
 	renderModal(3, 9); // At BP 9, going below Hunger 3 needs a drain
 	const dialog = await screen.findByRole('dialog');
 
-	expect(choices(dialog)).toEqual(['Slake 3: full drain, the victim dies, Hunger 0 left']);
+	expect(choices(dialog)).toEqual(['Slake 3: Hunger 0 left (Kills the victim)']);
 });
 
 test('clicking an amount slakes it, then closes', async () => {

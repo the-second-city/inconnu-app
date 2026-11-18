@@ -1,18 +1,19 @@
 <script lang="ts">
 	import { untrack } from 'svelte';
-	import { Dialog } from '@skeletonlabs/skeleton-svelte';
 	import { BoneFracture, Flame, Heart, IvBag, Skull } from '@lucide/svelte';
 
 	import { bloodPotency } from '$lib/vampire';
-	import { atLeast } from '$lib/busy';
+	import { BusySubmit } from '$lib/busySubmit.svelte';
 	import { slake } from '$lib/characterActions';
 	import { animalBloodNote, feedingCost, type FeedingCost } from '$lib/feeding';
 	import type { Character } from '$lib/types';
-	import ClientPortal from '$lib/components/ClientPortal.svelte';
+	import Modal from '$lib/components/Modal.svelte';
+	import ModalActions from '$lib/components/ModalActions.svelte';
 	import BusySpinner from './BusySpinner.svelte';
+	import ChoiceRow from './ChoiceRow.svelte';
 	import HungerDrops from './HungerDrops.svelte';
-	import EmptyHunger from './sheets/components/hunger/Empty.svelte';
-	import FilledHunger from './sheets/components/hunger/Filled.svelte';
+	import HungerMeter from './HungerMeter.svelte';
+	import Warning from './Warning.svelte';
 
 	interface ComponentProps {
 		open: boolean;
@@ -25,8 +26,8 @@
 	// preview never shows the same slaking twice.
 	const hunger = $derived(character.hunger ?? 0);
 
-	// Whether a slake's request is running
-	let applying = $state(false);
+	// The slake's request, behind a spinner
+	const submit = new BusySubmit();
 
 	// One choice per amount there is to slake, each with what it costs one human victim (as the game
 	// assumes), by Blood Potency. A drain always takes Hunger to 0, so amounts that would need one
@@ -40,34 +41,39 @@
 	);
 	const animalNote = $derived(animalBloodNote(potency));
 
-	// What each cost looks like: its icon badge's colors (harmless is blue, harmful a warning, a drain
-	// the theme's crimson), and what it means for the victim
-	const COST_STYLES: Record<FeedingCost, { badge: string; text: string; consequence: string }> = {
+	// What each cost looks like: its icon and badge (harmless is blue, harmful a warning, a drain the
+	// theme's crimson), and what it means for the victim (the row's description)
+	const COST_STYLES: Record<
+		FeedingCost,
+		{
+			icon: typeof Heart;
+			badge: 'secondary' | 'warning' | 'blood';
+			tone: 'secondary' | 'warning' | 'primary';
+			consequence: string;
+		}
+	> = {
 		harmless: {
-			badge: 'preset-tonal-secondary',
-			text: 'text-secondary-600-400',
+			icon: Heart,
+			badge: 'secondary',
+			tone: 'secondary',
 			consequence: 'Harmless'
 		},
 		harmful: {
-			badge: 'preset-tonal-warning',
-			text: 'text-warning-600-400',
+			icon: BoneFracture,
+			badge: 'warning',
+			tone: 'warning',
 			consequence: 'Harms the victim'
 		},
 		drain: {
-			badge: 'preset-filled-primary-500',
-			text: 'text-primary-600-400',
+			icon: Skull,
+			badge: 'blood',
+			tone: 'primary',
 			consequence: 'Kills the victim'
 		}
 	};
 
 	// The amount whose row is hovered, previewed on the current Hunger
 	let previewing: number | null = $state(null);
-	const COST_LABELS: Record<FeedingCost, string> = {
-		harmless: 'harmless',
-		harmful: 'harmful drink',
-		drain: 'full drain, the victim dies'
-	};
-	let error: string | null = $state(null);
 
 	// Slaking from Hunger 4 or more calls for a frenzy test (Difficulty 3). The bot says so too; when
 	// it does, the modal stays open after slaking to say what to roll, with the Hunger slaked.
@@ -79,9 +85,8 @@
 		if (open) {
 			untrack(() => {
 				frenzied = null;
-				error = null;
 				previewing = null;
-				applying = false;
+				submit.reset();
 			});
 		}
 	});
@@ -92,154 +97,88 @@
 	 * frenzy test, which the modal then shows.
 	 */
 	const apply = async (amount: number) => {
-		if (applying) return;
-		applying = true;
-		error = null;
 		const before = hunger;
-		const outcome = await atLeast(slake(character._id, { amount }));
-		if (outcome.error !== undefined) {
-			applying = false;
-			error = outcome.error;
-		} else if (outcome.result?.frenzy) {
+		const slaked = await submit.run(() => slake(character._id, { amount }));
+		if (!slaked) return;
+		if (slaked.result?.frenzy) {
 			frenzied = { before, after: Math.max(0, before - amount) };
-			applying = false;
+			submit.reset();
 		} else {
 			open = false; // Still spinning, so the content doesn't flash back as it closes
 		}
 	};
 </script>
 
-<Dialog
-	{open}
-	onOpenChange={(e) => (open = e.open)}
-	closeOnInteractOutside={false}
-	closeOnEscape={!applying}
->
-	<ClientPortal>
-		<Dialog.Backdrop class="modal-backdrop-gothic fixed inset-0 z-50" />
-		<Dialog.Positioner class="fixed inset-0 z-50 flex items-center justify-center p-4">
-			<Dialog.Content class="card modal-gothic w-full max-w-sm space-y-4 p-6">
-				<Dialog.Title class="h5 font-display text-center tracking-[0.02em]">
-					{frenzied ? 'Hunger Slaked' : 'Slake Hunger'}
-				</Dialog.Title>
+<Modal bind:open title={frenzied ? 'Hunger Slaked' : 'Slake Hunger'} closeOnEscape={!submit.busy}>
+	{#if submit.busy}
+		<BusySpinner label="Slaking…" />
+	{:else if frenzied}
+		<!-- Slaked, but from Hunger 4+: the Hunger slaked (the drops it took pulsing), and the
+		     frenzy test it calls for -->
+		<div class="space-y-3" role="status">
+			<HungerDrops before={frenzied.before} after={frenzied.after} />
+			<Warning icon={Flame}>
+				Slaking from Hunger {frenzied.before}: test for Hunger frenzy (Difficulty 3).
+			</Warning>
+		</div>
+		<ModalActions bind:open done />
+	{:else}
+		<!-- The Hunger there is now. Drops a hovered choice would slake turn hollow. -->
+		<HungerMeter
+			{hunger}
+			to={hunger - (previewing ?? 0)}
+			size={28}
+			label="Current Hunger {hunger}"
+			class="flex justify-center gap-2"
+		/>
 
-				{#if applying}
-					<BusySpinner label="Slaking…" />
-				{:else if frenzied}
-					<!-- Slaked, but from Hunger 4+: the Hunger slaked (the drops it took pulsing), and the
-					     frenzy test it calls for -->
-					<div class="space-y-3" role="status">
-						<HungerDrops before={frenzied.before} after={frenzied.after} />
-						<p class="preset-tonal-error flex gap-2 rounded-md p-3 text-sm">
-							<Flame size={18} class="shrink-0" />
-							<span
-								>Slaking from Hunger {frenzied.before}: test for Hunger frenzy (Difficulty 3).</span
-							>
-						</p>
-					</div>
-					<div class="flex justify-end">
-						<button
-							type="button"
-							class="btn preset-filled-primary-500"
-							onclick={() => (open = false)}
-						>
-							Done
-						</button>
-					</div>
-				{:else}
-					<!-- The Hunger there is now -->
-					<div class="flex justify-center gap-2" role="img" aria-label="Current Hunger {hunger}">
-						{#each Array(5), i (i)}
-							<!-- Drops a hovered choice would slake turn hollow -->
-							{#if i < hunger - (previewing ?? 0)}
-								<FilledHunger size={28} />
-							{:else}
-								<EmptyHunger size={28} />
-							{/if}
-						{/each}
-					</div>
+		<!-- One row per amount: an icon badge colored by what the drink costs the victim, what that
+		     means, and the Hunger it leaves -->
+		<!-- The preview clears only on leaving the list, not each row, so moving between rows doesn't
+		     flicker back to the current Hunger in the gaps -->
+		<div
+			class="flex flex-col gap-2"
+			role="group"
+			aria-label="Amounts to slake"
+			onpointerleave={() => (previewing = null)}
+		>
+			{#each choices as choice (choice.amount)}
+				{@const style = COST_STYLES[choice.cost]}
+				<!-- The Hunger left trails, as a meter, so the rows line up -->
+				<ChoiceRow
+					icon={style.icon}
+					label={choice.cost === 'drain' ? 'Drain' : `Slake ${choice.amount}`}
+					name="Slake {choice.amount}: Hunger {choice.left} left"
+					detail={style.consequence}
+					badge={style.badge}
+					tone={style.tone}
+					outline={choice.cost === 'drain' ? 'primary' : 'surface'}
+					onclick={() => apply(choice.amount)}
+					onpointerenter={() => (previewing = choice.amount)}
+				>
+					{#snippet trailing()}<HungerMeter hunger={choice.left} />{/snippet}
+				</ChoiceRow>
+			{/each}
+		</div>
 
-					<!-- One row per amount: an icon badge colored by what the drink costs the victim, what
-				     that means, and the Hunger it leaves -->
-					<!-- The preview clears only on leaving the list, not each row, so moving between rows
-				     doesn't flicker back to the current Hunger in the gaps -->
-					<div
-						class="flex flex-col gap-2"
-						role="group"
-						aria-label="Amounts to slake"
-						onpointerleave={() => (previewing = null)}
-					>
-						{#each choices as choice (choice.amount)}
-							{@const style = COST_STYLES[choice.cost]}
-							<button
-								type="button"
-								class={[
-									'flex w-full items-center gap-3 rounded-lg border px-3 py-2 text-left transition-colors',
-									'hover:bg-surface-300-700/40',
-									choice.cost === 'drain' ? 'border-primary-500' : 'border-surface-600-400'
-								]}
-								onclick={() => apply(choice.amount)}
-								onpointerenter={() => (previewing = choice.amount)}
-								aria-label="Slake {choice.amount}: {COST_LABELS[
-									choice.cost
-								]}, Hunger {choice.left} left"
-							>
-								<span
-									class="flex size-9 shrink-0 items-center justify-center rounded-full {style.badge}"
-								>
-									{#if choice.cost === 'drain'}
-										<Skull size={18} />
-									{:else if choice.cost === 'harmful'}
-										<BoneFracture size={18} />
-									{:else}
-										<Heart size={18} />
-									{/if}
-								</span>
-								<span class="flex grow flex-col leading-tight">
-									<span class="font-semibold">
-										{choice.cost === 'drain' ? 'Drain' : `Slake ${choice.amount}`}
-									</span>
-									<span class="text-sm {style.text}">{style.consequence}</span>
-								</span>
-								<!-- The Hunger left, as a meter, so the rows line up -->
-								<span class="flex shrink-0 gap-0.5" aria-hidden="true">
-									{#each Array(5), i (i)}
-										{#if i < choice.left}
-											<FilledHunger size={14} />
-										{:else}
-											<EmptyHunger size={14} />
-										{/if}
-									{/each}
-								</span>
-							</button>
-						{/each}
-					</div>
+		{#if frenzyRisk}
+			<p class="text-warning-600-400 flex items-center justify-center gap-1.5 text-xs">
+				<Flame size={14} class="shrink-0" />
+				At Hunger {hunger}, slaking calls for a frenzy test (Difficulty 3).
+			</p>
+		{/if}
 
-					{#if frenzyRisk}
-						<p class="text-warning-600-400 flex items-center justify-center gap-1.5 text-xs">
-							<Flame size={14} class="shrink-0" />
-							At Hunger {hunger}, slaking calls for a frenzy test (Difficulty 3).
-						</p>
-					{/if}
+		{#if submit.error}
+			<p class="text-error-500 text-sm" role="alert">{submit.error}</p>
+		{/if}
 
-					{#if error}
-						<p class="text-error-500 text-sm" role="alert">{error}</p>
-					{/if}
+		{#if animalNote}
+			<p class="text-surface-200 flex items-center justify-center gap-1.5 text-xs">
+				<IvBag size={14} class="shrink-0" />
+				{animalNote}
+			</p>
+		{/if}
 
-					{#if animalNote}
-						<p class="text-surface-200 flex items-center justify-center gap-1.5 text-xs">
-							<IvBag size={14} class="shrink-0" />
-							{animalNote}
-						</p>
-					{/if}
-
-					<div class="flex justify-end gap-2">
-						<button type="button" class="btn preset-tonal-surface" onclick={() => (open = false)}>
-							Cancel
-						</button>
-					</div>
-				{/if}
-			</Dialog.Content>
-		</Dialog.Positioner>
-	</ClientPortal>
-</Dialog>
+		<ModalActions bind:open />
+	{/if}
+</Modal>
