@@ -162,8 +162,8 @@ test('box controls add and remove boxes', async () => {
 });
 
 test.each([
-	['health', 4],
-	['willpower', 3]
+	['health', 3],
+	['willpower', 2]
 ] as const)('%s keeps at least %i boxes', async (track, min) => {
 	const user = userEvent.setup();
 	const shortest = '.'.repeat(min);
@@ -175,8 +175,8 @@ test.each([
 });
 
 test.each([
-	['health', 20],
-	['willpower', 20]
+	['health', 25],
+	['willpower', 25]
 ] as const)('%s has at most %i boxes', async (track, max) => {
 	const user = userEvent.setup();
 	const full = '.'.repeat(max);

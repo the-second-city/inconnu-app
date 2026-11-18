@@ -13,11 +13,11 @@ export interface TrackLimits {
 	max: number;
 }
 
-/** The bot's track limits (`VChar.tracker_limits`) when this was written. The wizard takes the
- * bot's own, falling back to these; the character page's corrections use these. */
+/** The bot's track limits (`VChar.MIN_HEALTH` and friends, `VChar.tracker_limits`). The wizard
+ * takes the bot's own, falling back to these; the character page's corrections use these. */
 export const TRACK_LIMITS: Record<TrackType, TrackLimits> = {
-	health: { min: 4, max: 20 },
-	willpower: { min: 3, max: 20 }
+	health: { min: 3, max: 25 },
+	willpower: { min: 2, max: 25 }
 };
 
 /** A track of a length with these amounts of damage, as the bot builds it: healthy first, keeping

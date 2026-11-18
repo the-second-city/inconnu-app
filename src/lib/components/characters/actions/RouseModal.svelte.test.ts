@@ -37,6 +37,7 @@ const result = (fields: Partial<RouseResult> = {}): RouseResult => ({
 	stains: 0,
 	degeneration: 0,
 	dice: [[7]],
+	oblivion_faces: [1, 10],
 	...fields
 });
 
@@ -95,8 +96,8 @@ test('re-rolling failures lowers the chances', async () => {
 
 test.each([
 	[4, 1, '50% chance Hunger rises'],
-	[4, 2, '75% chance Hunger rises; may frenzy'],
-	[5, 1, '50% chance of frenzy']
+	[4, 2, '75% chance Hunger rises'],
+	[5, 1, 'Calls for a frenzy test; 50% chance a check fails']
 ])('at Hunger %i, %i checks: %s', async (hunger, checks, detail) => {
 	renderModal({ ...character(), hunger });
 	const dialog = await modal();
@@ -188,9 +189,23 @@ test('the result warns of frenzy, and shows Stains and degeneration only when th
 	// With Stains, the result has two live regions: the Stains (under Humanity) and the rest
 	const statuses = await within(dialog).findAllByRole('status');
 	const said = statuses.map((status) => status.textContent).join(' ');
-	expect(said).toContain('test for Hunger frenzy');
+	expect(said).toContain('A check failed at Hunger 5: test for Hunger frenzy');
 	expect(said).toContain('2 Oblivion Stains applied.');
 	expect(said).toContain('Degeneration: 1 Aggravated Willpower damage.');
+});
+
+test('a Rouse passed at Hunger 5 still calls for a frenzy test, without saying a check failed', async () => {
+	const user = userEvent.setup();
+	rouse.mockResolvedValueOnce({ result: result({ hunger: 5, frenzy: true }) });
+	renderModal({ ...character(), hunger: 5 });
+	const dialog = await modal();
+
+	await user.click(within(dialog).getByRole('button', { name: 'Rouse 1 Check' }));
+
+	const status = await within(dialog).findByRole('status');
+	expect(dialog).toHaveAccessibleName('Success');
+	expect(status).toHaveTextContent('Passed at Hunger 5, but test for Hunger frenzy.');
+	expect(status).not.toHaveTextContent('failed');
 });
 
 test('a plain result has no frenzy, Stains, or degeneration', async () => {
@@ -330,6 +345,32 @@ test("with Oblivion Stains, a check's final 1 or 10 is red, and a re-rolled firs
 		true,
 		true,
 		false
+	]);
+});
+
+test("with Oblivion Stains, the server's own faces are red", async () => {
+	const user = userEvent.setup();
+	rouse.mockResolvedValueOnce({
+		result: result({
+			successes: 1,
+			failures: 2,
+			stains: 1,
+			dice: [[10], [1], [2]],
+			oblivion_faces: [2]
+		})
+	});
+	renderModal(character('vampire', 2, [OBLIVION]));
+	const dialog = await modal();
+	await user.click(within(dialog).getByRole('checkbox', { name: 'Apply Oblivion Stains' }));
+
+	await user.click(within(dialog).getByRole('button', { name: 'Rouse 3 Checks' }));
+
+	await within(dialog).findByRole('button', { name: 'Done' });
+	const dice = [...within(dialog).getByRole('img', { name: /^Rouse dice/ }).children];
+	expect(dice.map((die) => die.classList.contains('preset-filled-primary-500'))).toEqual([
+		false,
+		false,
+		true
 	]);
 });
 

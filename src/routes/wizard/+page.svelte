@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { resolve } from '$app/paths';
+	import { INSTALL_URL } from '$lib';
 	import Card from '$lib/components/ui/Card.svelte';
 	import { ExternalLink } from '@lucide/svelte';
 	import Meta from '$lib/components/layout/Meta.svelte';
@@ -25,11 +26,13 @@
 		<h3 class="h3 mb-2">Getting Started</h3>
 		<ol class="ml-6 list-outside list-decimal space-y-2 pl-2">
 			<li>
+				<!-- eslint-disable svelte/no-navigation-without-resolve -- external link -->
 				<a
-					href="https://discord.com/oauth2/authorize?client_id=882409882119196704&permissions=536872960&scope=applications.commands+bot"
+					href={INSTALL_URL}
 					class="text-primary-500 underline hover:no-underline"
 					title="Install Inconnu on your server">Install Inconnu</a
 				>
+				<!-- eslint-enable svelte/no-navigation-without-resolve -->
 			</li>
 			<li>Open Discord and navigate to your game server</li>
 			<li>

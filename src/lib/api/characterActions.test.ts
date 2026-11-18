@@ -29,7 +29,8 @@ const RESULT: RouseResult = {
 	aggravated: 0,
 	stains: 0,
 	degeneration: 0,
-	dice: [[7]]
+	dice: [[7]],
+	oblivion_faces: [1, 10]
 };
 
 test("rouse posts the request to the character's route and returns the result", async () => {

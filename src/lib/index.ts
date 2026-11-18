@@ -91,6 +91,9 @@ export const getErrorDetail = async (
 	return fallback;
 };
 
+/** The bot's OAuth link, which adds Inconnu to a server. */
+export const INSTALL_URL =
+	'https://discord.com/oauth2/authorize?client_id=882409882119196704&permissions=536872960&scope=applications.commands+bot';
 export const DISCORD_URL = 'https://discord.gg/QHnCdSPeEE';
 export const PATREON_URL = 'https://patreon.com/tiltowait';
 

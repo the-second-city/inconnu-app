@@ -26,7 +26,7 @@ test("passes the bot's Health and Willpower limits to the page", async () => {
 
 test("falls back to the bot's known limits when it doesn't send them", async () => {
 	expect((await runLoad(wizardData())).limits).toEqual({
-		health: { min: 4, max: 20 },
-		willpower: { min: 3, max: 20 }
+		health: { min: 3, max: 25 },
+		willpower: { min: 2, max: 25 }
 	});
 });

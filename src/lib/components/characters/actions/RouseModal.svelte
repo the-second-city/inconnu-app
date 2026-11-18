@@ -74,19 +74,19 @@
 
 	const hunger = $derived(character.hunger ?? 0);
 	// One choice per number of checks, each with the chance Hunger rises, and the Hunger it could
-	// reach (every check failing). A failure at Hunger 5 risks frenzy instead.
+	// reach (every check failing). As the bot rules it, a Rouse at Hunger 5 calls for a frenzy test,
+	// pass or fail, and one below 5 never does.
 	const choices = $derived(
 		[1, 2, 3].map((checks) => {
 			const chance = percent(hungerRiseChance(checks, canReroll && reroll));
-			const frenzy = hunger + checks > 5;
+			const frenzy = hunger >= 5;
 			return {
 				checks,
 				worst: Math.min(5, hunger + checks),
 				frenzy,
-				detail:
-					hunger >= 5
-						? `${chance} chance of frenzy`
-						: `${chance} chance Hunger rises${frenzy ? '; may frenzy' : ''}`
+				detail: frenzy
+					? `Calls for a frenzy test; ${chance} chance a check fails`
+					: `${chance} chance Hunger rises`
 			};
 		})
 	);
@@ -145,6 +145,8 @@
 
 		if (!isGhoul) {
 			const rolled = outcome.result.dice ?? [];
+			// The server's Stain faces (1 and 10, unless its settings say otherwise)
+			const oblivionFaces = outcome.result.oblivion_faces;
 			faces = Array(rolled.length).fill(null);
 			stained = Array(rolled.length).fill(false);
 			revealing = true;
@@ -157,7 +159,7 @@
 					}
 					faces[i] = face;
 					// Only a check's final face counts, so only it can Stain
-					stained[i] = staining && roll === check.length - 1 && (face === 1 || face === 10);
+					stained[i] = staining && roll === check.length - 1 && oblivionFaces.includes(face);
 					await wait(revealDelay);
 				}
 			}
@@ -258,7 +260,7 @@
 						<ToggleCard
 							icon={Ghost}
 							label="Apply Oblivion Stains"
-							detail="For Oblivion: a 1 or 10 Stains"
+							detail="For Oblivion: Stain faces (usually 1 or 10) Stain"
 							bind:checked={oblivion}
 						/>
 					{/if}
@@ -304,7 +306,13 @@
 			{:else}
 				<p class="sr-only">Hunger {hungerBefore} → {result.hunger}</p>
 				{#if result.frenzy}
-					<Warning icon={Flame}>A check failed at Hunger 5: test for Hunger frenzy.</Warning>
+					<Warning icon={Flame}>
+						{#if result.failures > 0}
+							A check failed at Hunger 5: test for Hunger frenzy (or torpor, if awakening).
+						{:else}
+							Passed at Hunger 5, but test for Hunger frenzy.
+						{/if}
+					</Warning>
 				{/if}
 
 				{#if result.degeneration > 0}

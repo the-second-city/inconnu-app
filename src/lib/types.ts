@@ -76,11 +76,12 @@ export interface RouseResult {
 	successes: number;
 	failures: number;
 	hunger: number; // After the checks
-	frenzy: boolean; // A failure at Hunger 5
+	frenzy: boolean; // Rousing at Hunger 5, pass or fail, calls for a frenzy test
 	aggravated: number;
 	stains: number; // Oblivion Stains applied
 	degeneration: number;
 	dice: number[][]; // Each check's faces: the first, then any re-roll (none for ghouls)
+	oblivion_faces: number[]; // The server's Oblivion Stain faces, applied or not
 }
 
 /**

@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { resolve } from '$app/paths';
-	import { DISCORD_URL, PATREON_URL } from '$lib';
+	import { DISCORD_URL, INSTALL_URL, PATREON_URL } from '$lib';
 	import Ankh from '$lib/components/layout/Ankh.svelte';
 	import Meta from '$lib/components/layout/Meta.svelte';
 
@@ -13,8 +13,8 @@
 />
 
 <div class="mx-auto max-w-3xl text-center">
-	<h1 class="h1 text-blood text-5xl font-black tracking-tighter sm:text-6xl">
-		Less bookkeeping. More bloodshed.
+	<h1 class="h1 text-blood text-5xl font-black tracking-tighter text-balance sm:text-6xl">
+		Less bookkeeping. <br class="hidden sm:inline" />More bloodshed.
 	</h1>
 
 	<p class="mt-6 text-xl">
@@ -28,17 +28,17 @@
 			Don't frenzy over the dice. Get started now.
 		</p>
 
+		<!-- eslint-disable svelte/no-navigation-without-resolve -- external links -->
 		<div class="mt-4 flex flex-wrap items-center justify-center gap-3 font-semibold">
 			<a
-				class="btn preset-filled-surface-500 hover:brightness-125"
-				href="https://discord.com/oauth2/authorize?client_id=882409882119196704&permissions=536872960&scope=applications.commands+bot"
+				class="btn btn-gothic btn-gothic-blood"
+				href={INSTALL_URL}
 				title="Install Inconnu on your server"
 				target="_blank"
 			>
 				Get Inconnu
 				<img class="size-6" src="/images/logos/inconnu_logo.webp" alt="Inconnu logo" />
 			</a>
-			<!-- eslint-disable svelte/no-navigation-without-resolve -- external link -->
 			<a
 				class="btn text-white hover:brightness-125"
 				style="background-color: #5865F2;"
@@ -49,8 +49,8 @@
 				<img src="/images/logos/discord-logo.svg" alt="Discord logo" class="size-6" />
 				Discord
 			</a>
-			<!-- eslint-enable svelte/no-navigation-without-resolve -->
 		</div>
+		<!-- eslint-enable svelte/no-navigation-without-resolve -->
 	</div>
 </div>
 
@@ -78,10 +78,19 @@
 			</ul>
 		</div>
 		<div class="order-2">
+			<!-- Full width below md (less the layout's p-6); half of max-w-4xl, less the gap, above -->
 			<img
-				src="/images/hero/for-players.webp"
-				alt="Inconnu website showing character sheet"
-				fetchpriority="high"
+				src="/images/hero/discord-demo-960.webp"
+				srcset="
+					/images/hero/discord-demo-480.webp 480w,
+					/images/hero/discord-demo-960.webp 960w,
+					/images/hero/discord-demo-1300.webp 1300w
+				"
+				sizes="(min-width: 944px) 432px, (min-width: 768px) calc(50vw - 40px), calc(100vw - 48px)"
+				width="1300"
+				height="1017"
+				class="h-auto w-full"
+				alt="Inconnu in Discord, posting a trait update and a roll result"
 			/>
 		</div>
 	</div>
@@ -93,7 +102,22 @@
 	<!-- For Storytellers -->
 	<div class="grid items-center gap-8 md:grid-cols-2">
 		<div class="order-2 md:order-1">
-			<img src="/images/hero/discord-demo.webp" alt="Discord showcase" />
+			<!-- Full width below md (less the layout's p-6); half of max-w-4xl, less the gap, above -->
+			<img
+				src="/images/hero/character-sheet-960.webp"
+				srcset="
+					/images/hero/character-sheet-480.webp 480w,
+					/images/hero/character-sheet-960.webp 960w,
+					/images/hero/character-sheet-1440.webp 1440w,
+					/images/hero/character-sheet-1920.webp 1920w
+				"
+				sizes="(min-width: 944px) 432px, (min-width: 768px) calc(50vw - 40px), calc(100vw - 48px)"
+				width="2592"
+				height="1800"
+				class="h-auto w-full"
+				alt="A character sheet on the Inconnu website"
+				loading="lazy"
+			/>
 		</div>
 		<div class="order-1 md:order-2">
 			<h2 class="h2 mb-4 font-semibold">For Storytellers</h2>
@@ -120,35 +144,63 @@
 		<div class="text-center md:text-left">
 			<h2 class="h2 text-primary-300 mb-3 font-semibold">Premium Features</h2>
 			<p class="text-lg">
-				Avoid the Second Inquisition with Premium! As a thank-you for helping <strong
-					>Inconnu's</strong
-				>
-				development,
+				Avoid the Second Inquisition with Premium! For just
+				<strong class="text-primary-300">$3 a month</strong>,
 				<!-- eslint-disable-next-line svelte/no-navigation-without-resolve -- external link -->
 				<a href={PATREON_URL} class={premiumLinkClasses} title="Patreon" target="_blank">
 					Patreon supporters
 				</a>
-				can upload unlimited
-				<a
-					href={resolve('/docs/[...path]', { path: 'premium/character-images' })}
-					title="Upload character images"
-					class={premiumLinkClasses}
-				>
-					character images
-				</a>
-				and use
-				<a
-					href={resolve('/docs/[...path]', { path: 'premium/roleposting' })}
-					class={premiumLinkClasses}
-					title="Send messages with Roleposts"
-				>
-					Roleposts
-				</a>
-				to send Discord messages as their characters.
+				get:
 			</p>
+			<ul class="mt-3 inline-flex flex-col gap-1 text-left text-lg">
+				<li class="flex gap-3">
+					<Ankh size={10} class="text-primary-500 mt-2 shrink-0" />
+					<span>
+						<a
+							href={resolve('/docs/[...path]', { path: 'premium/web-app' })}
+							title="Premium on the website"
+							class={premiumLinkClasses}>Character sheet actions</a
+						>: Rouse, mend, slake, resist frenzy, and edit characters right from the sheet
+					</span>
+				</li>
+				<li class="flex gap-3">
+					<Ankh size={10} class="text-primary-500 mt-2 shrink-0" />
+					<span>
+						Unlimited
+						<a
+							href={resolve('/docs/[...path]', { path: 'premium/character-images' })}
+							title="Upload character images"
+							class={premiumLinkClasses}>character images</a
+						>
+					</span>
+				</li>
+				<li class="flex gap-3">
+					<Ankh size={10} class="text-primary-500 mt-2 shrink-0" />
+					<span>
+						<a
+							href={resolve('/docs/[...path]', { path: 'premium/roleposting' })}
+							title="Send messages with Roleposts"
+							class={premiumLinkClasses}>Roleposts</a
+						>, to send Discord messages as your characters
+					</span>
+				</li>
+			</ul>
 		</div>
 		<div>
-			<img src="/images/hero/rolepost.webp" alt="Phone showing a Rolepost" class="max-w-36" />
+			<img
+				src="/images/hero/rolepost-288.webp"
+				srcset="
+					/images/hero/rolepost-288.webp 288w,
+					/images/hero/rolepost-432.webp 432w,
+					/images/hero/rolepost-682.webp 682w
+				"
+				sizes="144px"
+				width="682"
+				height="1400"
+				class="h-auto w-36"
+				alt="A Rolepost in Discord on a phone, sent as a character"
+				loading="lazy"
+			/>
 		</div>
 	</div>
 </section>
