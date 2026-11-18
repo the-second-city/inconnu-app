@@ -111,6 +111,7 @@ test.each([
 		"This character no longer exists, or you're no longer in its server."
 	],
 	[503, { detail: 'Bot is still starting up' }, 'Inconnu is starting up. Try again in a moment.'],
+	[403, { detail: 'This feature is for supporters only' }, 'This feature is for supporters only.'],
 	[
 		502,
 		{ message: "Couldn't reach Inconnu to save your changes." },

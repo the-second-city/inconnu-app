@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { DISCORD_URL } from '$lib';
+	import { DISCORD_URL, PATREON_URL } from '$lib';
 	import { slide } from 'svelte/transition';
 	import { afterNavigate } from '$app/navigation';
 	import { resolve } from '$app/paths';
@@ -45,7 +45,7 @@
 
 {#snippet patreon()}
 	<NavButton
-		href="https://patreon.com/tiltowait"
+		href={PATREON_URL}
 		title="Become a patron"
 		color="preset-outlined-success-500"
 		full={true}

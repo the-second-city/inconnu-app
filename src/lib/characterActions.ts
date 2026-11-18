@@ -4,6 +4,7 @@
  */
 
 import { resolve } from '$app/paths';
+import { refusedForPremium, showUpsell, SUPPORTERS_ONLY } from '$lib/premium.svelte';
 import type {
 	AmountRequest,
 	DamageRequest,
@@ -33,6 +34,8 @@ export const actionError = (status: number, json: unknown): string => {
 		if (messages.length > 0) return messages.join(' ');
 	}
 
+	if (refusedForPremium(status, json)) return `${SUPPORTERS_ONLY}.`;
+
 	switch (status) {
 		case 401:
 			return 'Your session has ended. Sign in again.';
@@ -50,7 +53,8 @@ export const actionError = (status: number, json: unknown): string => {
 
 /**
  * POST an action to one of a character's routes, returning its result or why it failed. An action
- * that answers 204 (no content) succeeds with a null result.
+ * that answers 204 (no content) succeeds with a null result. The API refusing a non-supporter also
+ * opens the upsell.
  */
 const postAction = async <T>(
 	url: string,
@@ -66,6 +70,7 @@ const postAction = async <T>(
 		if (response.status === 204) return { result: null as T };
 		const json = await response.json().catch(() => null);
 		if (response.ok && json) return { result: json as T };
+		if (refusedForPremium(response.status, json)) showUpsell('Using gameplay actions');
 		return { error: actionError(response.status, json) };
 	} catch {
 		return { error: unreachable };

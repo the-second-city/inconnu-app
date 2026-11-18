@@ -92,6 +92,7 @@ export const getErrorDetail = async (
 };
 
 export const DISCORD_URL = 'https://discord.gg/QHnCdSPeEE';
+export const PATREON_URL = 'https://patreon.com/tiltowait';
 
 /** Whether a URL from the API is safe to link to: https only, so no javascript: or data: URLs. */
 export const isHttpsUrl = (url: string): boolean => {

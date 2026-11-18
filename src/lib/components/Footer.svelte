@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { resolve } from '$app/paths';
-	import { DISCORD_URL } from '$lib';
+	import { DISCORD_URL, PATREON_URL } from '$lib';
 	import { Copyright } from '@lucide/svelte';
 
 	const currentYear = new Date().getFullYear();
@@ -13,7 +13,8 @@
 	<p>This site uses cookies for necessary functionality only.</p>
 	<div class="bullet-list">
 		<span>
-			<a class="anchor" href="https://patreon.com/tiltowait" title="Become a patron">Patreon </a>
+			<!-- eslint-disable-next-line svelte/no-navigation-without-resolve -- external link -->
+			<a class="anchor" href={PATREON_URL} title="Become a patron">Patreon </a>
 		</span>
 		<span>
 			<!-- eslint-disable-next-line svelte/no-navigation-without-resolve -- external link -->

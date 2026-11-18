@@ -7,6 +7,7 @@ import type { Character, Guild } from '$lib/types';
 import { navigate, page } from '$lib/testing/page.svelte';
 import CharacterPage from './CharacterPage.svelte';
 import { CHARACTER_DEPENDENCY } from '$lib/liveUpdates';
+import { upsell } from '$lib/premium.svelte';
 
 // SvelteKit's router doesn't run in tests: `page` is reactive state, which `goto` updates
 const goto = vi.hoisted(() => vi.fn());
@@ -27,7 +28,10 @@ vi.mock('$app/navigation', () => ({
 
 // The viewer is a supporter unless a test says otherwise
 const isSupporter = vi.hoisted(() => vi.fn(async () => true));
-vi.mock('$lib/premium', () => ({ isSupporter }));
+vi.mock('$lib/premium.svelte', async (importOriginal) => ({
+	...(await importOriginal<typeof import('$lib/premium.svelte')>()),
+	isSupporter
+}));
 
 // The API, for saves
 const fetchMock = vi.hoisted(() => vi.fn<typeof fetch>());
@@ -43,6 +47,7 @@ beforeEach(() => {
 	// Saves succeed unless a test says otherwise
 	invalidate.mockClear();
 	isSupporter.mockReset().mockResolvedValue(true);
+	upsell.open = false;
 	fetchMock.mockReset().mockResolvedValue(new Response(null, { status: 204 }));
 });
 
@@ -1109,13 +1114,14 @@ test.each([
 	['Hunger actions', 'Slake', 'Slake Hunger'],
 	['Humanity actions', 'Apply Stains', 'Apply Stains'],
 	['Humanity actions', 'Remorse', 'Remorse Test'],
-	['Health actions', 'Take Damage', 'Take Damage']
+	['Health actions', 'Take Damage', 'Take Damage'],
+	['Health actions', 'Mend Superficial', 'Mend Damage']
 ])('a non-supporter choosing %s → %s sees the upsell instead', async (trigger, action, title) => {
 	const user = userEvent.setup();
 	isSupporter.mockResolvedValue(false);
 	render(CharacterPage, {
 		guild: GUILD,
-		character: vampire(),
+		character: { ...vampire(), health: '....//' },
 		editable: true,
 		actionable: true,
 		ownerActions: true
@@ -1141,4 +1147,68 @@ test('the upsell closes with Not Now', async () => {
 	await waitFor(() =>
 		expect(screen.queryByRole('dialog', { name: 'A Premium Feature' })).not.toBeInTheDocument()
 	);
+});
+
+test("a non-supporter choosing a ghoul's Rouse sees the upsell instead", async () => {
+	const user = userEvent.setup();
+	isSupporter.mockResolvedValue(false);
+	const ghoul: Character = { ...character(), splat: 'ghoul' };
+	render(CharacterPage, {
+		guild: GUILD,
+		character: ghoul,
+		editable: true,
+		actionable: true,
+		ownerActions: true
+	});
+
+	await user.click(screen.getByRole('button', { name: 'Health actions' }));
+	await user.click(
+		within(await screen.findByRole('dialog')).getByRole('button', { name: 'Rouse' })
+	);
+
+	expect(await screen.findByRole('dialog', { name: 'A Premium Feature' })).toBeInTheDocument();
+	expect(screen.queryByRole('dialog', { name: 'Rouse Check' })).not.toBeInTheDocument();
+});
+
+test('while one premium check is pending, other actions wait for it', async () => {
+	const user = userEvent.setup();
+	let answer: (supporter: boolean) => void = () => {};
+	isSupporter.mockImplementation(() => new Promise((resolve) => (answer = resolve)));
+	render(CharacterPage, {
+		guild: GUILD,
+		character: vampire(),
+		editable: true,
+		actionable: true,
+		ownerActions: true
+	});
+
+	await user.click(screen.getByRole('button', { name: 'Hunger actions' }));
+	await user.click(
+		within(await screen.findByRole('dialog')).getByRole('button', { name: 'Slake' })
+	);
+	await user.click(screen.getByRole('button', { name: 'Humanity actions' }));
+	await user.click(
+		within(await screen.findByRole('dialog')).getByRole('button', { name: 'Apply Stains' })
+	);
+	answer(true);
+
+	expect(await screen.findByRole('dialog', { name: 'Slake Hunger' })).toBeInTheDocument();
+	expect(isSupporter).toHaveBeenCalledOnce();
+	expect(screen.queryByRole('dialog', { name: 'Apply Stains' })).not.toBeInTheDocument();
+});
+
+test('the API refusing a save for premium opens the upsell, and keeps the edits', async () => {
+	const user = userEvent.setup();
+	fetchMock.mockResolvedValueOnce(
+		Response.json({ detail: 'This feature is for supporters only' }, { status: 403 })
+	);
+	renderPage();
+	await makeChange(user);
+
+	await user.click(editButton('Save'));
+
+	const upsell = await screen.findByRole('dialog', { name: 'A Premium Feature' });
+	expect(within(upsell).getByText(/Editing characters/)).toBeInTheDocument();
+	expect(screen.getByRole('alert')).toHaveTextContent('This feature is for supporters only.');
+	expect(nameBox()).toHaveValue('Nadiah');
 });

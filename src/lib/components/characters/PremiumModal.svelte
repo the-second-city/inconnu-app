@@ -3,6 +3,7 @@
 	import { Crown } from '@lucide/svelte';
 
 	import { resolve } from '$app/paths';
+	import { PATREON_URL } from '$lib';
 	import ClientPortal from '$lib/components/ClientPortal.svelte';
 
 	interface ComponentProps {
@@ -49,7 +50,7 @@
 					</button>
 					<!-- eslint-disable svelte/no-navigation-without-resolve -- external link -->
 					<a
-						href="https://patreon.com/tiltowait"
+						href={PATREON_URL}
 						target="_blank"
 						rel="noopener"
 						class="btn preset-filled-primary-500"

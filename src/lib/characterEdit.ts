@@ -6,6 +6,7 @@
 import { normalize } from '$lib';
 import { bloodPotency, isVampiric } from '$lib/vampire';
 import type { Character, Trait } from '$lib/types';
+import { refusedForPremium, SUPPORTERS_ONLY } from '$lib/premium.svelte';
 
 /** The edit body: every editable field, all at once. */
 export interface CharacterEdit {
@@ -125,6 +126,11 @@ export const saveErrors = (status: number, json: unknown, body: CharacterEdit): 
 			const where = label(loc, body);
 			errors.messages.push(where ? `${where}: ${message(msg)}` : message(msg));
 		}
+		return errors;
+	}
+
+	if (refusedForPremium(status, json)) {
+		errors.messages.push(`${SUPPORTERS_ONLY}.`);
 		return errors;
 	}
 

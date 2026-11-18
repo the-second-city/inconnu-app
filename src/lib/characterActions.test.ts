@@ -1,6 +1,7 @@
 import { afterEach, beforeEach, expect, test, vi, type Mock } from 'vitest';
 
 import { actionError, damage, mend, remorse, rouse, slake, stain } from '$lib/characterActions';
+import { upsell } from '$lib/premium.svelte';
 import type { MendResult, RouseResult } from '$lib/types';
 
 vi.mock('$app/paths', () => ({
@@ -11,6 +12,7 @@ vi.mock('$app/paths', () => ({
 let fetchMock: Mock<typeof fetch>;
 
 beforeEach(() => {
+	upsell.open = false;
 	fetchMock = vi.fn<typeof fetch>();
 	vi.stubGlobal('fetch', fetchMock);
 });
@@ -68,6 +70,7 @@ test.each([
 	[422, { detail: [{ loc: ['body'], msg: 'Value error, Nope.' }] }, 'Nope.'],
 	[401, null, 'Your session has ended. Sign in again.'],
 	[403, { detail: 'Only the owner' }, "You can't do that for this character."],
+	[403, { detail: 'This feature is for supporters only' }, 'This feature is for supporters only.'],
 	[404, null, "This character no longer exists, or you're no longer in its server."],
 	[503, null, 'Inconnu is starting up. Try again in a moment.'],
 	[502, { message: "Couldn't reach Inconnu to Rouse." }, "Couldn't reach Inconnu to Rouse."],
@@ -170,4 +173,23 @@ test('remorse says when Inconnu is unreachable', async () => {
 	expect(await remorse('abc', { min_override: 1, lasombra_alt: false })).toEqual({
 		error: "Couldn't reach Inconnu to test Remorse."
 	});
+});
+
+test('the API refusing a non-supporter opens the upsell, and says why', async () => {
+	fetchMock.mockResolvedValueOnce(
+		Response.json({ detail: 'This feature is for supporters only' }, { status: 403 })
+	);
+
+	const outcome = await stain('abc', { amount: 1 });
+
+	expect(outcome).toEqual({ error: 'This feature is for supporters only.' });
+	expect(upsell).toEqual({ open: true, feature: 'Using gameplay actions' });
+});
+
+test("other refusals don't open the upsell", async () => {
+	fetchMock.mockResolvedValueOnce(Response.json({ detail: 'Only the owner' }, { status: 403 }));
+
+	await stain('abc', { amount: 1 });
+
+	expect(upsell.open).toBe(false);
 });

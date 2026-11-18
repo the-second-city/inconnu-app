@@ -36,7 +36,7 @@
 	import StainModal from '$lib/components/characters/StainModal.svelte';
 	import RemorseModal from '$lib/components/characters/RemorseModal.svelte';
 	import PremiumModal from '$lib/components/characters/PremiumModal.svelte';
-	import { isSupporter } from '$lib/premium';
+	import { isSupporter, refusedForPremium, showUpsell, upsell } from '$lib/premium.svelte';
 
 	interface ComponentProps {
 		character: Character;
@@ -132,8 +132,6 @@
 	// Editing and the tracker actions are for supporters. Each click asks the API first, and a
 	// non-supporter gets the upsell instead. One check at a time, so a double click can't start two.
 	let checkingPremium = $state(false);
-	let upsellOpen = $state(false);
-	let upsellFeature = $state('');
 	/** Wrap an action so it runs only for a supporter; others see the upsell, naming `feature`. */
 	const forSupporters =
 		<A extends unknown[]>(feature: string, action: (...args: A) => void) =>
@@ -145,8 +143,7 @@
 			if (supporter) {
 				action(...args);
 			} else {
-				upsellFeature = feature;
-				upsellOpen = true;
+				showUpsell(feature);
 			}
 		};
 	/** Wrap a tracker action so it runs only for a supporter. */
@@ -286,6 +283,7 @@
 			});
 			if (response.ok) return null;
 			const json = await response.json().catch(() => null);
+			if (refusedForPremium(response.status, json)) showUpsell('Editing characters');
 			return saveErrors(response.status, json, body);
 		} catch {
 			return { name: null, messages: ["Couldn't reach Inconnu to save your changes."] };
@@ -504,7 +502,7 @@
 {/if}
 
 {#if editable || actionable}
-	<PremiumModal bind:open={upsellOpen} feature={upsellFeature} />
+	<PremiumModal bind:open={upsell.open} feature={upsell.feature} />
 {/if}
 
 <!-- The character changed while it was being edited -->

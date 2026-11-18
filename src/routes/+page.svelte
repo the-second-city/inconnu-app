@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { resolve } from '$app/paths';
-	import { DISCORD_URL } from '$lib';
+	import { DISCORD_URL, PATREON_URL } from '$lib';
 	import Ankh from '$lib/components/Ankh.svelte';
 	import Meta from '$lib/components/Meta.svelte';
 
@@ -124,12 +124,8 @@
 					>Inconnu's</strong
 				>
 				development,
-				<a
-					href="https://patreon.com/tiltowait"
-					class={premiumLinkClasses}
-					title="Patreon"
-					target="_blank"
-				>
+				<!-- eslint-disable-next-line svelte/no-navigation-without-resolve -- external link -->
+				<a href={PATREON_URL} class={premiumLinkClasses} title="Patreon" target="_blank">
 					Patreon supporters
 				</a>
 				can upload unlimited
