@@ -4,7 +4,7 @@
 	import type { PageData } from './$types';
 
 	import { DOCS_CARD_CLASSES } from '$lib/constants/docsStyles';
-	import Meta from '$lib/components/Meta.svelte';
+	import Meta from '$lib/components/layout/Meta.svelte';
 	import DocsNav from '$lib/components/docs/DocsNav.svelte';
 
 	let { data }: { data: PageData } = $props();

@@ -1,8 +1,8 @@
 <script lang="ts">
 	import { resolve } from '$app/paths';
 	import { DISCORD_URL, PATREON_URL } from '$lib';
-	import Ankh from '$lib/components/Ankh.svelte';
-	import Meta from '$lib/components/Meta.svelte';
+	import Ankh from '$lib/components/layout/Ankh.svelte';
+	import Meta from '$lib/components/layout/Meta.svelte';
 
 	const premiumLinkClasses = 'text-primary-300 font-semibold underline hover:no-underline';
 </script>

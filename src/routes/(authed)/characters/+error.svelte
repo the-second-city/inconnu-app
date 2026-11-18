@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { page } from '$app/state';
 
-	import ErrorPanel from '$lib/components/ErrorPanel.svelte';
+	import ErrorPanel from '$lib/components/ui/ErrorPanel.svelte';
 
 	const message = $derived(
 		page.error?.message || "We couldn't load your characters. Please try again later."

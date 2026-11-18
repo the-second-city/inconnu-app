@@ -4,7 +4,7 @@
 	import { goto } from '$app/navigation';
 	import { resolve } from '$app/paths';
 	import { PATREON_URL } from '$lib';
-	import Avatar from '$lib/components/Avatar.svelte';
+	import Avatar from '$lib/components/ui/Avatar.svelte';
 	import { Heart, Image, MessageSquare, Sparkles } from '@lucide/svelte';
 	import { creationInfoStore } from '$lib/stores/CreationStore';
 	import type { CreationInfo } from '$lib/stores/CreationStore';

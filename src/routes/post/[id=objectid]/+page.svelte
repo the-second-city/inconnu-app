@@ -1,13 +1,13 @@
 <script lang="ts">
 	import { page } from '$app/state';
-	import Avatar from '$lib/components/Avatar.svelte';
+	import Avatar from '$lib/components/ui/Avatar.svelte';
 	import { ExternalLink } from '@lucide/svelte';
 
 	import { isHttpsUrl } from '$lib';
 	import type { Changelog } from '$lib/types';
-	import Markdown from '$lib/components/Markdown.svelte';
-	import DiffView from '$lib/components/DiffView.svelte';
-	import Meta from '$lib/components/Meta.svelte';
+	import Markdown from '$lib/components/ui/Markdown.svelte';
+	import DiffView from '$lib/components/ui/DiffView.svelte';
+	import Meta from '$lib/components/layout/Meta.svelte';
 
 	const changelog: Changelog = page.data.changelog;
 

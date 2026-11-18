@@ -2,7 +2,7 @@
 	import { page } from '$app/state';
 	import { resolve } from '$app/paths';
 
-	import ErrorPanel from '$lib/components/ErrorPanel.svelte';
+	import ErrorPanel from '$lib/components/ui/ErrorPanel.svelte';
 
 	const statusCode = $derived(page.status);
 	const message = $derived(

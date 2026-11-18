@@ -6,8 +6,8 @@ import { beforeEach, expect, test, vi } from 'vitest';
 import type { Character, Guild } from '$lib/types';
 import { navigate, page } from '$lib/testing/page.svelte';
 import CharacterPage from './CharacterPage.svelte';
-import { CHARACTER_DEPENDENCY } from '$lib/liveUpdates';
-import { upsell } from '$lib/premium.svelte';
+import { CHARACTER_DEPENDENCY } from '$lib/api/liveUpdates';
+import { upsell } from '$lib/state/premium.svelte';
 
 // SvelteKit's router doesn't run in tests: `page` is reactive state, which `goto` updates
 const goto = vi.hoisted(() => vi.fn());
@@ -17,7 +17,7 @@ const navigation = vi.hoisted(() => ({ before: null as ((nav: unknown) => void) 
 vi.mock('$app/state', () => import('$lib/testing/page.svelte'));
 vi.mock('$app/paths', () => ({ resolve: (route: string) => route }));
 // No busy delay: the save's own promise decides when it's done
-vi.mock('$lib/busy', () => ({ atLeast: <T>(work: Promise<T>): Promise<T> => work }));
+vi.mock('$lib/state/busy', () => ({ atLeast: <T>(work: Promise<T>): Promise<T> => work }));
 vi.mock('$app/navigation', () => ({
 	goto,
 	invalidate,
@@ -28,8 +28,8 @@ vi.mock('$app/navigation', () => ({
 
 // The viewer is a supporter unless a test says otherwise
 const isSupporter = vi.hoisted(() => vi.fn(async () => true));
-vi.mock('$lib/premium.svelte', async (importOriginal) => ({
-	...(await importOriginal<typeof import('$lib/premium.svelte')>()),
+vi.mock('$lib/state/premium.svelte', async (importOriginal) => ({
+	...(await importOriginal<typeof import('$lib/state/premium.svelte')>()),
 	isSupporter
 }));
 

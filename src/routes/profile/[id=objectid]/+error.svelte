@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { resolve } from '$app/paths';
-	import StatusError from '$lib/components/StatusError.svelte';
+	import StatusError from '$lib/components/ui/StatusError.svelte';
 </script>
 
 <StatusError

@@ -2,8 +2,8 @@
 	import { resolve } from '$app/paths';
 	import { ChartBellCurve, PawPrint } from '@lucide/svelte';
 	import type { Component } from 'svelte';
-	import Card from '$lib/components/Card.svelte';
-	import Meta from '$lib/components/Meta.svelte';
+	import Card from '$lib/components/ui/Card.svelte';
+	import Meta from '$lib/components/layout/Meta.svelte';
 </script>
 
 <Meta

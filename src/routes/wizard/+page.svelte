@@ -1,8 +1,8 @@
 <script lang="ts">
 	import { resolve } from '$app/paths';
-	import Card from '$lib/components/Card.svelte';
+	import Card from '$lib/components/ui/Card.svelte';
 	import { ExternalLink } from '@lucide/svelte';
-	import Meta from '$lib/components/Meta.svelte';
+	import Meta from '$lib/components/layout/Meta.svelte';
 </script>
 
 <Meta

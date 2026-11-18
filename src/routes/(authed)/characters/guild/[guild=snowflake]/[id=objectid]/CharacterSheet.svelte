@@ -1,10 +1,10 @@
 <script lang="ts">
-	import { isVampiric } from '$lib/vampire';
+	import { isVampiric } from '$lib/rules/vampire';
 	import type { Character, TrackType } from '$lib/types';
 
-	import TraitSheet from '$lib/components/characters/sheets/TraitSheet.svelte';
-	import MainTrackers from '$lib/components/characters/sheets/components/MainTrackers.svelte';
-	import BloodTrackers from '$lib/components/characters/sheets/components/BloodTrackers.svelte';
+	import TraitSheet from '$lib/components/characters/sheet/TraitSheet.svelte';
+	import MainTrackers from '$lib/components/characters/sheet/MainTrackers.svelte';
+	import BloodTrackers from '$lib/components/characters/sheet/BloodTrackers.svelte';
 
 	interface ComponentProps {
 		character: Character;

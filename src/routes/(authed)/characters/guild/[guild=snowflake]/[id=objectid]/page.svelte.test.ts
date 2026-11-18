@@ -17,7 +17,7 @@ vi.mock('$app/paths', () => ({
 }));
 vi.mock('$app/navigation', () => ({ goto: vi.fn(), invalidate, beforeNavigate: () => {} }));
 // EventSource doesn't exist in jsdom; `liveUpdates.test.ts` tests the watcher itself
-vi.mock('$lib/liveUpdates', () => ({ CHARACTER_DEPENDENCY: 'app:character', watchCharacter }));
+vi.mock('$lib/api/liveUpdates', () => ({ CHARACTER_DEPENDENCY: 'app:character', watchCharacter }));
 
 /** Full character data for a mortal with the given ID and name. */
 const characterData = (id: string, name: string): CharacterData => ({

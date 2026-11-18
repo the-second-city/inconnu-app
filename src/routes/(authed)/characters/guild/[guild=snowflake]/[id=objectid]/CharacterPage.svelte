@@ -17,29 +17,34 @@
 
 	import { beforeNavigate, goto, invalidate } from '$app/navigation';
 	import { resolve } from '$app/paths';
-	import { atLeast } from '$lib/busy';
-	import { editBody, saveErrors, type CharacterEdit, type SaveErrors } from '$lib/characterEdit';
-	import { CHARACTER_DEPENDENCY } from '$lib/liveUpdates';
+	import { atLeast } from '$lib/state/busy';
+	import {
+		editBody,
+		saveErrors,
+		type CharacterEdit,
+		type SaveErrors
+	} from '$lib/api/characterEdit';
+	import { CHARACTER_DEPENDENCY } from '$lib/api/liveUpdates';
 	import { page } from '$app/state';
 	import type { Pathname } from '$app/types';
 	import type { Character, Guild, OwnerData, TrackType } from '$lib/types';
-	import ClientPortal from '$lib/components/ClientPortal.svelte';
-	import Modal from '$lib/components/Modal.svelte';
-	import ModalActions from '$lib/components/ModalActions.svelte';
+	import ClientPortal from '$lib/components/ui/ClientPortal.svelte';
+	import Modal from '$lib/components/ui/Modal.svelte';
+	import ModalActions from '$lib/components/ui/ModalActions.svelte';
 	import CharacterSheet from './CharacterSheet.svelte';
-	import CharHeader from '$lib/components/characters/CharHeader.svelte';
-	import CharProfile from '$lib/components/characters/CharProfile.svelte';
-	import CharLog from '$lib/components/characters/CharLog.svelte';
-	import CharExperience from '$lib/components/characters/CharExperience.svelte';
-	import RouseModal from '$lib/components/characters/RouseModal.svelte';
-	import MendModal from '$lib/components/characters/MendModal.svelte';
-	import DamageModal from '$lib/components/characters/DamageModal.svelte';
-	import SlakeModal from '$lib/components/characters/SlakeModal.svelte';
-	import StainModal from '$lib/components/characters/StainModal.svelte';
-	import RemorseModal from '$lib/components/characters/RemorseModal.svelte';
-	import FrenzyModal from '$lib/components/characters/FrenzyModal.svelte';
-	import PremiumModal from '$lib/components/characters/PremiumModal.svelte';
-	import { isSupporter, refusedForPremium, showUpsell, upsell } from '$lib/premium.svelte';
+	import CharHeader from '$lib/components/characters/view/CharHeader.svelte';
+	import CharProfile from '$lib/components/characters/view/CharProfile.svelte';
+	import CharLog from '$lib/components/characters/view/CharLog.svelte';
+	import CharExperience from '$lib/components/characters/view/CharExperience.svelte';
+	import RouseModal from '$lib/components/characters/actions/RouseModal.svelte';
+	import MendModal from '$lib/components/characters/actions/MendModal.svelte';
+	import DamageModal from '$lib/components/characters/actions/DamageModal.svelte';
+	import SlakeModal from '$lib/components/characters/actions/SlakeModal.svelte';
+	import StainModal from '$lib/components/characters/actions/StainModal.svelte';
+	import RemorseModal from '$lib/components/characters/actions/RemorseModal.svelte';
+	import FrenzyModal from '$lib/components/characters/actions/FrenzyModal.svelte';
+	import PremiumModal from '$lib/components/premium/PremiumModal.svelte';
+	import { isSupporter, refusedForPremium, showUpsell, upsell } from '$lib/state/premium.svelte';
 
 	interface ComponentProps {
 		character: Character;

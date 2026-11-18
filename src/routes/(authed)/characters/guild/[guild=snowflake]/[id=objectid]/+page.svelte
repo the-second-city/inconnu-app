@@ -2,10 +2,10 @@
 	import { invalidate } from '$app/navigation';
 	import { resolve } from '$app/paths';
 	import type { Pathname } from '$app/types';
-	import { CHARACTER_DEPENDENCY, watchCharacter } from '$lib/liveUpdates';
+	import { CHARACTER_DEPENDENCY, watchCharacter } from '$lib/api/liveUpdates';
 	import type { CharacterData, Character, PublicCharacter } from '$lib/types';
 	import CharacterPage from './CharacterPage.svelte';
-	import PublicCharacterView from '$lib/components/characters/PublicCharacterView.svelte';
+	import PublicCharacterView from '$lib/components/characters/view/PublicCharacterView.svelte';
 	import type { PageProps } from './$types';
 
 	let { data }: PageProps = $props();

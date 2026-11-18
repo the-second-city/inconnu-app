@@ -1,6 +1,6 @@
 import { error } from '@sveltejs/kit';
 import type { PageLoad } from './$types';
-import { TRACK_LIMITS, type TrackLimits } from '$lib/damage';
+import { TRACK_LIMITS, type TrackLimits } from '$lib/rules/damage';
 import type { Trait, Guild, TrackType } from '$lib/types';
 
 interface WizardData {

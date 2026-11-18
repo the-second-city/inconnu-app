@@ -2,7 +2,7 @@ import { error } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
 import { API_KEY, INCONNU_API_URL } from '$env/static/private';
 import type { CharacterData } from '$lib/types';
-import { CHARACTER_DEPENDENCY } from '$lib/liveUpdates';
+import { CHARACTER_DEPENDENCY } from '$lib/api/liveUpdates';
 
 export const load: PageServerLoad = async ({ depends, params, parent }) => {
 	// Live updates rerun this when the character changes

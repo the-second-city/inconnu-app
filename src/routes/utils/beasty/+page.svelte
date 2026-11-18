@@ -1,9 +1,9 @@
 <script lang="ts">
 	import { ClipboardCheck, LoaderCircle } from '@lucide/svelte';
 
-	import Card from '$lib/components/Card.svelte';
-	import Markdown from '$lib/components/Markdown.svelte';
-	import Meta from '$lib/components/Meta.svelte';
+	import Card from '$lib/components/ui/Card.svelte';
+	import Markdown from '$lib/components/ui/Markdown.svelte';
+	import Meta from '$lib/components/layout/Meta.svelte';
 
 	let input = $state('');
 	let justCopied = $state(false);

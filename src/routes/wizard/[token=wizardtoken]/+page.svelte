@@ -1,22 +1,22 @@
 <script lang="ts">
 	import { untrack } from 'svelte';
 	import type { PageData } from './$types';
-	import { isVampiric } from '$lib/vampire';
-	import type { TrackLimits } from '$lib/damage';
+	import { isVampiric } from '$lib/rules/vampire';
+	import type { TrackLimits } from '$lib/rules/damage';
 	import type { Trait, Splat } from '$lib/types';
 	import { goto } from '$app/navigation';
 	import { resolve } from '$app/paths';
-	import Avatar from '$lib/components/Avatar.svelte';
+	import Avatar from '$lib/components/ui/Avatar.svelte';
 	import { Loader2 } from '@lucide/svelte';
-	import TraitSheet from '$lib/components/characters/sheets/TraitSheet.svelte';
-	import RatingSelector from '$lib/components/characters/sheets/components/RatingSelector.svelte';
-	import Card from '$lib/components/Card.svelte';
-	import Selector from '$lib/components/Selector.svelte';
-	import ErrorMessage from '$lib/components/ErrorMessage.svelte';
+	import TraitSheet from '$lib/components/characters/sheet/TraitSheet.svelte';
+	import RatingSelector from '$lib/components/characters/sheet/RatingSelector.svelte';
+	import Card from '$lib/components/ui/Card.svelte';
+	import Selector from '$lib/components/ui/Selector.svelte';
+	import ErrorMessage from '$lib/components/ui/ErrorMessage.svelte';
 	import { FORM_CLASSES, FORM_VALIDATION } from '$lib/constants/formStyles';
 	import { creationInfoStore } from '$lib/stores/CreationStore';
 	import { characterNameError, normalize, getErrorDetail } from '$lib';
-	import Meta from '$lib/components/Meta.svelte';
+	import Meta from '$lib/components/layout/Meta.svelte';
 
 	let { data }: { data: PageData } = $props();
 	// The form starts from the wizard's traits, then owns them
