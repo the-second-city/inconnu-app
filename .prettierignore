@@ -7,4 +7,4 @@ yarn.lock
 README.md
 
 # Generated test fixtures
-src/lib/probability.fixture.json
+src/lib/rules/probability.fixture.json

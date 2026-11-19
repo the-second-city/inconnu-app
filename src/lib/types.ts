@@ -61,6 +61,109 @@ export interface Character {
 	log?: CharacterLog;
 }
 
+/** A Rouse request. Mirrors the bot's `RouseBody`. */
+export interface RouseRequest {
+	count: number; // 1-3
+	reroll: boolean; // Re-roll failures, as high Blood Potency allows
+	oblivion_stains: boolean; // Apply the guild's Oblivion Stains, as for an Oblivion power
+}
+
+/**
+ * The outcome of Rouse checks. Mirrors the bot's `RouseResult`. Ghouls take one Aggravated Health
+ * damage instead (`aggravated`), with no successes or failures.
+ */
+export interface RouseResult {
+	successes: number;
+	failures: number;
+	hunger: number; // After the checks
+	frenzy: boolean; // Rousing at Hunger 5, pass or fail, calls for a frenzy test
+	aggravated: number;
+	stains: number; // Oblivion Stains applied
+	degeneration: number;
+	dice: number[][]; // Each check's faces: the first, then any re-roll (none for ghouls)
+	oblivion_faces: number[]; // The server's Oblivion Stain faces, applied or not
+}
+
+/**
+ * A request to heal damage. Mirrors the bot's `MendBody`. Health heals as `/mend` and `/aggheal`
+ * do (vampires Rouse); Willpower recovers what `/awaken` would (Superficial) or one Aggravated,
+ * without Rouses.
+ */
+export interface MendRequest {
+	type: 'superficial' | 'aggravated';
+	track: TrackType;
+}
+
+/** The outcome of healing damage. Mirrors the bot's `MendResult`. */
+export interface MendResult {
+	track: string; // The healed track
+	dice: number[]; // Rouse dice: one to mend, three for Aggravated; none for non-vampires or Willpower
+	hunger: number; // After the Rouse Checks
+	frenzy: boolean; // A failed mending Rouse at Hunger 5 calls for a frenzy check
+	torpor: boolean; // Healing Aggravated damage pushed Hunger past 5
+}
+
+/**
+ * Damage to deal. Mirrors the bot's `DamageBody`: Superficial applies first (wrapping into
+ * Aggravated past the track's end), then Aggravated.
+ */
+export interface DamageRequest {
+	track: TrackType;
+	superficial: number;
+	aggravated: number;
+}
+
+/** An amount of Hunger to slake or Stains to add, 1-10. Mirrors the bot's `AmountBody`. */
+export interface AmountRequest {
+	amount: number;
+}
+
+/** The outcome of slaking Hunger. Mirrors the bot's `SlakeResult`. */
+export interface SlakeResult {
+	frenzy: boolean; // Slaking from Hunger 4 or more calls for a frenzy test (Difficulty 3)
+}
+
+/** A Remorse test's options, as `/remorse`'s. Mirrors the bot's `RemorseBody`. */
+export interface RemorseRequest {
+	min_override: number; // The fewest dice to roll, 1-5; normally 1
+	lasombra_alt: boolean; // The Lasombra alternative Bane: Bane Severity fewer dice (at least 1)
+}
+
+/** The outcome of a Remorse test. Mirrors the bot's `RemorseResult`. Either way, Stains clear. */
+export interface RemorseResult {
+	remorseful: boolean; // Passed, keeping Humanity
+	dice: number[];
+	humanity: number; // After the test
+}
+
+/** A frenzy test's dice penalty: Brujah Fury (Bane Severity) or Malkavian Terror (2). */
+export type FrenzyPenalty = 'brujah' | 'malkavian';
+
+/** An advantage that aids in resisting frenzy. Mirrors the bot's `FrenzyAdvantage`. */
+export type FrenzyAdvantage =
+	| 'cold_dead_hunger'
+	| 'gentle_mind'
+	| 'jewel_in_the_garden'
+	| 'the_dream'
+	| 'the_heart_of_darkness';
+
+/** A frenzy test's options. Mirrors the bot's `FrenzyBody`: bonus dice and advantages may combine. */
+export interface FrenzyRequest {
+	difficulty: number; // 1-10
+	penalty: FrenzyPenalty | null;
+	bonus: number; // Flat bonus dice, 0-7
+	advantages: FrenzyAdvantage[]; // Advantages' bonus dice, or The Dream's re-roll
+}
+
+/** The outcome of a frenzy test. Mirrors the bot's `FrenzyResult`. */
+export interface FrenzyResult {
+	passed: boolean; // Resisted frenzy
+	critical: boolean; // Resisted without losing a turn
+	pool: number; // After the penalty and bonuses
+	dice: number[]; // The final faces
+	original: number[] | null; // The faces before The Dream's re-roll, if used
+}
+
 /** A character's experience and its log. Mirrors the bot's `VCharExperience`. */
 export interface Experience {
 	current: number; // Unspent
@@ -100,6 +203,7 @@ export interface CharacterLog {
 	hunger_gained: number;
 	hunger_slaked: number;
 	hunts: number;
+	num_victims_drained: number; // Drains chosen in a hunt's Slake menu
 	remorse_checks: number;
 	remorse_failures: number;
 	remorse_successes: number;

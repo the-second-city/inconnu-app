@@ -10,20 +10,66 @@
 @source '../node_modules/@skeletonlabs/skeleton-svelte/dist';
 
 [data-theme='crimson'] {
+	--font-body: 'EB Garamond', ui-serif, Georgia, Cambria, 'Times New Roman', Times, serif;
+	/* Roman inscriptional capitals, for the sheet's section titles */
+	--font-display: 'Cinzel', 'Trajan Pro', 'EB Garamond', ui-serif, Georgia, serif;
+
+	/* Ash and old blood rather than the theme's blue slate: the same lightness steps,
+	   turned toward red and nearly drained of color */
+	--color-surface-50: oklch(91% 0.012 70deg);
+	--color-surface-100: oklch(81% 0.014 60deg);
+	--color-surface-200: oklch(70% 0.016 45deg);
+	--color-surface-300: oklch(58.5% 0.02 30deg);
+	--color-surface-400: oklch(46.5% 0.024 22deg);
+	--color-surface-500: oklch(34.5% 0.026 20deg);
+	--color-surface-600: oklch(30.5% 0.024 20deg);
+	--color-surface-700: oklch(26.5% 0.022 20deg);
+	--color-surface-800: oklch(22.5% 0.02 20deg);
+	--color-surface-900: oklch(18% 0.016 20deg);
+	--color-surface-950: oklch(13.5% 0.012 20deg);
+
+	/* Blood: the dots, drops and rules the sheet is drawn in */
+	--blood-bright: oklch(58% 0.21 24deg);
+	--blood: oklch(46% 0.18 22deg);
+	--blood-dark: oklch(30% 0.12 20deg);
+
+	--typo-anchor--color-dark: var(--color-primary-400);
+
 	& body {
-		font-family: 'EB Garamond', ui-serif, Georgia, Cambria, 'Times New Roman', Times, serif;
+		font-family: var(--font-body);
 		font-size: 115%;
-		background-attachment: fixed;
+		/* Clear, so the grain layer below shows: <html> paints the page color behind it */
+		background-color: transparent;
+	}
+
+	/* Film grain over a candlelit crimson pool, falling off into black at the edges. It's
+	   a fixed layer of its own rather than a `background-attachment: fixed` background, which
+	   repaints the whole window (and every shadow on the page) each frame of a scroll: the
+	   browser composites this layer once and scrolls the page over it. */
+	& body::before {
+		content: '';
+		position: fixed;
+		inset: 0;
+		z-index: -1;
+		pointer-events: none;
+		will-change: transform;
 		/* prettier-ignore */
 		background-image:
-      radial-gradient(at 0% 25%, color-mix(in oklab, var(--color-primary-500) 10%, transparent) 0px, transparent 30%),
-      radial-gradient(at 15% 06%, color-mix(in oklab, var(--color-success-500) 5%, transparent) 0px, transparent 30%),
-      radial-gradient(at 85% 48%, color-mix(in oklab, var(--color-secondary-400) 15%, transparent) 0px, transparent 35%),
-      radial-gradient(at 65% 85%, color-mix(in oklab, var(--color-tertiary-500) 8%, transparent) 0px, transparent 40%),
-      radial-gradient(at 35% 60%, color-mix(in oklab, var(--color-warning-400) 6%, transparent) 0px, transparent 25%),
-      radial-gradient(at 92% 40%, color-mix(in oklab, var(--color-error-500) 7%, transparent) 0px, transparent 30%),
-      radial-gradient(at 50% 10%, color-mix(in oklab, var(--color-primary-300) 15%, transparent) 0px, transparent 45%),
-      radial-gradient(at 10% 90%, color-mix(in oklab, var(--color-success-300) 9%, transparent) 0px, transparent 35%);
+			url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 .55 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.35'/%3E%3C/svg%3E"),
+			radial-gradient(ellipse 120% 80% at 50% 120%, oklch(0% 0 0 / 0.7), transparent 60%),
+			radial-gradient(ellipse 70% 55% at 50% -10%, color-mix(in oklab, var(--blood) 32%, transparent), transparent 70%),
+			radial-gradient(ellipse 40% 50% at 0% 40%, color-mix(in oklab, var(--blood-dark) 30%, transparent), transparent 70%),
+			radial-gradient(ellipse 40% 50% at 100% 70%, color-mix(in oklab, var(--blood-dark) 22%, transparent), transparent 70%),
+			radial-gradient(ellipse 140% 100% at 50% 50%, transparent 55%, oklch(0% 0 0 / 0.65));
+	}
+
+	& ::selection {
+		background: color-mix(in oklab, var(--blood) 70%, transparent);
+		color: white;
+	}
+
+	& :where(html) {
+		scrollbar-color: var(--color-surface-600) var(--color-surface-950);
 	}
 
 	h1,
@@ -38,8 +84,80 @@
 	.h4,
 	.h5,
 	.h6 {
-		font-family: 'EB Garamond', ui-serif, Georgia, Cambria, 'Times New Roman', Times, serif;
+		font-family: var(--font-body);
 	}
+}
+
+/* A section title between two hairlines that fade in out of the dark, each ending in a
+   diamond of blood beside the title: ——◆ ATTRIBUTES ◆——
+   The rule and diamond are cut from the pseudo-element's fill with a mask (a gradient can't
+   draw a diamond): the fill fades in along the rule and turns solid under the diamond. */
+.heading-ornate {
+	display: flex;
+	align-items: center;
+	gap: 0.6em;
+	text-align: center;
+	color: var(--color-surface-100);
+
+	&::before,
+	&::after {
+		--gem: 9px;
+		content: '';
+		flex: 1;
+		min-width: 1.5rem;
+		height: var(--gem);
+		background: linear-gradient(
+			to var(--rule-dir),
+			transparent,
+			color-mix(in oklab, var(--blood-bright) 70%, transparent) calc(100% - var(--gem)),
+			var(--blood-bright) calc(100% - var(--gem))
+		);
+		mask:
+			url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 8 8'%3E%3Cpath d='M4 0 8 4 4 8 0 4z'/%3E%3C/svg%3E")
+				var(--gem-x) center / var(--gem) var(--gem) no-repeat,
+			linear-gradient(black, black) center / 100% 1px no-repeat;
+	}
+	&::before {
+		--gem-x: right;
+		--rule-dir: right;
+	}
+	&::after {
+		--gem-x: left;
+		--rule-dir: left;
+	}
+}
+
+/* A panel framed like a reliquary: a hairline border, a second hairline set just inside
+   it, and a faint crimson warmth from above */
+.panel-gothic {
+	position: relative;
+	background:
+		linear-gradient(
+			to bottom,
+			color-mix(in oklab, var(--blood-dark) 14%, transparent),
+			transparent 45%
+		),
+		color-mix(in oklab, var(--color-surface-950) 72%, transparent);
+	border: 1px solid color-mix(in oklab, var(--color-surface-400) 70%, transparent);
+	box-shadow:
+		inset 0 0 0 3px color-mix(in oklab, var(--color-surface-950) 60%, transparent),
+		inset 0 0 0 4px color-mix(in oklab, var(--color-surface-500) 45%, transparent),
+		inset 0 1px 24px oklch(0% 0 0 / 0.35),
+		0 8px 24px -12px oklch(0% 0 0 / 0.8);
+}
+
+/* Dripping title text: blood darkening downward, with a faint glow behind it */
+.text-blood {
+	background: linear-gradient(
+		to bottom,
+		var(--color-primary-400) 0%,
+		var(--blood) 55%,
+		var(--blood-dark) 100%
+	);
+	-webkit-background-clip: text;
+	background-clip: text;
+	color: transparent;
+	filter: drop-shadow(0 0 18px color-mix(in oklab, var(--blood) 45%, transparent));
 }
 
 /* Docs pages: Tailwind Typography's spacing and layout, in the site's own colors and size */
@@ -202,4 +320,148 @@
 			margin-bottom: 0;
 		}
 	}
+}
+
+/* Flat buttons in the sheet's colors, used with Skeleton's `btn` (shape, size and padding) or
+   `fab-gothic` (a round floating button).
+   - blood: a solid crimson fill, for committing something (Save)
+   - bone: a bone outline on ash, for entering a mode (Edit)
+   - ash: a gray outline and fill, for backing out (Cancel) */
+.btn-gothic {
+	/* An inset ring, not a border, so the buttons keep the presets' size */
+	box-shadow: inset 0 0 0 1px var(--btn-border);
+	background: var(--btn-bg);
+	color: var(--btn-text);
+	transition:
+		background-color 0.15s ease,
+		box-shadow 0.15s ease,
+		color 0.15s ease,
+		transform 0.2s ease;
+
+	&:hover:not(:disabled) {
+		background: var(--btn-bg-hover, var(--btn-bg));
+		box-shadow: inset 0 0 0 1px var(--btn-border-hover, var(--btn-border));
+		color: var(--btn-text-hover, var(--btn-text));
+	}
+	&:focus-visible {
+		outline: 2px solid var(--color-primary-300);
+		outline-offset: 2px;
+	}
+	&:disabled {
+		cursor: not-allowed;
+		opacity: 0.45;
+	}
+}
+
+.btn-gothic-blood {
+	--btn-bg: var(--blood);
+	--btn-bg-hover: color-mix(in oklab, var(--blood) 80%, var(--blood-bright));
+	--btn-border: var(--blood);
+	--btn-border-hover: var(--blood-bright);
+	--btn-text: var(--color-surface-50);
+}
+
+.btn-gothic-bone {
+	--bone: oklch(86% 0.035 80deg);
+	--btn-bg: color-mix(in oklab, var(--bone) 6%, transparent);
+	--btn-bg-hover: color-mix(in oklab, var(--bone) 12%, transparent);
+	--btn-border: color-mix(in oklab, var(--bone) 40%, transparent);
+	--btn-border-hover: color-mix(in oklab, var(--bone) 70%, transparent);
+	--btn-text: var(--bone);
+}
+
+.btn-gothic-ash {
+	--btn-bg: color-mix(in oklab, var(--color-surface-500) 30%, transparent);
+	--btn-bg-hover: color-mix(in oklab, var(--color-surface-500) 50%, transparent);
+	--btn-border: var(--color-surface-400);
+	--btn-border-hover: var(--color-surface-300);
+	--btn-text: var(--color-surface-100);
+	--btn-text-hover: var(--color-surface-50);
+}
+
+/* A round floating button (the phone's edit controls): the same tones, opaque so they read
+   over the sheet, with only the shadow that lifts them off it */
+.fab-gothic {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	width: 3.5rem;
+	height: 3.5rem;
+	border-radius: 9999px;
+	box-shadow:
+		inset 0 0 0 1px var(--btn-border),
+		0 6px 16px -6px oklch(0% 0 0 / 0.9);
+
+	&:hover:not(:disabled) {
+		box-shadow:
+			inset 0 0 0 1px var(--btn-border-hover, var(--btn-border)),
+			0 6px 16px -6px oklch(0% 0 0 / 0.9);
+		transform: scale(1.1);
+	}
+	&:active:not(:disabled) {
+		transform: scale(0.95);
+	}
+	&.btn-gothic-bone,
+	&.btn-gothic-ash {
+		--btn-bg: var(--color-surface-900);
+		--btn-bg-hover: var(--color-surface-800);
+	}
+}
+
+/* Cinzel, for the sheet's section titles (headings otherwise take the body face) */
+/* Under the theme, to outrank its heading rule */
+[data-theme='crimson'] .font-display {
+	font-family: var(--font-display);
+}
+
+/* A popover's panel, in the sheet panels' style: an opaque near-black with a faint crimson
+   warmth from above, the same double hairline, and a deep shadow to lift it off the page.
+   `Popover` uses it by default; its arrow takes `--popover-bg` and continues the outline in
+   `--popover-border`, so it matches whichever way the popover flips. */
+.popover-gothic {
+	--popover-bg: var(--color-surface-900);
+	--popover-border: var(--color-surface-400);
+	background:
+		linear-gradient(
+			to bottom,
+			color-mix(in oklab, var(--blood-dark) 12%, transparent),
+			transparent 4rem
+		),
+		var(--popover-bg);
+	border: 1px solid var(--popover-border);
+	box-shadow:
+		inset 0 0 0 3px var(--popover-bg),
+		inset 0 0 0 4px color-mix(in oklab, var(--color-surface-500) 60%, transparent),
+		0 0 0 1px oklch(0% 0 0 / 0.6),
+		0 20px 40px -12px oklch(0% 0 0 / 0.9);
+}
+
+/* A modal's panel: the popover's near-black and double hairline, with a deeper crimson
+   warmth, an outer edge tinged with blood, and a faint crimson glow around it */
+.modal-gothic {
+	--modal-bg: var(--color-surface-900);
+	background:
+		linear-gradient(
+			to bottom,
+			color-mix(in oklab, var(--blood-dark) 22%, transparent),
+			transparent 8rem
+		),
+		var(--modal-bg);
+	border: 1px solid color-mix(in oklab, var(--blood) 45%, var(--color-surface-400));
+	box-shadow:
+		inset 0 0 0 3px var(--modal-bg),
+		inset 0 0 0 4px color-mix(in oklab, var(--color-surface-500) 60%, transparent),
+		0 0 0 1px oklch(0% 0 0 / 0.6),
+		0 30px 60px -15px oklch(0% 0 0 / 0.95),
+		0 0 60px -20px color-mix(in oklab, var(--blood) 50%, transparent);
+}
+
+/* Behind a modal: the page sinks into a dark crimson vignette */
+.modal-backdrop-gothic {
+	background: radial-gradient(
+		ellipse at 50% 45%,
+		oklch(14% 0.04 20 / 0.6),
+		oklch(4% 0.01 20 / 0.88) 75%
+	);
+	backdrop-filter: blur(4px);
 }

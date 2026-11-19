@@ -1,20 +1,22 @@
 <script lang="ts">
 	import { untrack } from 'svelte';
 	import type { PageData } from './$types';
+	import { isVampiric } from '$lib/rules/vampire';
+	import type { TrackLimits } from '$lib/rules/damage';
 	import type { Trait, Splat } from '$lib/types';
 	import { goto } from '$app/navigation';
 	import { resolve } from '$app/paths';
-	import Avatar from '$lib/components/Avatar.svelte';
+	import Avatar from '$lib/components/ui/Avatar.svelte';
 	import { Loader2 } from '@lucide/svelte';
-	import TraitSheet from '$lib/components/characters/sheets/TraitSheet.svelte';
-	import RatingSelector from '$lib/components/characters/sheets/components/RatingSelector.svelte';
-	import Card from '$lib/components/Card.svelte';
-	import Selector from '$lib/components/Selector.svelte';
-	import ErrorMessage from '$lib/components/ErrorMessage.svelte';
+	import TraitSheet from '$lib/components/characters/sheet/TraitSheet.svelte';
+	import RatingSelector from '$lib/components/characters/sheet/RatingSelector.svelte';
+	import Card from '$lib/components/ui/Card.svelte';
+	import Selector from '$lib/components/ui/Selector.svelte';
+	import ErrorMessage from '$lib/components/ui/ErrorMessage.svelte';
 	import { FORM_CLASSES, FORM_VALIDATION } from '$lib/constants/formStyles';
 	import { creationInfoStore } from '$lib/stores/CreationStore';
-	import { normalize, getErrorDetail } from '$lib';
-	import Meta from '$lib/components/Meta.svelte';
+	import { characterNameError, normalize, getErrorDetail } from '$lib';
+	import Meta from '$lib/components/layout/Meta.svelte';
 
 	let { data }: { data: PageData } = $props();
 	// The form starts from the wizard's traits, then owns them
@@ -58,26 +60,18 @@
 		return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
 	};
 	const splatOptions = $derived(data.splats.map(formatSplat));
-	const healthOptions = Array.from({ length: 17 }, (_, i) => `${i + 4}`);
-	const willpowerOptions = Array.from({ length: 9 }, (_, i) => `${i + 2}`);
+	/** The ratings from a track's fewest to most boxes, as the bot allows. */
+	const trackOptions = ({ min, max }: TrackLimits): string[] =>
+		Array.from({ length: max - min + 1 }, (_, i) => `${i + min}`);
+	const healthOptions = $derived(trackOptions(data.limits.health));
+	const willpowerOptions = $derived(trackOptions(data.limits.willpower));
 	const humanityOptions = Array.from({ length: 10 }, (_, i) => `${i + 1}`);
 
 	// Character name validation
 	const normalizedName = $derived(normalize(name));
-	const isValidCharacterName = $derived.by(() => {
-		if (!normalizedName) return false;
-		if (normalizedName.length > 30) return false;
-		return /^([^\W]|[-_\s'])+$/.test(normalizedName);
-	});
-	const nameError = $derived.by(() => {
-		if (name.length === 0) return null; // Don't show error for empty field
-		if (!normalizedName) return 'Name cannot be empty';
-		if (normalizedName.length > 30) return 'Name must be 30 characters or less';
-		if (!/^([^\W]|[-_\s'])+$/.test(normalizedName)) {
-			return 'Name can only contain letters, numbers, spaces, hyphens, underscores, and apostrophes';
-		}
-		return null;
-	});
+	const isValidCharacterName = $derived(characterNameError(normalizedName) === null);
+	// Don't show an error for an empty field
+	const nameError = $derived(name.length === 0 ? null : characterNameError(normalizedName));
 
 	// Conviction validation
 	const conviction1Error = $derived(
@@ -135,7 +129,7 @@
 			health: parseInt(health),
 			willpower: parseInt(willpower),
 			humanity: parseInt(humanity),
-			blood_potency: splat === 'vampire' || splat === 'thin-blood' ? blood_potency : 0,
+			blood_potency: isVampiric(splat) ? blood_potency : 0,
 			convictions: [conviction1, conviction2, conviction3],
 			biography: history,
 			description,
@@ -330,7 +324,7 @@
 	{#if splat !== ''}
 		<TraitSheet bind:traits splat={splat as Splat} editing={true} />
 
-		{#if splat === 'vampire' || splat === 'thin-blood'}
+		{#if isVampiric(splat)}
 			<div class="mt-3">
 				<Card>
 					<h3 class="h3 mb-2 text-center text-xl font-semibold uppercase">Blood Potency</h3>

@@ -1,6 +1,10 @@
 import { expect, test } from 'vitest';
 
 import {
+	capitalize,
+	characterNameError,
+	orList,
+	plural,
 	getErrorDetail,
 	isHttpsUrl,
 	hasProfileContent,
@@ -16,6 +20,28 @@ import type { Profile } from '$lib/types';
 /** A JSON response, as the Inconnu API would send it. */
 const jsonResponse = (body: unknown, status = 400): Response =>
 	new Response(JSON.stringify(body), { status, headers: { 'Content-Type': 'application/json' } });
+
+test.each([
+	['Nadia', null],
+	["Jean-Luc d'Arcy_II", null],
+	['a'.repeat(30), null],
+	['', 'Name cannot be empty'],
+	['a'.repeat(31), 'Name must be 30 characters or less'],
+	// Letters of any script, like the bot's Python \w
+	['Ölga', null],
+	['José Núñez', null],
+	['日本', null],
+	[
+		'Nadia 😈',
+		'Name can only contain letters, numbers, spaces, hyphens, underscores, and apostrophes'
+	],
+	[
+		'Nadia!',
+		'Name can only contain letters, numbers, spaces, hyphens, underscores, and apostrophes'
+	]
+])('characterNameError(%j) is %j', (name: string, expected: string | null) => {
+	expect(characterNameError(name)).toBe(expected);
+});
 
 test.each([
 	['Strength', true],
@@ -113,4 +139,29 @@ test.each([
 	['2024-03-05T12:00:00-05:00', '2024-03-05T17:00:00.000Z']
 ])('parseApiDate(%j) is %s', (date: string, expected: string) => {
 	expect(parseApiDate(date).toISOString()).toBe(expected);
+});
+
+test.each([
+	[[], ''],
+	[['Rouse'], 'Rouse'],
+	[['Rouse', 'slake'], 'Rouse or slake'],
+	[['take damage', 'mend', 'Rouse'], 'take damage, mend, or Rouse']
+])('orList(%j) is %j', (items, expected) => {
+	expect(orList(items)).toBe(expected);
+});
+
+test.each([
+	['', ''],
+	['take damage', 'Take damage'],
+	['Rouse or slake', 'Rouse or slake']
+])('capitalize(%j) is %j', (text, expected) => {
+	expect(capitalize(text)).toBe(expected);
+});
+
+test.each<[number, string]>([
+	[0, '0 dice'],
+	[1, '1 die'],
+	[2, '2 dice']
+])('plural(%i) is %j', (n, expected) => {
+	expect(plural(n, 'die', 'dice')).toBe(expected);
 });

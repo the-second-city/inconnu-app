@@ -1,5 +1,5 @@
 <script lang="ts">
-	import Avatar from '$lib/components/Avatar.svelte';
+	import Avatar from '$lib/components/ui/Avatar.svelte';
 	import { resolve } from '$app/paths';
 	import type { Guild } from '$lib/types';
 

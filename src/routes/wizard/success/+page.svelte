@@ -3,7 +3,8 @@
 	import { onMount } from 'svelte';
 	import { goto } from '$app/navigation';
 	import { resolve } from '$app/paths';
-	import Avatar from '$lib/components/Avatar.svelte';
+	import { PATREON_URL } from '$lib';
+	import Avatar from '$lib/components/ui/Avatar.svelte';
 	import { Heart, Image, MessageSquare, Sparkles } from '@lucide/svelte';
 	import { creationInfoStore } from '$lib/stores/CreationStore';
 	import type { CreationInfo } from '$lib/stores/CreationStore';
@@ -98,8 +99,9 @@
 							<span>Rolepost system for immersive storytelling</span>
 						</li>
 					</ul>
+					<!-- eslint-disable svelte/no-navigation-without-resolve -- external link -->
 					<a
-						href="https://patreon.com/tiltowait"
+						href={PATREON_URL}
 						target="_blank"
 						rel="noopener noreferrer"
 						class="btn preset-filled-success-50-950 flex w-fit items-center gap-2"
@@ -108,6 +110,7 @@
 						<img src="/images/logos/patreon.webp" class="size-4" alt="Patreon logo" />
 						Become a Patron
 					</a>
+					<!-- eslint-enable svelte/no-navigation-without-resolve -->
 				</div>
 			</div>
 		{:else}

@@ -6,28 +6,27 @@ The web counterpart to [Inconnu](https://github.com/tiltowait/inconnu), a Discor
 
 ### Current
 
-* Landing page (`/`) (anything resembling ad copy is an accomplishment for me)
 * Character creation wizard (`/wizard/[token]`)
-* Personal character viewer (`/characters/[id]`)
-* Miscellaneous utils (`/utils`)
+* Character sheets (`/characters/guild/[guild]/[id]`), with Chronicle and XP logs
+* Live updates: damage taken in Discord shows up on the sheet without a reload
 * View character profiles via direct link ([like this](https://inconnu.app/profile/680d32cbc0bf6151dbd5004e))
-* Browse other characters on servers you share (profiles only)
+* Browse other characters on servers you share (profiles only; no sheets)
+* Documentation (`/docs`), served from the bot, so it never goes stale and never has a broken link
+* Miscellaneous utils (`/utils`): a dice probability calculator and a Beast speak formatter
 * **STs:** View your players' full sheets
+* **STs:** View Rolepost changelogs (`/post/[id]`)
+* **Supporters:** Edit your characters' traits, trackers, and profiles
+* **Supporters:** Rouse, Slake, Mend, take damage, apply Stains, and test Remorse from the sheet, logged and reported just like the bot's commands
 
 ### Planned
 
-* **STs:** View Rolepost changelogs
-
-### Maybe
-
-* Update your characters' traits, profiles
 * View, edit, & create macros
-* View XP logs (surprisingly tricky)
+* Log XP
+* Roll from your sheet (optionally posting to Discord)
 
-### Not planned
+### Maybe; probably not
 
-* Character image uploads
-* Port over https://docs.inconnu.app
+* Character image uploads (use `/character images upload`)
 
 ## Setup
 
@@ -42,10 +41,18 @@ The web counterpart to [Inconnu](https://github.com/tiltowait/inconnu), a Discor
 
 ### Run
 
-1. Get [https://github.com/tiltowait/inconnu](Inconnu) running
+1. Get [Inconnu](https://github.com/tiltowait/inconnu) running
 2. Run the following commands
 
 ```sh
 npm i
 npm run dev
+```
+
+### Check
+
+```sh
+npm run check  # Type checking
+npm run lint   # Prettier and ESLint
+npm test       # Unit tests (Vitest)
 ```

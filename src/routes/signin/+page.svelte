@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { page } from '$app/state';
 	import { SignIn } from '@auth/sveltekit/components';
-	import Meta from '$lib/components/Meta.svelte';
+	import Meta from '$lib/components/layout/Meta.svelte';
 
 	let returnUrl = page.url.searchParams.get('callbackUrl') || '/';
 </script>

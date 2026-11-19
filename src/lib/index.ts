@@ -35,6 +35,22 @@ export const normalize = (text: string): string => {
 	return text.split(/\s+/).filter(Boolean).join(' ');
 };
 
+/**
+ * Why a character name is invalid, or null if it's valid.
+ * @param name - The name, already normalized
+ * @returns The problem, as a message for the user
+ */
+export const characterNameError = (name: string): string | null => {
+	if (!name) return 'Name cannot be empty';
+	if (name.length > 30) return 'Name must be 30 characters or less';
+	// The bot's Python \w is Unicode-aware (letters and numbers of any script, plus _); JS's isn't,
+	// even with the u flag, so spell it out
+	if (!/^[\p{L}\p{N}_\-\s']+$/u.test(name)) {
+		return 'Name can only contain letters, numbers, spaces, hyphens, underscores, and apostrophes';
+	}
+	return null;
+};
+
 export const insensitiveSort = (items: string[]) => {
 	items.sort((a, b) => a.localeCompare(b, undefined, { sensitivity: 'base' }));
 };
@@ -75,7 +91,11 @@ export const getErrorDetail = async (
 	return fallback;
 };
 
+/** The bot's OAuth link, which adds Inconnu to a server. */
+export const INSTALL_URL =
+	'https://discord.com/oauth2/authorize?client_id=882409882119196704&permissions=536872960&scope=applications.commands+bot';
 export const DISCORD_URL = 'https://discord.gg/QHnCdSPeEE';
+export const PATREON_URL = 'https://patreon.com/tiltowait';
 
 /** Whether a URL from the API is safe to link to: https only, so no javascript: or data: URLs. */
 export const isHttpsUrl = (url: string): boolean => {
@@ -98,3 +118,19 @@ export const hasProfileContent = (profile: Profile): boolean => {
  * is UTC. */
 export const parseApiDate = (date: string): Date =>
 	new Date(/T[^Z+-]*$/.test(date) ? `${date}Z` : date);
+
+/** A count with its noun, singular or plural: "1 die", "2 dice". */
+export const plural = (n: number, one: string, many: string): string =>
+	`${n} ${n === 1 ? one : many}`;
+
+/**
+ * Join items into a phrase of alternatives: "A", "A or B", "A, B, or C" (with the serial
+ * comma). Empty for no items.
+ */
+export const orList = (items: string[]): string => {
+	if (items.length <= 2) return items.join(' or ');
+	return `${items.slice(0, -1).join(', ')}, or ${items.at(-1)}`;
+};
+
+/** Uppercase the first letter of some text, leaving the rest as it is. */
+export const capitalize = (text: string): string => text.charAt(0).toUpperCase() + text.slice(1);

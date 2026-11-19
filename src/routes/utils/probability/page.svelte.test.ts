@@ -2,7 +2,7 @@ import { render, screen, within } from '@testing-library/svelte';
 import userEvent from '@testing-library/user-event';
 import { afterEach, beforeEach, expect, test, vi } from 'vitest';
 
-import { calculate, STRATEGIES, type Probabilities, type Strategy } from '$lib/probability';
+import { calculate, STRATEGIES, type Probabilities, type Strategy } from '$lib/rules/probability';
 
 import Page from './+page.svelte';
 

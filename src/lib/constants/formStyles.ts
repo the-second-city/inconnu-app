@@ -19,5 +19,5 @@ export const FORM_VALIDATION = {
 	convictionMaxLength: 200,
 	descriptionMaxLength: 1024,
 	historyMaxLength: 1024,
-	traitMaxLength: 20
+	traitMaxLength: 30
 } as const;

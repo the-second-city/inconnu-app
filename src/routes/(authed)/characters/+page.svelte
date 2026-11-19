@@ -11,7 +11,7 @@
 	import { page } from '$app/state';
 
 	import type { CharacterData, Guild } from '$lib/types';
-	import CharCard from '$lib/components/CharCard.svelte';
+	import CharCard from './CharCard.svelte';
 	import GuildCard from './GuildCard.svelte';
 	import CharacterGrid from './CharacterGrid.svelte';
 

@@ -2,10 +2,10 @@
 	import { invalidate } from '$app/navigation';
 	import { resolve } from '$app/paths';
 	import type { Pathname } from '$app/types';
-	import { CHARACTER_DEPENDENCY, watchCharacter } from '$lib/liveUpdates';
+	import { CHARACTER_DEPENDENCY, watchCharacter } from '$lib/api/liveUpdates';
 	import type { CharacterData, Character, PublicCharacter } from '$lib/types';
 	import CharacterPage from './CharacterPage.svelte';
-	import PublicCharacterView from '$lib/components/characters/PublicCharacterView.svelte';
+	import PublicCharacterView from '$lib/components/characters/view/PublicCharacterView.svelte';
 	import type { PageProps } from './$types';
 
 	let { data }: PageProps = $props();
@@ -36,6 +36,16 @@
 	});
 
 	const backUrl: Pathname = $derived(`/characters/guild/${characterData.guild.id}` as const);
+
+	// The tracker actions. Anyone with full access (the owner or a Storyteller, the only viewers of
+	// this page's full view) may deal damage; Rouse and Mend are for the character's owner, or for an
+	// SPC, whose full access only Storytellers have: Storytellers can't roll for other players. The
+	// API enforces the same. Ownership is `owner.id`, not the character's own `user`, which the API
+	// sends as a JSON number: a Discord ID is past Number.MAX_SAFE_INTEGER, so it arrives rounded.
+	const actionable = true;
+	const ownerActions = $derived(
+		characterData.spc || characterData.owner?.id === data.session?.user?.id
+	);
 </script>
 
 <!-- Keyed on the guild and character, so a new character (or URL) starts fresh page state: its
@@ -43,12 +53,16 @@
      switch to the next page's values before this one is torn down. -->
 {#key pageKey}
 	{#if characterData.type === 'full'}
+		<!-- Full access means the owner or a Storyteller, who may edit -->
 		<CharacterPage
 			character={characterData.character as Character}
 			guild={characterData.guild}
 			owner={characterData.owner}
 			spc={characterData.spc}
 			{backUrl}
+			editable
+			{actionable}
+			{ownerActions}
 		/>
 	{:else}
 		<PublicCharacterView {characterData} {backUrl} />

@@ -1,9 +1,9 @@
 <script lang="ts">
 	import { Info } from '@lucide/svelte';
-	import Popover from '$lib/components/Popover.svelte';
+	import Popover from '$lib/components/ui/Popover.svelte';
 
-	import Card from '$lib/components/Card.svelte';
-	import Meta from '$lib/components/Meta.svelte';
+	import Card from '$lib/components/ui/Card.svelte';
+	import Meta from '$lib/components/layout/Meta.svelte';
 	import { FORM_CLASSES } from '$lib/constants/formStyles';
 	import {
 		calculate,
@@ -12,7 +12,7 @@
 		STRATEGIES,
 		type Probabilities,
 		type Strategy
-	} from '$lib/probability';
+	} from '$lib/rules/probability';
 
 	// Anything smaller displays as 0.00%, so we hide it, as the bot does
 	const DISPLAY_MIN = 0.00005;
@@ -264,10 +264,8 @@
 					positioning={{ placement: 'bottom' }}
 					triggerClass="text-surface-600-400 hover:text-surface-950-50 transition-colors"
 					triggerLabel="About {name}"
-					contentClass="card bg-surface-100-900 border-surface-500 max-w-xs border p-3 text-base shadow-xl"
+					contentClass="card popover-gothic max-w-xs p-3 text-base"
 					arrow
-					arrowColor="var(--color-surface-100-900)"
-					arrowTipClass="border-surface-500 border-t border-l"
 				>
 					{#snippet trigger()}
 						<Info size={18} />

@@ -1,8 +1,8 @@
 <script lang="ts">
 	import { page } from '$app/state';
 	import type { CharacterData } from '$lib/types';
-	import PublicCharacterView from '$lib/components/characters/PublicCharacterView.svelte';
-	import Meta from '$lib/components/Meta.svelte';
+	import PublicCharacterView from '$lib/components/characters/view/PublicCharacterView.svelte';
+	import Meta from '$lib/components/layout/Meta.svelte';
 
 	const characterData: CharacterData = page.data.characterData;
 	const ogImage = $derived(

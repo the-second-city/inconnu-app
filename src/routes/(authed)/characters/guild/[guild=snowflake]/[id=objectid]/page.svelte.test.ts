@@ -1,4 +1,5 @@
-import { render, screen } from '@testing-library/svelte';
+import { render, screen, within } from '@testing-library/svelte';
+import userEvent from '@testing-library/user-event';
 import { beforeEach, expect, test, vi } from 'vitest';
 
 import type { Character, CharacterData, PublicCharacter } from '$lib/types';
@@ -14,9 +15,9 @@ vi.mock('$app/paths', () => ({
 	resolve: (route: string, params: Record<string, string> = {}) =>
 		route.replace(/\[(\w+)(=\w+)?\]/g, (_, name: string) => params[name])
 }));
-vi.mock('$app/navigation', () => ({ goto: vi.fn(), invalidate }));
+vi.mock('$app/navigation', () => ({ goto: vi.fn(), invalidate, beforeNavigate: () => {} }));
 // EventSource doesn't exist in jsdom; `liveUpdates.test.ts` tests the watcher itself
-vi.mock('$lib/liveUpdates', () => ({ CHARACTER_DEPENDENCY: 'app:character', watchCharacter }));
+vi.mock('$lib/api/liveUpdates', () => ({ CHARACTER_DEPENDENCY: 'app:character', watchCharacter }));
 
 /** Full character data for a mortal with the given ID and name. */
 const characterData = (id: string, name: string): CharacterData => ({
@@ -130,4 +131,58 @@ test('navigating to another character watches it instead', async () => {
 
 	expect(stop).toHaveBeenCalledOnce();
 	expect(watchCharacter).toHaveBeenLastCalledWith('/api/characters/b/events', expect.any(Function));
+});
+
+test('full access (the owner or a Storyteller) can edit', () => {
+	render(Page, pageProps(characterData('a', 'Nadia')));
+
+	expect(screen.getAllByRole('button', { name: 'Edit' }).length).toBeGreaterThan(0);
+});
+
+test('full access gets the tracker actions', () => {
+	render(Page, pageProps(characterData('a', 'Nadia')));
+
+	expect(screen.getByRole('button', { name: 'Health actions' })).toBeInTheDocument();
+});
+
+test("public access can't edit", () => {
+	const data: CharacterData = {
+		...characterData('a', 'Nadia'),
+		type: 'public',
+		character: {
+			id: 'a',
+			user: '222',
+			name: 'Nadia',
+			splat: 'mortal',
+			profile: { description: null, biography: null, images: [] }
+		} satisfies PublicCharacter
+	};
+	render(Page, pageProps(data));
+
+	expect(screen.queryByRole('button', { name: 'Edit' })).not.toBeInTheDocument();
+});
+
+/** Full character data, owned by the given user (or an SPC), as the signed-in user '222' sees it. */
+const ownedBy = (ownerId: string | null): CharacterData => ({
+	...characterData('a', 'Nadia'),
+	spc: ownerId === null,
+	owner: ownerId === null ? null : { id: ownerId, name: 'Someone', icon: '' }
+});
+
+test.each([
+	["the viewer's own character", '222', true],
+	["another player's character (a Storyteller's view)", '333', false],
+	['an SPC', null, true]
+])('the tracker actions are offered on %s, and mending too: %s', async (_, ownerId, mending) => {
+	const user = userEvent.setup();
+	const props = pageProps(ownedBy(ownerId));
+	props.data.session = { user: { id: '222' }, expires: '' } as typeof props.data.session;
+	render(Page, props);
+
+	// Anyone with full access may deal damage; only the owner (or a Storyteller for an SPC) heals
+	await user.click(screen.getByRole('button', { name: 'Health actions' }));
+
+	const menu = await screen.findByRole('dialog');
+	expect(within(menu).getByRole('button', { name: 'Take Damage' })).toBeInTheDocument();
+	expect(within(menu).queryByRole('button', { name: 'Mend Superficial' }) !== null).toBe(mending);
 });

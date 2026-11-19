@@ -1,10 +1,10 @@
 <script lang="ts">
 	import { page } from '$app/state';
 	import { resolve } from '$app/paths';
-	import Avatar from '$lib/components/Avatar.svelte';
+	import Avatar from '$lib/components/ui/Avatar.svelte';
 	import { ChevronLeft } from '@lucide/svelte';
 	import type { CharacterData, Guild } from '$lib/types';
-	import CharCard from '$lib/components/CharCard.svelte';
+	import CharCard from '../../CharCard.svelte';
 	import CharacterGrid from '../../CharacterGrid.svelte';
 
 	const guild: Guild = page.data.guild;
