@@ -113,10 +113,10 @@ test('follows limits the bot changes', () => {
 
 	expect(optionValues('Health')).toEqual(['4', '5', '6']);
 	expect(optionValues('Willpower')).toEqual(['1', '2', '3']);
-	expect(screen.getByRole('textbox', { name: 'Convictions' })).toHaveAttribute('maxlength', '51');
+	expect(screen.getByRole('textbox', { name: 'Convictions' })).toHaveAttribute('maxlength', '100');
 	expect(screen.getByRole('textbox', { name: 'Conviction 2' })).toBeInTheDocument();
 	expect(screen.queryByRole('textbox', { name: 'Conviction 3' })).not.toBeInTheDocument();
-	expect(screen.getByRole('textbox', { name: 'Description' })).toHaveAttribute('maxlength', '501');
+	expect(screen.getByRole('textbox', { name: 'Description' })).toHaveAttribute('maxlength', '1000');
 });
 
 test('offers the templates the bot sends', () => {
@@ -171,7 +171,7 @@ test('an over-long conviction is refused, but extra spaces don’t count against
 	await fillRequired(user);
 	const conviction = screen.getByRole('textbox', { name: 'Conviction 2' });
 
-	// 11 typed, but 10 once collapsed (the field itself stops at the limit + 1)
+	// 11 typed, but 10 once collapsed
 	await user.type(conviction, 'Keep  word!');
 	expect(conviction).not.toHaveAccessibleDescription();
 	expect(screen.getByRole('button', { name: 'Create Nadia' })).toBeEnabled();
@@ -180,6 +180,20 @@ test('an over-long conviction is refused, but extra spaces don’t count against
 	await user.type(conviction, 'Keep words!');
 	expect(conviction).toHaveAccessibleDescription('Maximum 10 characters');
 	expect(screen.getByRole('button', { name: 'Fill out the form first' })).toBeDisabled();
+});
+
+test('a single-code-point emoji counts once against the limit, as the bot counts it', async () => {
+	const user = userEvent.setup();
+	renderWizard({ constraints: { ...TEST_CONSTRAINTS, profile_max_length: 5 } });
+	await fillRequired(user);
+	const description = screen.getByRole('textbox', { name: 'Description' });
+
+	// Five code points, though ten UTF-16 code units
+	await user.click(description);
+	await user.paste('🩸'.repeat(5));
+	expect(description).toHaveValue('🩸'.repeat(5));
+	expect(description).not.toHaveAccessibleDescription();
+	expect(screen.getByRole('button', { name: 'Create Nadia' })).toBeEnabled();
 });
 
 test('an over-long description is refused', async () => {

@@ -15,7 +15,7 @@
 	import { FORM_CLASSES } from '$lib/constants/formStyles';
 	import { creationInfoStore } from '$lib/stores/CreationStore';
 	import { normalize, getErrorDetail } from '$lib';
-	import { characterNameError, setConstraints } from '$lib/constraints';
+	import { characterNameError, lengthError, maxCodeUnits, setConstraints } from '$lib/constraints';
 	import Meta from '$lib/components/layout/Meta.svelte';
 
 	let { data }: { data: PageData } = $props();
@@ -81,10 +81,6 @@
 	const nameError = $derived(
 		name.length === 0 ? null : characterNameError(normalizedName, constraints)
 	);
-
-	/** Why a field is too long, or null. */
-	const lengthError = (text: string, max: number): string | null =>
-		text.length > max ? `Maximum ${max} characters` : null;
 
 	// Collapsed as the bot stores them, so extra spaces don't count against the length
 	const normalizedConvictions = $derived(convictions.map(normalize));
@@ -193,7 +189,7 @@
 					class="{FORM_CLASSES.textInput} {nameError ? 'border-error-500' : ''}"
 					id="character-name"
 					type="text"
-					maxlength={constraints.name_max_length + 7}
+					maxlength={maxCodeUnits(constraints.name_max_length) + 7}
 					placeholder="Nadea Theron"
 					aria-required="true"
 					aria-describedby={nameError ? 'name-error' : undefined}
@@ -241,7 +237,7 @@
 						class="{FORM_CLASSES.textInput} {error ? 'border-error-500' : ''}"
 						id="conviction-{i + 1}"
 						type="text"
-						maxlength={constraints.conviction_max_length + 1}
+						maxlength={maxCodeUnits(constraints.conviction_max_length)}
 						placeholder="Conviction {i + 1}"
 						aria-label={i === 0 ? undefined : `Conviction ${i + 1}`}
 						aria-describedby={error ? `conviction-${i + 1}-error` : undefined}
@@ -260,7 +256,7 @@
 					class="{FORM_CLASSES.textarea} {descriptionError ? 'border-error-500' : ''}"
 					id="description"
 					rows="4"
-					maxlength={constraints.profile_max_length + 1}
+					maxlength={maxCodeUnits(constraints.profile_max_length)}
 					placeholder="Describe your character..."
 					aria-describedby={descriptionError ? 'description-error' : undefined}
 				></textarea>
@@ -274,7 +270,7 @@
 					class="{FORM_CLASSES.textarea} {historyError ? 'border-error-500' : ''}"
 					id="history"
 					rows="4"
-					maxlength={constraints.profile_max_length + 1}
+					maxlength={maxCodeUnits(constraints.profile_max_length)}
 					placeholder="Your character's background and history..."
 					aria-describedby={historyError ? 'history-error' : undefined}
 				></textarea>

@@ -503,6 +503,45 @@ const editProfile = async (user: ReturnType<typeof userEvent.setup>): Promise<vo
 	await user.click(editButton('Edit'));
 };
 
+test('an over-long conviction blocks saving', async () => {
+	const user = userEvent.setup();
+	renderPage();
+
+	await editProfile(user);
+	const box = convictionBoxes()[0];
+	await user.click(box);
+	await user.paste('a'.repeat(TEST_CONSTRAINTS.conviction_max_length + 1));
+	expect(editButton('Save')).toBeDisabled();
+	// The field says why, so the notice for other tabs stays away
+	expect(screen.queryByRole('status')).not.toBeInTheDocument();
+
+	await user.type(box, '{Backspace}');
+	expect(editButton('Save')).toBeEnabled();
+});
+
+test('off the Profile tab, a notice says which text holds Save', async () => {
+	const user = userEvent.setup();
+	renderPage({ ...character(), profile: { ...character().profile, description: 'Pale.' } });
+
+	await editProfile(user);
+	await user.click(convictionBoxes()[1]);
+	await user.paste('a'.repeat(TEST_CONSTRAINTS.conviction_max_length + 1));
+	await user.click(within(panel()).getByRole('textbox', { name: 'Description' }));
+	await user.paste('a'.repeat(TEST_CONSTRAINTS.profile_max_length));
+	await user.click(screen.getByRole('tab', { name: 'Sheet' }));
+
+	expect(editButton('Save')).toBeDisabled();
+	expect(screen.getByRole('status')).toHaveTextContent(
+		'To save, shorten the Profile tab’s Description and Conviction 2.'
+	);
+
+	await user.click(
+		within(screen.getByRole('status')).getByRole('button', { name: 'Go to Profile' })
+	);
+	expect(screen.getByRole('tab', { name: 'Profile' })).toHaveAttribute('aria-selected', 'true');
+	expect(screen.queryByRole('status')).not.toBeInTheDocument();
+});
+
 test('editing shows three conviction fields, filled from the character', async () => {
 	const user = userEvent.setup();
 	renderPage({ ...character(), convictions: ['Protect the weak'] });

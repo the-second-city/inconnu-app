@@ -10,6 +10,17 @@ export const normalize = (text: string): string => {
  * `straighten_apostrophes` does for trait names. */
 export const straightenApostrophes = (text: string): string => text.replace(/[\u2018\u2019]/g, "'");
 
+/**
+ * A string's length in code points, as Python's `len()` counts it. JS's `length` counts UTF-16
+ * code units, so a code point outside the Basic Multilingual Plane (🩸, 𝓢𝓬𝓻𝓲𝓹𝓽) counts twice
+ * there. Not graphemes (as `Intl.Segmenter` counts them): an emoji built of several code points
+ * (👨‍👩‍👧, skin tones, flags) counts each, as Python does. Check text against the bot's limits with
+ * this, not `length`.
+ * @param text - The text to measure
+ * @returns The number of code points
+ */
+export const codePointLength = (text: string): number => [...text].length;
+
 export const insensitiveSort = (items: string[]) => {
 	items.sort((a, b) => a.localeCompare(b, undefined, { sensitivity: 'base' }));
 };

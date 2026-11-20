@@ -3,7 +3,7 @@
 	import { CirclePlus, CircleX, ListPlus } from '@lucide/svelte';
 
 	import { insensitiveSort, normalize, straightenApostrophes } from '../../..';
-	import { getConstraints, nameKey, traitNameError } from '$lib/constraints';
+	import { getConstraints, maxCodeUnits, nameKey, traitNameError } from '$lib/constraints';
 	import ErrorMessage from '$lib/components/ui/ErrorMessage.svelte';
 
 	interface ComponentProps {
@@ -136,7 +136,7 @@
 									onkeydown={(e) => e.key === 'Enter' && handleAddSubtrait()}
 									placeholder="Add new {subtraitLabel} ..."
 									aria-label="New {subtraitLabel}"
-									maxlength={constraints().trait_max_length + 1}
+									maxlength={maxCodeUnits(constraints().trait_max_length)}
 									class="input border"
 									class:text-error-500={invalidSubtrait}
 									class:border-error-500={invalidSubtrait}

@@ -5,7 +5,7 @@
 
 	import type { Trait } from '$lib/types';
 	import { normalize, straightenApostrophes } from '../../..';
-	import { getConstraints, nameKey, traitNameError } from '$lib/constraints';
+	import { getConstraints, maxCodeUnits, nameKey, traitNameError } from '$lib/constraints';
 	import { getTraitOrder } from '$lib/data/trait-order';
 
 	import Card from '$lib/components/ui/Card.svelte';
@@ -161,7 +161,7 @@
 				onkeydown={(e) => e.key === 'Enter' && addTrait()}
 				{placeholder}
 				aria-label="New {label}"
-				maxlength={constraints().trait_max_length + 1}
+				maxlength={maxCodeUnits(constraints().trait_max_length)}
 				class="input min-w-0 flex-1 border"
 				class:text-error-500={traitError}
 				class:border-error-500={traitError}

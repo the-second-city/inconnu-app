@@ -2,6 +2,7 @@ import { expect, test } from 'vitest';
 
 import {
 	capitalize,
+	codePointLength,
 	orList,
 	plural,
 	getErrorDetail,
@@ -122,4 +123,16 @@ test.each<[number, string]>([
 	[2, '2 dice']
 ])('plural(%i) is %j', (n, expected) => {
 	expect(plural(n, 'die', 'dice')).toBe(expected);
+});
+
+test.each([
+	['', 0],
+	['Nadia', 5],
+	['José', 4],
+	['🩸', 1],
+	['Nadia 😈', 7],
+	['𝓥𝓪𝓶𝓹', 4],
+	['👨‍👩‍👧', 5] // Three emoji joined by two ZWJs: one grapheme, five code points
+])('codePointLength(%j) is %i, as Python’s len()', (text: string, expected: number) => {
+	expect(codePointLength(text)).toBe(expected);
 });

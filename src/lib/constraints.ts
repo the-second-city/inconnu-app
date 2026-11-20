@@ -6,7 +6,8 @@
 
 import { getContext, setContext } from 'svelte';
 
-import type { Constraints } from '$lib/types';
+import { codePointLength, normalize } from '$lib';
+import type { Constraints, Profile } from '$lib/types';
 
 const KEY = Symbol('constraints');
 
@@ -42,12 +43,67 @@ export const nameKey = (name: string): string => name.toLowerCase().replaceAll('
 export const characterNameError = (name: string, constraints: Constraints): string | null => {
 	if (!name) return 'Name cannot be empty';
 	const max = constraints.name_max_length;
-	if (name.length > max) return `Name must be ${max} characters or less`;
+	if (codePointLength(name) > max) return `Name must be ${max} characters or less`;
 	if (!new RegExp(constraints.name_pattern, 'u').test(name)) {
 		return 'Name can only contain letters, numbers, spaces, hyphens, underscores, and apostrophes';
 	}
 	return null;
 };
+
+/**
+ * Why a text field (a conviction, description, or history) is too long for the bot, or null.
+ * Counted in code points, as the bot's `len()` counts them.
+ * @param text - The text, as it will be sent (convictions normalized)
+ * @param max - The bot's limit for the field
+ * @returns The problem, as a message for the user
+ */
+export const lengthError = (text: string, max: number): string | null =>
+	codePointLength(text) > max ? `Maximum ${max} characters` : null;
+
+/** Why each of a character's profile texts is too long for the bot (null for one that fits). */
+export interface ProfileLengthErrors {
+	description: string | null;
+	biography: string | null; // Shown as History
+	convictions: (string | null)[];
+}
+
+/**
+ * Why each profile text is too long for the bot, as edit mode checks them: the description and
+ * history as typed, the convictions collapsed, as Save sends them.
+ * @param profile - The profile being edited
+ * @param convictions - The convictions being edited
+ * @param constraints - The bot's constraints
+ * @returns Each field's problem, or null
+ */
+export const profileLengthErrors = (
+	profile: Pick<Profile, 'description' | 'biography'>,
+	convictions: string[],
+	constraints: Constraints
+): ProfileLengthErrors => ({
+	description: lengthError(profile.description ?? '', constraints.profile_max_length),
+	biography: lengthError(profile.biography ?? '', constraints.profile_max_length),
+	convictions: convictions.map((c) => lengthError(normalize(c), constraints.conviction_max_length))
+});
+
+/**
+ * The names of the fields that are too long, as the profile labels them ("Description",
+ * "Conviction 2"), or none.
+ * @param errors - From `profileLengthErrors`
+ * @returns The fields' names, in the profile's order
+ */
+export const tooLongFields = (errors: ProfileLengthErrors): string[] => [
+	...(errors.description ? ['Description'] : []),
+	...(errors.biography ? ['History'] : []),
+	...errors.convictions.flatMap((error, i) => (error ? [`Conviction ${i + 1}`] : []))
+];
+
+/**
+ * The longest a field's `maxlength` can be without cutting off text the bot would accept:
+ * `maxlength` counts UTF-16 code units, and a code point takes at most two.
+ * @param max - The bot's limit, in code points
+ * @returns The `maxlength` for the field
+ */
+export const maxCodeUnits = (max: number): number => max * 2;
 
 /**
  * Why a new trait or specialty name is invalid, or null if it's valid. As the bot's
@@ -65,7 +121,7 @@ export const traitNameError = (
 ): string | null => {
 	if (!name) return 'Name cannot be empty';
 	const max = constraints.trait_max_length;
-	if (name.length > max) return `Maximum ${max} characters`;
+	if (codePointLength(name) > max) return `Maximum ${max} characters`;
 	if (!specialty && constraints.reserved_traits.includes(nameKey(name))) {
 		return 'Reserved name; set it in Discord instead';
 	}
