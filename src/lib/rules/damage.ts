@@ -5,20 +5,6 @@
  */
 
 import { bloodPotency, isVampiric } from '$lib/rules/vampire';
-import type { TrackType } from '$lib/types';
-
-/** The fewest and most boxes a track may have. */
-export interface TrackLimits {
-	min: number;
-	max: number;
-}
-
-/** The bot's track limits (`VChar.MIN_HEALTH` and friends, `VChar.tracker_limits`). The wizard
- * takes the bot's own, falling back to these; the character page's corrections use these. */
-export const TRACK_LIMITS: Record<TrackType, TrackLimits> = {
-	health: { min: 3, max: 25 },
-	willpower: { min: 2, max: 25 }
-};
 
 /** A track of a length with these amounts of damage, as the bot builds it: healthy first, keeping
  * the rightmost boxes when the damage outgrows the track (so Aggravated outlasts Superficial). */

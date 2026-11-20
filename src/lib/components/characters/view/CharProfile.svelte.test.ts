@@ -5,6 +5,11 @@ import { expect, test, vi } from 'vitest';
 import type { Profile } from '$lib/types';
 import CharProfile from './CharProfile.svelte';
 
+// Constraints come from the character page or wizard; these are the bot's
+vi.mock('$lib/constraints', async (original) =>
+	(await import('$lib/testing/constraints')).mockConstraints(original)
+);
+
 const IMAGES = [
 	'https://example.com/1.webp',
 	'https://example.com/2.webp',

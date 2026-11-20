@@ -5,6 +5,11 @@ import { expect, test, vi } from 'vitest';
 import type { Character, Splat } from '$lib/types';
 import Tracker from './Tracker.svelte';
 
+// Constraints come from the character page or wizard; these are the bot's
+vi.mock('$lib/constraints', async (original) =>
+	(await import('$lib/testing/constraints')).mockConstraints(original)
+);
+
 /** A character with the given Health and Willpower tracks. */
 const character = (health: string, willpower = '.....'): Character => ({
 	_id: 'id',

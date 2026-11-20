@@ -4,6 +4,7 @@ import { beforeEach, expect, test, vi } from 'vitest';
 
 import type { Character, CharacterData, PublicCharacter } from '$lib/types';
 import { navigate } from '$lib/testing/page.svelte';
+import { TEST_CONSTRAINTS } from '$lib/testing/constraints';
 import Page from './+page.svelte';
 import type { PageProps } from './$types';
 
@@ -48,7 +49,7 @@ beforeEach(() => {
 
 /** The page's props, as SvelteKit passes them, for a character. */
 const pageProps = (data: CharacterData): PageProps => ({
-	data: { session: null, characterData: data },
+	data: { session: null, characterData: data, constraints: TEST_CONSTRAINTS },
 	params: { guild: data.guild.id, id: (data.character as Character)._id },
 	form: null
 });
@@ -84,7 +85,7 @@ const publicData = (id: string, name: string): CharacterData => ({
 
 /** The page's props for public character data. */
 const publicProps = (data: CharacterData): PageProps => ({
-	data: { session: null, characterData: data },
+	data: { session: null, characterData: data, constraints: null },
 	params: { guild: data.guild.id, id: (data.character as PublicCharacter).id },
 	form: null
 });

@@ -3,7 +3,7 @@
 	import { resolve } from '$app/paths';
 	import type { Pathname } from '$app/types';
 	import { CHARACTER_DEPENDENCY, watchCharacter } from '$lib/api/liveUpdates';
-	import type { CharacterData, Character, PublicCharacter } from '$lib/types';
+	import type { CharacterData, Character, Constraints, PublicCharacter } from '$lib/types';
 	import CharacterPage from './CharacterPage.svelte';
 	import PublicCharacterView from '$lib/components/characters/view/PublicCharacterView.svelte';
 	import type { PageProps } from './$types';
@@ -56,6 +56,7 @@
 		<!-- Full access means the owner or a Storyteller, who may edit -->
 		<CharacterPage
 			character={characterData.character as Character}
+			constraints={data.constraints as Constraints}
 			guild={characterData.guild}
 			owner={characterData.owner}
 			spc={characterData.spc}

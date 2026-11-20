@@ -13,7 +13,8 @@
 		Timeline
 	} from '@lucide/svelte';
 
-	import { characterNameError, normalize } from '$lib';
+	import { normalize } from '$lib';
+	import { characterNameError, setConstraints } from '$lib/constraints';
 
 	import { beforeNavigate, goto } from '$app/navigation';
 	import { resolve } from '$app/paths';
@@ -26,7 +27,7 @@
 	} from '$lib/api/characterEdit';
 	import { page } from '$app/state';
 	import type { Pathname } from '$app/types';
-	import type { Character, Guild, OwnerData, TrackType } from '$lib/types';
+	import type { Character, Constraints, Guild, OwnerData, TrackType } from '$lib/types';
 	import ClientPortal from '$lib/components/ui/ClientPortal.svelte';
 	import Modal from '$lib/components/ui/Modal.svelte';
 	import ModalActions from '$lib/components/ui/ModalActions.svelte';
@@ -47,6 +48,7 @@
 
 	interface ComponentProps {
 		character: Character;
+		constraints: Constraints; // The bot's, which edit mode checks input against
 		guild: Guild;
 		owner?: OwnerData | null;
 		spc?: boolean;
@@ -58,6 +60,7 @@
 
 	let {
 		character: initialCharacter,
+		constraints,
 		guild,
 		owner,
 		spc = false,
@@ -70,6 +73,9 @@
 	// The page's own copy, for edits. The parent keys this component on the character's ID, so a
 	// new character starts a new copy.
 	let character: Character = $state(untrack(() => $state.snapshot(initialCharacter)));
+
+	// For the sheet's and profile's editing controls; a getter, so a refetch's copy reaches them
+	setConstraints(() => constraints);
 
 	interface Tab {
 		value: string;
@@ -206,7 +212,7 @@
 	const nameError = $derived.by(() => {
 		if (!editing) return null;
 		const serverError = normalizedNewName === rejectedName ? saveError?.name : null;
-		return characterNameError(normalizedNewName) ?? serverError ?? null;
+		return characterNameError(normalizedNewName, constraints) ?? serverError ?? null;
 	});
 
 	// A save in progress: the buttons and shortcuts wait for it
@@ -259,8 +265,10 @@
 		copy = $state.snapshot(character);
 		baseline = comparable(copy, copy.name);
 		newName = character.name;
-		// Three conviction slots to fill in, like the wizard's. Cancel restores the original list.
-		character.convictions = [...(character.convictions ?? []), '', '', ''].slice(0, 3);
+		// A slot for each conviction the bot allows, like the wizard's. Cancel restores the original.
+		const count = constraints.conviction_count;
+		const convictions = [...(character.convictions ?? []), ...Array<string>(count).fill('')];
+		character.convictions = convictions.slice(0, count);
 	};
 	const startEditing = forSupporters('Editing characters', enterEditMode);
 	/** Ask before discarding unsaved edits. True when there are none, or the user agrees. */

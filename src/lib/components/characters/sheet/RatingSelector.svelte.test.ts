@@ -1,8 +1,13 @@
 import { render, screen, waitFor } from '@testing-library/svelte';
 import userEvent from '@testing-library/user-event';
-import { expect, test } from 'vitest';
+import { expect, test, vi } from 'vitest';
 
 import RatingSelector from './RatingSelector.svelte';
+
+// Constraints come from the character page or wizard; these are the bot's
+vi.mock('$lib/constraints', async (original) =>
+	(await import('$lib/testing/constraints')).mockConstraints(original)
+);
 
 interface Options {
 	rating?: number;
@@ -165,9 +170,12 @@ test('Enter adds a specialty', async () => {
 });
 
 test.each([
-	['A'.repeat(31), 'Maximum 30 characters'],
-	['Free running', 'Letters and underscores only'],
-	['parkour', 'Specialty already exists']
+	['A'.repeat(41), 'Maximum 40 characters'],
+	['Free running2', 'Letters, underscores, apostrophes, and spaces only'],
+	['Big Hun', `"Hun" can't follow the first word, as rolls read it as Hunger`],
+	['parkour', 'Specialty already exists'],
+	// The bot compares names without case or spaces
+	['Par Kour', 'Specialty already exists']
 ])('rejects the specialty %o', async (subtrait, error) => {
 	const user = userEvent.setup();
 	const bound = renderRating({ subtraits: ['Parkour'] });
@@ -180,6 +188,26 @@ test.each([
 	expect(input).toHaveAccessibleDescription(error);
 	expect(screen.getByRole('button', { name: 'Add specialty' })).toBeDisabled();
 	expect(bound.subtraits).toEqual(['Parkour']);
+});
+
+test('adds a specialty with spaces', async () => {
+	const user = userEvent.setup();
+	const bound = renderRating();
+	await openPopover(user);
+
+	await user.type(screen.getByRole('textbox', { name: 'New Specialty' }), 'Free Running{Enter}');
+
+	expect(bound.subtraits).toEqual(['Free Running']);
+});
+
+test("a phone's curly apostrophe in a specialty becomes a straight one", async () => {
+	const user = userEvent.setup();
+	const bound = renderRating();
+	await openPopover(user);
+
+	await user.type(screen.getByRole('textbox', { name: 'New Specialty' }), 'O\u2019Brien{Enter}');
+
+	expect(bound.subtraits).toEqual(["O'Brien"]);
 });
 
 test("can't add an empty specialty", async () => {

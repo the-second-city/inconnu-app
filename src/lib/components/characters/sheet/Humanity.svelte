@@ -5,6 +5,7 @@
 	import Popover from '$lib/components/ui/Popover.svelte';
 
 	import { remorseDice } from '$lib/rules/remorse';
+	import { getConstraints } from '$lib/constraints';
 	import type { Character } from '$lib/types';
 
 	import Empty from '$lib/components/characters/glyphs/humanity/Empty.svelte';
@@ -25,6 +26,9 @@
 	}
 
 	let { character = $bindable(), editing, onStain, onRemorse }: ComponentProps = $props();
+
+	// The bot's limits, for the correction controls (so a read-only track needs none provided)
+	const constraints = getConstraints();
 
 	// The actions menu's hover text: what it offers this viewer
 	const actionsTitle = $derived(
@@ -91,11 +95,17 @@ Humanity
 		<Stepper
 			label="Humanity"
 			bind:value={() => humanity, (next) => (character.humanity = next)}
-			max={10}
+			min={constraints().humanity.min}
+			max={constraints().humanity.max}
 		>
 			{#snippet icon()}<Filled size={20} />{/snippet}
 		</Stepper>
-		<Stepper label="Stains" bind:value={() => stains, (next) => (character.stains = next)} max={10}>
+		<Stepper
+			label="Stains"
+			bind:value={() => stains, (next) => (character.stains = next)}
+			min={constraints().stains.min}
+			max={constraints().stains.max}
+		>
 			{#snippet icon()}<Stain size={20} />{/snippet}
 		</Stepper>
 	</div>

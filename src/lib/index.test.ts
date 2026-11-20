@@ -2,17 +2,15 @@ import { expect, test } from 'vitest';
 
 import {
 	capitalize,
-	characterNameError,
 	orList,
 	plural,
 	getErrorDetail,
 	isHttpsUrl,
 	hasProfileContent,
 	insensitiveSort,
-	isReservedTraitName,
-	isValidTraitName,
 	normalize,
 	parseApiDate,
+	straightenApostrophes,
 	stripLeadingArticles
 } from '$lib';
 import type { Profile } from '$lib/types';
@@ -21,48 +19,8 @@ import type { Profile } from '$lib/types';
 const jsonResponse = (body: unknown, status = 400): Response =>
 	new Response(JSON.stringify(body), { status, headers: { 'Content-Type': 'application/json' } });
 
-test.each([
-	['Nadia', null],
-	["Jean-Luc d'Arcy_II", null],
-	['a'.repeat(30), null],
-	['', 'Name cannot be empty'],
-	['a'.repeat(31), 'Name must be 30 characters or less'],
-	// Letters of any script, like the bot's Python \w
-	['Ölga', null],
-	['José Núñez', null],
-	['日本', null],
-	[
-		'Nadia 😈',
-		'Name can only contain letters, numbers, spaces, hyphens, underscores, and apostrophes'
-	],
-	[
-		'Nadia!',
-		'Name can only contain letters, numbers, spaces, hyphens, underscores, and apostrophes'
-	]
-])('characterNameError(%j) is %j', (name: string, expected: string | null) => {
-	expect(characterNameError(name)).toBe(expected);
-});
-
-test.each([
-	['Strength', true],
-	['Blood_Sorcery', true],
-	['', false],
-	['Brawl2', false],
-	['Blood Sorcery', false],
-	['Ölfaktorisch', false]
-])('isValidTraitName(%j) is %s', (name: string, expected: boolean) => {
-	expect(isValidTraitName(name)).toBe(expected);
-});
-
-test.each(['Willpower', 'hunger', 'POWER_BONUS', 'current_hunger'])(
-	'isReservedTraitName(%j) is true',
-	(name: string) => {
-		expect(isReservedTraitName(name)).toBe(true);
-	}
-);
-
-test('isReservedTraitName is false for ordinary Traits', () => {
-	expect(isReservedTraitName('Strength')).toBe(false);
+test('straightenApostrophes replaces curly apostrophes, as phones type them', () => {
+	expect(straightenApostrophes('Dogs\u2019 \u2018Til')).toBe("Dogs' 'Til");
 });
 
 test('normalize collapses and trims whitespace', () => {

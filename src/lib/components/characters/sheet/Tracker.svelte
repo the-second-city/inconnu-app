@@ -5,7 +5,8 @@
 	import { isVampiric } from '$lib/rules/vampire';
 	import Popover from '$lib/components/ui/Popover.svelte';
 
-	import { mendAmount, TRACK_LIMITS } from '$lib/rules/damage';
+	import { mendAmount } from '$lib/rules/damage';
+	import { getConstraints } from '$lib/constraints';
 	import type { Character, TrackType } from '$lib/types';
 
 	import MenuAction from './MenuAction.svelte';
@@ -129,9 +130,10 @@
 		return type === 'superficial' ? 'Costs a Rouse Check' : 'Costs 3 Rouse Checks';
 	};
 
-	// Box counts, within the bot's limits
-	const minBoxes = $derived(TRACK_LIMITS[track].min);
-	const maxBoxes = $derived(TRACK_LIMITS[track].max);
+	// Box counts, within the bot's limits (only read by the correction controls)
+	const constraints = getConstraints();
+	const minBoxes = $derived(constraints().trackers[track].min);
+	const maxBoxes = $derived(constraints().trackers[track].max);
 
 	function incBoxes() {
 		trackArray.unshift('.');

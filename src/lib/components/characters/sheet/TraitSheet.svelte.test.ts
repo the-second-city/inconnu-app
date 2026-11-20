@@ -1,8 +1,13 @@
 import { render, screen, type RenderResult } from '@testing-library/svelte';
-import { expect, test } from 'vitest';
+import { expect, test, vi } from 'vitest';
 
 import type { Splat, Trait } from '$lib/types';
 import TraitSheet from './TraitSheet.svelte';
+
+// Constraints come from the character page or wizard; these are the bot's
+vi.mock('$lib/constraints', async (original) =>
+	(await import('$lib/testing/constraints')).mockConstraints(original)
+);
 
 /** A trait without specialties. */
 const trait = (name: string, type: string): Trait => ({ name, rating: 1, type, subtraits: [] });

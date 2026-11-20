@@ -25,7 +25,7 @@ export const TRAIT_ORDER: Record<TraitCategory, Record<TraitSubcategory, string[
 			'Survival'
 		],
 		social: [
-			'AnimalKen',
+			'Animal Ken',
 			'Etiquette',
 			'Insight',
 			'Intimidation',

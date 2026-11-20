@@ -1,5 +1,5 @@
 /**
- * Centralized form styling and validation constants
+ * Centralized form styling (validation limits come from the bot: see `$lib/constraints`)
  * Used across wizard, character editing, and other form pages
  */
 
@@ -13,11 +13,4 @@ export const FORM_CLASSES = {
 	requiredIndicator: 'ml-1 text-error-500',
 	buttonPrimary: 'btn preset-filled-primary-500 font-semibold hover:brightness-125',
 	buttonSecondary: 'btn preset-outlined-primary-500 font-semibold'
-} as const;
-
-export const FORM_VALIDATION = {
-	convictionMaxLength: 200,
-	descriptionMaxLength: 1024,
-	historyMaxLength: 1024,
-	traitMaxLength: 30
 } as const;

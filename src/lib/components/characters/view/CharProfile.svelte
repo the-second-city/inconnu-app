@@ -5,14 +5,14 @@
 
 	import type { Profile, Splat } from '$lib/types';
 	import { DISCORD_URL } from '$lib/index';
-	import { FORM_VALIDATION } from '$lib/constants/formStyles';
+	import { getConstraints } from '$lib/constraints';
 	import Markdown from '$lib/components/ui/Markdown.svelte';
 
 	interface ComponentProps {
 		name: string;
 		profile: Profile;
 		splat: Splat;
-		convictions?: string[]; // While editing, the parent pads these to three slots
+		convictions?: string[]; // While editing, the parent pads these to the bot's count
 		editing: boolean;
 	}
 
@@ -23,6 +23,9 @@
 		convictions = $bindable(), // Bound to an optional field, so no fallback
 		editing
 	}: ComponentProps = $props();
+
+	// The bot's lengths, for the editing fields (so a read-only profile needs none provided)
+	const constraints = getConstraints();
 
 	// The bot may store blank convictions
 	let shownConvictions = $derived((convictions ?? []).map((c) => c.trim()).filter(Boolean));
@@ -126,7 +129,7 @@
 							class="textarea field-sizing-content max-h-[70vh] min-h-48 border leading-relaxed"
 							bind:value={profile.description}
 							rows="8"
-							maxlength={FORM_VALIDATION.descriptionMaxLength}
+							maxlength={constraints().profile_max_length}
 						></textarea>
 					{:else if profile.description}
 						<Markdown content={profile.description} />
@@ -152,7 +155,7 @@
 							class="textarea field-sizing-content max-h-[70vh] min-h-48 border leading-relaxed"
 							bind:value={profile.biography}
 							rows="8"
-							maxlength={FORM_VALIDATION.historyMaxLength}
+							maxlength={constraints().profile_max_length}
 						></textarea>
 					{:else if profile.biography}
 						<Markdown content={profile.biography} />
@@ -179,7 +182,7 @@
 								<input
 									type="text"
 									class="input border"
-									maxlength={FORM_VALIDATION.convictionMaxLength}
+									maxlength={constraints().conviction_max_length}
 									placeholder="Conviction {i + 1}"
 									aria-label="Conviction {i + 1}"
 									value={conviction}

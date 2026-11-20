@@ -2,8 +2,7 @@
 	import { untrack } from 'svelte';
 	import type { PageData } from './$types';
 	import { isVampiric } from '$lib/rules/vampire';
-	import type { TrackLimits } from '$lib/rules/damage';
-	import type { Trait, Splat } from '$lib/types';
+	import type { Range, Trait, Splat } from '$lib/types';
 	import { goto } from '$app/navigation';
 	import { resolve } from '$app/paths';
 	import Avatar from '$lib/components/ui/Avatar.svelte';
@@ -13,12 +12,16 @@
 	import Card from '$lib/components/ui/Card.svelte';
 	import Selector from '$lib/components/ui/Selector.svelte';
 	import ErrorMessage from '$lib/components/ui/ErrorMessage.svelte';
-	import { FORM_CLASSES, FORM_VALIDATION } from '$lib/constants/formStyles';
+	import { FORM_CLASSES } from '$lib/constants/formStyles';
 	import { creationInfoStore } from '$lib/stores/CreationStore';
-	import { characterNameError, normalize, getErrorDetail } from '$lib';
+	import { normalize, getErrorDetail } from '$lib';
+	import { characterNameError, setConstraints } from '$lib/constraints';
 	import Meta from '$lib/components/layout/Meta.svelte';
 
 	let { data }: { data: PageData } = $props();
+	// What the bot accepts, here and in the trait sheet
+	const constraints = $derived(data.constraints);
+	setConstraints(() => constraints);
 	// The form starts from the wizard's traits, then owns them
 	let traits = $state<Trait[]>(untrack(() => data.traits));
 	let name = $state('');
@@ -27,9 +30,9 @@
 	let willpower = $state('');
 	let humanity = $state('7');
 	let blood_potency = $state(1);
-	let conviction1 = $state('');
-	let conviction2 = $state('');
-	let conviction3 = $state('');
+	let convictions = $state<string[]>(
+		untrack(() => Array<string>(data.constraints.conviction_count).fill(''))
+	);
 	let description = $state('');
 	let history = $state('');
 	let submitting = $state(false);
@@ -39,11 +42,7 @@
 	// Reset blood potency and clear disciplines when switching splat types
 	$effect(() => {
 		if (splat !== previousSplat) {
-			if (splat === 'vampire') {
-				blood_potency = 1;
-			} else {
-				blood_potency = 0;
-			}
+			blood_potency = isVampiric(splat) ? potencyRange.min : 0;
 			if (splat === 'mortal') {
 				traits = traits.filter((t) => t.type !== 'discipline');
 			}
@@ -61,55 +60,48 @@
 	};
 	const splatOptions = $derived(data.splats.map(formatSplat));
 	/** The ratings from a track's fewest to most boxes, as the bot allows. */
-	const trackOptions = ({ min, max }: TrackLimits): string[] =>
+	const rangeOptions = ({ min, max }: Range): string[] =>
 		Array.from({ length: max - min + 1 }, (_, i) => `${i + min}`);
-	const healthOptions = $derived(trackOptions(data.limits.health));
-	const willpowerOptions = $derived(trackOptions(data.limits.willpower));
-	const humanityOptions = Array.from({ length: 10 }, (_, i) => `${i + 1}`);
+	const healthOptions = $derived(rangeOptions(constraints.trackers.health));
+	const willpowerOptions = $derived(rangeOptions(constraints.trackers.willpower));
+	// From 1: a new character with no Humanity would be a wight
+	const humanityOptions = $derived(
+		rangeOptions({ min: Math.max(1, constraints.humanity.min), max: constraints.humanity.max })
+	);
+	// Thin-bloods have the bot's range; other vampires start at 1
+	const potencyRange: Range = $derived.by(() => {
+		const range = constraints.potency[splat as Splat] ?? { min: 0, max: 0 };
+		return splat === 'thin-blood' ? range : { min: Math.max(1, range.min), max: range.max };
+	});
 
 	// Character name validation
 	const normalizedName = $derived(normalize(name));
-	const isValidCharacterName = $derived(characterNameError(normalizedName) === null);
+	const isValidCharacterName = $derived(characterNameError(normalizedName, constraints) === null);
 	// Don't show an error for an empty field
-	const nameError = $derived(name.length === 0 ? null : characterNameError(normalizedName));
-
-	// Conviction validation
-	const conviction1Error = $derived(
-		conviction1.length > FORM_VALIDATION.convictionMaxLength
-			? `Maximum ${FORM_VALIDATION.convictionMaxLength} characters`
-			: null
-	);
-	const conviction2Error = $derived(
-		conviction2.length > FORM_VALIDATION.convictionMaxLength
-			? `Maximum ${FORM_VALIDATION.convictionMaxLength} characters`
-			: null
-	);
-	const conviction3Error = $derived(
-		conviction3.length > FORM_VALIDATION.convictionMaxLength
-			? `Maximum ${FORM_VALIDATION.convictionMaxLength} characters`
-			: null
+	const nameError = $derived(
+		name.length === 0 ? null : characterNameError(normalizedName, constraints)
 	);
 
-	// Biography validation
-	const descriptionError = $derived(
-		description.length > FORM_VALIDATION.descriptionMaxLength
-			? `Maximum ${FORM_VALIDATION.descriptionMaxLength} characters`
-			: null
+	/** Why a field is too long, or null. */
+	const lengthError = (text: string, max: number): string | null =>
+		text.length > max ? `Maximum ${max} characters` : null;
+
+	// Collapsed as the bot stores them, so extra spaces don't count against the length
+	const normalizedConvictions = $derived(convictions.map(normalize));
+	const convictionErrors = $derived(
+		normalizedConvictions.map((conviction) =>
+			lengthError(conviction, constraints.conviction_max_length)
+		)
 	);
-	const historyError = $derived(
-		history.length > FORM_VALIDATION.historyMaxLength
-			? `Maximum ${FORM_VALIDATION.historyMaxLength} characters`
-			: null
-	);
+	const descriptionError = $derived(lengthError(description, constraints.profile_max_length));
+	const historyError = $derived(lengthError(history, constraints.profile_max_length));
 
 	const isFormValid = $derived(
 		isValidCharacterName &&
 			health !== '' &&
 			willpower !== '' &&
 			splat !== '' &&
-			!conviction1Error &&
-			!conviction2Error &&
-			!conviction3Error &&
+			convictionErrors.every((error) => error === null) &&
 			!descriptionError &&
 			!historyError &&
 			!submitting
@@ -130,7 +122,7 @@
 			willpower: parseInt(willpower),
 			humanity: parseInt(humanity),
 			blood_potency: isVampiric(splat) ? blood_potency : 0,
-			convictions: [conviction1, conviction2, conviction3],
+			convictions: normalizedConvictions,
 			biography: history,
 			description,
 			traits
@@ -201,7 +193,7 @@
 					class="{FORM_CLASSES.textInput} {nameError ? 'border-error-500' : ''}"
 					id="character-name"
 					type="text"
-					maxlength="37"
+					maxlength={constraints.name_max_length + 7}
 					placeholder="Nadea Theron"
 					aria-required="true"
 					aria-describedby={nameError ? 'name-error' : undefined}
@@ -242,36 +234,20 @@
 		<div class="-mx-3 flex flex-wrap">
 			<div class="w-full px-3">
 				<label class={FORM_CLASSES.label} for="conviction-1">Convictions</label>
-				<input
-					bind:value={conviction1}
-					class="{FORM_CLASSES.textInput} {conviction1Error ? 'border-error-500' : ''}"
-					id="conviction-1"
-					type="text"
-					maxlength={FORM_VALIDATION.convictionMaxLength + 1}
-					placeholder="First conviction"
-					aria-describedby={conviction1Error ? 'conviction-1-error' : undefined}
-				/>
-				<ErrorMessage error={conviction1Error} id="conviction-1-error" />
-				<input
-					bind:value={conviction2}
-					class="{FORM_CLASSES.textInput} {conviction2Error ? 'border-error-500' : ''}"
-					type="text"
-					maxlength={FORM_VALIDATION.convictionMaxLength + 1}
-					placeholder="Second conviction"
-					aria-label="Second conviction"
-					aria-describedby={conviction2Error ? 'conviction-2-error' : undefined}
-				/>
-				<ErrorMessage error={conviction2Error} id="conviction-2-error" />
-				<input
-					bind:value={conviction3}
-					class="{FORM_CLASSES.textInput} {conviction3Error ? 'border-error-500' : ''}"
-					type="text"
-					maxlength={FORM_VALIDATION.convictionMaxLength + 1}
-					placeholder="Third conviction"
-					aria-label="Third conviction"
-					aria-describedby={conviction3Error ? 'conviction-3-error' : undefined}
-				/>
-				<ErrorMessage error={conviction3Error} id="conviction-3-error" />
+				{#each convictions, i (i)}
+					{@const error = convictionErrors[i]}
+					<input
+						bind:value={convictions[i]}
+						class="{FORM_CLASSES.textInput} {error ? 'border-error-500' : ''}"
+						id="conviction-{i + 1}"
+						type="text"
+						maxlength={constraints.conviction_max_length + 1}
+						placeholder="Conviction {i + 1}"
+						aria-label={i === 0 ? undefined : `Conviction ${i + 1}`}
+						aria-describedby={error ? `conviction-${i + 1}-error` : undefined}
+					/>
+					<ErrorMessage {error} id="conviction-{i + 1}-error" />
+				{/each}
 			</div>
 		</div>
 
@@ -284,7 +260,7 @@
 					class="{FORM_CLASSES.textarea} {descriptionError ? 'border-error-500' : ''}"
 					id="description"
 					rows="4"
-					maxlength={FORM_VALIDATION.descriptionMaxLength + 1}
+					maxlength={constraints.profile_max_length + 1}
 					placeholder="Describe your character..."
 					aria-describedby={descriptionError ? 'description-error' : undefined}
 				></textarea>
@@ -298,7 +274,7 @@
 					class="{FORM_CLASSES.textarea} {historyError ? 'border-error-500' : ''}"
 					id="history"
 					rows="4"
-					maxlength={FORM_VALIDATION.historyMaxLength + 1}
+					maxlength={constraints.profile_max_length + 1}
 					placeholder="Your character's background and history..."
 					aria-describedby={historyError ? 'history-error' : undefined}
 				></textarea>
@@ -332,8 +308,8 @@
 						<RatingSelector
 							name="Blood Potency"
 							bind:rating={blood_potency}
-							min={splat === 'thin-blood' ? 0 : 1}
-							max={splat === 'thin-blood' ? 2 : 10}
+							min={potencyRange.min}
+							max={potencyRange.max}
 							showLabel={false}
 							editing={true}
 							allowsSubtraits={false}

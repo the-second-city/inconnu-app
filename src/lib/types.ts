@@ -25,6 +25,38 @@ export type Trait = {
 type PoolElem = number | string;
 export type TrackType = 'willpower' | 'health';
 
+/** An inclusive range of allowed values. */
+export interface Range {
+	min: number;
+	max: number;
+}
+
+/**
+ * What the bot accepts for character names, traits, and sheet values (the Inconnu API's
+ * `GET /constraints`, and the wizard's `constraints`). Served by the bot so the app checks input
+ * as the bot does, without copies of its limits to drift. See `$lib/constraints`.
+ */
+export interface Constraints {
+	name_pattern: string; // A JS pattern for the normalized name; use it with the u flag
+	name_max_length: number;
+	trait_pattern: string; // Shared by traits, specialties, and powers
+	trait_max_length: number;
+	trait_rating: Range;
+	reserved_traits: string[]; // Name keys (see nameKey()) no trait may have
+	// No word after a trait's first may be a prefix of hunger_word or one of hunger_aliases
+	// (case-insensitive), since rolls read it as Hunger
+	hunger_word: string;
+	hunger_aliases: string[];
+	conviction_count: number;
+	conviction_max_length: number;
+	profile_max_length: number; // Description and history, each
+	trackers: Record<TrackType, Range>; // Health and Willpower box counts
+	humanity: Range;
+	stains: Range;
+	hunger: Record<Splat, Range | null>; // null: the splat doesn't have it
+	potency: Record<Splat, Range | null>;
+}
+
 type Macro = {
 	name: string;
 	pool: PoolElem[];

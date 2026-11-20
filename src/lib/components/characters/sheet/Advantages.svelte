@@ -6,7 +6,8 @@
 
 	import Card from '$lib/components/ui/Card.svelte';
 
-	import { isValidTraitName, normalize } from '../../..';
+	import { normalize, straightenApostrophes } from '../../..';
+	import { getConstraints, traitNameError } from '$lib/constraints';
 
 	interface ComponentProps {
 		advantages: Advantage[];
@@ -29,11 +30,13 @@
 	let newAdvantageName = $state('');
 	let newAdvantageRating = $state(1);
 
-	let normalizedAdvantage = $derived(normalize(newAdvantageName));
+	const constraints = getConstraints();
+
+	let normalizedAdvantage = $derived(normalize(straightenApostrophes(newAdvantageName)));
 	let invalidAdvantage = $derived.by(() => {
 		if (newAdvantageRating <= 0) return true;
 		if (normalizedAdvantage.length === 0) return true;
-		if (!isValidTraitName(normalizedAdvantage)) return true;
+		if (traitNameError(normalizedAdvantage, constraints())) return true;
 
 		const lowercased = normalizedAdvantage.toLowerCase();
 		const isDuplicate = advantages.some((advantage) => advantage.name.toLowerCase() === lowercased);

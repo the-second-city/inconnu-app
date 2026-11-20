@@ -2,8 +2,8 @@
 	import Popover from '$lib/components/ui/Popover.svelte';
 	import { CirclePlus, CircleX, ListPlus } from '@lucide/svelte';
 
-	import { insensitiveSort, isValidTraitName, normalize } from '../../..';
-	import { FORM_VALIDATION } from '$lib/constants/formStyles';
+	import { insensitiveSort, normalize, straightenApostrophes } from '../../..';
+	import { getConstraints, nameKey, traitNameError } from '$lib/constraints';
 	import ErrorMessage from '$lib/components/ui/ErrorMessage.svelte';
 
 	interface ComponentProps {
@@ -30,6 +30,9 @@
 		type
 	}: ComponentProps = $props();
 
+	// Only read while editing specialties, so a read-only rating needs none provided
+	const constraints = getConstraints();
+
 	let showSubtraits = $state(false);
 	let enablePopover = $derived((allowsSubtraits && editing) || subtraits.length > 0);
 	let hoveredRating = $state<number | null>(null);
@@ -38,7 +41,7 @@
 	const subtraitsLabel = $derived(type === 'discipline' ? 'Powers' : 'Specialties');
 
 	let newSubtrait = $state('');
-	let normalizedNewSubtrait = $derived(normalize(newSubtrait));
+	let normalizedNewSubtrait = $derived(normalize(straightenApostrophes(newSubtrait)));
 
 	function handleRatingChange(newRating: number): void {
 		if (!editing) return;
@@ -73,12 +76,11 @@
 
 	let subtraitError = $derived.by(() => {
 		if (normalizedNewSubtrait.length === 0) return null;
-		if (normalizedNewSubtrait.length > FORM_VALIDATION.traitMaxLength)
-			return `Maximum ${FORM_VALIDATION.traitMaxLength} characters`;
-		if (!isValidTraitName(normalizedNewSubtrait)) return 'Letters and underscores only';
-		const isDuplicate = subtraits.some(
-			(existing: string) => existing.toLowerCase() === normalizedNewSubtrait.toLowerCase()
-		);
+		const error = traitNameError(normalizedNewSubtrait, constraints(), true);
+		if (error) return error;
+		// As the bot compares them: "BigCats" duplicates Big Cats
+		const key = nameKey(normalizedNewSubtrait);
+		const isDuplicate = subtraits.some((existing: string) => nameKey(existing) === key);
 		if (isDuplicate) return `${subtraitLabel} already exists`;
 		return null;
 	});
@@ -134,7 +136,7 @@
 									onkeydown={(e) => e.key === 'Enter' && handleAddSubtrait()}
 									placeholder="Add new {subtraitLabel} ..."
 									aria-label="New {subtraitLabel}"
-									maxlength={FORM_VALIDATION.traitMaxLength + 1}
+									maxlength={constraints().trait_max_length + 1}
 									class="input border"
 									class:text-error-500={invalidSubtrait}
 									class:border-error-500={invalidSubtrait}

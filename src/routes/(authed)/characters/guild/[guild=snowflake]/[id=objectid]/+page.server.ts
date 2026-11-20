@@ -3,6 +3,7 @@ import type { PageServerLoad } from './$types';
 import { API_KEY, INCONNU_API_URL } from '$env/static/private';
 import type { CharacterData } from '$lib/types';
 import { CHARACTER_DEPENDENCY } from '$lib/api/liveUpdates';
+import { getConstraints } from '$lib/server/constraints';
 
 export const load: PageServerLoad = async ({ depends, params, parent }) => {
 	// Live updates rerun this when the character changes
@@ -28,5 +29,13 @@ export const load: PageServerLoad = async ({ depends, params, parent }) => {
 	}
 
 	const characterData: CharacterData = await response.json();
-	return { characterData };
+
+	// Full access (the owner or a Storyteller) may edit, which checks input against the bot's rules
+	if (characterData.type !== 'full') return { characterData, constraints: null };
+	try {
+		return { characterData, constraints: await getConstraints() };
+	} catch (err) {
+		console.error('Character page: no constraints from the Inconnu API;', err);
+		error(502, 'The character page is unavailable right now.');
+	}
 };
