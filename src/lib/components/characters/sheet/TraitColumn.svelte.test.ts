@@ -120,12 +120,12 @@ test.each([
 });
 
 test.each([
-	[null, 'discipline', 'Add new Discipline ...'],
-	['Custom Trait', 'custom', 'Add new Custom Trait ...']
-])('labels the input with %o', (addLabel, cat, placeholder) => {
+	[null, 'discipline', 'New Discipline', 'Add new Discipline ...'],
+	['Custom Trait', 'custom', 'New Custom Trait', 'Add new Custom Trait ...']
+])('labels the input with %o', (addLabel, cat, name, placeholder) => {
 	renderColumn({ cat, addable: true, addLabel });
 
-	expect(addInput()).toHaveAttribute('placeholder', placeholder);
+	expect(screen.getByRole('textbox', { name })).toHaveAttribute('placeholder', placeholder);
 });
 
 test('adds a trait, in alphabetical order', async () => {

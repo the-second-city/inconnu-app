@@ -128,6 +128,7 @@
 						<textarea
 							class="textarea field-sizing-content max-h-[70vh] min-h-48 border leading-relaxed"
 							bind:value={profile.description}
+							aria-label="Description"
 							rows="8"
 							maxlength={constraints().profile_max_length}
 						></textarea>
@@ -154,6 +155,7 @@
 						<textarea
 							class="textarea field-sizing-content max-h-[70vh] min-h-48 border leading-relaxed"
 							bind:value={profile.biography}
+							aria-label="History"
 							rows="8"
 							maxlength={constraints().profile_max_length}
 						></textarea>

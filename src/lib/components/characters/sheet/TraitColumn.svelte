@@ -35,9 +35,8 @@
 	const constraints = getConstraints();
 	const ratings = $derived(constraints().trait_rating);
 
-	const placeholder = $derived(
-		`Add new ${addLabel ?? cat.charAt(0).toUpperCase() + cat.slice(1)} ...`
-	);
+	const label = $derived(addLabel ?? cat.charAt(0).toUpperCase() + cat.slice(1));
+	const placeholder = $derived(`Add new ${label} ...`);
 
 	// Get the defined trait order for this category/subcategory (if it exists)
 	const orderedTraitNames = $derived(getTraitOrder(cat, name));
@@ -161,6 +160,7 @@
 				bind:value={newTraitName}
 				onkeydown={(e) => e.key === 'Enter' && addTrait()}
 				{placeholder}
+				aria-label="New {label}"
 				maxlength={constraints().trait_max_length + 1}
 				class="input min-w-0 flex-1 border"
 				class:text-error-500={traitError}

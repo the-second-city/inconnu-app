@@ -143,7 +143,8 @@ const saved = async (): Promise<void> => {
 };
 
 /** The profile description's text box, while editing. */
-const descriptionBox = (): HTMLElement => within(panel()).getAllByRole('textbox')[0];
+const descriptionBox = (): HTMLElement =>
+	within(panel()).getByRole('textbox', { name: 'Description' });
 
 test('has no edit buttons unless editable', () => {
 	render(CharacterPage, { constraints: TEST_CONSTRAINTS, guild: GUILD, character: character() });

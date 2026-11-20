@@ -57,6 +57,7 @@
 
 	<textarea
 		bind:value={input}
+		aria-label="Text to turn into Beast thoughts"
 		class="textarea w-full border"
 		placeholder="Enter text to be turned into Beast thoughts, then click the copy button."
 		rows="3"
