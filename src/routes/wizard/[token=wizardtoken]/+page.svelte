@@ -17,6 +17,10 @@
 	import { normalize, getErrorDetail } from '$lib';
 	import { characterNameError, lengthError, maxCodeUnits, setConstraints } from '$lib/constraints';
 	import Meta from '$lib/components/layout/Meta.svelte';
+	import Modal from '$lib/components/ui/Modal.svelte';
+	import ModalActions from '$lib/components/ui/ModalActions.svelte';
+	import { TimerOff } from '@lucide/svelte';
+	import WizardCountdown from './WizardCountdown.svelte';
 
 	let { data }: { data: PageData } = $props();
 	// What the bot accepts, here and in the trait sheet
@@ -36,6 +40,10 @@
 	let description = $state('');
 	let history = $state('');
 	let submitting = $state(false);
+	// The link's time ran out: the bot would refuse the character, so creating waits on a new link
+	let expired = $state(false);
+	// Says so when it does; closing it keeps the form, to copy into a new link
+	let expiredNotice = $state(false);
 
 	let previousSplat = $state('');
 
@@ -100,12 +108,14 @@
 			convictionErrors.every((error) => error === null) &&
 			!descriptionError &&
 			!historyError &&
-			!submitting
+			!submitting &&
+			!expired
 	);
 
-	const submitLabel = $derived(
-		isFormValid ? `Create ${normalizedName}` : 'Fill out the form first'
-	);
+	const submitLabel = $derived.by(() => {
+		if (expired) return 'Link expired';
+		return isFormValid ? `Create ${normalizedName}` : 'Fill out the form first';
+	});
 
 	async function handleSubmit(event: SubmitEvent) {
 		event.preventDefault();
@@ -176,7 +186,29 @@
 			</h6>
 		</div>
 	</div>
+	<WizardCountdown
+		expiresIn={data.expiresIn}
+		onexpire={() => {
+			expired = true;
+			expiredNotice = true;
+		}}
+	/>
 </div>
+
+<Modal bind:open={expiredNotice} title="Link Expired" role="alertdialog">
+	{#snippet header()}
+		<div class="text-error-600-400 flex justify-center">
+			<TimerOff size={32} aria-hidden="true" />
+		</div>
+	{/snippet}
+	{#snippet description()}
+		<p>
+			This wizard link has expired. Run <code>/character wizard</code> in Discord again for a new one.
+		</p>
+		<p>The form keeps what you've entered, so you can copy it over.</p>
+	{/snippet}
+	<ModalActions bind:open={expiredNotice} done />
+</Modal>
 
 <form onsubmit={handleSubmit}>
 	<div class="mb-6 flex flex-col gap-9">

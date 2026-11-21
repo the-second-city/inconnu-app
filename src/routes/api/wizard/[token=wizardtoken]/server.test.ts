@@ -40,6 +40,21 @@ test('GET asks the API for the wizard with the API key', async () => {
 	expect(await response.json()).toEqual({ spc: false });
 });
 
+test('GET adds the milliseconds left before the wizard expires, by the server’s clock', async () => {
+	vi.useFakeTimers({ toFake: ['Date'] });
+	vi.setSystemTime(new Date('2026-01-01T00:00:00Z'));
+	fetchMock.mockResolvedValueOnce(Response.json({ expires_at: '2026-01-01T00:29:30+00:00' }));
+
+	const response = await GET(event());
+
+	expect(await response.json()).toEqual({
+		expires_at: '2026-01-01T00:29:30+00:00',
+		expires_in: 29.5 * 60_000
+	});
+	expect(response.headers.get('Cache-Control')).toBe('no-store');
+	vi.useRealTimers();
+});
+
 test('POST forwards the character to the API', async () => {
 	fetchMock.mockResolvedValueOnce(Response.json({ character_id: 'abc' }, { status: 201 }));
 

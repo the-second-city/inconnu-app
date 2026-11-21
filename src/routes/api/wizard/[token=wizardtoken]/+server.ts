@@ -1,4 +1,4 @@
-import { error } from '@sveltejs/kit';
+import { error, json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
 import { API_KEY, INCONNU_API_URL } from '$env/static/private';
 import { relay } from '$lib/server/relay';
@@ -10,8 +10,23 @@ const wizardUrl = (token: string): string =>
 /** How the wizard's relay logs, and what it says when the API can't answer. */
 const RELAY = { label: 'Wizard', unavailable: 'The character wizard is unavailable right now.' };
 
-export const GET: RequestHandler = async ({ params }) =>
-	relay(wizardUrl(params.token), { headers: { Authorization: `Bearer ${API_KEY}` } }, RELAY);
+/**
+ * Relay the wizard, adding `expires_in`: the milliseconds until `expires_at` by the server's clock.
+ * The page counts down from that, since the viewer's clock may be off by minutes.
+ */
+export const GET: RequestHandler = async ({ params }) => {
+	const response = await relay(
+		wizardUrl(params.token),
+		{ headers: { Authorization: `Bearer ${API_KEY}` } },
+		RELAY
+	);
+	if (response.status !== 200) return response; // Errors, and any answer without the wizard
+
+	const data = await response.json();
+	const expiresIn = Date.parse(data.expires_at) - Date.now();
+	if (isNaN(expiresIn)) return json(data, { headers: response.headers }); // A bot without it
+	return json({ ...data, expires_in: expiresIn }, { headers: response.headers });
+};
 
 export const POST: RequestHandler = async ({ params, request }) => {
 	const payload = await request.json().catch(() => error(400, 'Invalid JSON'));

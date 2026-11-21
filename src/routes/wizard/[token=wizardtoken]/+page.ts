@@ -8,6 +8,7 @@ interface WizardData {
 	splats: string[];
 	constraints: Constraints; // What the bot accepts, which the form checks against
 	traits: Trait[];
+	expires_in?: number; // Milliseconds until the link expires, by the server's clock
 }
 
 export const load: PageLoad = async ({ params, fetch }) => {
@@ -31,7 +32,8 @@ export const load: PageLoad = async ({ params, fetch }) => {
 			guild: data.guild,
 			splats: data.splats,
 			constraints: data.constraints,
-			traits: data.traits
+			traits: data.traits,
+			expiresIn: data.expires_in ?? null
 		};
 	} catch (err) {
 		if (err instanceof Error && 'status' in err) {
