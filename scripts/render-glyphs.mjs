@@ -38,10 +38,11 @@
 //                                  Discord's light and dark themes, to judge contrast
 //
 // Example (the peach theme):
-//   node scripts/render-glyphs.mjs peach --hale '#7586B0' --superficial '#4F7BD9' \
-//     --aggravated '#1F2D7A' --humanity '#26345E' --humanity-stroke '#3B4C80' \
-//     --humanity-empty '#7884A8' --stain '#7B2FA0' --degeneration '#9333EA' \
-//     --degeneration-stroke '#D04BEF' --hunger '#0E7A8A' --hunger-stroke '#17A0B2' \
+//   node scripts/render-glyphs.mjs peach --hale '#6578A7' --superficial '#4775D7' \
+//     --aggravated '#3E55CE' --humanity '#445DA9' --humanity-stroke '#5A6FB3' \
+//     --humanity-empty '#6A779F' --stain '#8F36B9' --degeneration '#9333EA' \
+//     --degeneration-stroke '#D04BEF' --hunger '#0E7A8A' --hunger-stroke '#138493' \
+//     --hunger-empty '#0E7A8A' --die '#6578A7' --hunger-die '#0E7A8A' \
 //     --bg '#F7DDB6,#F4D3CC'
 
 import { Resvg } from '@resvg/resvg-js';
@@ -83,19 +84,23 @@ const THEMES = {
 		'hunger-die': HUNGER_COLOR,
 		bg: '#2A2422,#141010'
 	},
-	// Cool complements to Discord's peach-to-blush theme
+	// Cool complements to Discord's peach-to-blush theme, tuned to read on Discord's light and
+	// dark embeds too
 	peach: {
-		hale: '#7586B0',
-		superficial: '#4F7BD9',
-		aggravated: '#1F2D7A',
-		humanity: '#26345E',
-		'humanity-stroke': '#3B4C80',
-		'humanity-empty': '#7884A8',
-		stain: '#7B2FA0',
+		hale: '#6578A7',
+		superficial: '#4775D7',
+		aggravated: '#3E55CE',
+		humanity: '#445DA9',
+		'humanity-stroke': '#5A6FB3',
+		'humanity-empty': '#6A779F',
+		stain: '#8F36B9',
 		degeneration: '#9333EA',
 		'degeneration-stroke': '#D04BEF',
 		hunger: '#0E7A8A',
-		'hunger-stroke': '#17A0B2',
+		'hunger-stroke': '#138493',
+		'hunger-empty': '#0E7A8A',
+		die: '#6578A7',
+		'hunger-die': '#0E7A8A',
 		bg: '#F7DDB6,#F4D3CC'
 	}
 };
@@ -412,11 +417,14 @@ function panel(index, caption, top, bottom, text) {
 	return svg;
 }
 
-/** The preview's panels: the theme's background, then Discord's light and dark chat colors. */
+/**
+ * The preview's panels: the theme's background, then Discord's light and dark embed colors (the
+ * bot's emoji only appear in embeds).
+ */
 const panels = [
 	[`${theme} theme`, bgTop, bgBottom, colors.text],
 	['Discord Light', '#FFFFFF', '#FFFFFF', '#313338'],
-	['Discord Dark', '#313338', '#313338', '#DBDEE1']
+	['Discord Dark', '#24242A', '#24242A', '#DBDEE1']
 ];
 writePng(
 	doc(

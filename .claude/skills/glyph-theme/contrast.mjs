@@ -1,4 +1,4 @@
-// Checks glyph colors' contrast against a theme's background and Discord's light and dark chat
+// Checks glyph colors' contrast against a theme's background and Discord's light and dark embed
 // colors, as render-glyphs.mjs's preview shows them.
 //
 // Usage:
@@ -57,7 +57,7 @@ const backgrounds = [
 			])
 	),
 	['Discord Light', '#FFFFFF'],
-	['Discord Dark', '#313338']
+	['Discord Dark', '#24242A']
 ];
 
 const rows = positionals.map((arg) => {

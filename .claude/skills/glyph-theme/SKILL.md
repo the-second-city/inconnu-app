@@ -11,9 +11,9 @@ A theme is only done once its preview checks out on all three of its panels:
 
 1. The theme's own background (`--bg`), the one it's designed for
 2. Discord Light (`#FFFFFF`)
-3. Discord Dark (`#313338`)
+3. Discord Dark (`#24242A`, its embed background)
 
-People see the emoji on whichever Discord theme they use, not just the one the theme was designed for, so a glyph that vanishes on any panel is a bug.
+The bot only shows emoji in embeds, so these are the embed backgrounds. People see the emoji on whichever Discord theme they use, not just the one the theme was designed for, so a glyph that vanishes on any panel is a bug.
 
 ## Steps
 
