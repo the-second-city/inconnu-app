@@ -20,6 +20,8 @@
 //   --degeneration-stroke  a degeneration diamond's outline and cross [--degeneration]
 //   --hunger-stroke        a Hunger drop's outline [--hunger]
 //   --hunger-empty         an empty Hunger drop [--hunger]
+//   --die                  a normal die's faces [--hale]
+//   --hunger-die           a Hunger die's faces [--hunger]
 //   --text                 the labels on the preview's --bg panel [dark or light, whichever suits it]
 //   --out                  the output folder [glyphs/<theme>, which is gitignored]; its png/
 //                          and svg/ folders are cleared first
@@ -46,6 +48,15 @@ import { Resvg } from '@resvg/resvg-js';
 import fs from 'node:fs';
 import path from 'node:path';
 import { parseArgs } from 'node:util';
+import {
+	BESTIAL,
+	CRITICAL,
+	FAILURE,
+	HUNGER_COLOR,
+	HUNGER_CRITICAL,
+	NORMAL_COLOR,
+	SUCCESS
+} from '../src/lib/components/characters/glyphs/dice/shapes.ts';
 
 /**
  * A theme's colors, keyed by flag name (without the dashes). `bg` is one color or two,
@@ -68,6 +79,8 @@ const THEMES = {
 		'degeneration-stroke': '#FF6600',
 		hunger: '#DC2626',
 		'hunger-stroke': '#EF4444',
+		die: NORMAL_COLOR, // The bot's dice
+		'hunger-die': HUNGER_COLOR,
 		bg: '#2A2422,#141010'
 	},
 	// Cool complements to Discord's peach-to-blush theme
@@ -104,7 +117,9 @@ const FALLBACKS = {
 	'humanity-stroke': 'humanity',
 	'degeneration-stroke': 'degeneration',
 	'hunger-stroke': 'hunger',
-	'hunger-empty': 'hunger'
+	'hunger-empty': 'hunger',
+	die: 'hale',
+	'hunger-die': 'hunger'
 };
 
 const HEX = /^#(?:[0-9a-f]{3}|[0-9a-f]{6})$/i;
@@ -221,9 +236,19 @@ const drop = (fill, stroke, width) =>
 	`<path d="${DROP}" fill="${fill}" stroke="${stroke}" stroke-width="${width}" stroke-linejoin="round"/>`;
 
 /**
+ * A die's face.
+ * @param {string[]} paths Its paths (glyphs/dice/shapes.ts)
+ * @param {string} color Fill color
+ * @returns {string} SVG markup
+ */
+const die = (paths, color) =>
+	paths.map((d) => `<path d="${d}" fill="${color}" fill-rule="evenodd"/>`).join('');
+
+/**
  * Each glyph's contents (100x100 viewBox), in sprite-sheet order, keyed by the bot's emoji name
  * (inconnu's assets/emoji). The shapes match the sheet's glyph components
- * (src/lib/components/characters/glyphs/), so keep them in step.
+ * (src/lib/components/characters/glyphs/), so keep them in step; the dice share theirs
+ * (glyphs/dice/shapes.ts).
  * @type {Record<string, (c: Colors) => string>}
  */
 const GLYPHS = {
@@ -241,7 +266,15 @@ const GLYPHS = {
 		line([15, 15, 85, 85], c['degeneration-stroke'], 8) +
 		line([85, 15, 15, 85], c['degeneration-stroke'], 8),
 	hunger: (c) => drop(c.hunger, c['hunger-stroke'], 8),
-	no_hunger: (c) => drop('none', c['hunger-empty'], 10)
+	no_hunger: (c) => drop('none', c['hunger-empty'], 10),
+	ln_fail: (c) => die(FAILURE, c.die),
+	ln_succ: (c) => die(SUCCESS, c.die),
+	ln_crit: (c) => die(CRITICAL, c.die),
+	ln_bestial: (c) => die(BESTIAL, c.die),
+	h_fail: (c) => die(FAILURE, c['hunger-die']),
+	h_succ: (c) => die(SUCCESS, c['hunger-die']),
+	h_crit: (c) => die(HUNGER_CRITICAL, c['hunger-die']),
+	h_bestial: (c) => die(BESTIAL, c['hunger-die'])
 };
 
 /** The size of a sprite-sheet cell and of each PNG, in pixels. */
@@ -252,7 +285,21 @@ const TRACKS = [
 	['Health', ['agg_dmg', 'sup_dmg', 'sup_dmg', ...Array(4).fill('no_dmg')]],
 	['Willpower', ['sup_dmg', ...Array(4).fill('no_dmg')]],
 	['Humanity', [...Array(6).fill('hu_filled'), 'hu_unfilled', 'stain', 'stain', 'degen']],
-	['Hunger', ['hunger', 'hunger', ...Array(3).fill('no_hunger')]]
+	['Hunger', ['hunger', 'hunger', ...Array(3).fill('no_hunger')]],
+	[
+		'Roll',
+		[
+			'ln_crit',
+			'ln_succ',
+			'ln_succ',
+			'ln_fail',
+			'ln_fail',
+			'h_crit',
+			'h_succ',
+			'h_fail',
+			'h_bestial'
+		]
+	]
 ];
 
 /**
@@ -326,8 +373,12 @@ writePng(
 	path.join(outDir, 'sprite-sheet.png')
 );
 
+/** The preview's glyphs per row, which wrap to fit the panel. */
+const PER_ROW = 9;
+/** Where the preview's tracks start, below the glyph rows. */
+const TRACKS_TOP = 44 + Math.ceil(names.length / PER_ROW) * 66;
 /** A preview panel's size. */
-const PANEL = { width: 640, height: 300 };
+const PANEL = { width: 640, height: TRACKS_TOP + TRACKS.length * 44 + 36 };
 
 /**
  * One preview panel: the glyphs, then sample tracks, over a background.
@@ -348,9 +399,13 @@ function panel(index, caption, top, bottom, text) {
 		`</linearGradient></defs>` +
 		`<rect y="${y0}" width="${PANEL.width}" height="${PANEL.height}" fill="url(#bg${index})"/>`;
 	svg += label(PANEL.width - 16, y0 + PANEL.height - 14, 13, caption, 'end');
-	svg += names.map((glyph, i) => place(glyph, 24 + i * 66, y0 + 20, 52)).join('');
+	svg += names
+		.map((glyph, i) =>
+			place(glyph, 24 + (i % PER_ROW) * 66, y0 + 20 + Math.floor(i / PER_ROW) * 66, 52)
+		)
+		.join('');
 	TRACKS.forEach(([name, row], r) => {
-		const y = y0 + 110 + r * 44;
+		const y = y0 + TRACKS_TOP + r * 44;
 		svg += label(24, y + 21, 18, name);
 		svg += row.map((glyph, i) => place(glyph, 140 + i * 30, y + 3, 24)).join('');
 	});
