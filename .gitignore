@@ -28,3 +28,8 @@ vite.config.ts.timestamp-*
 
 # Added by ggshield
 .cache_ggshield
+
+# Share project skills, despite a global .claude ignore; keep local settings out
+!.claude/
+.claude/*
+!.claude/skills/
