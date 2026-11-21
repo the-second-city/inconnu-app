@@ -4,9 +4,9 @@
 	import { CirclePlus, CircleX } from '@lucide/svelte';
 
 	import type { Trait } from '$lib/types';
-	import { isReservedTraitName, isValidTraitName, normalize } from '../../..';
+	import { normalize, straightenApostrophes } from '../../..';
+	import { getConstraints, maxCodeUnits, nameKey, traitNameError } from '$lib/constraints';
 	import { getTraitOrder } from '$lib/data/trait-order';
-	import { FORM_VALIDATION } from '$lib/constants/formStyles';
 
 	import Card from '$lib/components/ui/Card.svelte';
 	import ErrorMessage from '$lib/components/ui/ErrorMessage.svelte';
@@ -32,9 +32,11 @@
 		addLabel = null
 	}: ComponentProps = $props();
 
-	const placeholder = $derived(
-		`Add new ${addLabel ?? cat.charAt(0).toUpperCase() + cat.slice(1)} ...`
-	);
+	const constraints = getConstraints();
+	const ratings = $derived(constraints().trait_rating);
+
+	const label = $derived(addLabel ?? cat.charAt(0).toUpperCase() + cat.slice(1));
+	const placeholder = $derived(`Add new ${label} ...`);
 
 	// Get the defined trait order for this category/subcategory (if it exists)
 	const orderedTraitNames = $derived(getTraitOrder(cat, name));
@@ -51,12 +53,15 @@
 
 		// If we have a defined order, use it to sort
 		if (orderedTraitNames) {
-			// Create a map from trait name to original index
-			const nameToIndex = new Map(categoryTraits.map((item) => [item.trait.name, item.index]));
+			// Create a map from trait name to original index, by name key, as the bot matches them:
+			// older characters have AnimalKen, newer ones Animal Ken
+			const nameToIndex = new Map(
+				categoryTraits.map((item) => [nameKey(item.trait.name), item.index])
+			);
 
 			// Return indices in the defined order, skipping any that don't exist
 			return orderedTraitNames
-				.map((name) => nameToIndex.get(name))
+				.map((name) => nameToIndex.get(nameKey(name)))
 				.filter((idx): idx is number => idx !== undefined);
 		}
 
@@ -65,17 +70,16 @@
 	});
 
 	let newTraitName = $state('');
-	let normalizedTrait = $derived(normalize(newTraitName));
+	let normalizedTrait = $derived(normalize(straightenApostrophes(newTraitName)));
 	let traitError = $derived.by(() => {
 		if (normalizedTrait.length === 0) return null;
-		if (normalizedTrait.length > FORM_VALIDATION.traitMaxLength)
-			return `Maximum ${FORM_VALIDATION.traitMaxLength} characters`;
-		if (!isValidTraitName(normalizedTrait)) return 'Letters and underscores only';
-		if (isReservedTraitName(normalizedTrait)) return 'Reserved name; set it in Discord instead';
+		const error = traitNameError(normalizedTrait, constraints());
+		if (error) return error;
 
-		// Trait names must be unique across all categories, not just this column
-		const lowercased = normalizedTrait.toLowerCase();
-		const isDuplicate = traits.some((trait) => trait.name.toLowerCase() === lowercased);
+		// Trait names must be unique across all categories, not just this column. The bot compares
+		// them without case or spaces, so "NightDriving" duplicates Night Driving
+		const key = nameKey(normalizedTrait);
+		const isDuplicate = traits.some((trait) => nameKey(trait.name) === key);
 		if (isDuplicate) return 'Trait already exists';
 		return null;
 	});
@@ -117,7 +121,13 @@
 					<!-- The ✕ stays by the name when a long name wraps the dots onto a second line -->
 					<div class="flex items-start gap-2">
 						<div class="min-w-0 flex-1">
-							<TraitSelector bind:trait={traits[index]} {editing} {allowsSubtraits} />
+							<TraitSelector
+								bind:trait={traits[index]}
+								min={ratings.min}
+								max={ratings.max}
+								{editing}
+								{allowsSubtraits}
+							/>
 						</div>
 						<button
 							type="button"
@@ -130,7 +140,13 @@
 						</button>
 					</div>
 				{:else}
-					<TraitSelector bind:trait={traits[index]} {editing} {allowsSubtraits} />
+					<TraitSelector
+						bind:trait={traits[index]}
+						min={ratings.min}
+						max={ratings.max}
+						{editing}
+						{allowsSubtraits}
+					/>
 				{/if}
 			{/each}
 		</div>
@@ -144,7 +160,8 @@
 				bind:value={newTraitName}
 				onkeydown={(e) => e.key === 'Enter' && addTrait()}
 				{placeholder}
-				maxlength={FORM_VALIDATION.traitMaxLength + 1}
+				aria-label="New {label}"
+				maxlength={maxCodeUnits(constraints().trait_max_length)}
 				class="input min-w-0 flex-1 border"
 				class:text-error-500={traitError}
 				class:border-error-500={traitError}

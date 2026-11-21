@@ -2,54 +2,24 @@
 
 import type { Profile } from './types';
 
-export const isValidTraitName = (name: string): boolean => {
-	if (name.length === 0) return false;
-
-	const validPattern = /^[A-Za-z_]+$/;
-	return validPattern.test(name);
-};
-
-// Mirrors RESERVED_TRAITS and the power bonus check in the bot's validate_trait_names()
-const RESERVED_TRAITS = [
-	'willpower',
-	'hunger',
-	'humanity',
-	'surge',
-	'potency',
-	'bane',
-	'current_hunger',
-	'powerbonus',
-	'power_bonus'
-];
-
-/**
- * Checks whether a trait name is reserved by the bot and can't be used as a trait.
- * @param name - The trait name to check
- * @returns True if the name is reserved
- */
-export const isReservedTraitName = (name: string): boolean => {
-	return RESERVED_TRAITS.includes(name.toLowerCase());
-};
-
 export const normalize = (text: string): string => {
 	return text.split(/\s+/).filter(Boolean).join(' ');
 };
 
+/** Replace curly apostrophes (which phones type) with straight ones, as the bot's
+ * `straighten_apostrophes` does for trait names. */
+export const straightenApostrophes = (text: string): string => text.replace(/[\u2018\u2019]/g, "'");
+
 /**
- * Why a character name is invalid, or null if it's valid.
- * @param name - The name, already normalized
- * @returns The problem, as a message for the user
+ * A string's length in code points, as Python's `len()` counts it. JS's `length` counts UTF-16
+ * code units, so a code point outside the Basic Multilingual Plane (🩸, 𝓢𝓬𝓻𝓲𝓹𝓽) counts twice
+ * there. Not graphemes (as `Intl.Segmenter` counts them): an emoji built of several code points
+ * (👨‍👩‍👧, skin tones, flags) counts each, as Python does. Check text against the bot's limits with
+ * this, not `length`.
+ * @param text - The text to measure
+ * @returns The number of code points
  */
-export const characterNameError = (name: string): string | null => {
-	if (!name) return 'Name cannot be empty';
-	if (name.length > 30) return 'Name must be 30 characters or less';
-	// The bot's Python \w is Unicode-aware (letters and numbers of any script, plus _); JS's isn't,
-	// even with the u flag, so spell it out
-	if (!/^[\p{L}\p{N}_\-\s']+$/u.test(name)) {
-		return 'Name can only contain letters, numbers, spaces, hyphens, underscores, and apostrophes';
-	}
-	return null;
-};
+export const codePointLength = (text: string): number => [...text].length;
 
 export const insensitiveSort = (items: string[]) => {
 	items.sort((a, b) => a.localeCompare(b, undefined, { sensitivity: 'base' }));

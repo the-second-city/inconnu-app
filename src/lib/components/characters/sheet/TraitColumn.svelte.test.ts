@@ -1,9 +1,14 @@
 import { render, screen } from '@testing-library/svelte';
 import userEvent from '@testing-library/user-event';
-import { expect, test } from 'vitest';
+import { expect, test, vi } from 'vitest';
 
 import type { Trait } from '$lib/types';
 import TraitColumn from './TraitColumn.svelte';
+
+// Constraints come from the character page or wizard; these are the bot's
+vi.mock('$lib/constraints', async (original) =>
+	(await import('$lib/testing/constraints')).mockConstraints(original)
+);
 
 /** A trait without specialties. */
 const trait = (name: string, type: string, rating = 1): Trait => ({
@@ -67,6 +72,19 @@ test('shows the column name', () => {
 	expect(screen.getByRole('heading', { name: 'physical' })).toBeInTheDocument();
 });
 
+test.each(['Animal Ken', 'AnimalKen'])(
+	'shows the skill %s in sheet order, as the bot spells it now or did before',
+	(name: string) => {
+		renderColumn({
+			name: 'social',
+			cat: 'skill',
+			traits: [trait('Etiquette', 'skill'), trait(name, 'skill')]
+		});
+
+		expect(shownTraits()).toEqual([name, 'Etiquette']);
+	}
+);
+
 test('shows attributes and skills in sheet order, only from their subcategory', () => {
 	renderColumn();
 
@@ -102,12 +120,12 @@ test.each([
 });
 
 test.each([
-	[null, 'discipline', 'Add new Discipline ...'],
-	['Custom Trait', 'custom', 'Add new Custom Trait ...']
-])('labels the input with %o', (addLabel, cat, placeholder) => {
+	[null, 'discipline', 'New Discipline', 'Add new Discipline ...'],
+	['Custom Trait', 'custom', 'New Custom Trait', 'Add new Custom Trait ...']
+])('labels the input with %o', (addLabel, cat, name, placeholder) => {
 	renderColumn({ cat, addable: true, addLabel });
 
-	expect(addInput()).toHaveAttribute('placeholder', placeholder);
+	expect(screen.getByRole('textbox', { name })).toHaveAttribute('placeholder', placeholder);
 });
 
 test('adds a trait, in alphabetical order', async () => {
@@ -143,10 +161,13 @@ test('new skills start at 0', async () => {
 });
 
 test.each([
-	['A'.repeat(31), 'Maximum 30 characters'],
-	['Blood Magic', 'Letters and underscores only'],
+	['A'.repeat(41), 'Maximum 40 characters'],
+	['Brawl2', 'Letters, underscores, apostrophes, and spaces only'],
 	['Willpower', 'Reserved name; set it in Discord instead'],
-	['strength', 'Trait already exists']
+	['Blood Hunger', `"Hunger" can't follow the first word, as rolls read it as Hunger`],
+	['strength', 'Trait already exists'],
+	// The bot compares names without case or spaces
+	['Stren Gth', 'Trait already exists']
 ])('rejects the trait %o', async (name, error) => {
 	const user = userEvent.setup();
 	const bound = renderColumn({ name: 'Custom Traits', cat: 'custom', addable: true });
@@ -157,6 +178,24 @@ test.each([
 	expect(addInput()).toHaveAccessibleDescription(error);
 	expect(screen.getByRole('button', { name: 'Add trait' })).toBeDisabled();
 	expect(bound.traits).toHaveLength(TRAITS.length);
+});
+
+test('adds a trait with spaces and apostrophes', async () => {
+	const user = userEvent.setup();
+	const bound = renderColumn({ name: 'Custom Traits', cat: 'custom', addable: true });
+
+	await user.type(addInput(), "Dogs'  Best Friend{Enter}");
+
+	expect(bound.traits).toContainEqual(trait("Dogs' Best Friend", 'custom', 1));
+});
+
+test("a phone's curly apostrophe becomes a straight one", async () => {
+	const user = userEvent.setup();
+	const bound = renderColumn({ name: 'Custom Traits', cat: 'custom', addable: true });
+
+	await user.type(addInput(), 'Dogs\u2019 Friend{Enter}');
+
+	expect(bound.traits).toContainEqual(trait("Dogs' Friend", 'custom', 1));
 });
 
 test("can't add a trait without a name", async () => {

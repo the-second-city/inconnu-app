@@ -1,9 +1,14 @@
 import { render, screen, waitFor, within } from '@testing-library/svelte';
 import userEvent from '@testing-library/user-event';
-import { expect, test } from 'vitest';
+import { expect, test, vi } from 'vitest';
 
 import type { Advantage } from '$lib/types';
 import Advantages from './Advantages.svelte';
+
+// Constraints come from the character page or wizard; these are the bot's
+vi.mock('$lib/constraints', async (original) =>
+	(await import('$lib/testing/constraints')).mockConstraints(original)
+);
 
 type User = ReturnType<typeof userEvent.setup>;
 
@@ -121,7 +126,7 @@ test('closes the form after adding', async () => {
 
 test.each([
 	['an empty name', ''],
-	['a name with spaces', 'Iron Will'],
+	['a name with digits', 'Iron Will2'],
 	['a duplicate, ignoring case', 'library']
 ])("can't add %s", async (_case, name) => {
 	const user = userEvent.setup();

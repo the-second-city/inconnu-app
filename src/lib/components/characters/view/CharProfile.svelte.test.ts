@@ -2,8 +2,14 @@ import { render, screen, waitFor, within } from '@testing-library/svelte';
 import userEvent from '@testing-library/user-event';
 import { expect, test, vi } from 'vitest';
 
+import { TEST_CONSTRAINTS } from '$lib/testing/constraints';
 import type { Profile } from '$lib/types';
 import CharProfile from './CharProfile.svelte';
+
+// Constraints come from the character page or wizard; these are the bot's
+vi.mock('$lib/constraints', async (original) =>
+	(await import('$lib/testing/constraints')).mockConstraints(original)
+);
 
 const IMAGES = [
 	'https://example.com/1.webp',
@@ -20,21 +26,26 @@ const profile = (overrides: Partial<Profile> = {}): Profile => ({
 });
 
 /**
- * Render Nadia's profile, with `profile` as reactive state so edits are written back to it, as a
- * parent's `bind:` would. Returns that state.
+ * Render Nadia's profile, with `profile` and `convictions` as reactive state so edits are written
+ * back to them, as a parent's `bind:` would. Returns that state.
  */
 const renderProfile = (prof: Profile = profile(), editing = false, convictions?: string[]) => {
-	const bound = $state({ profile: prof });
+	const bound = $state({ profile: prof, convictions });
 	render(CharProfile, {
 		name: 'Nadia',
 		splat: 'vampire',
-		convictions,
 		editing,
 		get profile() {
 			return bound.profile;
 		},
 		set profile(next: Profile) {
 			bound.profile = next;
+		},
+		get convictions() {
+			return bound.convictions;
+		},
+		set convictions(next: string[] | undefined) {
+			bound.convictions = next;
 		}
 	});
 	return bound;
@@ -69,6 +80,49 @@ test('edits the description and history in place', async () => {
 	await user.type(within(section('History')).getByRole('textbox'), 'Embraced.');
 
 	expect(bound.profile).toMatchObject({ description: 'Tall. Pale.', biography: 'Embraced.' });
+});
+
+test.each(['Description', 'History'])('an over-long %s shows why', async (heading: string) => {
+	const user = userEvent.setup();
+	const max = TEST_CONSTRAINTS.profile_max_length;
+	renderProfile(profile(), true);
+	const box = within(section(heading)).getByRole('textbox');
+
+	await user.click(box);
+	await user.paste('a'.repeat(max + 1));
+
+	expect(box).toHaveAccessibleDescription(`Maximum ${max} characters`);
+});
+
+test.each(['Description', 'History'])(
+	'a %s at the limit in emoji is accepted, as the bot counts them',
+	async (heading: string) => {
+		const user = userEvent.setup();
+		const max = TEST_CONSTRAINTS.profile_max_length;
+		renderProfile(profile(), true);
+		const box = within(section(heading)).getByRole('textbox');
+
+		// The limit in code points (the bot's count), though twice that in UTF-16 code units
+		await user.click(box);
+		await user.paste('🩸'.repeat(max));
+
+		expect(box).toHaveValue('🩸'.repeat(max));
+		expect(box).not.toHaveAccessibleDescription();
+	}
+);
+
+test('an over-long conviction shows why, but extra spaces don’t count', async () => {
+	const user = userEvent.setup();
+	const max = TEST_CONSTRAINTS.conviction_max_length;
+	renderProfile(profile(), true, ['', '', '']);
+	const box = screen.getByRole('textbox', { name: 'Conviction 1' });
+
+	await user.click(box);
+	await user.paste(`${'a'.repeat(max - 2)}  b`); // max + 1 typed, max collapsed
+	expect(box).not.toHaveAccessibleDescription();
+
+	await user.type(box, 'c');
+	expect(box).toHaveAccessibleDescription(`Maximum ${max} characters`);
 });
 
 test('lists the convictions, skipping blanks', () => {

@@ -5,14 +5,15 @@
 
 	import type { Profile, Splat } from '$lib/types';
 	import { DISCORD_URL } from '$lib/index';
-	import { FORM_VALIDATION } from '$lib/constants/formStyles';
+	import { getConstraints, maxCodeUnits, profileLengthErrors } from '$lib/constraints';
+	import ErrorMessage from '$lib/components/ui/ErrorMessage.svelte';
 	import Markdown from '$lib/components/ui/Markdown.svelte';
 
 	interface ComponentProps {
 		name: string;
 		profile: Profile;
 		splat: Splat;
-		convictions?: string[]; // While editing, the parent pads these to three slots
+		convictions?: string[]; // While editing, the parent pads these to the bot's count
 		editing: boolean;
 	}
 
@@ -23,6 +24,17 @@
 		convictions = $bindable(), // Bound to an optional field, so no fallback
 		editing
 	}: ComponentProps = $props();
+
+	// The bot's lengths, for the editing fields (so a read-only profile needs none provided)
+	const constraints = getConstraints();
+
+	// Fields too long for the bot, while editing (CharacterPage holds Save until they fit). Counted
+	// in code points, as the bot counts them, so `maxlength` (which counts UTF-16 code units) is
+	// only a ceiling
+	const id = $props.id();
+	const lengthErrors = $derived(
+		editing ? profileLengthErrors(profile, convictions ?? [], constraints()) : null
+	);
 
 	// The bot may store blank convictions
 	let shownConvictions = $derived((convictions ?? []).map((c) => c.trim()).filter(Boolean));
@@ -124,10 +136,14 @@
 					{#if editing}
 						<textarea
 							class="textarea field-sizing-content max-h-[70vh] min-h-48 border leading-relaxed"
+							class:border-error-500={lengthErrors?.description}
 							bind:value={profile.description}
+							aria-label="Description"
+							aria-describedby={lengthErrors?.description ? `${id}-description-error` : undefined}
 							rows="8"
-							maxlength={FORM_VALIDATION.descriptionMaxLength}
+							maxlength={maxCodeUnits(constraints().profile_max_length)}
 						></textarea>
+						<ErrorMessage error={lengthErrors?.description} id="{id}-description-error" />
 					{:else if profile.description}
 						<Markdown content={profile.description} />
 					{:else}
@@ -150,10 +166,14 @@
 					{#if editing}
 						<textarea
 							class="textarea field-sizing-content max-h-[70vh] min-h-48 border leading-relaxed"
+							class:border-error-500={lengthErrors?.biography}
 							bind:value={profile.biography}
+							aria-label="History"
+							aria-describedby={lengthErrors?.biography ? `${id}-biography-error` : undefined}
 							rows="8"
-							maxlength={FORM_VALIDATION.historyMaxLength}
+							maxlength={maxCodeUnits(constraints().profile_max_length)}
 						></textarea>
+						<ErrorMessage error={lengthErrors?.biography} id="{id}-biography-error" />
 					{:else if profile.biography}
 						<Markdown content={profile.biography} />
 					{:else}
@@ -176,17 +196,21 @@
 					{#if editing}
 						<div class="space-y-2">
 							{#each convictions ?? [] as conviction, i (i)}
+								{@const error = lengthErrors?.convictions[i]}
 								<input
 									type="text"
 									class="input border"
-									maxlength={FORM_VALIDATION.convictionMaxLength}
+									class:border-error-500={error}
+									maxlength={maxCodeUnits(constraints().conviction_max_length)}
 									placeholder="Conviction {i + 1}"
 									aria-label="Conviction {i + 1}"
+									aria-describedby={error ? `${id}-conviction-${i}-error` : undefined}
 									value={conviction}
 									oninput={(e) => {
 										if (convictions) convictions[i] = e.currentTarget.value;
 									}}
 								/>
+								<ErrorMessage {error} id="{id}-conviction-{i}-error" />
 							{/each}
 						</div>
 					{:else}

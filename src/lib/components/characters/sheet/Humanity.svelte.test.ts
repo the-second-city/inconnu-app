@@ -5,6 +5,11 @@ import { expect, test, vi } from 'vitest';
 import type { Character } from '$lib/types';
 import Humanity from './Humanity.svelte';
 
+// Constraints come from the character page or wizard; these are the bot's
+vi.mock('$lib/constraints', async (original) =>
+	(await import('$lib/testing/constraints')).mockConstraints(original)
+);
+
 /** A character with the given Humanity and Stains. */
 const character = (humanity: number, stains: number): Character => ({
 	_id: 'id',

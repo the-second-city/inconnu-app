@@ -13,7 +13,13 @@
 		Timeline
 	} from '@lucide/svelte';
 
-	import { characterNameError, normalize } from '$lib';
+	import { normalize } from '$lib';
+	import {
+		characterNameError,
+		profileLengthErrors,
+		setConstraints,
+		tooLongFields
+	} from '$lib/constraints';
 
 	import { beforeNavigate, goto } from '$app/navigation';
 	import { resolve } from '$app/paths';
@@ -26,7 +32,7 @@
 	} from '$lib/api/characterEdit';
 	import { page } from '$app/state';
 	import type { Pathname } from '$app/types';
-	import type { Character, Guild, OwnerData, TrackType } from '$lib/types';
+	import type { Character, Constraints, Guild, OwnerData, TrackType } from '$lib/types';
 	import ClientPortal from '$lib/components/ui/ClientPortal.svelte';
 	import Modal from '$lib/components/ui/Modal.svelte';
 	import ModalActions from '$lib/components/ui/ModalActions.svelte';
@@ -47,6 +53,7 @@
 
 	interface ComponentProps {
 		character: Character;
+		constraints: Constraints; // The bot's, which edit mode checks input against
 		guild: Guild;
 		owner?: OwnerData | null;
 		spc?: boolean;
@@ -58,6 +65,7 @@
 
 	let {
 		character: initialCharacter,
+		constraints,
 		guild,
 		owner,
 		spc = false,
@@ -70,6 +78,9 @@
 	// The page's own copy, for edits. The parent keys this component on the character's ID, so a
 	// new character starts a new copy.
 	let character: Character = $state(untrack(() => $state.snapshot(initialCharacter)));
+
+	// For the sheet's and profile's editing controls; a getter, so a refetch's copy reaches them
+	setConstraints(() => constraints);
 
 	interface Tab {
 		value: string;
@@ -206,8 +217,24 @@
 	const nameError = $derived.by(() => {
 		if (!editing) return null;
 		const serverError = normalizedNewName === rejectedName ? saveError?.name : null;
-		return characterNameError(normalizedNewName) ?? serverError ?? null;
+		return characterNameError(normalizedNewName, constraints) ?? serverError ?? null;
 	});
+
+	// Profile text too long for the bot holds Save. CharProfile shows why with each field; elsewhere
+	// (say, the Sheet tab), a notice names them, so Save isn't disabled for no visible reason
+	const tooLong = $derived(
+		editing
+			? tooLongFields(
+					profileLengthErrors(character.profile, character.convictions ?? [], constraints)
+				)
+			: []
+	);
+	const textTooLong = $derived(tooLong.length > 0);
+	const tooLongNotice = $derived(
+		textTooLong && selectedTab !== 'profile'
+			? `To save, shorten the Profile tab’s ${new Intl.ListFormat('en').format(tooLong)}.`
+			: null
+	);
 
 	// A save in progress: the buttons and shortcuts wait for it
 	let saving = $state(false);
@@ -259,8 +286,10 @@
 		copy = $state.snapshot(character);
 		baseline = comparable(copy, copy.name);
 		newName = character.name;
-		// Three conviction slots to fill in, like the wizard's. Cancel restores the original list.
-		character.convictions = [...(character.convictions ?? []), '', '', ''].slice(0, 3);
+		// A slot for each conviction the bot allows, like the wizard's. Cancel restores the original.
+		const count = constraints.conviction_count;
+		const convictions = [...(character.convictions ?? []), ...Array<string>(count).fill('')];
+		character.convictions = convictions.slice(0, count);
 	};
 	const startEditing = forSupporters('Editing characters', enterEditMode);
 	/** Ask before discarding unsaved edits. True when there are none, or the user agrees. */
@@ -305,7 +334,7 @@
 	 * what the bot stored. On failure, stay in edit mode and show why.
 	 */
 	const saveChanges = async () => {
-		if (saving || nameError || !hasChanges) return;
+		if (saving || nameError || textTooLong || !hasChanges) return;
 		saving = true;
 		saveError = null;
 		const body = editBody($state.snapshot(character), newName);
@@ -445,7 +474,7 @@
 					<button
 						class="btn btn-gothic btn-gothic-blood"
 						onclick={saveChanges}
-						disabled={saving || nameError !== null || !hasChanges}
+						disabled={saving || nameError !== null || textTooLong || !hasChanges}
 						aria-busy={saving}
 						title="Save ({modKey}S)"
 						aria-keyshortcuts="Meta+S Control+S"
@@ -470,6 +499,17 @@
 			</div>
 		{/if}
 	</div>
+	{#if tooLongNotice}
+		<div
+			class="card preset-tonal-warning mb-4 flex flex-wrap items-center gap-x-4 gap-y-2 p-4"
+			role="status"
+		>
+			<p class="flex-1">{tooLongNotice}</p>
+			<button class="btn btn-sm preset-tonal" onclick={() => selectTab('profile')}>
+				Go to Profile
+			</button>
+		</div>
+	{/if}
 	{#if editing && saveError && saveError.messages.length > 0}
 		<div class="card preset-tonal-error mb-4 p-4" role="alert">
 			<p class="font-semibold">Your changes weren't saved.</p>
@@ -557,7 +597,7 @@
 					<button
 						class="fab-gothic btn-gothic btn-gothic-blood"
 						onclick={saveChanges}
-						disabled={saving || nameError !== null || !hasChanges}
+						disabled={saving || nameError !== null || textTooLong || !hasChanges}
 						aria-busy={saving}
 						aria-label="Save"
 					>

@@ -1,13 +1,12 @@
 import { error } from '@sveltejs/kit';
 import type { PageLoad } from './$types';
-import { TRACK_LIMITS, type TrackLimits } from '$lib/rules/damage';
-import type { Trait, Guild, TrackType } from '$lib/types';
+import type { Constraints, Trait, Guild } from '$lib/types';
 
 interface WizardData {
 	spc: boolean;
 	guild: Guild;
 	splats: string[];
-	limits?: Record<TrackType, TrackLimits>; // The bot's Health and Willpower limits
+	constraints: Constraints; // What the bot accepts, which the form checks against
 	traits: Trait[];
 }
 
@@ -31,7 +30,7 @@ export const load: PageLoad = async ({ params, fetch }) => {
 			spc: data.spc,
 			guild: data.guild,
 			splats: data.splats,
-			limits: data.limits ?? TRACK_LIMITS, // Should the bot not send them (an older bot, say)
+			constraints: data.constraints,
 			traits: data.traits
 		};
 	} catch (err) {

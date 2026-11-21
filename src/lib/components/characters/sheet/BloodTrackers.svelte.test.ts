@@ -5,6 +5,11 @@ import { expect, test, vi } from 'vitest';
 import type { Character, Splat } from '$lib/types';
 import BloodTrackers from './BloodTrackers.svelte';
 
+// Constraints come from the character page or wizard; these are the bot's
+vi.mock('$lib/constraints', async (original) =>
+	(await import('$lib/testing/constraints')).mockConstraints(original)
+);
+
 /** A vampire with the given blood fields. */
 const vampire = (fields: Partial<Character> = {}, splat: Splat = 'vampire'): Character => ({
 	_id: 'id',

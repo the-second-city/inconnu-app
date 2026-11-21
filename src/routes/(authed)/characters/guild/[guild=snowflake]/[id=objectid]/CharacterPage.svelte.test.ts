@@ -5,6 +5,7 @@ import { beforeEach, expect, test, vi } from 'vitest';
 
 import type { Character, Guild } from '$lib/types';
 import { navigate, page } from '$lib/testing/page.svelte';
+import { TEST_CONSTRAINTS } from '$lib/testing/constraints';
 import CharacterPage from './CharacterPage.svelte';
 import { upsell } from '$lib/state/premium.svelte';
 
@@ -70,7 +71,12 @@ const character = (): Character => ({
 /** Render the character page, with its edit buttons. Returns the render result, whose `rerender`
  * changes its props. */
 const renderPage = (char: Character = character()): RenderResult<typeof CharacterPage> =>
-	render(CharacterPage, { guild: GUILD, character: char, editable: true });
+	render(CharacterPage, {
+		constraints: TEST_CONSTRAINTS,
+		guild: GUILD,
+		character: char,
+		editable: true
+	});
 
 /** The panel for the selected tab. */
 const panel = (): HTMLElement => screen.getByRole('tabpanel');
@@ -137,10 +143,11 @@ const saved = async (): Promise<void> => {
 };
 
 /** The profile description's text box, while editing. */
-const descriptionBox = (): HTMLElement => within(panel()).getAllByRole('textbox')[0];
+const descriptionBox = (): HTMLElement =>
+	within(panel()).getByRole('textbox', { name: 'Description' });
 
 test('has no edit buttons unless editable', () => {
-	render(CharacterPage, { guild: GUILD, character: character() });
+	render(CharacterPage, { constraints: TEST_CONSTRAINTS, guild: GUILD, character: character() });
 
 	expect(screen.queryByRole('button', { name: 'Edit' })).not.toBeInTheDocument();
 });
@@ -495,6 +502,45 @@ const editProfile = async (user: ReturnType<typeof userEvent.setup>): Promise<vo
 	await user.click(screen.getByRole('tab', { name: 'Profile' }));
 	await user.click(editButton('Edit'));
 };
+
+test('an over-long conviction blocks saving', async () => {
+	const user = userEvent.setup();
+	renderPage();
+
+	await editProfile(user);
+	const box = convictionBoxes()[0];
+	await user.click(box);
+	await user.paste('a'.repeat(TEST_CONSTRAINTS.conviction_max_length + 1));
+	expect(editButton('Save')).toBeDisabled();
+	// The field says why, so the notice for other tabs stays away
+	expect(screen.queryByRole('status')).not.toBeInTheDocument();
+
+	await user.type(box, '{Backspace}');
+	expect(editButton('Save')).toBeEnabled();
+});
+
+test('off the Profile tab, a notice says which text holds Save', async () => {
+	const user = userEvent.setup();
+	renderPage({ ...character(), profile: { ...character().profile, description: 'Pale.' } });
+
+	await editProfile(user);
+	await user.click(convictionBoxes()[1]);
+	await user.paste('a'.repeat(TEST_CONSTRAINTS.conviction_max_length + 1));
+	await user.click(within(panel()).getByRole('textbox', { name: 'Description' }));
+	await user.paste('a'.repeat(TEST_CONSTRAINTS.profile_max_length));
+	await user.click(screen.getByRole('tab', { name: 'Sheet' }));
+
+	expect(editButton('Save')).toBeDisabled();
+	expect(screen.getByRole('status')).toHaveTextContent(
+		'To save, shorten the Profile tab’s Description and Conviction 2.'
+	);
+
+	await user.click(
+		within(screen.getByRole('status')).getByRole('button', { name: 'Go to Profile' })
+	);
+	expect(screen.getByRole('tab', { name: 'Profile' })).toHaveAttribute('aria-selected', 'true');
+	expect(screen.queryByRole('status')).not.toBeInTheDocument();
+});
 
 test('editing shows three conviction fields, filled from the character', async () => {
 	const user = userEvent.setup();
@@ -1006,6 +1052,7 @@ const vampire = (): Character => ({
 test('with the tracker actions, Hunger opens the Rouse modal', async () => {
 	const user = userEvent.setup();
 	render(CharacterPage, {
+		constraints: TEST_CONSTRAINTS,
 		guild: GUILD,
 		character: vampire(),
 		editable: true,
@@ -1022,7 +1069,12 @@ test('with the tracker actions, Hunger opens the Rouse modal', async () => {
 });
 
 test('without the tracker actions, Hunger and Humanity open no menus', () => {
-	render(CharacterPage, { guild: GUILD, character: vampire(), editable: true });
+	render(CharacterPage, {
+		constraints: TEST_CONSTRAINTS,
+		guild: GUILD,
+		character: vampire(),
+		editable: true
+	});
 
 	expect(screen.queryByRole('button', { name: 'Hunger actions' })).not.toBeInTheDocument();
 	expect(screen.queryByRole('button', { name: 'Humanity actions' })).not.toBeInTheDocument();
@@ -1032,6 +1084,7 @@ test('with the tracker actions, Mend in the Health menu opens the Mend modal', a
 	const user = userEvent.setup();
 	const damaged = { ...vampire(), health: '....//' };
 	render(CharacterPage, {
+		constraints: TEST_CONSTRAINTS,
 		guild: GUILD,
 		character: damaged,
 		editable: true,
@@ -1049,7 +1102,13 @@ test('with the tracker actions, Mend in the Health menu opens the Mend modal', a
 
 test("a Storyteller on a player's character may deal damage and Stains, but not Rouse, Slake or Remorse", async () => {
 	const user = userEvent.setup();
-	render(CharacterPage, { guild: GUILD, character: vampire(), editable: true, actionable: true });
+	render(CharacterPage, {
+		constraints: TEST_CONSTRAINTS,
+		guild: GUILD,
+		character: vampire(),
+		editable: true,
+		actionable: true
+	});
 
 	expect(screen.getByRole('button', { name: 'Health actions' })).toBeInTheDocument();
 	expect(screen.queryByRole('button', { name: 'Hunger actions' })).not.toBeInTheDocument();
@@ -1066,6 +1125,7 @@ test.each([
 ])('%s → %s opens its modal', async (trigger, action, title) => {
 	const user = userEvent.setup();
 	render(CharacterPage, {
+		constraints: TEST_CONSTRAINTS,
 		guild: GUILD,
 		character: vampire(),
 		editable: true,
@@ -1119,6 +1179,7 @@ test.each([
 	const user = userEvent.setup();
 	isSupporter.mockResolvedValue(false);
 	render(CharacterPage, {
+		constraints: TEST_CONSTRAINTS,
 		guild: GUILD,
 		character: { ...vampire(), health: '....//' },
 		editable: true,
@@ -1153,6 +1214,7 @@ test("a non-supporter choosing a ghoul's Rouse sees the upsell instead", async (
 	isSupporter.mockResolvedValue(false);
 	const ghoul: Character = { ...character(), splat: 'ghoul' };
 	render(CharacterPage, {
+		constraints: TEST_CONSTRAINTS,
 		guild: GUILD,
 		character: ghoul,
 		editable: true,
@@ -1174,6 +1236,7 @@ test('while one premium check is pending, other actions wait for it', async () =
 	let answer: (supporter: boolean) => void = () => {};
 	isSupporter.mockImplementation(() => new Promise((resolve) => (answer = resolve)));
 	render(CharacterPage, {
+		constraints: TEST_CONSTRAINTS,
 		guild: GUILD,
 		character: vampire(),
 		editable: true,
