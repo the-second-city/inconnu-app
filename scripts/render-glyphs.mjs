@@ -26,7 +26,7 @@
 //   --out                  the output folder [glyphs/<theme>, which is gitignored]; its png/
 //                          and svg/ folders are cleared first
 //
-// A theme named in THEMES (default, peach) needs no colors: it starts from that theme's, and
+// A theme named in THEMES (bruised, peach) needs no colors: it starts from that theme's, and
 // any flags override them.
 //
 // Writes:
@@ -40,8 +40,8 @@
 // Example (the peach theme):
 //   node scripts/render-glyphs.mjs peach --hale '#6578A7' --superficial '#4775D7' \
 //     --aggravated '#3E55CE' --humanity '#445DA9' --humanity-stroke '#5A6FB3' \
-//     --humanity-empty '#6A779F' --stain '#8F36B9' --degeneration '#9333EA' \
-//     --degeneration-stroke '#D04BEF' --hunger '#0E7A8A' --hunger-stroke '#138493' \
+//     --humanity-empty '#6A779F' --stain '#8F36B9' --degeneration '#C2187A' \
+//     --degeneration-stroke '#FF7AC0' --hunger '#0E7A8A' --hunger-stroke '#138493' \
 //     --hunger-empty '#0E7A8A' --die '#6578A7' --hunger-die '#0E7A8A' \
 //     --bg '#F7DDB6,#F4D3CC'
 
@@ -53,9 +53,7 @@ import {
 	BESTIAL,
 	CRITICAL,
 	FAILURE,
-	HUNGER_COLOR,
 	HUNGER_CRITICAL,
-	NORMAL_COLOR,
 	SUCCESS
 } from '../src/lib/components/characters/glyphs/dice/shapes.ts';
 
@@ -67,22 +65,24 @@ import {
 
 /** Saved themes, so they can be rebuilt by name. @type {Record<string, Colors>} */
 const THEMES = {
-	// The sheet's own colors (Crimson theme), for dark backgrounds
-	default: {
-		hale: '#CCCCCC',
-		superficial: '#FFA2A2', // red-300
-		aggravated: '#D21D3D', // Crimson primary-500
-		humanity: '#DDCFB8',
-		'humanity-stroke': '#EFE3CF',
+	// The app's bruised, crimson-on-black look (from the glyph components' colors), tuned to read on
+	// Discord's light and dark embeds too; the app keeps its own colors
+	bruised: {
+		hale: '#B1A48F', // Bone, as the normal dice
+		superficial: '#FF8585',
+		aggravated: '#D81E3F',
+		humanity: '#BDB19F', // Bone
+		'humanity-stroke': '#897D68',
 		'humanity-empty': '#AB9C8B',
-		stain: '#8B0000',
+		stain: '#D40000',
 		degeneration: '#FF0000',
 		'degeneration-stroke': '#FF6600',
 		hunger: '#DC2626',
 		'hunger-stroke': '#EF4444',
-		die: NORMAL_COLOR, // The bot's dice
-		'hunger-die': HUNGER_COLOR,
-		bg: '#2A2422,#141010'
+		'hunger-empty': '#DC2626',
+		die: '#B1A48F', // Bone, as Humanity
+		'hunger-die': '#DC2626', // As the Hunger drops
+		bg: '#380F10,#0D0706' // The page's crimson pool, falling off to its near-black edge
 	},
 	// Cool complements to Discord's peach-to-blush theme, tuned to read on Discord's light and
 	// dark embeds too
@@ -94,8 +94,8 @@ const THEMES = {
 		'humanity-stroke': '#5A6FB3',
 		'humanity-empty': '#6A779F',
 		stain: '#8F36B9',
-		degeneration: '#9333EA',
-		'degeneration-stroke': '#D04BEF',
+		degeneration: '#C2187A',
+		'degeneration-stroke': '#FF7AC0',
 		hunger: '#0E7A8A',
 		'hunger-stroke': '#138493',
 		'hunger-empty': '#0E7A8A',
