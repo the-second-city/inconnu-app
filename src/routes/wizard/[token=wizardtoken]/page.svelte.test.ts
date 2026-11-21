@@ -1,7 +1,7 @@
 import { render, screen, waitFor, within } from '@testing-library/svelte';
 import userEvent, { type UserEvent } from '@testing-library/user-event';
 import { get } from 'svelte/store';
-import { beforeEach, expect, test, vi } from 'vitest';
+import { afterEach, beforeEach, expect, test, vi } from 'vitest';
 
 import { creationInfoStore } from '$lib/stores/CreationStore';
 import { TEST_CONSTRAINTS } from '$lib/testing/constraints';
@@ -34,6 +34,10 @@ beforeEach(() => {
 	creationInfoStore.set(null);
 });
 
+afterEach(() => {
+	vi.useRealTimers();
+});
+
 /** A trait without specialties. */
 const trait = (name: string, type: string, rating = 1): Trait => ({
 	name,
@@ -52,6 +56,7 @@ const wizardData = (fields: Partial<PageData> = {}): PageData =>
 		splats: ['vampire', 'mortal', 'ghoul', 'thin-blood'],
 		constraints: TEST_CONSTRAINTS,
 		traits: [trait('Strength', 'attribute'), trait('Athletics', 'skill', 0)],
+		expiresIn: 30 * 60_000,
 		...fields
 	}) as PageData;
 
@@ -375,4 +380,61 @@ test('a failed request says to try again, and keeps the form', async () => {
 	);
 	expect(goto).not.toHaveBeenCalled();
 	expect(screen.getByRole('button', { name: 'Create Nadia' })).toBeEnabled();
+});
+
+/** The time the countdown tests start at. */
+const NOW = new Date('2026-01-01T00:00:00Z');
+
+/** Freeze the clock at `NOW`, for a countdown test. */
+const freezeClock = (): void => {
+	vi.useFakeTimers({
+		toFake: ['setInterval', 'clearInterval', 'setTimeout', 'clearTimeout', 'Date']
+	});
+	vi.setSystemTime(NOW);
+};
+
+/** The milliseconds a link has left when the page loads, from seconds. */
+const expiresIn = (seconds: number): number => seconds * 1000;
+
+test('counts down to the link’s expiry', async () => {
+	freezeClock();
+	renderWizard({ expiresIn: expiresIn(30 * 60) });
+
+	expect(screen.getByRole('timer')).toHaveTextContent('Expires in 30:00');
+	await vi.advanceTimersByTimeAsync(61_000);
+	expect(screen.getByRole('timer')).toHaveTextContent('Expires in 28:59');
+});
+
+test('a link without an expiry shows no countdown', () => {
+	renderWizard({ expiresIn: null });
+
+	expect(screen.queryByRole('timer')).not.toBeInTheDocument();
+	expect(screen.queryByText('Link expired')).not.toBeInTheDocument();
+});
+
+test('when the link expires, it says so and creating waits, keeping the form', async () => {
+	freezeClock();
+	const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime });
+	renderWizard({ expiresIn: expiresIn(60) });
+	await fillRequired(user);
+	expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument();
+
+	await vi.advanceTimersByTimeAsync(60_000);
+
+	expect(screen.queryByRole('timer')).not.toBeInTheDocument();
+	const dialog = await screen.findByRole('alertdialog', { name: 'Link Expired' });
+	expect(dialog).toHaveAccessibleDescription(
+		expect.stringContaining('This wizard link has expired.')
+	);
+	await user.click(within(dialog).getByRole('button', { name: 'Done' }));
+	await waitFor(() => expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument());
+	expect(screen.getByRole('button', { name: 'Link expired' })).toBeDisabled();
+	expect(screen.getByRole('textbox', { name: 'Name' })).toHaveValue('Nadia');
+});
+
+test('a link that expired before the page opened says so at once', async () => {
+	freezeClock();
+	renderWizard({ expiresIn: expiresIn(-5) });
+
+	expect(await screen.findByRole('alertdialog', { name: 'Link Expired' })).toBeInTheDocument();
 });

@@ -10,6 +10,7 @@ const wizardData = (fields: Record<string, unknown> = {}): Record<string, unknow
 	splats: ['vampire'],
 	traits: [],
 	constraints: TEST_CONSTRAINTS,
+	expires_in: 1_800_000,
 	...fields
 });
 
@@ -22,4 +23,12 @@ const runLoad = async (data: Record<string, unknown>): Promise<Record<string, un
 
 test("passes the bot's constraints to the page", async () => {
 	expect((await runLoad(wizardData())).constraints).toEqual(TEST_CONSTRAINTS);
+});
+
+test('passes the time left before the link expires to the page', async () => {
+	expect((await runLoad(wizardData())).expiresIn).toBe(1_800_000);
+});
+
+test('without an expiry from the API, the page gets null', async () => {
+	expect((await runLoad(wizardData({ expires_in: undefined }))).expiresIn).toBeNull();
 });
