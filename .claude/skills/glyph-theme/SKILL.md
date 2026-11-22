@@ -17,7 +17,7 @@ The bot only shows emoji in embeds, so these are the embed backgrounds. People s
 
 ## Steps
 
-1. **Pick the colors.** For a saved theme (`THEMES` in the script), start from its entry. For a new theme, start from the user's palette or background and pick colors that suit it. The glyphs need to tell apart at a glance:
+1. **Pick the colors.** For a saved theme (its command in `glyphs/THEMES.md`, which is gitignored), start from its colors. For a new theme, start from the user's palette or background and pick colors that suit it. The glyphs need to tell apart at a glance:
    - Superficial from Aggravated
    - filled from empty Humanity
    - Stains from filled Humanity
@@ -47,7 +47,7 @@ The bot only shows emoji in embeds, so these are the embed backgrounds. People s
 
 5. **Adjust and repeat** steps 2 to 4 until it passes (see the targets below). Change lightness first and keep each color's hue, so the theme keeps its character. Change one or two colors per round, and say which ones and why.
 
-6. **Report** the final flags and their contrast table, and show the user the preview: give its full path, or Read it. Ask whether to save the colors as a `THEMES` entry. Only save them when the user says yes. A saved theme's colors go in `THEMES`; also update the example command in the header if the theme is `peach`.
+6. **Report** the final flags and their contrast table, and show the user the preview: give its full path, or Read it. Ask whether to save the theme. Only save it when the user says yes: its full command, a line on its idea, and its contrast go in `glyphs/THEMES.md`, never in the script.
 
 ## Targets
 

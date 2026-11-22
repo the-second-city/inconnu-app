@@ -28,9 +28,6 @@
 //   --out                  the output folder [glyphs/<theme>, which is gitignored]; its png/
 //                          and svg/ folders are cleared first
 //
-// A theme named in THEMES (bruised, peach) needs no colors: it starts from that theme's, and
-// any flags override them.
-//
 // Writes:
 //   <out>/png/<theme>_<emoji>.png  each glyph, 128x128 (Discord's emoji size), named for upload
 //                                  as the bot's emoji (inconnu's assets/emoji): peach_agg_dmg.png
@@ -39,7 +36,7 @@
 //   <out>/preview.png              the glyphs as tracks over the background, then over
 //                                  Discord's light and dark themes, to judge contrast
 //
-// Example (the peach theme):
+// Example:
 //   node scripts/render-glyphs.mjs peach --hale '#6578A7' --superficial '#4775D7' \
 //     --aggravated '#3E55CE' --humanity '#445DA9' --humanity-stroke '#5A6FB3' \
 //     --humanity-empty '#6A779F' --stain '#8F36B9' --degeneration '#C2187A' \
@@ -64,48 +61,6 @@ import {
  * comma-separated.
  * @typedef {Record<string, string>} Colors
  */
-
-/** Saved themes, so they can be rebuilt by name. @type {Record<string, Colors>} */
-const THEMES = {
-	// The app's bruised, crimson-on-black look (from the glyph components' colors), tuned to read on
-	// Discord's light and dark embeds too; the app keeps its own colors
-	bruised: {
-		hale: '#B1A48F', // Bone, as the normal dice
-		superficial: '#FF8585',
-		aggravated: '#D81E3F',
-		humanity: '#BDB19F', // Bone
-		'humanity-stroke': '#897D68',
-		'humanity-empty': '#AB9C8B',
-		stain: '#D40000',
-		degeneration: '#FF0000',
-		'degeneration-stroke': '#FF6600',
-		hunger: '#DC2626',
-		'hunger-stroke': '#EF4444',
-		'hunger-empty': '#DC2626',
-		die: '#B1A48F', // Bone, as Humanity
-		'hunger-die': '#DC2626', // As the Hunger drops
-		bg: '#380F10,#0D0706' // The page's crimson pool, falling off to its near-black edge
-	},
-	// Cool complements to Discord's peach-to-blush theme, tuned to read on Discord's light and
-	// dark embeds too
-	peach: {
-		hale: '#6578A7',
-		superficial: '#4775D7',
-		aggravated: '#3E55CE',
-		humanity: '#445DA9',
-		'humanity-stroke': '#5A6FB3',
-		'humanity-empty': '#6A779F',
-		stain: '#8F36B9',
-		degeneration: '#C2187A',
-		'degeneration-stroke': '#FF7AC0',
-		hunger: '#0E7A8A',
-		'hunger-stroke': '#138493',
-		'hunger-empty': '#0E7A8A',
-		die: '#6578A7',
-		'hunger-die': '#0E7A8A',
-		bg: '#F7DDB6,#F4D3CC'
-	}
-};
 
 const REQUIRED = [
 	'hale',
@@ -165,7 +120,7 @@ if (!theme || positionals.length > 1) fail('Give exactly one theme name.');
 if (!/^\w+$/.test(theme)) fail(`Theme names are letters, numbers, and _: "${theme}"`);
 
 /** @type {Colors} */
-const colors = { ...THEMES[theme] };
+const colors = {};
 for (const flag of colorFlags) {
 	const value = values[flag];
 	if (value !== undefined) colors[flag] = value;
