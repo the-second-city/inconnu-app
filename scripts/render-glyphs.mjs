@@ -20,6 +20,8 @@
 //   --degeneration-stroke  a degeneration diamond's outline and cross [--degeneration]
 //   --hunger-stroke        a Hunger drop's outline [--hunger]
 //   --hunger-empty         an empty Hunger drop [--hunger]
+//   --potency              a Blood Potency pip [--hunger]
+//   --potency-empty        an empty Blood Potency pip [--hunger-empty]
 //   --die                  a normal die's faces [--hale]
 //   --hunger-die           a Hunger die's faces [--hunger]
 //   --text                 the labels on the preview's --bg panel [dark or light, whichever suits it]
@@ -123,6 +125,8 @@ const FALLBACKS = {
 	'degeneration-stroke': 'degeneration',
 	'hunger-stroke': 'hunger',
 	'hunger-empty': 'hunger',
+	potency: 'hunger',
+	'potency-empty': 'hunger-empty',
 	die: 'hale',
 	'hunger-die': 'hunger'
 };
@@ -272,6 +276,11 @@ const GLYPHS = {
 		line([85, 15, 15, 85], c['degeneration-stroke'], 8),
 	hunger: (c) => drop(c.hunger, c['hunger-stroke'], 8),
 	no_hunger: (c) => drop('none', c['hunger-empty'], 10),
+	// A Blood Potency pip: a disc, as the sheet's (BloodTrackers' potencyPip)
+	bp: (c) => `<circle cx="50" cy="50" r="32" fill="${c.potency}"/>`,
+	// An empty one: a ring, with the filled pip's outer edge
+	bp_unfilled: (c) =>
+		`<circle cx="50" cy="50" r="27" fill="none" stroke="${c['potency-empty']}" stroke-width="10"/>`,
 	ln_fail: (c) => die(FAILURE, c.die),
 	ln_succ: (c) => die(SUCCESS, c.die),
 	ln_crit: (c) => die(CRITICAL, c.die),
@@ -291,6 +300,7 @@ const TRACKS = [
 	['Willpower', ['sup_dmg', ...Array(4).fill('no_dmg')]],
 	['Humanity', [...Array(6).fill('hu_filled'), 'hu_unfilled', 'stain', 'stain', 'degen']],
 	['Hunger', ['hunger', 'hunger', ...Array(3).fill('no_hunger')]],
+	['Potency', ['bp', 'bp', 'bp', 'bp_unfilled', 'bp_unfilled']],
 	[
 		'Roll',
 		[
@@ -379,7 +389,7 @@ writePng(
 );
 
 /** The preview's glyphs per row, which wrap to fit the panel. */
-const PER_ROW = 9;
+const PER_ROW = 10;
 /** Where the preview's tracks start, below the glyph rows. */
 const TRACKS_TOP = 44 + Math.ceil(names.length / PER_ROW) * 66;
 /** A preview panel's size. */
@@ -406,7 +416,7 @@ function panel(index, caption, top, bottom, text) {
 	svg += label(PANEL.width - 16, y0 + PANEL.height - 14, 13, caption, 'end');
 	svg += names
 		.map((glyph, i) =>
-			place(glyph, 24 + (i % PER_ROW) * 66, y0 + 20 + Math.floor(i / PER_ROW) * 66, 52)
+			place(glyph, 24 + (i % PER_ROW) * 60, y0 + 20 + Math.floor(i / PER_ROW) * 66, 52)
 		)
 		.join('');
 	TRACKS.forEach(([name, row], r) => {
