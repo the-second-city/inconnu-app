@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/svelte';
+import { render, screen, within } from '@testing-library/svelte';
 import userEvent, { type UserEvent } from '@testing-library/user-event';
 import { expect, test, vi } from 'vitest';
 
@@ -49,4 +49,36 @@ test('blank text has nothing to copy', async () => {
 	await user.type(screen.getByRole('textbox'), '   ');
 
 	expect(copy).toBeDisabled();
+});
+
+/** Each character of the preview, as it shows: italic, bold, or plain (a space). */
+const previewed = (): string[] =>
+	Array.from(screen.getByRole('region', { name: 'Preview' }).querySelector('p')?.childNodes ?? [])
+		// Elements and text only, not Svelte's comment anchors
+		.filter((node) => node.nodeType === Node.ELEMENT_NODE || node.nodeType === Node.TEXT_NODE)
+		.map((node) =>
+			node instanceof Element
+				? `${node.tagName.toLowerCase()}:${node.textContent}`
+				: (node.textContent ?? '')
+		)
+		.filter(Boolean);
+
+test('the preview shows each character as formatted, punctuation and symbols too', async () => {
+	const user = userEvent.setup();
+	render(Page);
+
+	await user.click(screen.getByRole('textbox', { name: 'Text to turn into Beast thoughts' }));
+	await user.paste('a!🩸 b');
+
+	// A Markdown parser would leave "!" and "🩸" between letters as literal asterisks
+	expect(previewed()).toEqual(['em:a', 'strong:!', 'em:🩸', ' ', 'em:b']);
+	expect(within(screen.getByRole('region', { name: 'Preview' })).queryByText(/\*/)).toBeNull();
+});
+
+test('Markdown in the text stays text: escaped for Discord, and shown as typed', async () => {
+	const user = userEvent.setup();
+	render(Page);
+
+	expect(await formatAndCopy(user, 'a*_`')).toBe('*a***\\****\\_***\\`**');
+	expect(previewed()).toEqual(['em:a', 'strong:*', 'em:_', 'strong:`']);
 });
