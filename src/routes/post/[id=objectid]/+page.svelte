@@ -3,7 +3,8 @@
 	import Avatar from '$lib/components/ui/Avatar.svelte';
 	import { ExternalLink } from '@lucide/svelte';
 
-	import { isHttpsUrl } from '$lib';
+	import { onMount } from 'svelte';
+	import { isHttpsUrl, parseApiDate } from '$lib';
 	import type { Changelog } from '$lib/types';
 	import Markdown from '$lib/components/ui/Markdown.svelte';
 	import DiffView from '$lib/components/ui/DiffView.svelte';
@@ -22,24 +23,29 @@
 
 	const isOriginal = $derived(selectedIndex === history.length - 1);
 
+	// The API's dates have no offset but are UTC. The server can't know the viewer's time zone, so
+	// until the page mounts they show in UTC (the same text on both, so hydration matches), then in
+	// the viewer's own
+	let mounted = $state(false);
+	onMount(() => (mounted = true));
+
 	function formatDate(dateStr: string): string {
-		const date = new Date(dateStr);
-		return new Intl.DateTimeFormat('en-US', {
+		const formatted = new Intl.DateTimeFormat('en-US', {
 			year: 'numeric',
 			month: 'short',
 			day: '2-digit',
 			hour: '2-digit',
 			minute: '2-digit',
 			second: '2-digit',
-			hour12: false
-		}).format(date);
+			hour12: false,
+			timeZone: mounted ? undefined : 'UTC'
+		}).format(parseApiDate(dateStr));
+		return mounted ? formatted : `${formatted} UTC`;
 	}
 
 	const deletionWarning = $derived.by(() => {
 		if (!changelog.deletion_date) return null;
-		const date = new Date(changelog.deletion_date);
-		const now = new Date();
-		if (date <= now) return 'This post has been deleted.';
+		if (parseApiDate(changelog.deletion_date) <= new Date()) return 'This post has been deleted.';
 		return `This post will be deleted on ${formatDate(changelog.deletion_date)}.`;
 	});
 </script>
