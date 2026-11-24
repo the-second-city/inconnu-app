@@ -6,9 +6,16 @@
  */
 import { SvelteURL } from 'svelte/reactivity';
 
-export const page = $state<{ url: URL; data: Record<string, unknown> }>({
+export const page = $state<{
+	url: URL;
+	data: Record<string, unknown>;
+	status: number;
+	error: App.Error | null;
+}>({
 	url: new SvelteURL('http://localhost/'),
-	data: { session: null }
+	data: { session: null },
+	status: 200, // Set `status` and `error` to test an error page
+	error: null
 });
 
 /** Navigate to a URL, relative to the current one, as SvelteKit's router would. */
