@@ -78,8 +78,8 @@
 
 {#if characterInfo != null}
 	<div class="card preset-tonal p-6">
-		{#if characterInfo.has_premium}
-			<!-- Non-Patron Card -->
+		{#if !characterInfo.has_premium}
+			<!-- Not a supporter: an invitation (has_premium is whether the creator supports Inconnu) -->
 			<div class="flex items-start gap-4">
 				<div class="text-primary-500 mt-1">
 					<Heart size={24} />
@@ -114,7 +114,7 @@
 				</div>
 			</div>
 		{:else}
-			<!-- Patron Card -->
+			<!-- A supporter: thanks -->
 			<div class="flex items-start gap-4">
 				<div class="text-primary-500 mt-1">
 					<Sparkles size={24} />
