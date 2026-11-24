@@ -1359,15 +1359,96 @@ test('with ?macros=panel, the Macros button opens and closes a panel of them', a
 	await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
 });
 
-test('Escape closes the macro panel without cancelling edits', async () => {
+test('edit mode closes the macro panel and disables the Macros button until it ends', async () => {
 	const user = userEvent.setup();
 	navigate('/char?macros=panel');
 	renderPage(withMacro());
+	const toggle = screen.getAllByRole('button', { name: 'Macros' })[0];
+	await user.click(toggle);
 
 	await user.click(editButton('Edit'));
-	await user.click(screen.getAllByRole('button', { name: 'Macros' })[0]);
-	await user.keyboard('{Escape}');
 
 	await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
-	expect(editButton('Save')).toBeInTheDocument();
+	for (const button of screen.getAllByRole('button', { name: 'Macros' })) {
+		expect(button).toBeDisabled();
+	}
+
+	await user.click(editButton('Cancel'));
+	expect(toggle).toBeEnabled();
+});
+
+test('with ?macros=panel, an editor without macros can open the panel to add one', async () => {
+	const user = userEvent.setup();
+	navigate('/char?macros=panel');
+	renderPage();
+
+	await user.click(screen.getAllByRole('button', { name: 'Macros' })[0]);
+
+	const dialog = screen.getByRole('dialog', { name: 'Macros' });
+	expect(dialog).toHaveTextContent('No macros yet.');
+	expect(within(dialog).getByRole('button', { name: 'Add macro' })).toBeInTheDocument();
+});
+
+test('a viewer who may not edit gets no Macros button without macros, nor an Add button', async () => {
+	const user = userEvent.setup();
+	navigate('/char?macros=panel');
+	const { rerender } = render(CharacterPage, {
+		constraints: TEST_CONSTRAINTS,
+		guild: GUILD,
+		character: character()
+	});
+	expect(screen.queryByRole('button', { name: 'Macros' })).not.toBeInTheDocument();
+
+	await rerender({ character: withMacro() });
+	await user.click(screen.getAllByRole('button', { name: 'Macros' })[0]);
+	expect(screen.queryByRole('button', { name: 'Add macro' })).not.toBeInTheDocument();
+});
+
+test('Add switches the panel to the new macro form; Escape backs out, then closes', async () => {
+	const user = userEvent.setup();
+	navigate('/char?macros=panel');
+	renderPage(withMacro());
+	await user.click(screen.getAllByRole('button', { name: 'Macros' })[0]);
+
+	await user.click(screen.getByRole('button', { name: 'Add macro' }));
+
+	const dialog = await screen.findByRole('dialog', { name: 'New Macro' });
+	expect(within(dialog).getByRole('form', { name: 'New macro' })).toBeInTheDocument();
+	// The list fades out as the form fades in
+	await waitFor(() => expect(within(dialog).queryByRole('article')).not.toBeInTheDocument());
+
+	await user.keyboard('{Escape}');
+	expect(await screen.findByRole('dialog', { name: 'Macros' })).toBeInTheDocument();
+	await user.keyboard('{Escape}');
+	await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
+});
+
+test('reopening the panel shows the list, not a macro in progress', async () => {
+	const user = userEvent.setup();
+	navigate('/char?macros=panel');
+	renderPage(withMacro());
+	const toggle = screen.getAllByRole('button', { name: 'Macros' })[0];
+	await user.click(toggle);
+	await user.click(screen.getByRole('button', { name: 'Add macro' }));
+	await screen.findByRole('dialog', { name: 'New Macro' });
+
+	await user.click(toggle);
+	await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
+	await user.click(toggle);
+
+	expect(await screen.findByRole('dialog', { name: 'Macros' })).toBeInTheDocument();
+});
+
+test('a non-supporter who clicks Add gets the upsell', async () => {
+	const user = userEvent.setup();
+	isSupporter.mockResolvedValue(false);
+	navigate('/char?macros=panel');
+	renderPage(withMacro());
+	await user.click(screen.getAllByRole('button', { name: 'Macros' })[0]);
+
+	await user.click(screen.getByRole('button', { name: 'Add macro' }));
+
+	await waitFor(() => expect(upsell.open).toBe(true));
+	expect(upsell.feature).toBe('Editing macros');
+	expect(screen.getByRole('dialog', { name: 'Macros' })).toBeInTheDocument();
 });

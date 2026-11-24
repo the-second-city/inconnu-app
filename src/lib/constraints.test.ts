@@ -3,6 +3,7 @@ import { expect, test } from 'vitest';
 import {
 	characterNameError,
 	lengthError,
+	macroNameError,
 	maxCodeUnits,
 	nameKey,
 	profileLengthErrors,
@@ -135,4 +136,23 @@ test('specialties may have reserved names, but not Hunger words', () => {
 test('nameKey drops case and spaces', () => {
 	expect(nameKey('Animal Ken')).toBe('animalken');
 	expect(nameKey('AnimalKen')).toBe('animalken');
+});
+
+test.each<[string, string | null]>([
+	['feed', null],
+	['Blood_Surge', null],
+	['_hunt_', null],
+	['', 'Name cannot be empty'],
+	['a'.repeat(51), 'Name must be 50 characters or less'],
+	['two words', 'Name can only contain letters and underscores'],
+	['rouse2', 'Name can only contain letters and underscores'],
+	['Ébène', 'Name can only contain letters and underscores'],
+	['___', 'Name must contain a letter']
+])('macro name %j: %s', (name, error) => {
+	expect(macroNameError(name, [])).toBe(error);
+});
+
+test('a macro name already taken, ignoring case, is invalid', () => {
+	expect(macroNameError('FEED', ['feed', 'hunt'])).toBe("There's already a macro named FEED");
+	expect(macroNameError('feeding', ['feed'])).toBeNull();
 });

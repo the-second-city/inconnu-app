@@ -54,26 +54,34 @@ export const actionError = (status: number, json: unknown): string => {
 	return 'Something went wrong. Try again.';
 };
 
+/** How to send a request to a character's route, when not as a gameplay action. */
+interface SendOptions {
+	method?: 'POST' | 'PATCH'; // POST by default
+	feature?: string; // Names it in the upsell, if the API refuses a non-supporter
+}
+
 /**
- * POST an action to one of a character's routes, returning its result or why it failed. An action
- * that answers 204 (no content) succeeds with a null result. The API refusing a non-supporter also
- * opens the upsell.
+ * Send JSON to one of a character's routes (POST, unless `method` says otherwise), returning its
+ * result or why it failed. A request that answers 204 (no content) succeeds with a null result. The
+ * API refusing a non-supporter also opens the upsell, naming `feature` (gameplay actions by
+ * default).
  */
-const postAction = async <T>(
+export const postAction = async <T>(
 	url: string,
 	body: unknown,
-	unreachable: string
+	unreachable: string,
+	{ method = 'POST', feature = 'Using gameplay actions' }: SendOptions = {}
 ): Promise<ActionOutcome<T>> => {
 	try {
 		const response = await fetch(url, {
-			method: 'POST',
+			method,
 			headers: { 'Content-Type': 'application/json' },
 			body: JSON.stringify(body)
 		});
 		if (response.status === 204) return { result: null as T };
 		const json = await response.json().catch(() => null);
 		if (response.ok && json) return { result: json as T };
-		if (refusedForPremium(response.status, json)) showUpsell('Using gameplay actions');
+		if (refusedForPremium(response.status, json)) showUpsell(feature);
 		return { error: actionError(response.status, json) };
 	} catch {
 		return { error: unreachable };

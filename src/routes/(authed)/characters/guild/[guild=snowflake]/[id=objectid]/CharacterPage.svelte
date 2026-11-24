@@ -49,7 +49,9 @@
 	import StainModal from '$lib/components/characters/actions/StainModal.svelte';
 	import RemorseModal from '$lib/components/characters/actions/RemorseModal.svelte';
 	import FrenzyModal from '$lib/components/characters/actions/FrenzyModal.svelte';
-	import MacroPanel from '$lib/components/characters/macros/MacroPanel.svelte';
+	import MacroPanel, {
+		type MacroPanelView
+	} from '$lib/components/characters/macros/MacroPanel.svelte';
 	import PremiumModal from '$lib/components/premium/PremiumModal.svelte';
 	import { isSupporter, refusedForPremium, showUpsell, upsell } from '$lib/state/premium.svelte';
 
@@ -199,12 +201,18 @@
 	let editing = $state(false);
 
 	// The macros show below the sheet, or (with ?macros=panel, while both are being tried) in a
-	// floating panel opened from a Macros button
+	// floating panel opened from a Macros button. The panel can add macros, so it's there for anyone
+	// who may edit, macros or not
 	const macroPlacement = $derived(
 		page.url.searchParams.get('macros') === 'panel' ? 'panel' : 'sheet'
 	);
-	const macroButton = $derived(macroPlacement === 'panel' && !!character.macros?.length);
+	const macroButton = $derived(
+		macroPlacement === 'panel' && (editable || !!character.macros?.length)
+	);
 	let macrosOpen = $state(false);
+	let macroView: MacroPanelView = $state('list');
+	// Adding a macro is for supporters, like the rest of editing
+	const addMacro = forSupporters('Editing macros', () => (macroView = 'add'));
 
 	// Fresh data for the same character (such as a data refresh) replaces the copy. While it's
 	// being edited, the data waits: Cancel takes it, and Save keeps the edits instead.
@@ -292,6 +300,7 @@
 	const enterEditMode = () => {
 		saveError = null; // A failed save's errors belong to that edit
 		editing = true;
+		macrosOpen = false; // Macros wait for edit mode to end (see the Macros button)
 		seen = null;
 		copy = $state.snapshot(character);
 		baseline = comparable(copy, copy.name);
@@ -596,13 +605,17 @@
 	/>
 </Modal>
 
+<!-- Disabled in edit mode, which closes the panel: macros are saved on their own, and the sheet's
+     clicks there change ratings rather than build a macro's pool -->
 {#snippet macrosToggle(classes: string, size: number)}
 	<button
 		class={classes}
 		onclick={() => (macrosOpen = !macrosOpen)}
+		disabled={editing}
 		aria-expanded={macrosOpen}
 		aria-controls="macro-panel"
 		aria-label="Macros"
+		title={editing ? 'Macros wait until you’re done editing' : undefined}
 	>
 		<SquareFunction {size} />
 		{#if size < 20}<span>Macros</span>{/if}
@@ -610,7 +623,12 @@
 {/snippet}
 
 {#if macroButton}
-	<MacroPanel {character} bind:open={macrosOpen} />
+	<MacroPanel
+		{character}
+		bind:open={macrosOpen}
+		bind:view={macroView}
+		onadd={editable ? addMacro : undefined}
+	/>
 {/if}
 
 {#if editable || macroButton}

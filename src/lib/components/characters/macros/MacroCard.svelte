@@ -5,6 +5,7 @@
 	import { plural } from '$lib';
 	import { resolvePool } from '$lib/rules/macros';
 	import type { Character, Macro } from '$lib/types';
+	import PoolText from './PoolText.svelte';
 
 	interface ComponentProps {
 		macro: Macro;
@@ -14,9 +15,6 @@
 	let { macro, character }: ComponentProps = $props();
 
 	const pool = $derived(resolvePool(macro.pool, character));
-	// The space between a pool's terms, where it may wrap. Svelte drops the whitespace between an
-	// {#each} block's items, and a literal ({' '}) doesn't pass lint
-	const BREAK = ' ';
 	const missing = $derived(pool.terms.filter((term) => term.missing).map((term) => term.missing));
 
 	interface Detail {
@@ -67,25 +65,7 @@ what it does besides rolling (Difficulty, Rouse Checks, Hunger, hunting), and it
 	</header>
 
 	{#if pool.terms.length > 0}
-		<!-- Each term (with the operator before it) stays on one line, so a pool wraps between
-		     terms, never inside a multiword trait's name -->
-		<p class="leading-snug">
-			{#each pool.terms as term, i (i)}
-				{#if i > 0}{BREAK}{/if}
-				<span class="whitespace-nowrap">
-					{#if i > 0 || term.sign === '-'}
-						<span class="text-surface-400">{term.sign === '-' ? '−' : '+'}</span>
-					{/if}
-					<span
-						class={term.missing ? 'text-error-400 line-through decoration-1' : ''}
-						title={term.missing ? `Not on the sheet: ${term.missing}` : undefined}>{term.name}</span
-					>
-					{#if term.specialties.length > 0}
-						<em class="text-primary-300">({term.specialties.join(', ')})</em>
-					{/if}
-				</span>
-			{/each}
-		</p>
+		<PoolText terms={pool.terms} />
 	{/if}
 
 	{#if missing.length > 0}
