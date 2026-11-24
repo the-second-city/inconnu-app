@@ -31,6 +31,9 @@
 		addable = false,
 		addLabel = null
 	}: ComponentProps = $props();
+	// Unique per instance: several of these can show an error at once
+	const uid = $props.id();
+	const traitErrorId = `${uid}-trait-error`;
 
 	const constraints = getConstraints();
 	const ratings = $derived(constraints().trait_rating);
@@ -169,7 +172,7 @@
 				class="input min-w-0 flex-1 border"
 				class:text-error-500={traitError}
 				class:border-error-500={traitError}
-				aria-describedby={traitError ? 'trait-error' : undefined}
+				aria-describedby={traitError ? traitErrorId : undefined}
 				transition:fade={{ duration: 100 }}
 			/>
 			<!-- Not a submit button: the wizard renders the sheet inside its form -->
@@ -183,6 +186,6 @@
 				<CirclePlus />
 			</button>
 		</div>
-		<ErrorMessage error={traitError} id="trait-error" />
+		<ErrorMessage error={traitError} id={traitErrorId} />
 	{/if}
 </Card>

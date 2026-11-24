@@ -362,6 +362,22 @@ test('Enter in an add field adds the trait, without submitting a complete form',
 	expect(fetchMock).not.toHaveBeenCalled();
 });
 
+test("each add field's error describes that field, not the other's", async () => {
+	const user = userEvent.setup();
+	renderWizard();
+	await user.selectOptions(screen.getByRole('combobox', { name: 'Template' }), 'vampire');
+	const discipline = screen.getByRole('textbox', { name: 'New Discipline' });
+	const custom = screen.getByRole('textbox', { name: 'New Custom Trait' });
+
+	await user.type(discipline, 'Bad1');
+	await user.type(custom, 'Strength');
+
+	expect(discipline).toHaveAccessibleDescription(
+		'Letters, underscores, apostrophes, and spaces only'
+	);
+	expect(custom).toHaveAccessibleDescription('Trait already exists');
+});
+
 test('Enter in a field doesn’t submit an incomplete form', async () => {
 	const user = userEvent.setup();
 	renderWizard();

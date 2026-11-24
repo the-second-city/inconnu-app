@@ -29,6 +29,9 @@
 		allowsSubtraits,
 		type
 	}: ComponentProps = $props();
+	// Unique per instance: several of these can show an error at once
+	const uid = $props.id();
+	const subtraitErrorId = `${uid}-subtrait-error`;
 
 	// Only read while editing specialties, so a read-only rating needs none provided
 	const constraints = getConstraints();
@@ -145,7 +148,7 @@
 									class="input border"
 									class:text-error-500={invalidSubtrait}
 									class:border-error-500={invalidSubtrait}
-									aria-describedby={subtraitError ? 'subtrait-error' : undefined}
+									aria-describedby={subtraitError ? subtraitErrorId : undefined}
 								/>
 								<button
 									type="button"
@@ -157,7 +160,7 @@
 									<CirclePlus />
 								</button>
 							</div>
-							<ErrorMessage error={subtraitError} id="subtrait-error" />
+							<ErrorMessage error={subtraitError} id={subtraitErrorId} />
 						{/if}
 					</div>
 				{/snippet}
