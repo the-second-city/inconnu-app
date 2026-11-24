@@ -119,6 +119,9 @@
 
 	async function handleSubmit(event: SubmitEvent) {
 		event.preventDefault();
+		// Only Create submits, and only when the form is complete: not Enter in an incomplete form,
+		// a submit while one is under way, or after the link expired
+		if (!isFormValid) return;
 		submitting = true;
 
 		const payload = {

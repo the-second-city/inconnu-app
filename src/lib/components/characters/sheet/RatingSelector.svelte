@@ -116,6 +116,7 @@
 									<span class="transition-all hover:brightness-125">{subtrait}</span>
 									{#if editing}
 										<button
+											type="button"
 											onclick={() => handleRemoveSubtrait(i)}
 											aria-label={buttonTitle}
 											title={buttonTitle}
@@ -133,7 +134,11 @@
 								<input
 									type="text"
 									bind:value={newSubtrait}
-									onkeydown={(e) => e.key === 'Enter' && handleAddSubtrait()}
+									onkeydown={(e) => {
+										if (e.key !== 'Enter') return;
+										e.preventDefault(); // Enter adds the specialty, never submitting a form around it
+										handleAddSubtrait();
+									}}
 									placeholder="Add new {subtraitLabel} ..."
 									aria-label="New {subtraitLabel}"
 									maxlength={maxCodeUnits(constraints().trait_max_length)}
@@ -143,6 +148,7 @@
 									aria-describedby={subtraitError ? 'subtrait-error' : undefined}
 								/>
 								<button
+									type="button"
 									class="btn preset-filled-secondary-500"
 									onclick={handleAddSubtrait}
 									disabled={!isValidSubtrait()}

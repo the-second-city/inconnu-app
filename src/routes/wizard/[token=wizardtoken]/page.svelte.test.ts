@@ -317,6 +317,53 @@ test('sends trait changes made on the sheet', async () => {
 	expect(traits).toContainEqual(trait('Blood Sorcery', 'discipline', 1));
 });
 
+/** Types a discipline and clicks the + beside it (the Custom Traits column has one too). */
+const addDiscipline = async (user: UserEvent, name: string): Promise<void> => {
+	const field = screen.getByRole('textbox', { name: 'New Discipline' });
+	await user.type(field, name);
+	await user.click(
+		within(field.parentElement as HTMLElement).getByRole('button', { name: 'Add trait' })
+	);
+};
+
+test('adding a trait doesn’t submit the form, complete or not', async () => {
+	const user = userEvent.setup();
+	renderWizard();
+	await user.selectOptions(screen.getByRole('combobox', { name: 'Template' }), 'vampire');
+
+	// The sheet is inside the wizard's form, so its buttons must not submit it
+	await addDiscipline(user, 'Auspex');
+	await fillRequired(user, 'vampire');
+	await addDiscipline(user, 'Celerity');
+
+	expect(fetchMock).not.toHaveBeenCalled();
+	expect(screen.getByText('Auspex')).toBeInTheDocument();
+	expect(screen.getByText('Celerity')).toBeInTheDocument();
+});
+
+test('Enter in an add field adds the trait, without submitting a complete form', async () => {
+	const user = userEvent.setup();
+	renderWizard();
+	await fillRequired(user, 'vampire');
+
+	await user.type(screen.getByRole('textbox', { name: 'New Discipline' }), 'Auspex{Enter}');
+
+	expect(screen.getByText('Auspex')).toBeInTheDocument();
+	expect(fetchMock).not.toHaveBeenCalled();
+});
+
+test('Enter in a field doesn’t submit an incomplete form', async () => {
+	const user = userEvent.setup();
+	renderWizard();
+	await user.selectOptions(screen.getByRole('combobox', { name: 'Template' }), 'vampire');
+	// A discipline typed but not added enables its +, which once made Enter submit the form
+	await user.type(screen.getByRole('textbox', { name: 'New Discipline' }), 'Auspex');
+
+	await user.type(screen.getByRole('textbox', { name: 'Name' }), 'Nadia{Enter}');
+
+	expect(fetchMock).not.toHaveBeenCalled();
+});
+
 test('says it’s creating while the request runs', async () => {
 	const user = userEvent.setup();
 	let answer: (response: Response) => void = () => {};
