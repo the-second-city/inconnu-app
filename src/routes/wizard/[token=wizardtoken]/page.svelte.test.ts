@@ -390,19 +390,57 @@ test('says it’s creating while the request runs', async () => {
 	await waitFor(() => expect(goto).toHaveBeenCalledWith('/wizard/success'));
 });
 
-test('an expired wizard says so, and goes back to the explainer', async () => {
+test('once created, Create stays busy until the success page shows', async () => {
 	const user = userEvent.setup();
+	renderWizard();
+	await fillRequired(user);
+
+	await create(user);
+	await waitFor(() => expect(goto).toHaveBeenCalledWith('/wizard/success'));
+
+	// The link is used up, so another click would only find it gone
+	expect(screen.getByRole('button', { name: 'Creating...' })).toBeDisabled();
+	expect(fetchMock).toHaveBeenCalledTimes(1);
+});
+
+test('a link the bot no longer has reads as expired, keeping the form', async () => {
+	const user = userEvent.setup();
+	// Time is left, but the bot restarted (forgetting its links), or the link was already used
 	fetchMock.mockResolvedValue(Response.json({ detail: 'Not found' }, { status: 404 }));
 	renderWizard();
 	await fillRequired(user);
 
 	await create(user);
 
-	await waitFor(() => expect(goto).toHaveBeenCalledWith('/wizard'));
-	expect(window.alert).toHaveBeenCalledWith(
-		'This wizard has expired. Please run the command again in Discord.'
-	);
+	const dialog = await screen.findByRole('alertdialog', { name: 'Link Expired' });
+	expect(goto).not.toHaveBeenCalled();
+	expect(window.alert).not.toHaveBeenCalled();
 	expect(get(creationInfoStore)).toBeNull();
+	await user.click(within(dialog).getByRole('button', { name: 'Done' }));
+	await waitFor(() => expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument());
+	expect(screen.getAllByText('Link expired')).toHaveLength(2); // Create, and the countdown
+	// Which no longer says when the link would have expired
+	const countdown = screen.getAllByText('Link expired').find((el) => el.tagName === 'P');
+	expect(countdown).not.toHaveAttribute('title');
+	expect(screen.queryByRole('timer')).not.toBeInTheDocument();
+	expect(screen.getByRole('button', { name: 'Link expired' })).toBeDisabled();
+	expect(screen.getByRole('textbox', { name: 'Name' })).toHaveValue('Nadia');
+});
+
+test('the countdown running out after the bot refused the link doesn’t ask again', async () => {
+	freezeClock();
+	const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime });
+	fetchMock.mockResolvedValue(Response.json({ detail: 'Not found' }, { status: 404 }));
+	renderWizard({ expiresIn: expiresIn(60) });
+	await fillRequired(user);
+	await create(user);
+	const dialog = await screen.findByRole('alertdialog', { name: 'Link Expired' });
+	await user.click(within(dialog).getByRole('button', { name: 'Done' }));
+	await waitFor(() => expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument());
+
+	await vi.advanceTimersByTimeAsync(60_000);
+
+	expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument();
 });
 
 test('a refusal shows the bot’s reason, and keeps the form to fix', async () => {

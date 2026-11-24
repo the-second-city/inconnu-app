@@ -44,6 +44,12 @@
 	let expired = $state(false);
 	// Says so when it does; closing it keeps the form, to copy into a new link
 	let expiredNotice = $state(false);
+	/** The link stopped working: say so once, and wait on a new link. */
+	const expire = () => {
+		if (expired) return;
+		expired = true;
+		expiredNotice = true;
+	};
 
 	let previousSplat = $state('');
 
@@ -123,6 +129,9 @@
 		// a submit while one is under way, or after the link expired
 		if (!isFormValid) return;
 		submitting = true;
+		// Once created, Create stays busy until the success page shows: clicking again would find
+		// the link used up
+		let created = false;
 
 		const payload = {
 			name: normalizedName,
@@ -145,9 +154,10 @@
 			});
 
 			if (!response.ok) {
+				// The bot no longer has the link (a restart forgets them, and creating uses it up),
+				// whatever the countdown says. Keep the form, as an expired link does
 				if (response.status === 404) {
-					alert('This wizard has expired. Please run the command again in Discord.');
-					goto(resolve('/wizard'));
+					expire();
 					return;
 				}
 				alert(await getErrorDetail(response, 'Failed to create character.'));
@@ -164,12 +174,13 @@
 				has_premium: result.has_premium
 			});
 
+			created = true;
 			goto(resolve('/wizard/success'));
 		} catch (error) {
 			alert('An unexpected error occurred. Please try again.');
 			console.error('Error creating character:', error);
 		} finally {
-			submitting = false;
+			if (!created) submitting = false;
 		}
 	}
 </script>
@@ -189,13 +200,7 @@
 			</h6>
 		</div>
 	</div>
-	<WizardCountdown
-		expiresIn={data.expiresIn}
-		onexpire={() => {
-			expired = true;
-			expiredNotice = true;
-		}}
-	/>
+	<WizardCountdown expiresIn={data.expiresIn} onexpire={expire} ended={expired} />
 </div>
 
 <Modal bind:open={expiredNotice} title="Link Expired" role="alertdialog">
