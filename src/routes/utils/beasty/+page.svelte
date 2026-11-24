@@ -8,14 +8,19 @@
 	let input = $state('');
 	let justCopied = $state(false);
 
-	let disabled = $derived(input === '' || justCopied);
 	let beasty = $derived(makeBeast(input));
+	// Blank text makes nothing to copy
+	let disabled = $derived(beasty === '' || justCopied);
+
+	// What a reader sees as one character: an emoji of several code points (👨‍👩‍👧, 👍🏽), or a letter
+	// and its accent, stays whole rather than splitting into broken halves
+	const graphemes = new Intl.Segmenter(undefined, { granularity: 'grapheme' });
 
 	function makeBeast(input: string) {
 		let beast = '';
 		if (input) {
 			let trimmed = input.replace(/\s+/g, ' ').trim();
-			let letters = trimmed.split('');
+			let letters = Array.from(graphemes.segment(trimmed), ({ segment }) => segment);
 			let bold = false;
 			let characters: string[] = [];
 
