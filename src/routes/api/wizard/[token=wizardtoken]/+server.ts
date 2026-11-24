@@ -23,9 +23,13 @@ export const GET: RequestHandler = async ({ params }) => {
 	if (response.status !== 200) return response; // Errors, and any answer without the wizard
 
 	const data = await response.json();
+	// The relay's headers, but not its Content-Length, which counts the body without `expires_in`
+	// (`json()` keeps one it's given, and the browser would get the body cut short)
+	const headers = new Headers(response.headers);
+	headers.delete('Content-Length');
 	const expiresIn = Date.parse(data.expires_at) - Date.now();
-	if (isNaN(expiresIn)) return json(data, { headers: response.headers }); // A bot without it
-	return json({ ...data, expires_in: expiresIn }, { headers: response.headers });
+	if (isNaN(expiresIn)) return json(data, { headers }); // A bot without it
+	return json({ ...data, expires_in: expiresIn }, { headers });
 };
 
 export const POST: RequestHandler = async ({ params, request }) => {

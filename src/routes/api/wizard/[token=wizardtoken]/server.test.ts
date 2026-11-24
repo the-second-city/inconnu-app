@@ -55,6 +55,16 @@ test('GET adds the milliseconds left before the wizard expires, by the server’
 	vi.useRealTimers();
 });
 
+test('GET’s Content-Length counts the body with expires_in', async () => {
+	fetchMock.mockResolvedValueOnce(Response.json({ expires_at: '2026-01-01T00:29:30+00:00' }));
+
+	const response = await GET(event());
+
+	const length = response.headers.get('Content-Length');
+	const body = new TextEncoder().encode(await response.text());
+	expect(length === null || Number(length) === body.length).toBe(true);
+});
+
 test('POST forwards the character to the API', async () => {
 	fetchMock.mockResolvedValueOnce(Response.json({ character_id: 'abc' }, { status: 201 }));
 
