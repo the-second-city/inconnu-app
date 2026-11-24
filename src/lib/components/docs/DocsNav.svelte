@@ -43,14 +43,19 @@
 	const allItems = (items: DocsNavItem[]): DocsNavItem[] =>
 		items.flatMap((item) => [item, ...allItems(item.children)]);
 
+	/** The paths of the sections holding the current page. */
+	const currentSections = (): string[] =>
+		nav
+			.flatMap((section) => allItems(section.items))
+			.filter((item) => item.children.length > 0 && containsCurrent(item))
+			.flatMap((item) => (item.path === null ? [] : [item.path]));
+
 	// Arriving at a page opens its sections, even ones the reader closed earlier,
 	// and they stay open after the reader moves on
 	$effect(() => {
-		for (const item of nav.flatMap((section) => allItems(section.items))) {
-			if (item.path !== null && item.children.length > 0 && containsCurrent(item)) {
-				closed.delete(item.path);
-				opened.add(item.path);
-			}
+		for (const path of currentSections()) {
+			closed.delete(path);
+			opened.add(path);
 		}
 	});
 
@@ -63,7 +68,9 @@
 			try {
 				const saved = JSON.parse(sessionStorage.getItem(storageKey) ?? '{}');
 				for (const path of saved.opened ?? []) opened.add(path);
-				for (const path of saved.closed ?? []) closed.add(path);
+				// Not the current page's sections, which arriving opened (this runs after that)
+				const current = new Set(currentSections());
+				for (const path of saved.closed ?? []) if (!current.has(path)) closed.add(path);
 			} catch {
 				// Nothing saved, or no storage
 			}

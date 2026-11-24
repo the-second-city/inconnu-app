@@ -192,3 +192,15 @@ test('works without session storage', async () => {
 
 	expect(isShown('Impairment')).toBe(true);
 });
+
+test("after a reload, the current page's section opens, even if the reader closed it", async () => {
+	const user = userEvent.setup();
+	const first = renderNav('guides/quickstart/specialties');
+	await user.click(screen.getByRole('button', { name: 'Collapse Quickstart' }));
+	first.unmount();
+
+	// A reload renders a fresh sidebar
+	renderNav('guides/quickstart/specialties');
+
+	expect(isShown('Specialties')).toBe(true);
+});
