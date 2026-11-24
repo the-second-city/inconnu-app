@@ -35,7 +35,7 @@ afterEach(() => {
 
 test('relays the macros to the API as the signed-in user, and its 204', async () => {
 	fetchMock.mockResolvedValueOnce(new Response(null, { status: 204 }));
-	const body = '[{"name":"feed","pool":["Strength"]}]';
+	const body = '{"macros":[{"name":"feed","pool":["Strength"]}]}';
 
 	const response = await PATCH(event(body));
 

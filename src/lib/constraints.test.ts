@@ -138,21 +138,26 @@ test('nameKey drops case and spaces', () => {
 	expect(nameKey('AnimalKen')).toBe('animalken');
 });
 
+/** The macro name pattern's error. */
+const LETTERS = 'Name can only contain letters and underscores, with at least one letter';
+
 test.each<[string, string | null]>([
 	['feed', null],
 	['Blood_Surge', null],
 	['_hunt_', null],
 	['', 'Name cannot be empty'],
 	['a'.repeat(51), 'Name must be 50 characters or less'],
-	['two words', 'Name can only contain letters and underscores'],
-	['rouse2', 'Name can only contain letters and underscores'],
-	['Ébène', 'Name can only contain letters and underscores'],
-	['___', 'Name must contain a letter']
+	['two words', LETTERS],
+	['rouse2', LETTERS],
+	['Ébène', LETTERS],
+	['___', LETTERS]
 ])('macro name %j: %s', (name, error) => {
-	expect(macroNameError(name, [])).toBe(error);
+	expect(macroNameError(name, [], TEST_CONSTRAINTS)).toBe(error);
 });
 
 test('a macro name already taken, ignoring case, is invalid', () => {
-	expect(macroNameError('FEED', ['feed', 'hunt'])).toBe("There's already a macro named FEED");
-	expect(macroNameError('feeding', ['feed'])).toBeNull();
+	expect(macroNameError('FEED', ['feed', 'hunt'], TEST_CONSTRAINTS)).toBe(
+		"There's already a macro named FEED"
+	);
+	expect(macroNameError('feeding', ['feed'], TEST_CONSTRAINTS)).toBeNull();
 });

@@ -143,29 +143,24 @@ export const traitNameError = (
 };
 
 /**
- * The bot's macro limits (`macro_common.py` and `/macro update`). Not in `GET /constraints` yet;
- * move them there, as with the others, when it serves them.
- */
-export const MACRO_LIMITS = {
-	name_max_length: 50,
-	comment_max_length: 300,
-	rouses: { min: 0, max: 3 },
-	difficulty: { min: 0, max: 10 } // The bot takes any; past 10, no roll could win
-} as const;
-
-/**
  * Why a macro name is invalid, or null if it's valid. As the bot's `is_macro_name_valid`: letters
  * and underscores only, with at least one letter. Names are unique, ignoring case.
  * @param name - The name, trimmed
  * @param taken - The character's other macros' names
+ * @param constraints - The bot's constraints
  * @returns The problem, as a message for the user
  */
-export const macroNameError = (name: string, taken: string[]): string | null => {
+export const macroNameError = (
+	name: string,
+	taken: string[],
+	constraints: Constraints
+): string | null => {
 	if (!name) return 'Name cannot be empty';
-	const max = MACRO_LIMITS.name_max_length;
+	const max = constraints.macro_name_max_length;
 	if (name.length > max) return `Name must be ${max} characters or less`;
-	if (!/^[A-Za-z_]+$/.test(name)) return 'Name can only contain letters and underscores';
-	if (!/[A-Za-z]/.test(name)) return 'Name must contain a letter';
+	if (!new RegExp(constraints.macro_name_pattern).test(name)) {
+		return 'Name can only contain letters and underscores, with at least one letter';
+	}
 	const lower = name.toLowerCase();
 	if (taken.some((other) => other.toLowerCase() === lower)) {
 		return `There's already a macro named ${name}`;

@@ -1308,6 +1308,16 @@ test('the API refusing a save for premium opens the upsell, and keeps the edits'
 	expect(nameBox()).toHaveValue('Nadiah');
 });
 
+/** Render the character page for its owner, who may also edit its macros. */
+const renderOwnerPage = (char: Character = character()): RenderResult<typeof CharacterPage> =>
+	render(CharacterPage, {
+		constraints: TEST_CONSTRAINTS,
+		guild: GUILD,
+		character: char,
+		editable: true,
+		ownerActions: true
+	});
+
 /** The mortal with one macro. */
 const withMacro = (): Character => ({
 	...character(),
@@ -1343,7 +1353,7 @@ test('a character without macros has no Macros section', () => {
 test('with ?macros=panel, the Macros button opens and closes a panel of them', async () => {
 	const user = userEvent.setup();
 	navigate('/char?macros=panel');
-	renderPage(withMacro());
+	renderOwnerPage(withMacro());
 
 	expect(screen.queryByRole('region', { name: 'Macros' })).not.toBeInTheDocument();
 	// One for wide windows, one floating for phones
@@ -1362,7 +1372,7 @@ test('with ?macros=panel, the Macros button opens and closes a panel of them', a
 test('edit mode closes the macro panel and disables the Macros button until it ends', async () => {
 	const user = userEvent.setup();
 	navigate('/char?macros=panel');
-	renderPage(withMacro());
+	renderOwnerPage(withMacro());
 	const toggle = screen.getAllByRole('button', { name: 'Macros' })[0];
 	await user.click(toggle);
 
@@ -1380,7 +1390,7 @@ test('edit mode closes the macro panel and disables the Macros button until it e
 test('with ?macros=panel, an editor without macros can open the panel to add one', async () => {
 	const user = userEvent.setup();
 	navigate('/char?macros=panel');
-	renderPage();
+	renderOwnerPage();
 
 	await user.click(screen.getAllByRole('button', { name: 'Macros' })[0]);
 
@@ -1389,25 +1399,23 @@ test('with ?macros=panel, an editor without macros can open the panel to add one
 	expect(within(dialog).getByRole('button', { name: 'Add macro' })).toBeInTheDocument();
 });
 
-test('a viewer who may not edit gets no Macros button without macros, nor an Add button', async () => {
+test("a Storyteller on a player's character gets no Macros button without macros, nor Add", async () => {
 	const user = userEvent.setup();
 	navigate('/char?macros=panel');
-	const { rerender } = render(CharacterPage, {
-		constraints: TEST_CONSTRAINTS,
-		guild: GUILD,
-		character: character()
-	});
+	// Full access, but not the owner's actions: only the owner edits a player's macros
+	const { rerender } = renderPage();
 	expect(screen.queryByRole('button', { name: 'Macros' })).not.toBeInTheDocument();
 
 	await rerender({ character: withMacro() });
 	await user.click(screen.getAllByRole('button', { name: 'Macros' })[0]);
+	expect(screen.getByRole('dialog', { name: 'Macros' })).toBeInTheDocument();
 	expect(screen.queryByRole('button', { name: 'Add macro' })).not.toBeInTheDocument();
 });
 
 test('Add switches the panel to the new macro form; Escape backs out, then closes', async () => {
 	const user = userEvent.setup();
 	navigate('/char?macros=panel');
-	renderPage(withMacro());
+	renderOwnerPage(withMacro());
 	await user.click(screen.getAllByRole('button', { name: 'Macros' })[0]);
 
 	await user.click(screen.getByRole('button', { name: 'Add macro' }));
@@ -1426,7 +1434,7 @@ test('Add switches the panel to the new macro form; Escape backs out, then close
 test('reopening the panel shows the list, not a macro in progress', async () => {
 	const user = userEvent.setup();
 	navigate('/char?macros=panel');
-	renderPage(withMacro());
+	renderOwnerPage(withMacro());
 	const toggle = screen.getAllByRole('button', { name: 'Macros' })[0];
 	await user.click(toggle);
 	await user.click(screen.getByRole('button', { name: 'Add macro' }));
@@ -1443,7 +1451,7 @@ test('a non-supporter who clicks Add gets the upsell', async () => {
 	const user = userEvent.setup();
 	isSupporter.mockResolvedValue(false);
 	navigate('/char?macros=panel');
-	renderPage(withMacro());
+	renderOwnerPage(withMacro());
 	await user.click(screen.getAllByRole('button', { name: 'Macros' })[0]);
 
 	await user.click(screen.getByRole('button', { name: 'Add macro' }));

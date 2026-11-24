@@ -41,7 +41,13 @@ export const TEST_CONSTRAINTS: Constraints = {
 		ghoul: null,
 		mortal: null,
 		'thin-blood': { min: 0, max: 2 }
-	}
+	},
+	macro_name_pattern: '^_*[A-Za-z][A-Za-z_]*$',
+	macro_name_max_length: 50,
+	macro_comment_max_length: 300,
+	macro_difficulty: { min: 0, max: 100 },
+	macro_rouses: { min: 0, max: 5 },
+	macro_staining: ['apply', 'show', 'no']
 };
 
 /**

@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { Plus } from '@lucide/svelte';
 
-	import { lengthError, MACRO_LIMITS, macroNameError } from '$lib/constraints';
+	import { getConstraints, lengthError, macroNameError } from '$lib/constraints';
 	import { FORM_CLASSES } from '$lib/constants/formStyles';
 	import { saveMacros } from '$lib/api/macros';
 	import { BusySubmit } from '$lib/state/busySubmit.svelte';
@@ -23,6 +23,9 @@
 
 	const id = $props.id();
 
+	// The bot's limits, from the page (CharacterPage provides them)
+	const constraints = getConstraints();
+
 	// The new macro. Defaults as `/macro create`'s: Hunger on, no Rouse Checks, no Difficulty.
 	let name = $state('');
 	let difficulty = $state(0);
@@ -43,10 +46,13 @@
 	const nameError = $derived(
 		macroNameError(
 			trimmedName,
-			(character.macros ?? []).map((macro) => macro.name)
+			(character.macros ?? []).map((macro) => macro.name),
+			constraints()
 		)
 	);
-	const commentError = $derived(lengthError(comment.trim(), MACRO_LIMITS.comment_max_length));
+	const commentError = $derived(
+		lengthError(comment.trim(), constraints().macro_comment_max_length)
+	);
 	const resolved = $derived(resolvePool(pool, character));
 	// A macro rolls a pool or makes Rouse Checks (the bot's `check_has_action`)
 	const hasAction = $derived(pool.length > 0 || rouses > 0);
@@ -134,7 +140,7 @@ then the pool, built by clicking traits on the sheet. Adding saves the character
 				class="input {trimmedName && nameError ? 'border-error-500' : ''}"
 				id="{id}-name"
 				type="text"
-				maxlength={MACRO_LIMITS.name_max_length}
+				maxlength={constraints().macro_name_max_length}
 				autocomplete="off"
 				spellcheck="false"
 				placeholder="feed"
@@ -147,9 +153,9 @@ then the pool, built by clicking traits on the sheet. Adding saves the character
 		</div>
 
 		<div class="flex flex-col gap-2">
-			<Stepper label="Difficulty" bind:value={difficulty} {...MACRO_LIMITS.difficulty} />
+			<Stepper label="Difficulty" bind:value={difficulty} {...constraints().macro_difficulty} />
 			{#if rousing}
-				<Stepper label="Rouse Checks" bind:value={rouses} {...MACRO_LIMITS.rouses} />
+				<Stepper label="Rouse Checks" bind:value={rouses} {...constraints().macro_rouses} />
 			{/if}
 		</div>
 

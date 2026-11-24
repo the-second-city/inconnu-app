@@ -9,14 +9,14 @@ export const sortMacros = (macros: Macro[]): Macro[] =>
 	[...macros].sort((a, b) => a.name.localeCompare(b.name, 'en', { sensitivity: 'base' }));
 
 /**
- * Save a character's macros: the whole list, which replaces the character's (so one left out is
- * deleted). The API answers with no content; the character updates through the live update the
- * save triggers.
+ * Save a character's macros: the whole list (`{ macros }`), which replaces the character's (so one
+ * left out is deleted). The API answers with no content; the character updates through the live
+ * update the save triggers.
  */
 export const saveMacros = (characterId: string, macros: Macro[]): Promise<ActionOutcome<null>> =>
 	postAction(
 		resolve('/api/characters/[id=objectid]/macros', { id: characterId }),
-		sortMacros(macros),
+		{ macros: sortMacros(macros) },
 		"Couldn't reach Inconnu to save the macros.",
 		{ method: 'PATCH', feature: 'Editing macros' }
 	);

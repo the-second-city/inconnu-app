@@ -54,6 +54,12 @@ export interface Constraints {
 	stains: Range;
 	hunger: Record<Splat, Range | null>; // null: the splat doesn't have it
 	potency: Record<Splat, Range | null>;
+	macro_name_pattern: string; // A JS pattern: letters and underscores, with at least one letter
+	macro_name_max_length: number;
+	macro_comment_max_length: number;
+	macro_difficulty: Range;
+	macro_rouses: Range;
+	macro_staining: string[]; // A macro's `staining` values
 }
 
 /**

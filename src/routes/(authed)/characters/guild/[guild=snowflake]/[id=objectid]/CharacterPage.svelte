@@ -202,12 +202,12 @@
 
 	// The macros show below the sheet, or (with ?macros=panel, while both are being tried) in a
 	// floating panel opened from a Macros button. The panel can add macros, so it's there for anyone
-	// who may edit, macros or not
+	// who may edit them (as in Discord, the owner, or a Storyteller for an SPC), macros or not
 	const macroPlacement = $derived(
 		page.url.searchParams.get('macros') === 'panel' ? 'panel' : 'sheet'
 	);
 	const macroButton = $derived(
-		macroPlacement === 'panel' && (editable || !!character.macros?.length)
+		macroPlacement === 'panel' && (ownerActions || !!character.macros?.length)
 	);
 	let macrosOpen = $state(false);
 	let macroView: MacroPanelView = $state('list');
@@ -627,7 +627,7 @@
 		{character}
 		bind:open={macrosOpen}
 		bind:view={macroView}
-		onadd={editable ? addMacro : undefined}
+		onadd={ownerActions ? addMacro : undefined}
 	/>
 {/if}
 

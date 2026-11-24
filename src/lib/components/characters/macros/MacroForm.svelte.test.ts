@@ -8,6 +8,9 @@ import type { Character, Macro, Splat } from '$lib/types';
 vi.mock('$app/paths', () => ({
 	resolve: (route: string, params: { id: string }) => route.replace('[id=objectid]', params.id)
 }));
+vi.mock('$lib/constraints', async (original) =>
+	(await import('$lib/testing/constraints')).mockConstraints(original)
+);
 // No busy delay: the save's own promise decides when it's done
 vi.mock('$lib/state/busy', () => ({ atLeast: <T>(work: Promise<T>): Promise<T> => work }));
 
@@ -71,7 +74,7 @@ test('focuses the name, and asks for traits to build the pool', () => {
 });
 
 test.each([
-	['two words', 'Name can only contain letters and underscores'],
+	['two words', 'Name can only contain letters and underscores, with at least one letter'],
 	['HUNT', "There's already a macro named HUNT"]
 ])('the name %j is invalid: %s', async (name, error) => {
 	const user = userEvent.setup();
@@ -156,7 +159,7 @@ test('adding saves all the macros, sorted, with the new one', async () => {
 	const [url, init] = fetchMock.mock.calls[0];
 	expect(url).toBe('/api/characters/abc/macros');
 	expect(init?.method).toBe('PATCH');
-	const sent = JSON.parse(init?.body as string) as Macro[];
+	const sent = (JSON.parse(init?.body as string) as { macros: Macro[] }).macros;
 	expect(sent.map((macro) => macro.name)).toEqual(['blush', 'Feed', 'hunt']);
 	expect(sent[1]).toEqual({
 		name: 'Feed',
@@ -186,7 +189,8 @@ test('a Rouse option stays chosen while the Rouse Checks go to 0 and back', asyn
 	await user.click(screen.getByRole('button', { name: 'More Rouse Checks' }));
 	await user.click(addButton());
 
-	const sent = JSON.parse(fetchMock.mock.calls[0][1]?.body as string) as Macro[];
+	const sent = (JSON.parse(fetchMock.mock.calls[0][1]?.body as string) as { macros: Macro[] })
+		.macros;
 	expect(sent.find((macro) => macro.name === 'surge')).toMatchObject({
 		rouses: 1,
 		reroll_rouses: true,
