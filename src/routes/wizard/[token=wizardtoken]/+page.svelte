@@ -196,7 +196,12 @@
 		<div class="flex justify-end">
 			<h6 class="text-surface-800-200 flex items-center gap-4 italic">
 				{data.guild.name}
-				<Avatar src={data.guild.icon ?? undefined} name={data.guild.name} size="size-6" />
+				<Avatar
+					src={data.guild.icon ?? undefined}
+					name={data.guild.name}
+					size="size-6"
+					decorative
+				/>
 			</h6>
 		</div>
 	</div>

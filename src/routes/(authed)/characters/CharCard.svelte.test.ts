@@ -73,16 +73,17 @@ test.each([
 });
 
 test.each([
-	['the guild icon, when not showing owners', false, 'Camarilla of Chicago icon', 'guild.png'],
-	["the owner's icon", true, 'Lodin icon', 'lodin.png']
-])('shows %s', (_case, showOwner, alt, icon) => {
+	['the guild icon, when not showing owners', false, 'guild.png'],
+	["the owner's icon", true, 'lodin.png']
+])('shows %s', (_case, showOwner, icon) => {
 	const data = publicData({
 		guild: { ...GUILD, icon: 'https://example.com/guild.png' },
 		owner: { ...OWNER, icon: 'https://example.com/lodin.png' }
 	});
 	render(CharCard, { data, showOwner });
 
-	expect(within(screen.getByRole('contentinfo')).getByAltText(alt)).toHaveAttribute(
+	// Beside the name, so screen readers skip it rather than read the name twice
+	expect(within(screen.getByRole('contentinfo')).getByAltText('')).toHaveAttribute(
 		'src',
 		`https://example.com/${icon}`
 	);
@@ -91,7 +92,7 @@ test.each([
 test('shows no icon image when there is none', () => {
 	render(CharCard, { data: publicData(), showOwner: true });
 
-	expect(screen.queryByAltText('Lodin icon')).not.toBeInTheDocument();
+	expect(screen.queryByAltText('')).not.toBeInTheDocument();
 });
 
 test('shows the description over the biography', () => {

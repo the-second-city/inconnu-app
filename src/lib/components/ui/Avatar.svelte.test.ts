@@ -8,6 +8,13 @@ test.each([
 	['Nadia', 'N'],
 	['Camarilla of Chicago', 'CC'],
 	['  lodin   the   elder ', 'LE'],
+	// Emoji and punctuation aren't initials
+	['🩸 Night Court', 'NC'],
+	['🩸Night Court', 'NC'],
+	['The Second City 🦇', 'TC'],
+	['(Elysium)', 'E'],
+	['🩸🦇', ''],
+	['Москва', 'М'],
 	['', '']
 ])('the initials of %j are %j', (name, expected) => {
 	expect(initials(name)).toBe(expected);
@@ -41,4 +48,27 @@ test('a custom fallback replaces the initials', () => {
 
 	expect(screen.getByText('?')).toBeInTheDocument();
 	expect(screen.queryByText('N')).not.toBeInTheDocument();
+});
+
+test('a decorative avatar, beside the name it pictures, is hidden from screen readers', () => {
+	const { container } = render(Avatar, {
+		src: 'https://example.com/nadia.png',
+		name: 'Nadia',
+		decorative: true
+	});
+
+	expect(screen.getByAltText('')).toHaveAttribute('src', 'https://example.com/nadia.png');
+	expect(container.firstElementChild).toHaveAttribute('aria-hidden', 'true');
+});
+
+test("a decorative avatar's initials are hidden too", () => {
+	render(Avatar, { name: 'Camarilla of Chicago', decorative: true });
+
+	expect(screen.getByText('CC').closest('[aria-hidden="true"]')).not.toBeNull();
+});
+
+test('an avatar is described by its name unless decorative', () => {
+	const { container } = render(Avatar, { name: 'Nadia' });
+
+	expect(container.firstElementChild).not.toHaveAttribute('aria-hidden');
 });

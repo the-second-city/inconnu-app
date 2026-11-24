@@ -117,7 +117,7 @@
 							<span class="badge preset-filled-surface-500 text-xs uppercase">{item.name}</span>
 						{:else}
 							{item.name}
-							<Avatar src={item.icon ?? undefined} name={item.name} size="size-6" />
+							<Avatar src={item.icon ?? undefined} name={item.name} size="size-6" decorative />
 						{/if}
 					{/each}
 				</h6>

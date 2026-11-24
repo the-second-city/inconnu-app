@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/svelte';
+import { render, screen, within } from '@testing-library/svelte';
 import userEvent from '@testing-library/user-event';
 import { beforeEach, expect, test, vi } from 'vitest';
 
@@ -36,7 +36,8 @@ test("shows the user's name and avatar when signed in", () => {
 
 	const trigger = screen.getByRole('button', { name: /Nadia/ });
 	expect(trigger).toHaveTextContent('Nadia');
-	expect(screen.getByAltText('Nadia')).toHaveAttribute('src', AVATAR);
+	// Beside the name, so screen readers skip the image rather than read the name twice
+	expect(within(trigger).getByAltText('')).toHaveAttribute('src', AVATAR);
 	expect(screen.queryByRole('button', { name: 'Sign in to Discord' })).not.toBeInTheDocument();
 });
 

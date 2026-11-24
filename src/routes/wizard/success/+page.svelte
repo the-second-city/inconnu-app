@@ -68,6 +68,7 @@
 					src={characterInfo.guild.icon ?? undefined}
 					name={characterInfo.guild.name}
 					size="size-6"
+					decorative
 				/>
 			</h6>
 		</div>

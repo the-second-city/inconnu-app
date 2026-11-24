@@ -68,7 +68,12 @@
 	<div class="flex flex-wrap items-center gap-4">
 		<!-- Guild -->
 		<div class="flex items-center gap-2">
-			<Avatar src={changelog.guild.icon ?? undefined} name={changelog.guild.name} size="size-8" />
+			<Avatar
+				src={changelog.guild.icon ?? undefined}
+				name={changelog.guild.name}
+				size="size-8"
+				decorative
+			/>
 			<span class="font-semibold">{changelog.guild.name}</span>
 		</div>
 
@@ -86,6 +91,7 @@
 					src={changelog.poster.icon ?? undefined}
 					name={changelog.poster.name}
 					size="size-8"
+					decorative
 				/>
 				<span class="opacity-75">{changelog.poster.name}</span>
 			</div>

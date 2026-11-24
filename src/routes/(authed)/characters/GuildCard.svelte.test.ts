@@ -41,3 +41,9 @@ test('leaves out an unknown count', () => {
 
 	expect(screen.getByRole('link')).not.toHaveTextContent(/\d/);
 });
+
+test("without an icon, shows the guild's initials", () => {
+	render(GuildCard, { guild: guild(3) });
+
+	expect(screen.getByText('CC')).toBeInTheDocument();
+});

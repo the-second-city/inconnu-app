@@ -3,10 +3,15 @@
 	 * Initials for a name: the first letter of its first and last words, or of its only word.
 	 */
 	export const initials = (name: string): string => {
-		const words = name.trim().split(/\s+/).filter(Boolean);
-		if (words.length === 0) return '';
-		const letters = words.length === 1 ? [words[0]] : [words[0], words[words.length - 1]];
-		return letters.map((word) => word.charAt(0).toUpperCase()).join('');
+		// Each word's first letter or digit, so an emoji or punctuation (common in Discord server
+		// names, like "🩸 Night Court") is skipped, rather than giving half an emoji
+		const letters = name
+			.split(/\s+/)
+			.map((word) => word.match(/[\p{L}\p{N}]/u)?.[0])
+			.filter((letter) => letter !== undefined);
+		if (letters.length === 0) return '';
+		const ends = letters.length === 1 ? letters : [letters[0], letters[letters.length - 1]];
+		return ends.join('').toUpperCase();
 	};
 </script>
 
@@ -23,9 +28,12 @@
 		size?: string;
 		/** A fallback to show instead of initials, such as an icon */
 		children?: Snippet;
+		/** Beside the name it pictures, so screen readers skip it (alt text and initials both),
+		 * rather than reading the name twice */
+		decorative?: boolean;
 	}
 
-	let { src, name, size = 'size-16', children }: ComponentProps = $props();
+	let { src, name, size = 'size-16', children, decorative = false }: ComponentProps = $props();
 </script>
 
 <!--
@@ -33,9 +41,9 @@
 A round image, falling back to initials (or `children`) until it loads or when there isn't one.
 Wraps Skeleton's Avatar so its anatomy lives in one place.
 -->
-<Avatar class={size}>
+<Avatar class={size} aria-hidden={decorative || undefined}>
 	{#if src}
-		<Avatar.Image {src} alt={name} />
+		<Avatar.Image {src} alt={decorative ? '' : name} />
 	{/if}
 	<Avatar.Fallback>
 		{#if children}
