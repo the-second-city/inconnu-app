@@ -1307,3 +1307,67 @@ test('the API refusing a save for premium opens the upsell, and keeps the edits'
 	expect(screen.getByRole('alert')).toHaveTextContent('This feature is for supporters only.');
 	expect(nameBox()).toHaveValue('Nadiah');
 });
+
+/** The mortal with one macro. */
+const withMacro = (): Character => ({
+	...character(),
+	macros: [
+		{
+			name: 'lift',
+			pool: ['Strength', '+', '2'],
+			hunger: false,
+			difficulty: 2,
+			rouses: 0,
+			reroll_rouses: false,
+			staining: 'show',
+			hunt: false,
+			comment: null
+		}
+	]
+});
+
+test('the macros show below the sheet, with no Macros button', () => {
+	renderPage(withMacro());
+
+	const macros = within(panel()).getByRole('region', { name: 'Macros' });
+	expect(within(macros).getByRole('article', { name: 'lift' })).toHaveTextContent('4 dice');
+	expect(screen.queryByRole('button', { name: 'Macros' })).not.toBeInTheDocument();
+});
+
+test('a character without macros has no Macros section', () => {
+	renderPage();
+
+	expect(screen.queryByRole('region', { name: 'Macros' })).not.toBeInTheDocument();
+});
+
+test('with ?macros=panel, the Macros button opens and closes a panel of them', async () => {
+	const user = userEvent.setup();
+	navigate('/char?macros=panel');
+	renderPage(withMacro());
+
+	expect(screen.queryByRole('region', { name: 'Macros' })).not.toBeInTheDocument();
+	// One for wide windows, one floating for phones
+	const [button] = screen.getAllByRole('button', { name: 'Macros' });
+	expect(button).toHaveAttribute('aria-expanded', 'false');
+
+	await user.click(button);
+	const dialog = screen.getByRole('dialog', { name: 'Macros' });
+	expect(within(dialog).getByRole('article', { name: 'lift' })).toBeInTheDocument();
+	expect(button).toHaveAttribute('aria-expanded', 'true');
+
+	await user.click(within(dialog).getByRole('button', { name: 'Close macros' }));
+	await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
+});
+
+test('Escape closes the macro panel without cancelling edits', async () => {
+	const user = userEvent.setup();
+	navigate('/char?macros=panel');
+	renderPage(withMacro());
+
+	await user.click(editButton('Edit'));
+	await user.click(screen.getAllByRole('button', { name: 'Macros' })[0]);
+	await user.keyboard('{Escape}');
+
+	await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
+	expect(editButton('Save')).toBeInTheDocument();
+});

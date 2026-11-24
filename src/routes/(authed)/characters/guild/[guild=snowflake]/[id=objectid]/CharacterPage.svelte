@@ -9,6 +9,7 @@
 		Pencil,
 		SaveCheck,
 		ScrollText,
+		SquareFunction,
 		StarPlus,
 		Timeline
 	} from '@lucide/svelte';
@@ -48,6 +49,7 @@
 	import StainModal from '$lib/components/characters/actions/StainModal.svelte';
 	import RemorseModal from '$lib/components/characters/actions/RemorseModal.svelte';
 	import FrenzyModal from '$lib/components/characters/actions/FrenzyModal.svelte';
+	import MacroPanel from '$lib/components/characters/macros/MacroPanel.svelte';
 	import PremiumModal from '$lib/components/premium/PremiumModal.svelte';
 	import { isSupporter, refusedForPremium, showUpsell, upsell } from '$lib/state/premium.svelte';
 
@@ -195,6 +197,14 @@
 	// And the frenzy test (below Hunger)
 	let frenzyOpen = $state(false);
 	let editing = $state(false);
+
+	// The macros show below the sheet, or (with ?macros=panel, while both are being tried) in a
+	// floating panel opened from a Macros button
+	const macroPlacement = $derived(
+		page.url.searchParams.get('macros') === 'panel' ? 'panel' : 'sheet'
+	);
+	const macroButton = $derived(macroPlacement === 'panel' && !!character.macros?.length);
+	let macrosOpen = $state(false);
 
 	// Fresh data for the same character (such as a data refresh) replaces the copy. While it's
 	// being edited, the data waits: Cancel takes it, and Save keeps the edits instead.
@@ -407,6 +417,7 @@
 		<CharacterSheet
 			bind:character
 			{editing}
+			macros={macroPlacement === 'sheet'}
 			{actionable}
 			onRouse={ownerActions ? gameplay(openRouse) : undefined}
 			onMend={ownerActions ? gameplay(openMend) : undefined}
@@ -459,11 +470,16 @@
 			{/each}
 			<Tabs.Indicator />
 		</Tabs.List>
-		{#if editable}
-			<!-- Desktop edit buttons, at the end of the tab row (outside the tab list, which
-			     should hold only tabs). The mobile ones float instead. -->
+		{#if editable || macroButton}
+			<!-- Desktop buttons, at the end of the tab row (outside the tab list, which should hold
+			     only tabs). The mobile ones float instead. -->
 			<div class="absolute top-0 right-0 hidden gap-2 sm:flex">
-				{#if editing}
+				{#if macroButton}
+					{@render macrosToggle('btn btn-gothic btn-gothic-ash', 18)}
+				{/if}
+				{#if !editable}
+					<!-- No edit buttons -->
+				{:else if editing}
 					<button
 						class="btn btn-gothic btn-gothic-ash"
 						onclick={cancelEditing}
@@ -580,15 +596,37 @@
 	/>
 </Modal>
 
-{#if editable}
-	<!-- Room at the end of the page, so its last rows can scroll clear of the floating buttons -->
-	<div class="h-24 sm:hidden" aria-hidden="true"></div>
+{#snippet macrosToggle(classes: string, size: number)}
+	<button
+		class={classes}
+		onclick={() => (macrosOpen = !macrosOpen)}
+		aria-expanded={macrosOpen}
+		aria-controls="macro-panel"
+		aria-label="Macros"
+	>
+		<SquareFunction {size} />
+		{#if size < 20}<span>Macros</span>{/if}
+	</button>
+{/snippet}
 
-	<!-- Mobile floating edit buttons -->
+{#if macroButton}
+	<MacroPanel {character} bind:open={macrosOpen} />
+{/if}
+
+{#if editable || macroButton}
+	<!-- Room at the end of the page, so its last rows can scroll clear of the floating buttons -->
+	<div class={[macroButton && editable ? 'h-40' : 'h-24', 'sm:hidden']} aria-hidden="true"></div>
+
+	<!-- Mobile floating buttons: Macros above the edit buttons -->
 	<div class="fixed right-6 bottom-6 z-40 sm:hidden">
-		<div class="p-4">
+		<div class="flex flex-col items-end gap-4 p-4">
+			{#if macroButton}
+				{@render macrosToggle('fab-gothic btn-gothic btn-gothic-ash', 24)}
+			{/if}
 			<div class="container mx-auto flex justify-center gap-4">
-				{#if editing}
+				{#if !editable}
+					<!-- No edit buttons -->
+				{:else if editing}
 					<button
 						class="fab-gothic btn-gothic btn-gothic-ash"
 						onclick={cancelEditing}

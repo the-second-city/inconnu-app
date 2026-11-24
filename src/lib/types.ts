@@ -22,7 +22,6 @@ export type Trait = {
 	subtraits: string[];
 };
 
-type PoolElem = number | string;
 export type TrackType = 'willpower' | 'health';
 
 /** An inclusive range of allowed values. */
@@ -57,15 +56,24 @@ export interface Constraints {
 	potency: Record<Splat, Range | null>;
 }
 
-type Macro = {
-	name: string;
-	pool: PoolElem[];
-	keys: PoolElem[];
-	target: number;
-	rote: boolean;
-	hunt: boolean;
+/**
+ * A roll macro. Mirrors the bot's `VCharMacro`.
+ *
+ * `pool` is the bot's expanded pool: trait keys (a trait's name, then any specialties or powers,
+ * joined by `.`: "Brawl.Kindred"), operators (`+`, `-`), and numbers, each a token. It never
+ * holds Hunger, which `hunger` adds instead.
+ */
+export interface Macro {
+	name: string; // Letters and underscores
+	pool: string[]; // Empty when the macro only makes Rouse Checks
+	hunger: boolean; // Rolls the character's current Hunger dice
+	difficulty: number; // The default; 0 for none
+	rouses: number; // Rouse Checks made when it's rolled
+	reroll_rouses: boolean;
+	staining: string; // "apply": the Rouse Checks can Stain (Oblivion); "show" (or "no") otherwise
+	hunt: boolean; // Offers to slake Hunger on a win
 	comment: string | null;
-};
+}
 
 export interface Profile {
 	description: string | null;
@@ -91,6 +99,7 @@ export interface Character {
 	hunger?: number;
 	blood_potency?: number;
 	log?: CharacterLog;
+	macros?: Macro[]; // Sorted by name, ignoring case
 }
 
 /** A Rouse request. Mirrors the bot's `RouseBody`. */
