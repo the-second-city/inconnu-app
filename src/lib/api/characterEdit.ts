@@ -3,7 +3,7 @@
  * turning a failed save's response into messages for the user.
  */
 
-import { normalize } from '..';
+import { cleanName, normalize } from '..';
 import { bloodPotency, isVampiric } from '$lib/rules/vampire';
 import type { Character, Trait } from '$lib/types';
 import { refusedForPremium, SUPPORTERS_ONLY } from '$lib/state/premium.svelte';
@@ -29,7 +29,7 @@ export interface CharacterEdit {
  * here, and images aren't edited.
  */
 export const editBody = (char: Character, name: string): CharacterEdit => ({
-	name: normalize(name),
+	name: cleanName(name),
 	health: char.health,
 	willpower: char.willpower,
 	humanity: char.humanity,

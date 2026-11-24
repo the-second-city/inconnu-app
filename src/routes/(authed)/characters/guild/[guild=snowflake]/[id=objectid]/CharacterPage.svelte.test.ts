@@ -449,6 +449,20 @@ test('renaming, then saving, keeps the new name, normalized', async () => {
 	expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('Nadia Petrova');
 });
 
+test('a name with a phone’s curly apostrophe is accepted, and saved straightened', async () => {
+	const user = userEvent.setup();
+	renderPage();
+
+	await user.click(editButton('Edit'));
+	await user.clear(nameBox());
+	await user.type(nameBox(), 'Nadia O\u2019Brien');
+	expect(nameBox()).not.toHaveAccessibleDescription();
+	await user.click(editButton('Save'));
+	await saved();
+
+	expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent("Nadia O'Brien");
+});
+
 test('renaming, then cancelling, restores the name', async () => {
 	const user = userEvent.setup();
 	renderPage();

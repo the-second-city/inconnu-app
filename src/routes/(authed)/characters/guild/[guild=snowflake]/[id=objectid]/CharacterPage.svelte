@@ -13,7 +13,7 @@
 		Timeline
 	} from '@lucide/svelte';
 
-	import { normalize } from '$lib';
+	import { cleanName } from '$lib';
 	import {
 		characterNameError,
 		profileLengthErrors,
@@ -209,7 +209,7 @@
 	// The name being edited. It's only written to the character on Save, as normalizing it while
 	// typing would strip the space before the next word.
 	let newName = $state('');
-	const normalizedNewName = $derived(normalize(newName));
+	const normalizedNewName = $derived(cleanName(newName));
 
 	// A failed save's errors. The bot's error for the name shows with the name until it's changed
 	let saveError: SaveErrors | null = $state(null);

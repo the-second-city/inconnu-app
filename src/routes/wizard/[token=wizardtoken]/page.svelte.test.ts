@@ -317,6 +317,16 @@ test('sends trait changes made on the sheet', async () => {
 	expect(traits).toContainEqual(trait('Blood Sorcery', 'discipline', 1));
 });
 
+test('a name with a phone’s curly apostrophe is accepted, and sent straightened', async () => {
+	const user = userEvent.setup();
+	renderWizard();
+	await fillRequired(user, 'vampire', 'Nadia O\u2019Brien');
+
+	await user.click(screen.getByRole('button', { name: "Create Nadia O'Brien" }));
+
+	expect(sentPayload().name).toBe("Nadia O'Brien");
+});
+
 /** Types a discipline and clicks the + beside it (the Custom Traits column has one too). */
 const addDiscipline = async (user: UserEvent, name: string): Promise<void> => {
 	const field = screen.getByRole('textbox', { name: 'New Discipline' });

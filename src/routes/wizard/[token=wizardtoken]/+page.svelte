@@ -14,7 +14,7 @@
 	import ErrorMessage from '$lib/components/ui/ErrorMessage.svelte';
 	import { FORM_CLASSES } from '$lib/constants/formStyles';
 	import { creationInfoStore } from '$lib/stores/CreationStore';
-	import { normalize, getErrorDetail } from '$lib';
+	import { cleanName, normalize, getErrorDetail } from '$lib';
 	import { characterNameError, lengthError, maxCodeUnits, setConstraints } from '$lib/constraints';
 	import Meta from '$lib/components/layout/Meta.svelte';
 	import Modal from '$lib/components/ui/Modal.svelte';
@@ -83,7 +83,7 @@
 	});
 
 	// Character name validation
-	const normalizedName = $derived(normalize(name));
+	const normalizedName = $derived(cleanName(name));
 	const isValidCharacterName = $derived(characterNameError(normalizedName, constraints) === null);
 	// Don't show an error for an empty field
 	const nameError = $derived(

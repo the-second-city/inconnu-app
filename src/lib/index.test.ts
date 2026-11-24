@@ -11,6 +11,7 @@ import {
 	insensitiveSort,
 	normalize,
 	parseApiDate,
+	cleanName,
 	straightenApostrophes,
 	stripLeadingArticles
 } from '$lib';
@@ -22,6 +23,10 @@ const jsonResponse = (body: unknown, status = 400): Response =>
 
 test('straightenApostrophes replaces curly apostrophes, as phones type them', () => {
 	expect(straightenApostrophes('Dogs\u2019 \u2018Til')).toBe("Dogs' 'Til");
+});
+
+test('cleanName straightens apostrophes and collapses whitespace, as the bot cleans names', () => {
+	expect(cleanName('  O\u2019Brien   Mac\u2018Bride ')).toBe("O'Brien Mac'Bride");
 });
 
 test('normalize collapses and trims whitespace', () => {

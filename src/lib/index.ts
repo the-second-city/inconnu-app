@@ -11,6 +11,13 @@ export const normalize = (text: string): string => {
 export const straightenApostrophes = (text: string): string => text.replace(/[\u2018\u2019]/g, "'");
 
 /**
+ * A name as the bot checks and stores it (its `clean_name`): curly apostrophes, which phones type,
+ * straightened, then whitespace collapsed. Use it for character names, which the bot cleans before
+ * validating, so "O’Brien" is accepted as "O'Brien".
+ */
+export const cleanName = (name: string): string => normalize(straightenApostrophes(name));
+
+/**
  * A string's length in code points, as Python's `len()` counts it. JS's `length` counts UTF-16
  * code units, so a code point outside the Basic Multilingual Plane (🩸, 𝓢𝓬𝓻𝓲𝓹𝓽) counts twice
  * there. Not graphemes (as `Intl.Segmenter` counts them): an emoji built of several code points
