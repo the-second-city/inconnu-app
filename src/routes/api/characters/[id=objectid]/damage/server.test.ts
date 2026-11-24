@@ -46,7 +46,8 @@ test('relays the damage to the API as the signed-in user, and its 204', async ()
 			Authorization: 'Bearer test-key',
 			'X-Discord-User-ID': '222'
 		},
-		body
+		body,
+		signal: expect.any(AbortSignal)
 	});
 	expect(response.status).toBe(204);
 	expect(await response.text()).toBe('');

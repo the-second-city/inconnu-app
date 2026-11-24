@@ -94,11 +94,9 @@ test('shows guild and owner icons', () => {
 		owner: { ...OWNER, icon: 'https://example.com/lodin.png' }
 	});
 
-	expect(screen.getByAltText('Camarilla of Chicago')).toHaveAttribute(
-		'src',
-		'https://example.com/guild.png'
-	);
-	expect(screen.getByAltText('Lodin')).toHaveAttribute('src', 'https://example.com/lodin.png');
+	// Beside their names, so screen readers skip them rather than read the names twice
+	const icons = screen.getAllByAltText('').map((img) => img.getAttribute('src'));
+	expect(icons).toEqual(['https://example.com/guild.png', 'https://example.com/lodin.png']);
 });
 
 test('shows no icon image when there is none', () => {

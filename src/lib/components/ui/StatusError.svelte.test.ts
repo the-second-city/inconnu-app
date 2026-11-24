@@ -36,6 +36,8 @@ beforeEach(() => {
 test.each([
 	[503, 'Starting up', 'Inconnu is still starting up. Please wait a moment and try again.'],
 	[500, 'Connection error', 'Unable to connect to bot. Please try again later.'],
+	// The loaders' answer when the API can't be reached
+	[502, 'Connection error', 'Unable to connect to bot. Please try again later.'],
 	[404, 'Character not found', 'That character does not exist.'],
 	[422, 'Invalid ID', 'That is not a character ID.']
 ])('explains a %i', (status, heading, message) => {
@@ -49,6 +51,7 @@ test.each([
 test.each([
 	[503, 'Service Starting | Inconnu'],
 	[500, 'Connection Error | Inconnu'],
+	[502, 'Connection Error | Inconnu'],
 	[404, 'Character not found | Inconnu'],
 	[422, 'Invalid ID | Inconnu'],
 	[403, 'Error | Inconnu']

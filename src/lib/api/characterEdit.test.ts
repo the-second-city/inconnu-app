@@ -37,6 +37,10 @@ test('the edit body has every editable field', () => {
 	});
 });
 
+test('the name is cleaned as the bot cleans it: apostrophes straightened, spaces collapsed', () => {
+	expect(editBody(character(), '  O\u2019Brien  ').name).toBe("O'Brien");
+});
+
 test.each(['mortal', 'ghoul'] as Splat[])('a %s sends no Blood Potency or Hunger', (splat) => {
 	const body = editBody(character(splat), 'Nadia');
 

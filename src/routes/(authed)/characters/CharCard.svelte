@@ -63,7 +63,7 @@
 	<footer class="bg-surface-50-950/50 flex items-center justify-end gap-2 px-4 py-2">
 		<small class="opacity-60">{footerLabel}</small>
 		{#if footerIcon !== null}
-			<Avatar src={footerIcon} name="{footerLabel} icon" size="size-6" />
+			<Avatar src={footerIcon} name={footerLabel} size="size-6" decorative />
 		{:else if !data.spc}
 			<Avatar name="icon" size="size-6">
 				<EyeOff size={18} />

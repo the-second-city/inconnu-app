@@ -173,7 +173,7 @@ test("without Rouse or Slake, Hunger doesn't open a menu", () => {
 
 test.each([
 	[2, 'Rouse', 'Hunger may rise'],
-	[5, 'Rouse', 'At Hunger 5, a failure risks frenzy'],
+	[5, 'Rouse', 'At Hunger 5, calls for a frenzy test'],
 	[2, 'Slake', 'Feed to lower Hunger'],
 	[0, 'Slake', 'No Hunger to slake']
 ])('at Hunger %i, %s says %j', async (hunger, button, detail) => {

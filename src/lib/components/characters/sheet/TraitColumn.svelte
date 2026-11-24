@@ -31,6 +31,9 @@
 		addable = false,
 		addLabel = null
 	}: ComponentProps = $props();
+	// Unique per instance: several of these can show an error at once
+	const uid = $props.id();
+	const traitErrorId = `${uid}-trait-error`;
 
 	const constraints = getConstraints();
 	const ratings = $derived(constraints().trait_rating);
@@ -158,17 +161,23 @@
 			<input
 				type="text"
 				bind:value={newTraitName}
-				onkeydown={(e) => e.key === 'Enter' && addTrait()}
+				onkeydown={(e) => {
+					if (e.key !== 'Enter') return;
+					e.preventDefault(); // Enter adds the trait; in the wizard's form, it would also submit it
+					addTrait();
+				}}
 				{placeholder}
 				aria-label="New {label}"
 				maxlength={maxCodeUnits(constraints().trait_max_length)}
 				class="input min-w-0 flex-1 border"
 				class:text-error-500={traitError}
 				class:border-error-500={traitError}
-				aria-describedby={traitError ? 'trait-error' : undefined}
+				aria-describedby={traitError ? traitErrorId : undefined}
 				transition:fade={{ duration: 100 }}
 			/>
+			<!-- Not a submit button: the wizard renders the sheet inside its form -->
 			<button
+				type="button"
 				class="btn preset-filled-secondary-500"
 				onclick={addTrait}
 				disabled={invalidTrait}
@@ -177,6 +186,6 @@
 				<CirclePlus />
 			</button>
 		</div>
-		<ErrorMessage error={traitError} id="trait-error" />
+		<ErrorMessage error={traitError} id={traitErrorId} />
 	{/if}
 </Card>

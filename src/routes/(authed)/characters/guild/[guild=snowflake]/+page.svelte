@@ -20,7 +20,7 @@
 		<ChevronLeft size={32} />
 	</a>
 	<h1 class="h1 flex items-center gap-4 font-black">
-		<Avatar src={guild.icon ?? undefined} name="{guild.name} icon" />
+		<Avatar src={guild.icon ?? undefined} name={guild.name} decorative />
 		{guild.name}
 	</h1>
 </div>

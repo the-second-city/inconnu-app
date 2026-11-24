@@ -8,9 +8,11 @@
 		expiresIn: number | null;
 		/** Called once, when the time runs out (or on mounting, if it already has). */
 		onexpire?: () => void;
+		/** The link stopped working early (the bot no longer has it), so it reads as expired now. */
+		ended?: boolean;
 	}
 
-	let { expiresIn, onexpire }: ComponentProps = $props();
+	let { expiresIn, onexpire, ended = false }: ComponentProps = $props();
 
 	// The deadline on the viewer's clock, which may be off by minutes: only the time left counts.
 	// Set once mounted, as SSR's clock isn't the viewer's
@@ -26,11 +28,12 @@
 	});
 
 	const left = $derived(now === null || deadline === null ? null : timeLeft(deadline, now));
-	const expired = $derived(left === 0);
+	const runOut = $derived(left === 0);
+	const expired = $derived(runOut || ended);
 
 	let notified = false;
 	$effect(() => {
-		if (expired && !notified) {
+		if (runOut && !notified) {
 			notified = true;
 			onexpire?.();
 		}
@@ -44,12 +47,17 @@
 </script>
 
 {#if left !== null && deadline !== null}
+	<!-- Once expired (early, too), it's urgent, and there's no time left to tell of -->
 	<p
-		class="flex items-center gap-1.5 text-sm tabular-nums {TONES[urgency(left)]}"
-		title="This link expires at {new Date(deadline).toLocaleTimeString([], {
-			hour: 'numeric',
-			minute: '2-digit'
-		})}"
+		class="flex items-center gap-1.5 text-sm tabular-nums {TONES[
+			expired ? 'error' : urgency(left)
+		]}"
+		title={expired
+			? undefined
+			: `This link expires at ${new Date(deadline).toLocaleTimeString([], {
+					hour: 'numeric',
+					minute: '2-digit'
+				})}`}
 	>
 		{#if expired}
 			<TimerOff size={16} aria-hidden="true" />

@@ -20,7 +20,7 @@ export const feedingLimits = (potency: number): FeedingLimits => {
 		// slakes less per human, down to no harmless drink at all
 		harmless: Math.max(0, 2 - reduction),
 		beforeDrain: 4 - reduction,
-		drainFloor: potency >= 9 ? 3 : potency >= 5 ? 2 : 1
+		drainFloor: potency >= 8 ? 3 : potency >= 5 ? 2 : 1
 	};
 };
 

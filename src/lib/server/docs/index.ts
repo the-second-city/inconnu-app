@@ -1,5 +1,6 @@
 import { API_KEY, INCONNU_API_URL } from '$env/static/private';
 import { getErrorDetail } from '$lib';
+import { fetchApi } from '$lib/server/api';
 import type { DocsBundle, DocsNavItem, DocsNavSection } from '$lib/types';
 import { renderPage } from './render';
 
@@ -54,7 +55,8 @@ const refresh = async (): Promise<Docs> => {
 	}
 
 	try {
-		const response = await fetch(`${INCONNU_API_URL}/docs`, { headers });
+		// Timed, so a hung API serves the last good copy instead of holding every docs page
+		const response = await fetchApi(`${INCONNU_API_URL}/docs`, { headers });
 		if (response.status === 304 && cached) {
 			return cached;
 		}

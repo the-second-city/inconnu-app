@@ -1,6 +1,7 @@
 import { error } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
 import { API_KEY, INCONNU_API_URL } from '$env/static/private';
+import { fetchApi } from '$lib/server/api';
 import type { CharacterData } from '$lib/types';
 
 export const load: PageServerLoad = async ({ params }) => {
@@ -10,11 +11,15 @@ export const load: PageServerLoad = async ({ params }) => {
 		error(400, 'Character ID is required');
 	}
 
-	const response = await fetch(`${INCONNU_API_URL}/characters/profile/${encodeURIComponent(id)}`, {
-		headers: {
-			Authorization: `Bearer ${API_KEY}`
-		}
-	});
+	const response = await fetchApi(
+		`${INCONNU_API_URL}/characters/profile/${encodeURIComponent(id)}`,
+		{
+			headers: {
+				Authorization: `Bearer ${API_KEY}`
+			}
+		},
+		{ failure: { label: 'Profile', unavailable: 'This profile is unavailable right now.' } }
+	);
 
 	if (!response.ok) {
 		if (response.status === 404) {

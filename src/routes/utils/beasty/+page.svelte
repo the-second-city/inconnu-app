@@ -2,38 +2,46 @@
 	import { ClipboardCheck, LoaderCircle } from '@lucide/svelte';
 
 	import Card from '$lib/components/ui/Card.svelte';
-	import Markdown from '$lib/components/ui/Markdown.svelte';
 	import Meta from '$lib/components/layout/Meta.svelte';
 
 	let input = $state('');
 	let justCopied = $state(false);
 
-	let disabled = $derived(input === '' || justCopied);
-	let beasty = $derived(makeBeast(input));
+	// What a reader sees as one character: an emoji of several code points (👨‍👩‍👧, 👍🏽), or a letter
+	// and its accent, stays whole rather than splitting into broken halves
+	const graphemes = new Intl.Segmenter(undefined, { granularity: 'grapheme' });
 
-	function makeBeast(input: string) {
-		let beast = '';
-		if (input) {
-			let trimmed = input.replace(/\s+/g, ' ').trim();
-			let letters = trimmed.split('');
-			let bold = false;
-			let characters: string[] = [];
-
-			letters.forEach((char) => {
-				if (char === ' ') {
-					characters.push(char);
-				} else if (bold) {
-					characters.push(`**${char}**`);
-				} else {
-					characters.push(`*${char}*`);
-				}
-				bold = !bold;
-			});
-
-			beast = characters.join('');
-		}
-		return beast;
+	/** A character of the text, in italics or bold, or a space (which takes its turn unformatted). */
+	interface Piece {
+		text: string;
+		bold: boolean;
+		space: boolean;
 	}
+
+	/** The text as alternating italic and bold characters, spaces collapsed. */
+	const toPieces = (text: string): Piece[] => {
+		const trimmed = text.replace(/\s+/g, ' ').trim();
+		return Array.from(graphemes.segment(trimmed), ({ segment }, i) => ({
+			text: segment,
+			bold: i % 2 === 1,
+			space: segment === ' '
+		}));
+	};
+
+	/** A character with Discord's Markdown escaped, so a typed `*` or `_` stays text. */
+	const escape = (char: string): string => char.replace(/[\\*_~`|]/g, '\\$&');
+
+	const pieces = $derived(toPieces(input));
+	// The text for Discord
+	const beasty = $derived(
+		pieces
+			.map(({ text, bold, space }) =>
+				space ? text : bold ? `**${escape(text)}**` : `*${escape(text)}*`
+			)
+			.join('')
+	);
+	// Blank text makes nothing to copy
+	let disabled = $derived(beasty === '' || justCopied);
 
 	async function toClipboard() {
 		await navigator.clipboard.writeText(beasty);
@@ -73,9 +81,15 @@
 		</Card>
 		<Card extraClasses="min-h-[10rem]">
 			{#if beasty}
-				<div style="overflow-wrap: break-word;">
-					<Markdown content={beasty} />
-				</div>
+				<!-- Drawn from the pieces, not by parsing the text: a Markdown parser's rules (CommonMark
+				     won't bold "!" between letters) aren't Discord's -->
+				<section aria-label="Preview">
+					<p style="overflow-wrap: break-word;">
+						{#each pieces as { text, bold, space }, i (i)}{#if space}{text}{:else if bold}<strong
+									>{text}</strong
+								>{:else}<em>{text}</em>{/if}{/each}
+					</p>
+				</section>
 			{:else}
 				<p class="text-surface-800-200 italic">Rendered text will display here.</p>
 			{/if}

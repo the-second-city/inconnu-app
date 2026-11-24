@@ -264,3 +264,26 @@ test('a trait that disallows specialties has no popover', () => {
 	expect(screen.queryByRole('button', { name: NAME })).not.toBeInTheDocument();
 	expect(screen.getByText('Athletics')).toBeInTheDocument();
 });
+
+test("a specialty's error describes its own field, not another trait's", async () => {
+	const user = userEvent.setup();
+	const props = { editing: true, allowsSubtraits: true, rating: 2 };
+	render(RatingSelector, { ...props, name: 'Athletics', subtraits: [] });
+	render(RatingSelector, { ...props, name: 'Brawl', subtraits: ['Grappling'] });
+
+	// Athletics' popover closes, keeping its draft and its error in the page
+	const athletics = screen.getByRole('button', { name: /^Athletics(?!:)/ });
+	await user.click(athletics);
+	await waitFor(() => expect(athletics).not.toHaveFocus());
+	await user.type(screen.getByRole('textbox', { name: 'New Specialty' }), 'Bad1');
+	await user.keyboard('{Escape}');
+	await waitFor(() => expect(screen.queryByRole('textbox')).not.toBeInTheDocument());
+
+	const brawl = screen.getByRole('button', { name: /^Brawl(?!:)/ });
+	await user.click(brawl);
+	await waitFor(() => expect(brawl).not.toHaveFocus());
+	const input = screen.getByRole('textbox', { name: 'New Specialty' });
+	await user.type(input, 'Grappling');
+
+	expect(input).toHaveAccessibleDescription('Specialty already exists');
+});

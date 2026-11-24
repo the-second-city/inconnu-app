@@ -13,7 +13,7 @@
 		Timeline
 	} from '@lucide/svelte';
 
-	import { normalize } from '$lib';
+	import { cleanName } from '$lib';
 	import {
 		characterNameError,
 		profileLengthErrors,
@@ -209,7 +209,7 @@
 	// The name being edited. It's only written to the character on Save, as normalizing it while
 	// typing would strip the space before the next word.
 	let newName = $state('');
-	const normalizedNewName = $derived(normalize(newName));
+	const normalizedNewName = $derived(cleanName(newName));
 
 	// A failed save's errors. The bot's error for the name shows with the name until it's changed
 	let saveError: SaveErrors | null = $state(null);
@@ -337,6 +337,7 @@
 		if (saving || nameError || textTooLong || !hasChanges) return;
 		saving = true;
 		saveError = null;
+		const before = initialCharacter; // The data these edits were made against
 		const body = editBody($state.snapshot(character), newName);
 		const errors = await atLeast(sendEdits(body));
 		saving = false;
@@ -348,7 +349,9 @@
 		}
 		character.name = body.name;
 		character.convictions = body.convictions.filter(Boolean);
-		applied = initialCharacter; // Until the live update's refetch, the edits stand
+		// Until the live update's refetch, the edits stand. Not `initialCharacter`: the refetch can
+		// land while the spinner runs, and leaving edit mode should apply it, not take it as seen
+		applied = before;
 		editing = false;
 		copy = null;
 	};

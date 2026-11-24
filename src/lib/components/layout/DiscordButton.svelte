@@ -36,7 +36,7 @@
 	>
 		{#snippet trigger()}
 			{#if full}
-				{userName} <Avatar src={userImage} name={userName} size={avatarSize} />
+				{userName} <Avatar src={userImage} name={userName} size={avatarSize} decorative />
 			{:else}
 				<Avatar src={userImage} name={userName} size={avatarSize} />
 			{/if}

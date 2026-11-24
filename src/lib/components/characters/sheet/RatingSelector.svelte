@@ -29,6 +29,9 @@
 		allowsSubtraits,
 		type
 	}: ComponentProps = $props();
+	// Unique per instance: several of these can show an error at once
+	const uid = $props.id();
+	const subtraitErrorId = `${uid}-subtrait-error`;
 
 	// Only read while editing specialties, so a read-only rating needs none provided
 	const constraints = getConstraints();
@@ -116,6 +119,7 @@
 									<span class="transition-all hover:brightness-125">{subtrait}</span>
 									{#if editing}
 										<button
+											type="button"
 											onclick={() => handleRemoveSubtrait(i)}
 											aria-label={buttonTitle}
 											title={buttonTitle}
@@ -133,16 +137,21 @@
 								<input
 									type="text"
 									bind:value={newSubtrait}
-									onkeydown={(e) => e.key === 'Enter' && handleAddSubtrait()}
+									onkeydown={(e) => {
+										if (e.key !== 'Enter') return;
+										e.preventDefault(); // Enter adds the specialty, never submitting a form around it
+										handleAddSubtrait();
+									}}
 									placeholder="Add new {subtraitLabel} ..."
 									aria-label="New {subtraitLabel}"
 									maxlength={maxCodeUnits(constraints().trait_max_length)}
 									class="input border"
 									class:text-error-500={invalidSubtrait}
 									class:border-error-500={invalidSubtrait}
-									aria-describedby={subtraitError ? 'subtrait-error' : undefined}
+									aria-describedby={subtraitError ? subtraitErrorId : undefined}
 								/>
 								<button
+									type="button"
 									class="btn preset-filled-secondary-500"
 									onclick={handleAddSubtrait}
 									disabled={!isValidSubtrait()}
@@ -151,7 +160,7 @@
 									<CirclePlus />
 								</button>
 							</div>
-							<ErrorMessage error={subtraitError} id="subtrait-error" />
+							<ErrorMessage error={subtraitError} id={subtraitErrorId} />
 						{/if}
 					</div>
 				{/snippet}

@@ -14,7 +14,7 @@
 	import ErrorMessage from '$lib/components/ui/ErrorMessage.svelte';
 	import { FORM_CLASSES } from '$lib/constants/formStyles';
 	import { creationInfoStore } from '$lib/stores/CreationStore';
-	import { normalize, getErrorDetail } from '$lib';
+	import { cleanName, normalize, getErrorDetail } from '$lib';
 	import { characterNameError, lengthError, maxCodeUnits, setConstraints } from '$lib/constraints';
 	import Meta from '$lib/components/layout/Meta.svelte';
 	import Modal from '$lib/components/ui/Modal.svelte';
@@ -44,6 +44,12 @@
 	let expired = $state(false);
 	// Says so when it does; closing it keeps the form, to copy into a new link
 	let expiredNotice = $state(false);
+	/** The link stopped working: say so once, and wait on a new link. */
+	const expire = () => {
+		if (expired) return;
+		expired = true;
+		expiredNotice = true;
+	};
 
 	let previousSplat = $state('');
 
@@ -83,7 +89,7 @@
 	});
 
 	// Character name validation
-	const normalizedName = $derived(normalize(name));
+	const normalizedName = $derived(cleanName(name));
 	const isValidCharacterName = $derived(characterNameError(normalizedName, constraints) === null);
 	// Don't show an error for an empty field
 	const nameError = $derived(
@@ -119,7 +125,13 @@
 
 	async function handleSubmit(event: SubmitEvent) {
 		event.preventDefault();
+		// Only Create submits, and only when the form is complete: not Enter in an incomplete form,
+		// a submit while one is under way, or after the link expired
+		if (!isFormValid) return;
 		submitting = true;
+		// Once created, Create stays busy until the success page shows: clicking again would find
+		// the link used up
+		let created = false;
 
 		const payload = {
 			name: normalizedName,
@@ -142,9 +154,10 @@
 			});
 
 			if (!response.ok) {
+				// The bot no longer has the link (a restart forgets them, and creating uses it up),
+				// whatever the countdown says. Keep the form, as an expired link does
 				if (response.status === 404) {
-					alert('This wizard has expired. Please run the command again in Discord.');
-					goto(resolve('/wizard'));
+					expire();
 					return;
 				}
 				alert(await getErrorDetail(response, 'Failed to create character.'));
@@ -161,12 +174,13 @@
 				has_premium: result.has_premium
 			});
 
+			created = true;
 			goto(resolve('/wizard/success'));
 		} catch (error) {
 			alert('An unexpected error occurred. Please try again.');
 			console.error('Error creating character:', error);
 		} finally {
-			submitting = false;
+			if (!created) submitting = false;
 		}
 	}
 </script>
@@ -182,17 +196,16 @@
 		<div class="flex justify-end">
 			<h6 class="text-surface-800-200 flex items-center gap-4 italic">
 				{data.guild.name}
-				<Avatar src={data.guild.icon ?? undefined} name={data.guild.name} size="size-6" />
+				<Avatar
+					src={data.guild.icon ?? undefined}
+					name={data.guild.name}
+					size="size-6"
+					decorative
+				/>
 			</h6>
 		</div>
 	</div>
-	<WizardCountdown
-		expiresIn={data.expiresIn}
-		onexpire={() => {
-			expired = true;
-			expiredNotice = true;
-		}}
-	/>
+	<WizardCountdown expiresIn={data.expiresIn} onexpire={expire} ended={expired} />
 </div>
 
 <Modal bind:open={expiredNotice} title="Link Expired" role="alertdialog">

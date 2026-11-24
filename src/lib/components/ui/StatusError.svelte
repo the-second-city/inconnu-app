@@ -26,7 +26,7 @@
 	const heading = $derived(
 		statusCode === 503
 			? 'Starting up'
-			: statusCode === 500
+			: statusCode === 500 || statusCode === 502 // The API couldn't be reached
 				? 'Connection error'
 				: statusCode === 404
 					? notFoundHeading
@@ -38,7 +38,7 @@
 	const message = $derived(
 		statusCode === 503
 			? 'Inconnu is still starting up. Please wait a moment and try again.'
-			: statusCode === 500
+			: statusCode === 500 || statusCode === 502 // The API couldn't be reached
 				? 'Unable to connect to bot. Please try again later.'
 				: statusCode === 404
 					? notFoundMessage
@@ -50,7 +50,7 @@
 	const title = $derived(
 		statusCode === 503
 			? 'Service Starting'
-			: statusCode === 500
+			: statusCode === 500 || statusCode === 502 // The API couldn't be reached
 				? 'Connection Error'
 				: statusCode === 404
 					? notFoundHeading

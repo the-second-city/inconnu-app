@@ -5,11 +5,8 @@
 	import Meta from '$lib/components/layout/Meta.svelte';
 
 	const characterData: CharacterData = page.data.characterData;
-	const ogImage = $derived(
-		characterData.character.profile.images.length > 0
-			? characterData.character.profile.images[0]
-			: '/favicon.png'
-	);
+	// The first image, or else the site's
+	const ogImage = $derived(characterData.character.profile.images[0]);
 </script>
 
 <Meta

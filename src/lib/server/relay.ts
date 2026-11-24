@@ -1,17 +1,17 @@
 import { json } from '@sveltejs/kit';
+import { fetchApi, type ApiFailure } from './api';
 
 /** How a route names itself in logs, and what it tells the browser when the API can't answer. */
-export interface RelayOptions {
-	label: string; // Starts the server's log lines, e.g. "Wizard"
-	unavailable: string; // The 502's message, e.g. "The character wizard is unavailable right now."
-}
+export type RelayOptions = ApiFailure;
 
 /**
  * Call the Inconnu API and relay its status and JSON body to the browser.
  *
  * The response is rebuilt rather than passed through, so the API's own headers never reach the
  * browser. These are 502s, with the route's `unavailable` message:
- * - a failed or interrupted request
+ * - a failed or interrupted request, or a GET the API took too long to answer (`fetchApi`). Other
+ *   methods change something, so they wait however long the bot takes: giving up would report a
+ *   failure the bot may still apply, and a retry would apply it twice
  * - a body that isn't JSON (say, a proxy's HTML error page)
  * - the API's 401, which means it refused our API key: an outage, not something the viewer (or
  *   signing in again) could fix
@@ -22,7 +22,8 @@ export const relay = async (
 	{ label, unavailable }: RelayOptions
 ): Promise<Response> => {
 	try {
-		const upstream = await fetch(url, init);
+		const timeout = (init.method ?? 'GET') === 'GET' ? 'request' : false;
+		const upstream = await fetchApi(url, init, { timeout });
 		const body = await upstream.text();
 		const headers = { 'Cache-Control': 'no-store' };
 

@@ -55,7 +55,8 @@ test('relays the Rouse to the API as the signed-in user, and its result', async 
 			Authorization: 'Bearer test-key',
 			'X-Discord-User-ID': '222'
 		},
-		body
+		body,
+		signal: expect.any(AbortSignal)
 	});
 	expect(response.status).toBe(200);
 	expect(await response.json()).toEqual(result);
