@@ -1,8 +1,11 @@
 import { render, screen } from '@testing-library/svelte';
 import userEvent, { type UserEvent } from '@testing-library/user-event';
-import { expect, test } from 'vitest';
+import { expect, test, vi } from 'vitest';
 
 import Page from './+page.svelte';
+
+// Meta reads the page's URL, for its absolute og:image
+vi.mock('$app/state', () => import('$lib/testing/page.svelte'));
 
 /** Whether some UTF-16 code unit in the text is half of a pair, without its other half. */
 const hasLoneSurrogate = (text: string): boolean =>

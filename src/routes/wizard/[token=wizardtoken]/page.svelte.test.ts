@@ -9,6 +9,9 @@ import type { Constraints, Trait } from '$lib/types';
 import Page from './+page.svelte';
 import type { PageData } from './$types';
 
+// Meta reads the page's URL, for its absolute og:image
+vi.mock('$app/state', () => import('$lib/testing/page.svelte'));
+
 const goto = vi.hoisted(() => vi.fn());
 vi.mock('$app/navigation', () => ({ goto }));
 vi.mock('$app/paths', () => ({ resolve: (path: string) => path }));

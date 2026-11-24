@@ -6,6 +6,9 @@ import { calculate, STRATEGIES, type Probabilities, type Strategy } from '$lib/r
 
 import Page from './+page.svelte';
 
+// Meta reads the page's URL, for its absolute og:image
+vi.mock('$app/state', () => import('$lib/testing/page.svelte'));
+
 const STORAGE_KEY = 'probability-inputs';
 
 beforeEach(() => localStorage.clear());
