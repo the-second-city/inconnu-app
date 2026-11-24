@@ -121,7 +121,7 @@
 					<MenuAction
 						icon={Droplets}
 						label="Rouse"
-						detail={hunger >= 5 ? 'At Hunger 5, a failure risks frenzy' : 'Hunger may rise'}
+						detail={hunger >= 5 ? 'At Hunger 5, calls for a frenzy test' : 'Hunger may rise'}
 						badge={hunger >= 5 ? 'warning' : 'primary'}
 						onclick={fromMenu(onRouse)}
 					/>
