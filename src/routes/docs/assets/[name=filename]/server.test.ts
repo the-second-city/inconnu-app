@@ -46,7 +46,8 @@ test.each(['image/png', 'image/webp', 'IMAGE/JPEG; charset=binary'])(
 		const response = await GET(event('roll.png'));
 
 		expect(fetchMock).toHaveBeenCalledWith('http://api/docs/assets/roll.png', {
-			headers: { Authorization: 'Bearer test-key' }
+			headers: { Authorization: 'Bearer test-key' },
+			signal: expect.any(AbortSignal)
 		});
 		expect(response.headers.get('Content-Type')).toBe(type.split(';')[0].toLowerCase());
 		expect(response.headers.get('X-Content-Type-Options')).toBe('nosniff');

@@ -2,6 +2,7 @@ import { error } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
 import type { AuthorizedUserChars } from '$lib/types';
 import { API_KEY, INCONNU_API_URL } from '$env/static/private';
+import { fetchApi } from '$lib/server/api';
 import { getErrorDetail, stripLeadingArticles } from '$lib';
 
 export const load: PageServerLoad = async ({ locals }) => {
@@ -11,12 +12,16 @@ export const load: PageServerLoad = async ({ locals }) => {
 		error(401, 'Authentication required');
 	}
 
-	const response = await fetch(`${INCONNU_API_URL}/characters`, {
-		headers: {
-			Authorization: `Bearer ${API_KEY}`,
-			'X-Discord-User-ID': session.user.id
-		}
-	});
+	const response = await fetchApi(
+		`${INCONNU_API_URL}/characters`,
+		{
+			headers: {
+				Authorization: `Bearer ${API_KEY}`,
+				'X-Discord-User-ID': session.user.id
+			}
+		},
+		{ failure: { label: 'Characters', unavailable: 'Your characters are unavailable right now.' } }
+	);
 
 	if (!response.ok) {
 		error(response.status, await getErrorDetail(response, 'Failed to load characters'));

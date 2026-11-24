@@ -1,15 +1,21 @@
 import { error } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
 import { API_KEY, INCONNU_API_URL } from '$env/static/private';
+import { fetchApi } from '$lib/server/api';
 
 /** The image types served. Anything else (SVG, HTML) could run script from the app's origin. */
 const IMAGE_TYPES = new Set(['image/png', 'image/jpeg', 'image/gif', 'image/webp', 'image/avif']);
 
 /** Docs images, proxied from the Inconnu API, which requires the API key. */
 export const GET: RequestHandler = async ({ params }) => {
-	const response = await fetch(
+	const response = await fetchApi(
 		`${INCONNU_API_URL}/docs/assets/${encodeURIComponent(params.name)}`,
-		{ headers: { Authorization: `Bearer ${API_KEY}` } }
+		{ headers: { Authorization: `Bearer ${API_KEY}` } },
+		// Only the wait for the answer is timed: the image streams on to the browser, maybe a slow one
+		{
+			failure: { label: 'Docs', unavailable: 'Docs images are unavailable right now.' },
+			timeout: 'response'
+		}
 	);
 	if (!response.ok) {
 		await response.body?.cancel();

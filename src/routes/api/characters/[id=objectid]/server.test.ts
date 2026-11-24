@@ -42,7 +42,8 @@ test('relays the edit to the API as the signed-in user', async () => {
 			Authorization: 'Bearer test-key',
 			'X-Discord-User-ID': '222'
 		},
-		body: '{"name":"Nadia"}'
+		body: '{"name":"Nadia"}',
+		signal: expect.any(AbortSignal)
 	});
 	expect(response.status).toBe(204);
 	expect(await response.text()).toBe('');

@@ -73,7 +73,8 @@ test('getDocs fetches the bundle with the API key and renders every page', async
 	const docs = await getDocs();
 
 	expect(fetchMock).toHaveBeenCalledWith('http://api/docs', {
-		headers: { Authorization: 'Bearer test-key' }
+		headers: { Authorization: 'Bearer test-key' },
+		signal: expect.any(AbortSignal)
 	});
 	expect(docs.version).toBe('v1');
 	expect(docs.nav).toEqual(NAV);
@@ -108,7 +109,8 @@ test('after a minute, getDocs rechecks with the ETag and keeps the docs on a 304
 
 	expect(second).toBe(first);
 	expect(fetchMock).toHaveBeenLastCalledWith('http://api/docs', {
-		headers: { Authorization: 'Bearer test-key', 'If-None-Match': '"v1"' }
+		headers: { Authorization: 'Bearer test-key', 'If-None-Match': '"v1"' },
+		signal: expect.any(AbortSignal)
 	});
 });
 
@@ -135,6 +137,25 @@ test('getDocs serves the last good copy when the bot is down', async () => {
 
 	expect(await getDocs()).toBe(first);
 	expect(console.error).toHaveBeenCalled();
+});
+
+test('getDocs serves the last good copy when the bot stops answering', async () => {
+	fetchMock.mockResolvedValueOnce(ok(bundle()));
+	// Accepts the request, then never answers, until the timeout aborts it
+	fetchMock.mockImplementationOnce(
+		(_url, init) =>
+			new Promise((_, reject) =>
+				init?.signal?.addEventListener('abort', () => reject(init.signal?.reason))
+			)
+	);
+	const { getDocs } = await loadModule();
+	const first = await getDocs();
+	vi.advanceTimersByTime(61_000);
+
+	const second = getDocs();
+	await vi.advanceTimersByTimeAsync(10_000);
+
+	expect(await second).toBe(first);
 });
 
 test('getDocs serves the last good copy when the bot returns an error', async () => {

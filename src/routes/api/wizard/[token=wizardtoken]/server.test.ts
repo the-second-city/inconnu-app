@@ -34,7 +34,8 @@ test('GET asks the API for the wizard with the API key', async () => {
 	const response = await GET(event());
 
 	expect(fetchMock).toHaveBeenCalledWith(`http://api/characters/wizard/${TOKEN}`, {
-		headers: { Authorization: 'Bearer test-key' }
+		headers: { Authorization: 'Bearer test-key' },
+		signal: expect.any(AbortSignal)
 	});
 	expect(response.status).toBe(200);
 	expect(await response.json()).toEqual({ spc: false });

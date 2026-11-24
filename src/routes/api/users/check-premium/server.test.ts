@@ -32,7 +32,8 @@ test('asks the API as the signed-in user, and relays its answer', async () => {
 	const response = await GET(event());
 
 	expect(fetchMock).toHaveBeenCalledWith('http://api/users/check-premium', {
-		headers: { Authorization: 'Bearer test-key', 'X-Discord-User-ID': '222' }
+		headers: { Authorization: 'Bearer test-key', 'X-Discord-User-ID': '222' },
+		signal: expect.any(AbortSignal)
 	});
 	expect(response.status).toBe(200);
 	expect(await response.json()).toEqual({ is_supporter: true });
