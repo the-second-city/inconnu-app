@@ -946,6 +946,25 @@ test('while saving, Save and Cancel are disabled', async () => {
 	await saved();
 });
 
+test("the bot's copy shows after saving, even when its refetch lands before the save ends", async () => {
+	const user = userEvent.setup();
+	let answer: (response: Response) => void = () => {};
+	fetchMock.mockReturnValueOnce(new Promise((resolve) => (answer = resolve)));
+	const { rerender } = renderPage();
+	await makeChange(user);
+	await user.click(editButton('Save'));
+
+	// The bot answers, and its live update refetches while the spinner still runs. The bot's copy
+	// differs from the edits (a change in Discord, say), so it shows which one the page kept
+	const profile = { description: 'Stored by the bot.', biography: null, images: [] };
+	await rerender({ guild: GUILD, character: { ...character(), name: 'Nadiah', profile } });
+	answer(new Response(null, { status: 204 }));
+	await saved();
+
+	await user.click(screen.getByRole('tab', { name: 'Profile' }));
+	expect(within(panel()).getByText('Stored by the bot.')).toBeInTheDocument();
+});
+
 test("the API's error for the name shows with the name, until it's changed", async () => {
 	const user = userEvent.setup();
 	fetchMock.mockResolvedValueOnce(

@@ -337,6 +337,7 @@
 		if (saving || nameError || textTooLong || !hasChanges) return;
 		saving = true;
 		saveError = null;
+		const before = initialCharacter; // The data these edits were made against
 		const body = editBody($state.snapshot(character), newName);
 		const errors = await atLeast(sendEdits(body));
 		saving = false;
@@ -348,7 +349,9 @@
 		}
 		character.name = body.name;
 		character.convictions = body.convictions.filter(Boolean);
-		applied = initialCharacter; // Until the live update's refetch, the edits stand
+		// Until the live update's refetch, the edits stand. Not `initialCharacter`: the refetch can
+		// land while the spinner runs, and leaving edit mode should apply it, not take it as seen
+		applied = before;
 		editing = false;
 		copy = null;
 	};
