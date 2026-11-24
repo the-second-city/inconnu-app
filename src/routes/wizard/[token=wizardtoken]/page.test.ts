@@ -32,3 +32,16 @@ test('passes the time left before the link expires to the page', async () => {
 test('without an expiry from the API, the page gets null', async () => {
 	expect((await runLoad(wizardData({ expires_in: undefined }))).expiresIn).toBeNull();
 });
+
+test.each([
+	[404, 'Wizard session not found or expired'],
+	[502, 'Failed to load wizard data']
+])('a %i from the API keeps its status', async (status, message) => {
+	const fetch = vi.fn(async () => Response.json({ message: 'nope' }, { status }));
+	const event = { params: { token: 'frivolous-giraffe-wench' }, fetch };
+
+	await expect(load(event as unknown as Parameters<typeof load>[0])).rejects.toMatchObject({
+		status,
+		body: { message }
+	});
+});

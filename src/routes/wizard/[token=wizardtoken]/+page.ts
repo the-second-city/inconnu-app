@@ -1,4 +1,4 @@
-import { error } from '@sveltejs/kit';
+import { error, isHttpError } from '@sveltejs/kit';
 import type { PageLoad } from './$types';
 import type { Constraints, Trait, Guild } from '$lib/types';
 
@@ -36,9 +36,8 @@ export const load: PageLoad = async ({ params, fetch }) => {
 			expiresIn: data.expires_in ?? null
 		};
 	} catch (err) {
-		if (err instanceof Error && 'status' in err) {
-			throw err; // Re-throw SvelteKit errors
-		}
+		// SvelteKit's error() throws an HttpError, which isn't an Error: let it through
+		if (isHttpError(err)) throw err;
 		error(500, 'Failed to load wizard');
 	}
 };
