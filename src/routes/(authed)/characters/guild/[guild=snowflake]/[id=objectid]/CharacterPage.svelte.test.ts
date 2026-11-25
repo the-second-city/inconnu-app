@@ -1467,7 +1467,7 @@ test('reopening the panel shows the list, not a macro in progress', async () => 
 	await user.click(screen.getByRole('button', { name: 'Add macro' }));
 	await user.click(
 		within(await screen.findByRole('dialog', { name: 'New Macro' })).getByRole('button', {
-			name: 'Continue'
+			name: 'Skip pool'
 		})
 	);
 
@@ -1749,7 +1749,7 @@ const addMacroForm = async (user: ReturnType<typeof userEvent.setup>): Promise<H
 	await user.click(screen.getByRole('button', { name: 'Add macro' }));
 	const dialog = await screen.findByRole('dialog', { name: 'New Macro' });
 	// It opens as the strip; Done opens the name and details
-	await user.click(within(dialog).getByRole('button', { name: 'Continue' }));
+	await user.click(within(dialog).getByRole('button', { name: 'Skip pool' }));
 	return dialog;
 };
 
@@ -1843,7 +1843,7 @@ test("the strip's Cancel asks about a new macro, and the next one starts afresh,
 	await user.click(await screen.findByRole('button', { name: 'Add macro' }));
 	const next = await screen.findByRole('dialog', { name: 'New Macro' });
 	expect(within(next).queryByRole('textbox', { name: 'Name' })).not.toBeInTheDocument();
-	await user.click(within(next).getByRole('button', { name: 'Continue' }));
+	await user.click(within(next).getByRole('button', { name: 'Skip pool' }));
 	expect(within(next).getByRole('textbox', { name: 'Name' })).toHaveValue('');
 });
 
@@ -1910,7 +1910,7 @@ test('a trait subtracted from the bar is saved with a minus', async () => {
 	await user.click(screen.getAllByRole('button', { name: 'Macros' })[0]);
 	await user.click(screen.getByRole('button', { name: 'Add macro' }));
 	const dialog = await screen.findByRole('dialog', { name: 'New Macro' });
-	await user.click(within(dialog).getByRole('button', { name: 'Continue' }));
+	await user.click(within(dialog).getByRole('button', { name: 'Skip pool' }));
 	await user.type(within(dialog).getByRole('textbox', { name: 'Name' }), 'hunt_mortal');
 	await user.click(screen.getByRole('button', { name: 'Pick Strength' }));
 	await user.click(screen.getByRole('button', { name: 'Pick Obvious Predator' }));
@@ -2013,7 +2013,7 @@ test('Willpower and Humanity are picked from their trackers, by the names the bo
 	await user.click(screen.getAllByRole('button', { name: 'Macros' })[0]);
 	await user.click(screen.getByRole('button', { name: 'Add macro' }));
 	const dialog = await screen.findByRole('dialog', { name: 'New Macro' });
-	await user.click(within(dialog).getByRole('button', { name: 'Continue' }));
+	await user.click(within(dialog).getByRole('button', { name: 'Skip pool' }));
 	await user.type(within(dialog).getByRole('textbox', { name: 'Name' }), 'resist');
 	await user.click(screen.getByRole('button', { name: 'Pick Willpower' }));
 	await user.click(screen.getByRole('button', { name: 'Pick Humanity' }));
@@ -2141,9 +2141,9 @@ test('the panel fades out before the strip fades in, and back', async () => {
 	await user.click(screen.getByRole('button', { name: 'Add macro' }));
 
 	// Still the panel, fading; then the strip
-	expect(within(dialog).queryByRole('button', { name: 'Continue' })).not.toBeInTheDocument();
-	await within(dialog).findByRole('button', { name: 'Continue' });
-	await user.click(within(dialog).getByRole('button', { name: 'Continue' }));
+	expect(within(dialog).queryByRole('button', { name: 'Skip pool' })).not.toBeInTheDocument();
+	await within(dialog).findByRole('button', { name: 'Skip pool' });
+	await user.click(within(dialog).getByRole('button', { name: 'Skip pool' }));
 	expect(within(dialog).queryByRole('textbox', { name: 'Name' })).not.toBeInTheDocument();
 	expect(await within(dialog).findByRole('textbox', { name: 'Name' })).toBeInTheDocument();
 });

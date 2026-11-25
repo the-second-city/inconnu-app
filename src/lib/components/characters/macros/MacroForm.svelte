@@ -238,13 +238,14 @@ into the picker, and saving replaces the macro, by its name as it started.
 				>
 					<X size={18} />
 				</button>
-				<!-- On from the pool to the details, where the macro is added -->
+				<!-- On from the pool to the details, where the macro is added. With no pool it skips it (a
+				     macro of Rouse Checks alone needs none) -->
 				<button
 					type="button"
 					class="btn btn-sm btn-gothic btn-gothic-bone shrink-0"
 					onclick={() => (compact = false)}
 				>
-					<span>Continue</span>
+					<span>{pool.length === 0 ? 'Skip pool' : 'Continue'}</span>
 					<ArrowRight size={16} />
 				</button>
 			</div>

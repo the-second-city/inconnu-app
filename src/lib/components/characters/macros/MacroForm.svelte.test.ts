@@ -255,7 +255,7 @@ test('Pick traits collapses the form to a strip, keeping what was entered', asyn
 	expect(form).toHaveTextContent('surge');
 	expect(form).toHaveTextContent('Click traits on the sheet to build the pool.');
 
-	await user.click(screen.getByRole('button', { name: 'Continue' }));
+	await user.click(screen.getByRole('button', { name: 'Skip pool' }));
 
 	expect(state.compact).toBe(false);
 	expect(nameField()).toHaveValue('surge');
@@ -270,7 +270,7 @@ test("the strip names a macro that's still unnamed", async () => {
 	expect(screen.getByRole('form', { name: 'New macro' })).toHaveTextContent('New Macro');
 });
 
-test("the strip's Done returns to the details without adding", async () => {
+test("the strip's Skip pool returns to the details without adding", async () => {
 	const user = userEvent.setup();
 	const { state, onsaved } = renderCompactable();
 	await user.type(nameField(), 'surge');
@@ -278,7 +278,7 @@ test("the strip's Done returns to the details without adding", async () => {
 	await user.click(screen.getByRole('button', { name: 'Pick traits' }));
 	expect(screen.queryByRole('button', { name: 'Add Macro' })).not.toBeInTheDocument();
 
-	await user.click(screen.getByRole('button', { name: 'Continue' }));
+	await user.click(screen.getByRole('button', { name: 'Skip pool' }));
 
 	expect(state.compact).toBe(false);
 	expect(fetchMock).not.toHaveBeenCalled();
@@ -476,4 +476,22 @@ test('the Pool heading counts its dice, "?" while a trait is missing', async () 
 	await user.click(screen.getByRole('button', { name: 'Remove Melee' }));
 
 	expect(pool).toHaveTextContent(/^Pool\s*3 dice/);
+});
+
+test('with no pool, the strip skips it; with one, it continues', async () => {
+	const user = userEvent.setup();
+	const picker = new PoolPicker();
+	picker.active = true;
+	render(MacroForm, {
+		props: { character: character(), oncancel: vi.fn(), onsaved: vi.fn(), compact: true },
+		context: poolPickerContext(picker)
+	});
+	expect(screen.getByRole('button', { name: 'Skip pool' })).toBeEnabled();
+
+	picker.modifier = 2;
+
+	expect(await screen.findByRole('button', { name: 'Continue' })).toBeEnabled();
+	await user.click(screen.getByRole('button', { name: 'Less Modifier' }));
+	await user.click(screen.getByRole('button', { name: 'Less Modifier' }));
+	expect(screen.getByRole('button', { name: 'Skip pool' })).toBeInTheDocument();
 });
