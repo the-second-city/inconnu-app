@@ -22,6 +22,7 @@
 	interface ComponentProps {
 		character: Character;
 		macro?: Macro; // The macro to edit; a new one without it
+		onreload?: () => void; // Start the edit over from the macro as it is now
 		oncancel: () => void; // Back to the list, discarding the macro
 		refetch?: () => Promise<void>; // Brings the saved macro to the page, before `onsaved`
 		onsaved: () => void; // The macro saved
@@ -34,6 +35,7 @@
 	let {
 		character,
 		macro: original,
+		onreload,
 		oncancel,
 		refetch,
 		onsaved,
@@ -52,6 +54,13 @@
 
 	// The macro being edited, as it started (taken once: the form edits its own copy)
 	const start = untrack(() => original);
+	// As it was when last seen: changed elsewhere since (in Discord, say), saving would undo that, so
+	// it waits until the user reloads or keeps theirs
+	let seen: string | undefined = $state(untrack(() => JSON.stringify(original)));
+	const current = $derived(
+		start && JSON.stringify((character.macros ?? []).find((m) => m.name === start.name))
+	);
+	const changedElsewhere = $derived(current !== undefined && current !== seen);
 	// The macro. A new one has `/macro create`'s defaults: Hunger on, no Rouse Checks
 	let name = $state(start?.name ?? '');
 	// Chosen once per form, from the names the character hasn't used
@@ -126,6 +135,7 @@
 	// Why the macro can't be added (or saved) yet, by the buttons: its own message may be scrolled
 	// out of sight (an empty name's isn't shown at all)
 	const blocker: string | null = $derived.by(() => {
+		if (changedElsewhere) return 'It changed while you were editing';
 		if (trimmedName === '') return 'Needs a name';
 		if (nameError) return 'The name needs fixing';
 		if (!hasAction) return 'Needs a pool or Rouse Checks';
@@ -299,6 +309,27 @@ edit saves once something changed.
 
 		{#if submit.error}
 			<p class="{FORM_CLASSES.error} card preset-tonal-error p-3" role="alert">{submit.error}</p>
+		{/if}
+
+		{#if start && changedElsewhere}
+			<div class="card preset-tonal-warning flex flex-col gap-2 p-3 text-sm" role="alert">
+				<p>
+					{start.name} changed while you were editing. Reload it, dropping your changes, or keep yours,
+					to save over it.
+				</p>
+				<div class="flex justify-end gap-2">
+					<button type="button" class="btn btn-sm btn-gothic btn-gothic-bone" onclick={onreload}>
+						Reload
+					</button>
+					<button
+						type="button"
+						class="btn btn-sm btn-gothic btn-gothic-ash"
+						onclick={() => (seen = current)}
+					>
+						Keep Mine
+					</button>
+				</div>
+			</div>
 		{/if}
 
 		<div class="flex flex-col items-end gap-1.5">

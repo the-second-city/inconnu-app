@@ -1090,3 +1090,62 @@ test('reopening a form while it fades out starts it afresh, its pool loaded', as
 	await user.click(within(panel).getByRole('button', { name: 'Close macros' }));
 	expect(window.confirm).not.toHaveBeenCalled();
 });
+
+/** Open lift's form and change its comment, then have lift change elsewhere. Returns the panel. */
+const changeElsewhere = async (user: ReturnType<typeof userEvent.setup>): Promise<HTMLElement> => {
+	const { rerender } = renderOwnerPage(withMacros());
+	const panel = await editMacros(user);
+	await user.click(within(panel).getByRole('button', { name: 'Edit lift' }));
+	await user.type(await within(panel).findByRole('textbox', { name: /Comment/ }), 'Mine');
+	const fresh = withMacros();
+	if (fresh.macros) fresh.macros[0].difficulty = 5;
+	await rerender({ character: fresh });
+	return panel;
+};
+
+test('a macro changed elsewhere holds the save; Keep Mine saves over it', async () => {
+	const user = userEvent.setup();
+	const panel = await changeElsewhere(user);
+	expect(await within(panel).findByRole('alert')).toHaveTextContent(
+		'lift changed while you were editing.'
+	);
+	expect(within(panel).getByRole('button', { name: 'Save Macro' })).toBeDisabled();
+
+	await user.click(within(panel).getByRole('button', { name: 'Keep Mine' }));
+	expect(within(panel).queryByRole('alert')).not.toBeInTheDocument();
+	await user.click(within(panel).getByRole('button', { name: 'Save Macro' }));
+
+	expect(JSON.parse(fetchMock.mock.calls[0][1]?.body as string)).toMatchObject({
+		comment: 'Mine',
+		difficulty: 2
+	});
+});
+
+test('Reload starts the edit over from the macro as it is now', async () => {
+	const user = userEvent.setup();
+	const panel = await changeElsewhere(user);
+
+	await user.click(await within(panel).findByRole('button', { name: 'Reload' }));
+
+	await waitFor(() =>
+		expect(within(panel).getAllByRole('textbox', { name: /Comment/ })).toHaveLength(1)
+	);
+	expect(within(panel).getByRole('textbox', { name: /Comment/ })).toHaveValue('');
+	expect(within(panel).getByRole('group', { name: 'Difficulty' })).toHaveTextContent('5');
+	expect(within(panel).getByRole('button', { name: 'Remove Strength' })).toBeInTheDocument();
+	expect(within(panel).queryByRole('alert')).not.toBeInTheDocument();
+});
+
+test('another macro changing elsewhere is no matter', async () => {
+	const user = userEvent.setup();
+	const { rerender } = renderOwnerPage(withMacros());
+	const panel = await editMacros(user);
+	await user.click(within(panel).getByRole('button', { name: 'Edit lift' }));
+	await within(panel).findByRole('textbox', { name: 'Name' });
+	const fresh = withMacros();
+	if (fresh.macros) fresh.macros[1].difficulty = 5;
+
+	await rerender({ character: fresh });
+
+	expect(within(panel).queryByRole('alert')).not.toBeInTheDocument();
+});

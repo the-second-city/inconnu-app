@@ -144,6 +144,12 @@
 		view = 'modify';
 	};
 
+	/** Start a macro's form over from the macro as it is now, as it changed elsewhere. */
+	const reload = () => {
+		const name = target?.name;
+		target = macros.find((macro) => macro.name === name) ?? target;
+	};
+
 	/** Leave editing, restoring the macros marked for deletion. */
 	const discardEdits = () => {
 		deletions.discard();
@@ -430,6 +436,7 @@ Macros button), resized by a handle of its own.
 							bind:compact={() => compact, (value) => (formCompact = value)}
 							oncancel={cancelForm}
 							{refetch}
+							onreload={reload}
 							onsaved={leaveForm}
 						/>
 					</div>
