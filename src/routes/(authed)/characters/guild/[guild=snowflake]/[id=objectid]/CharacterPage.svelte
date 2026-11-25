@@ -225,15 +225,10 @@
 		});
 	});
 
-	// The macros show below the sheet, or (with ?macros=panel, while both are being tried) in a
-	// floating panel opened from a Macros button. The panel can add macros, so it's there for anyone
-	// who may edit them (as in Discord, the owner, or a Storyteller for an SPC), macros or not
-	const macroPlacement = $derived(
-		page.url.searchParams.get('macros') === 'panel' ? 'panel' : 'sheet'
-	);
-	const macroButton = $derived(
-		macroPlacement === 'panel' && (ownerActions || !!character.macros?.length)
-	);
+	// The macros are in a floating panel, opened from a Macros button. The panel can add macros, so
+	// it's there for anyone who may edit them (as in Discord, the owner, or a Storyteller for an SPC),
+	// macros or not
+	const macroButton = $derived(ownerActions || !!character.macros?.length);
 	let macrosOpen = $state(false);
 	let macroView: MacroPanelView = $state('list');
 	let macrosDirty = $state(false); // Macro editing has unsaved deletions, or a new macro has input
@@ -476,7 +471,6 @@
 		<CharacterSheet
 			bind:character
 			{editing}
-			macros={macroPlacement === 'sheet'}
 			{actionable}
 			onRouse={ownerActions ? gameplay(openRouse) : undefined}
 			onMend={ownerActions ? gameplay(openMend) : undefined}

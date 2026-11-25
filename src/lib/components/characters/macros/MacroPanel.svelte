@@ -385,7 +385,6 @@ button).
 							<MacroList
 								{character}
 								macros={view === 'edit' ? shown : remaining}
-								layout="stack"
 								ondelete={view === 'edit' ? (macro) => deletions.marked.add(macro.name) : undefined}
 								onedit={view === 'edit' ? modify : undefined}
 								marked={view === 'edit' ? deletions.marked : undefined}

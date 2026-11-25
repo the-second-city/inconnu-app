@@ -15,7 +15,7 @@ import {
 } from './testing';
 import { upsell } from '$lib/state/premium.svelte';
 
-// The macros on the character page: below the sheet, and the macro panel (?macros=panel)
+// The macros on the character page: the macro panel, and picking pools from the sheet
 
 // SvelteKit's router doesn't run in tests: `page` is reactive state, which `goto` updates
 const goto = vi.hoisted(() => vi.fn());
@@ -91,23 +91,19 @@ const withMacro = (): Character => ({
 	]
 });
 
-test('the macros show below the sheet, with no Macros button', () => {
-	renderPage(withMacro());
-
-	const macros = within(panel()).getByRole('region', { name: 'Macros' });
-	expect(within(macros).getByRole('article', { name: 'lift' })).toHaveTextContent('4 dice');
-	expect(screen.queryByRole('button', { name: 'Macros' })).not.toBeInTheDocument();
-});
-
-test('a character without macros has no Macros section', () => {
-	renderPage();
-
-	expect(screen.queryByRole('region', { name: 'Macros' })).not.toBeInTheDocument();
-});
-
-test('with ?macros=panel, the Macros button opens and closes a panel of them', async () => {
+test('the macros are in the panel, not on the sheet', async () => {
 	const user = userEvent.setup();
-	navigate('/char?macros=panel');
+	renderOwnerPage(withMacro());
+	expect(within(panel()).queryByRole('region', { name: 'Macros' })).not.toBeInTheDocument();
+
+	await user.click(screen.getAllByRole('button', { name: 'Macros' })[0]);
+
+	const dialog = screen.getByRole('dialog', { name: 'Macros' });
+	expect(within(dialog).getByRole('article', { name: 'lift' })).toHaveTextContent('4 dice');
+});
+
+test('the Macros button opens and closes a panel of them', async () => {
+	const user = userEvent.setup();
 	renderOwnerPage(withMacro());
 
 	expect(screen.queryByRole('region', { name: 'Macros' })).not.toBeInTheDocument();
@@ -126,7 +122,6 @@ test('with ?macros=panel, the Macros button opens and closes a panel of them', a
 
 test('the macro panel and edit mode wait for each other', async () => {
 	const user = userEvent.setup();
-	navigate('/char?macros=panel');
 	renderOwnerPage(withMacro());
 	const toggle = screen.getAllByRole('button', { name: 'Macros' })[0];
 	await user.click(toggle);
@@ -148,9 +143,8 @@ test('the macro panel and edit mode wait for each other', async () => {
 	expect(toggle).toBeEnabled();
 });
 
-test('with ?macros=panel, an editor without macros can open the panel to add one', async () => {
+test('an editor without macros can open the panel to add one', async () => {
 	const user = userEvent.setup();
-	navigate('/char?macros=panel');
 	renderOwnerPage();
 
 	await user.click(screen.getAllByRole('button', { name: 'Macros' })[0]);
@@ -162,7 +156,6 @@ test('with ?macros=panel, an editor without macros can open the panel to add one
 
 test("a Storyteller on a player's character gets no Macros button without macros, nor Add", async () => {
 	const user = userEvent.setup();
-	navigate('/char?macros=panel');
 	// Full access, but not the owner's actions: only the owner edits a player's macros
 	const { rerender } = renderPage();
 	expect(screen.queryByRole('button', { name: 'Macros' })).not.toBeInTheDocument();
@@ -175,7 +168,6 @@ test("a Storyteller on a player's character gets no Macros button without macros
 
 test('Add switches the panel to the new macro form; Escape backs out, then closes', async () => {
 	const user = userEvent.setup();
-	navigate('/char?macros=panel');
 	renderOwnerPage(withMacro());
 	await user.click(screen.getAllByRole('button', { name: 'Macros' })[0]);
 
@@ -194,7 +186,6 @@ test('Add switches the panel to the new macro form; Escape backs out, then close
 
 test('reopening the panel shows the list, not a macro in progress', async () => {
 	const user = userEvent.setup();
-	navigate('/char?macros=panel');
 	renderOwnerPage(withMacro());
 	const toggle = screen.getAllByRole('button', { name: 'Macros' })[0];
 	await user.click(toggle);
@@ -215,7 +206,6 @@ test('reopening the panel shows the list, not a macro in progress', async () => 
 test('a non-supporter who clicks Add gets the upsell', async () => {
 	const user = userEvent.setup();
 	isSupporter.mockResolvedValue(false);
-	navigate('/char?macros=panel');
 	renderOwnerPage(withMacro());
 	await user.click(screen.getAllByRole('button', { name: 'Macros' })[0]);
 
@@ -233,7 +223,7 @@ const withMacros = (): Character => {
 	return { ...char, macros: lift ? [lift, { ...lift, name: 'punch' }] : [] };
 };
 
-/** Open the macro panel (in ?macros=panel mode) and switch it to editing, returning the panel. */
+/** Open the macro panel and switch it to editing, returning the panel. */
 const editMacros = async (user: ReturnType<typeof userEvent.setup>): Promise<HTMLElement> => {
 	await user.click(screen.getAllByRole('button', { name: 'Macros' })[0]);
 	await user.click(screen.getByRole('button', { name: 'Edit macros' }));
@@ -249,7 +239,6 @@ const macroNames = (dialog: HTMLElement): string[] =>
 
 test('editing macros swaps Add and Edit for Cancel and Save, and offers to delete each', async () => {
 	const user = userEvent.setup();
-	navigate('/char?macros=panel');
 	renderOwnerPage(withMacros());
 
 	const dialog = await editMacros(user);
@@ -266,7 +255,6 @@ test('editing macros swaps Add and Edit for Cancel and Save, and offers to delet
 
 test('there is nothing to edit without macros', async () => {
 	const user = userEvent.setup();
-	navigate('/char?macros=panel');
 	renderOwnerPage();
 
 	await user.click(screen.getAllByRole('button', { name: 'Macros' })[0]);
@@ -277,7 +265,6 @@ test('there is nothing to edit without macros', async () => {
 
 test('a deleted macro comes back on Cancel, without saving', async () => {
 	const user = userEvent.setup();
-	navigate('/char?macros=panel');
 	renderOwnerPage(withMacros());
 	const dialog = await editMacros(user);
 
@@ -298,7 +285,6 @@ test('a deleted macro comes back on Cancel, without saving', async () => {
 
 test('Escape cancels editing macros', async () => {
 	const user = userEvent.setup();
-	navigate('/char?macros=panel');
 	renderOwnerPage(withMacros());
 	const dialog = await editMacros(user);
 	await user.click(within(dialog).getByRole('button', { name: 'Delete lift' }));
@@ -315,7 +301,6 @@ const requests = (): string[] =>
 
 test('Save deletes each macro marked, one at a time, hiding them until the live update', async () => {
 	const user = userEvent.setup();
-	navigate('/char?macros=panel');
 	const { rerender } = renderOwnerPage(withMacros());
 	const dialog = await editMacros(user);
 
@@ -344,7 +329,6 @@ test('the deletes wait for each other', async () => {
 	let finishFirst: (response: Response) => void = () => {};
 	fetchMock.mockImplementationOnce(() => new Promise((resolve) => (finishFirst = resolve)));
 	const user = userEvent.setup();
-	navigate('/char?macros=panel');
 	renderOwnerPage(withMacros());
 	const dialog = await editMacros(user);
 	await user.click(within(dialog).getByRole('button', { name: 'Delete lift' }));
@@ -360,7 +344,6 @@ test('the deletes wait for each other', async () => {
 test('a macro already gone counts as deleted', async () => {
 	fetchMock.mockResolvedValueOnce(Response.json({ detail: 'Macro not found' }, { status: 404 }));
 	const user = userEvent.setup();
-	navigate('/char?macros=panel');
 	renderOwnerPage(withMacros());
 	const dialog = await editMacros(user);
 	await user.click(within(dialog).getByRole('button', { name: 'Delete lift' }));
@@ -376,7 +359,6 @@ test('a failed delete stops there, keeping the rest marked and saying which', as
 		.mockResolvedValueOnce(new Response(null, { status: 204 }))
 		.mockResolvedValueOnce(Response.json({ detail: 'Not found' }, { status: 404 }));
 	const user = userEvent.setup();
-	navigate('/char?macros=panel');
 	const char = withMacros();
 	const lift = char.macros?.[0];
 	if (lift) char.macros?.push({ ...lift, name: 'sneak' });
@@ -402,7 +384,6 @@ test('a failed delete stops there, keeping the rest marked and saying which', as
 test('a non-supporter who clicks Edit gets the upsell', async () => {
 	const user = userEvent.setup();
 	isSupporter.mockResolvedValue(false);
-	navigate('/char?macros=panel');
 	renderOwnerPage(withMacros());
 	await user.click(screen.getAllByRole('button', { name: 'Macros' })[0]);
 
@@ -415,7 +396,6 @@ test('a non-supporter who clicks Edit gets the upsell', async () => {
 
 test('deleting every macro says saving deletes them all', async () => {
 	const user = userEvent.setup();
-	navigate('/char?macros=panel');
 	renderOwnerPage(withMacro());
 	const dialog = await editMacros(user);
 
@@ -428,7 +408,6 @@ test('deleting every macro says saving deletes them all', async () => {
 
 /** Open macro editing on two macros and mark "lift" for deletion, returning the panel. */
 const markLift = async (user: ReturnType<typeof userEvent.setup>): Promise<HTMLElement> => {
-	navigate('/char?macros=panel');
 	renderOwnerPage(withMacros());
 	const dialog = await editMacros(user);
 	await user.click(within(dialog).getByRole('button', { name: 'Delete lift' }));
@@ -464,7 +443,6 @@ test.each<
 
 test("leaving macro editing without changes doesn't ask", async () => {
 	const user = userEvent.setup();
-	navigate('/char?macros=panel');
 	renderOwnerPage(withMacros());
 	const dialog = await editMacros(user);
 
@@ -475,9 +453,8 @@ test("leaving macro editing without changes doesn't ask", async () => {
 	await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
 });
 
-/** Open the new macro form (in ?macros=panel mode), returning the panel. */
+/** Open the new macro form, returning the panel. */
 const addMacroForm = async (user: ReturnType<typeof userEvent.setup>): Promise<HTMLElement> => {
-	navigate('/char?macros=panel');
 	renderOwnerPage(withMacros());
 	await user.click(screen.getAllByRole('button', { name: 'Macros' })[0]);
 	await user.click(screen.getByRole('button', { name: 'Add macro' }));
@@ -556,7 +533,6 @@ test('leaving the page with a new macro in progress asks first', async () => {
 
 test("leaving the page with the macro panel open but nothing unsaved doesn't ask", async () => {
 	const user = userEvent.setup();
-	navigate('/char?macros=panel');
 	renderOwnerPage(withMacros());
 	await editMacros(user);
 
@@ -583,7 +559,6 @@ test("the strip's Cancel asks about a new macro, and the next one starts afresh,
 
 test("the New Macro form makes the sheet's traits choices, and picking one collapses it", async () => {
 	const user = userEvent.setup();
-	navigate('/char?macros=panel');
 	renderOwnerPage(withMacros());
 	expect(screen.queryByRole('button', { name: 'Pick Strength' })).not.toBeInTheDocument();
 
@@ -598,7 +573,6 @@ test("the New Macro form makes the sheet's traits choices, and picking one colla
 
 test('leaving the New Macro form ends picking and drops the picks', async () => {
 	const user = userEvent.setup();
-	navigate('/char?macros=panel');
 	renderOwnerPage(withMacros());
 	await addMacroForm(user);
 	await user.click(screen.getByRole('button', { name: 'Pick Strength' }));
@@ -620,7 +594,6 @@ test('leaving the New Macro form ends picking and drops the picks', async () => 
 
 test('adding sends the picked pool', async () => {
 	const user = userEvent.setup();
-	navigate('/char?macros=panel');
 	renderOwnerPage(withMacros());
 	const dialog = await addMacroForm(user);
 	await user.type(within(dialog).getByRole('textbox', { name: 'Name' }), 'lift_more');
@@ -637,7 +610,6 @@ test('adding sends the picked pool', async () => {
 
 test('a trait subtracted from the bar is saved with a minus', async () => {
 	const user = userEvent.setup();
-	navigate('/char?macros=panel');
 	const char = withMacros();
 	char.traits.push({ name: 'Obvious Predator', rating: 2, type: 'custom', subtraits: [] });
 	renderOwnerPage(char);
@@ -666,7 +638,6 @@ test('a trait subtracted from the bar is saved with a minus', async () => {
 
 test("a macro's Edit opens its form with its pool picked on the sheet; saving returns to editing", async () => {
 	const user = userEvent.setup();
-	navigate('/char?macros=panel');
 	const char = withMacros();
 	char.traits.push({ name: 'Dexterity', rating: 3, type: 'attribute', subtraits: [] });
 	renderOwnerPage(char);
@@ -697,7 +668,6 @@ test("a macro's Edit opens its form with its pool picked on the sheet; saving re
 
 test("Escape backs out of a macro's form to editing", async () => {
 	const user = userEvent.setup();
-	navigate('/char?macros=panel');
 	renderOwnerPage(withMacros());
 	const panel = await editMacros(user);
 	await user.click(within(panel).getByRole('button', { name: 'Edit punch' }));
@@ -711,7 +681,6 @@ test("Escape backs out of a macro's form to editing", async () => {
 
 test('editing a macro with deletions marked asks first, keeping them if declined', async () => {
 	const user = userEvent.setup();
-	navigate('/char?macros=panel');
 	renderOwnerPage(withMacros());
 	const panel = await editMacros(user);
 	await user.click(within(panel).getByRole('button', { name: 'Delete punch' }));
@@ -726,7 +695,6 @@ test('editing a macro with deletions marked asks first, keeping them if declined
 
 test("hovering a macro in the panel highlights its traits on the sheet, until it's left", async () => {
 	const user = userEvent.setup();
-	navigate('/char?macros=panel');
 	const { container } = renderOwnerPage(withMacros());
 	await user.click(screen.getAllByRole('button', { name: 'Macros' })[0]);
 	const lift = await screen.findByRole('article', { name: 'lift' });
@@ -742,7 +710,6 @@ test("hovering a macro in the panel highlights its traits on the sheet, until it
 
 test('Willpower and Humanity are picked from their trackers, by the names the bot rolls', async () => {
 	const user = userEvent.setup();
-	navigate('/char?macros=panel');
 	renderOwnerPage(withMacros());
 	await user.click(screen.getAllByRole('button', { name: 'Macros' })[0]);
 	await user.click(screen.getByRole('button', { name: 'Add macro' }));
@@ -799,7 +766,6 @@ test("removing a trait a macro rolls warns which macros won't roll without it", 
 
 test('clicking outside the panel closes it while viewing, not while editing or adding', async () => {
 	const user = userEvent.setup();
-	navigate('/char?macros=panel');
 	renderOwnerPage(withMacros());
 	const toggle = screen.getAllByRole('button', { name: 'Macros' })[0];
 	await user.click(toggle);
@@ -829,7 +795,6 @@ test('clicking outside the panel closes it while viewing, not while editing or a
 
 test("the phone's floating buttons make way while the macro panel is open", async () => {
 	const user = userEvent.setup();
-	navigate('/char?macros=panel');
 	renderOwnerPage(withMacros());
 	// Wide windows' buttons, and the phone's floating ones
 	expect(screen.getAllByRole('button', { name: 'Macros' })).toHaveLength(2);
@@ -845,7 +810,6 @@ test("the phone's floating buttons make way while the macro panel is open", asyn
 
 test('a macro marked for deletion stays, struck through, and Undo brings it back', async () => {
 	const user = userEvent.setup();
-	navigate('/char?macros=panel');
 	renderOwnerPage(withMacros());
 	const dialog = await editMacros(user);
 
@@ -867,7 +831,6 @@ test('a macro marked for deletion stays, struck through, and Undo brings it back
 test('the panel fades out before the strip fades in, and back', async () => {
 	reduceMotion(false);
 	const user = userEvent.setup();
-	navigate('/char?macros=panel');
 	renderOwnerPage(withMacros());
 	await user.click(screen.getAllByRole('button', { name: 'Macros' })[0]);
 	const dialog = screen.getByRole('dialog', { name: 'Macros' });
@@ -884,7 +847,6 @@ test('the panel fades out before the strip fades in, and back', async () => {
 
 test('the strip sets the modifier too, which the form keeps', async () => {
 	const user = userEvent.setup();
-	navigate('/char?macros=panel');
 	renderOwnerPage(withMacros());
 	await user.click(screen.getAllByRole('button', { name: 'Macros' })[0]);
 	await user.click(screen.getByRole('button', { name: 'Add macro' }));
@@ -910,7 +872,6 @@ test('the strip sets the modifier too, which the form keeps', async () => {
 
 test("on phones, the panel's handle steps its height with the arrow keys", async () => {
 	const user = userEvent.setup();
-	navigate('/char?macros=panel');
 	renderOwnerPage(withMacros());
 	await user.click(screen.getAllByRole('button', { name: 'Macros' })[0]);
 	const handle = screen.getByRole('slider', { name: 'Macros panel height' });
@@ -926,7 +887,6 @@ test("on phones, the panel's handle steps its height with the arrow keys", async
 
 test("dragging the handle snaps the panel's height, or below a fifth closes it", async () => {
 	const user = userEvent.setup();
-	navigate('/char?macros=panel');
 	renderOwnerPage(withMacros());
 	await user.click(screen.getAllByRole('button', { name: 'Macros' })[0]);
 	const handle = screen.getByRole('slider', { name: 'Macros panel height' });
