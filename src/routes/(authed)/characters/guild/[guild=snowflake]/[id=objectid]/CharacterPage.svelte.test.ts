@@ -30,6 +30,10 @@ vi.mock('$app/navigation', () => ({
 	}
 }));
 
+// Toasts, so tests can see what was said
+const toaster = vi.hoisted(() => ({ warning: vi.fn() }));
+vi.mock('$lib/state/toaster', () => ({ toaster }));
+
 // The viewer is a supporter unless a test says otherwise
 const isSupporter = vi.hoisted(() => vi.fn(async () => true));
 vi.mock('$lib/state/premium.svelte', async (importOriginal) => ({
@@ -2001,4 +2005,35 @@ test('Willpower and Humanity are picked from their trackers, by the names the bo
 		'+',
 		'Humanity'
 	]);
+});
+
+test("removing a trait a macro rolls warns which macros won't roll without it", async () => {
+	const user = userEvent.setup();
+	toaster.warning.mockClear();
+	const char = withMacros();
+	char.traits.push(
+		{ name: 'Obvious Predator', rating: 2, type: 'custom', subtraits: [] },
+		{ name: 'Night Driving', rating: 1, type: 'custom', subtraits: [] }
+	);
+	const [lift, punch] = char.macros ?? [];
+	char.macros = [
+		{ ...lift, pool: ['Strength', '-', 'ObviousPredator'] },
+		{ ...punch, pool: ['Strength', '-', 'Obvious Predator'] }
+	];
+	renderOwnerPage(char);
+	await user.click(editButton('Edit'));
+
+	await user.click(screen.getByRole('button', { name: 'Remove Night Driving' }));
+	expect(toaster.warning).not.toHaveBeenCalled();
+
+	await user.click(screen.getByRole('button', { name: 'Remove Obvious Predator' }));
+	expect(toaster.warning).toHaveBeenCalledExactlyOnceWith({
+		title: 'Obvious Predator is in macros',
+		description: 'lift and punch won’t roll without it.',
+		duration: 8000
+	});
+
+	// Cancel brings it back, quietly
+	await user.click(editButton('Cancel'));
+	expect(toaster.warning).toHaveBeenCalledOnce();
 });

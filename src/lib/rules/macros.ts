@@ -2,7 +2,7 @@
 import { nameKey } from '$lib/constraints';
 import { baneSeverity } from '$lib/rules/remorse';
 import { bloodPotency, isVampiric } from '$lib/rules/vampire';
-import type { Character } from '$lib/types';
+import type { Character, Macro } from '$lib/types';
 
 /** The separator between a pool token's trait and its specialties ("Brawl.Kindred"). */
 export const KEY_DELIMITER = '.';
@@ -122,4 +122,18 @@ export const resolvePool = (pool: string[], character: Character): ResolvedPool 
 	);
 	// The bot always rolls at least one die
 	return { terms, dice: !resolved ? null : terms.length === 0 ? 0 : Math.max(1, total) };
+};
+
+/** The macros whose pools roll a trait (by name, ignoring case and spaces, as the bot matches). */
+export const macrosUsing = (macros: Macro[], trait: string): Macro[] => {
+	const key = nameKey(trait);
+	return macros.filter((macro) =>
+		macro.pool.some(
+			(token) =>
+				token !== '+' &&
+				token !== '-' &&
+				!/^\d+$/.test(token) &&
+				nameKey(token.split(KEY_DELIMITER)[0]) === key
+		)
+	);
 };

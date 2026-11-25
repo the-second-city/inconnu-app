@@ -3,6 +3,7 @@ import { expect, test } from 'vitest';
 import {
 	capitalize,
 	codePointLength,
+	andList,
 	orList,
 	plural,
 	getErrorDetail,
@@ -140,4 +141,13 @@ test.each([
 	['👨‍👩‍👧', 5] // Three emoji joined by two ZWJs: one grapheme, five code points
 ])('codePointLength(%j) is %i, as Python’s len()', (text: string, expected: number) => {
 	expect(codePointLength(text)).toBe(expected);
+});
+
+test.each([
+	[[], ''],
+	[['hunt'], 'hunt'],
+	[['hunt', 'feed'], 'hunt and feed'],
+	[['hunt', 'feed', 'lurk'], 'hunt, feed, and lurk']
+])('andList(%j) is %j', (items, expected) => {
+	expect(andList(items)).toBe(expected);
 });

@@ -109,5 +109,11 @@ export const orList = (items: string[]): string => {
 	return `${items.slice(0, -1).join(', ')}, or ${items.at(-1)}`;
 };
 
+/** Join items into a list: "A", "A and B", "A, B, and C" (with the serial comma). */
+export const andList = (items: string[]): string => {
+	if (items.length <= 2) return items.join(' and ');
+	return `${items.slice(0, -1).join(', ')}, and ${items.at(-1)}`;
+};
+
 /** Uppercase the first letter of some text, leaving the rest as it is. */
 export const capitalize = (text: string): string => text.charAt(0).toUpperCase() + text.slice(1);

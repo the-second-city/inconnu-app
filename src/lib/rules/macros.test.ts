@@ -1,7 +1,7 @@
 import { expect, test } from 'vitest';
 
-import { resolvePool } from './macros';
-import type { Character, Splat, Trait } from '$lib/types';
+import { macrosUsing, resolvePool } from './macros';
+import type { Character, Macro, Splat, Trait } from '$lib/types';
 
 /** A trait with a rating and any specialties (or powers). */
 const trait = (name: string, rating: number, type = 'skill', subtraits: string[] = []): Trait => ({
@@ -111,4 +111,27 @@ test('a trait or specialty the character lost leaves the pool without a total', 
 
 test('an empty pool (a Rouse-only macro) has no terms and no dice', () => {
 	expect(resolvePool([], character(TRAITS))).toEqual({ terms: [], dice: 0 });
+});
+
+/** A macro rolling this pool. */
+const macro = (name: string, pool: string[]): Macro => ({
+	name,
+	pool,
+	hunger: true,
+	difficulty: 0,
+	rouses: 0,
+	reroll_rouses: false,
+	staining: 'show',
+	hunt: false,
+	comment: null
+});
+
+test('finds the macros rolling a trait, with or without a specialty, as the bot names it', () => {
+	const hunt = macro('hunt', ['Manipulation', '+', 'Occult.Bahari', '-', 'ObviousPredator']);
+	const brawl = macro('brawl', ['Strength', '+', 'Brawl']);
+	const occult = macro('occult', ['Intelligence', '+', 'occult']);
+
+	expect(macrosUsing([hunt, brawl, occult], 'Obvious Predator')).toEqual([hunt]);
+	expect(macrosUsing([hunt, brawl, occult], 'Occult')).toEqual([hunt, occult]);
+	expect(macrosUsing([hunt, brawl, occult], 'Potence')).toEqual([]);
 });

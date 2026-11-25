@@ -14,7 +14,7 @@
 		Timeline
 	} from '@lucide/svelte';
 
-	import { cleanName } from '$lib';
+	import { andList, cleanName } from '$lib';
 	import {
 		characterNameError,
 		profileLengthErrors,
@@ -56,6 +56,8 @@
 	import PremiumModal from '$lib/components/premium/PremiumModal.svelte';
 	import { isSupporter, refusedForPremium, showUpsell, upsell } from '$lib/state/premium.svelte';
 	import { PoolPicker, setPoolPicker } from '$lib/state/poolPicker.svelte';
+	import { macrosUsing } from '$lib/rules/macros';
+	import { toaster } from '$lib/state/toaster';
 
 	interface ComponentProps {
 		character: Character;
@@ -201,6 +203,27 @@
 	// And the frenzy test (below Hunger)
 	let frenzyOpen = $state(false);
 	let editing = $state(false);
+
+	// Removing a trait in edit mode that a macro rolls warns which macros won't roll without it (they
+	// stay as they are; Cancel brings the trait back)
+	let editedTraits: string[] | null = null; // The trait names when last checked, while editing
+	$effect(() => {
+		const names = editing ? character.traits.map((trait) => trait.name) : null;
+		untrack(() => {
+			const removed = editedTraits?.filter((name) => !names?.includes(name)) ?? [];
+			editedTraits = names;
+			if (!names) return;
+			for (const trait of removed) {
+				const using = macrosUsing(character.macros ?? [], trait).map((macro) => macro.name);
+				if (using.length === 0) continue;
+				toaster.warning({
+					title: `${trait} is in ${using.length === 1 ? 'a macro' : 'macros'}`,
+					description: `${andList(using)} won’t roll without it.`,
+					duration: 8000
+				});
+			}
+		});
+	});
 
 	// The macros show below the sheet, or (with ?macros=panel, while both are being tried) in a
 	// floating panel opened from a Macros button. The panel can add macros, so it's there for anyone
