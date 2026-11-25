@@ -2,7 +2,7 @@
 	import { untrack } from 'svelte';
 	import { Plus, SaveCheck } from '@lucide/svelte';
 
-	import { getConstraints, lengthError, macroNameError } from '$lib/constraints';
+	import { getConstraints, lengthError, macroNameError, maxCodeUnits } from '$lib/constraints';
 	import { FORM_CLASSES } from '$lib/constants/formStyles';
 	import { createMacro, updateMacro } from '$lib/api/macros';
 	import { BusySubmit } from '$lib/state/busySubmit.svelte';
@@ -240,7 +240,7 @@ edit saves once something changed.
 				class="input {trimmedName && nameError ? 'border-error-500' : ''}"
 				id="{id}-name"
 				type="text"
-				maxlength={constraints().macro_name_max_length}
+				maxlength={maxCodeUnits(constraints().macro_name_max_length)}
 				autocomplete="off"
 				spellcheck="false"
 				{placeholder}

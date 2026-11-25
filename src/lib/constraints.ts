@@ -157,7 +157,7 @@ export const macroNameError = (
 ): string | null => {
 	if (!name) return 'Name cannot be empty';
 	const max = constraints.macro_name_max_length;
-	if (name.length > max) return `Name must be ${max} characters or less`;
+	if (codePointLength(name) > max) return `Name must be ${max} characters or less`;
 	if (!new RegExp(constraints.macro_name_pattern).test(name)) {
 		return 'Name can only contain letters and underscores, with at least one letter';
 	}

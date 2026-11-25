@@ -161,3 +161,11 @@ test('a macro name already taken, ignoring case, is invalid', () => {
 	);
 	expect(macroNameError('feeding', ['feed'], TEST_CONSTRAINTS)).toBeNull();
 });
+
+test("a macro name's length is counted in code points", () => {
+	const max = TEST_CONSTRAINTS.macro_name_max_length;
+
+	// Too long in UTF-16 code units only, so its letters are what's wrong
+	expect(macroNameError('🩸'.repeat(max), [], TEST_CONSTRAINTS)).toMatch(/only contain letters/);
+	expect(macroNameError('a'.repeat(max + 1), [], TEST_CONSTRAINTS)).toMatch(/characters or less/);
+});
