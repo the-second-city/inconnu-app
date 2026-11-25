@@ -1,8 +1,9 @@
-import { render, screen } from '@testing-library/svelte';
+import { render, screen, within } from '@testing-library/svelte';
 import userEvent from '@testing-library/user-event';
 import { beforeEach, expect, test, vi } from 'vitest';
 
 import MacroForm from './MacroForm.svelte';
+import { PoolPicker, poolPickerContext } from '$lib/state/poolPicker.svelte';
 import type { Character, Macro, Splat } from '$lib/types';
 
 vi.mock('$app/paths', () => ({
@@ -295,4 +296,107 @@ test('a new macro starts at Difficulty 2, named as V5 names it', async () => {
 	await user.click(screen.getByRole('button', { name: 'More Difficulty' }));
 
 	expect(difficulty).toHaveAccessibleDescription('Moderate');
+});
+
+/** A macro to edit: Strength + Brawl (Kindred) - Obvious Predator, with every option on. */
+const FEED: Macro = {
+	name: 'feed',
+	pool: ['Strength', '+', 'Brawl.Kindred', '-', 'Obvious Predator'],
+	hunger: false,
+	difficulty: 4,
+	rouses: 1,
+	reroll_rouses: true,
+	staining: 'apply',
+	hunt: true,
+	comment: 'Dinner time.'
+};
+
+/** Render the form editing `macro` on a vampire with its traits, returning the picker. */
+const renderEditing = (macro: Macro = FEED): PoolPicker => {
+	const picker = new PoolPicker();
+	picker.active = true;
+	const char: Character = {
+		...character(),
+		traits: [
+			{ name: 'Strength', rating: 3, type: 'attribute', subtraits: [] },
+			{ name: 'Brawl', rating: 2, type: 'skill', subtraits: ['Kindred'] },
+			{ name: 'Obvious Predator', rating: 1, type: 'custom', subtraits: [] }
+		],
+		macros: [existing('blush'), macro, existing('hunt')]
+	};
+	render(MacroForm, {
+		props: { character: char, macro, oncancel: vi.fn(), onsaved: vi.fn() },
+		context: poolPickerContext(picker)
+	});
+	return picker;
+};
+
+const saveButton = (): HTMLElement => screen.getByRole('button', { name: 'Save Macro' });
+
+test("editing fills the form from the macro, its pool picked, and saves once there's a change", async () => {
+	const user = userEvent.setup();
+	const picker = renderEditing();
+
+	expect(screen.getByRole('form', { name: 'Edit feed' })).toBeInTheDocument();
+	expect(nameField()).toHaveValue('feed');
+	expect(nameField()).toHaveAttribute('aria-invalid', 'false'); // Its own name isn't taken
+	expect(screen.getByRole('group', { name: 'Difficulty' })).toHaveAccessibleDescription(
+		'Challenging'
+	); // 4
+	expect(screen.getByRole('checkbox', { name: 'Automatic Hunger' })).not.toBeChecked();
+	expect(screen.getByRole('checkbox', { name: 'Hunt' })).toBeChecked();
+	expect(screen.getByRole('checkbox', { name: 'Re-roll Rouse failures' })).toBeChecked();
+	expect(screen.getByRole('checkbox', { name: 'Oblivion Stains' })).toBeChecked();
+	expect(screen.getByRole('textbox', { name: /Comment/ })).toHaveValue('Dinner time.');
+	expect(picker.picks.map((pick) => pick.trait)).toEqual(['Strength', 'Brawl', 'Obvious Predator']);
+	expect(within(screen.getByRole('list', { name: 'Pool' })).getAllByRole('listitem')).toHaveLength(
+		3
+	);
+	expect(saveButton()).toBeDisabled();
+
+	await user.click(screen.getByRole('button', { name: 'Less Difficulty' }));
+
+	expect(saveButton()).toBeEnabled();
+});
+
+test('saving an edit replaces the macro, renamed, keeping the others', async () => {
+	const user = userEvent.setup();
+	renderEditing();
+
+	await user.clear(nameField());
+	await user.type(nameField(), 'drink');
+	await user.click(saveButton());
+
+	const init = fetchMock.mock.calls[0][1];
+	const sent = (JSON.parse(init?.body as string) as { macros: Macro[] }).macros;
+	expect(sent.map((macro) => macro.name)).toEqual(['blush', 'drink', 'hunt']);
+	expect(sent[1]).toEqual({ ...FEED, name: 'drink' });
+});
+
+test('an edit keeps how the macro shows Stains when it applies none', async () => {
+	const user = userEvent.setup();
+	renderEditing({ ...FEED, staining: 'no' });
+	expect(screen.getByRole('checkbox', { name: 'Oblivion Stains' })).not.toBeChecked();
+
+	await user.click(screen.getByRole('checkbox', { name: 'Hunt' }));
+	await user.click(saveButton());
+
+	const init = fetchMock.mock.calls[0][1];
+	const sent = (JSON.parse(init?.body as string) as { macros: Macro[] }).macros;
+	expect(sent[1].staining).toBe('no');
+});
+
+test("a trait the character lacks holds the save until it's removed", async () => {
+	const user = userEvent.setup();
+	renderEditing({ ...FEED, pool: ['Strength', '+', 'Melee'] });
+	await user.click(screen.getByRole('button', { name: 'Less Difficulty' }));
+
+	expect(screen.getByRole('region', { name: 'Pool' })).toHaveTextContent(
+		'Melee isn’t on the sheet. Remove it to save.'
+	);
+	expect(saveButton()).toBeDisabled();
+
+	await user.click(screen.getByRole('button', { name: 'Remove Melee' }));
+
+	expect(saveButton()).toBeEnabled();
 });

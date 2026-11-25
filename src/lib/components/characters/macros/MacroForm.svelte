@@ -1,7 +1,8 @@
 <script lang="ts">
-	import { Check, Minimize2, Plus, X } from '@lucide/svelte';
+	import { untrack } from 'svelte';
+	import { Check, Minimize2, Plus, SaveCheck, X } from '@lucide/svelte';
 
-	import { plural } from '$lib';
+	import { orList, plural } from '$lib';
 
 	import { getConstraints, lengthError, macroNameError } from '$lib/constraints';
 	import { FORM_CLASSES } from '$lib/constants/formStyles';
@@ -20,15 +21,17 @@
 
 	interface ComponentProps {
 		character: Character;
+		macro?: Macro; // The macro to edit; a new one without it
 		oncancel: () => void; // Back to the list, discarding the macro
 		onsaved: () => void; // The macro saved; the live update brings it to the list
-		dirty?: boolean; // Whether anything differs from a blank form, so leaving should ask
+		dirty?: boolean; // Whether anything differs from where it started, so leaving should ask
 		// Collapsed to a strip (the name, the pool, Done), leaving the sheet clear for picking traits
 		compact?: boolean;
 	}
 
 	let {
 		character,
+		macro: original,
 		oncancel,
 		onsaved,
 		dirty = $bindable(false),
@@ -43,18 +46,22 @@
 	// A new macro's Difficulty: 2, Straightforward in V5's table, as most rolls' default; 0 is none
 	const DEFAULT_DIFFICULTY = 2;
 
-	// The new macro. As `/macro create`'s defaults: Hunger on, no Rouse Checks
-	let name = $state('');
+	// The macro being edited, as it started (taken once: the form edits its own copy)
+	const start = untrack(() => original);
+	// The macro. A new one has `/macro create`'s defaults: Hunger on, no Rouse Checks
+	let name = $state(start?.name ?? '');
 	const placeholder = randomPlaceholder(); // Chosen once per form
-	let difficulty = $state(DEFAULT_DIFFICULTY);
-	let rouses = $state(0);
-	let hunger = $state(true);
-	let rerollRouses = $state(false);
-	let stains = $state(false);
-	let hunt = $state(false);
-	let comment = $state('');
-	// Picked from the sheet (the page's pool picker), as the bot's expanded tokens (see `Macro`)
+	let difficulty = $state(start?.difficulty ?? DEFAULT_DIFFICULTY);
+	let rouses = $state(start?.rouses ?? 0);
+	let hunger = $state(start?.hunger ?? true);
+	let rerollRouses = $state(start?.reroll_rouses ?? false);
+	let stains = $state(start?.staining === 'apply');
+	let hunt = $state(start?.hunt ?? false);
+	let comment = $state(start?.comment ?? '');
+	// Picked from the sheet (the page's pool picker), as the bot's expanded tokens (see `Macro`).
+	// Editing starts with the macro's pool picked
 	const picker = getPoolPicker();
+	if (start) untrack(() => picker?.load(start.pool, character));
 	const pool: string[] = $derived(picker?.tokens(character.traits) ?? []);
 
 	// Vampires roll Hunger, hunt, and Rouse; ghouls Rouse too (taking damage instead); mortals neither
@@ -65,7 +72,8 @@
 	const nameError = $derived(
 		macroNameError(
 			trimmedName,
-			(character.macros ?? []).map((macro) => macro.name),
+			// Its own name isn't taken
+			(character.macros ?? []).map((macro) => macro.name).filter((n) => n !== start?.name),
 			constraints()
 		)
 	);
@@ -73,23 +81,12 @@
 		lengthError(comment.trim(), constraints().macro_comment_max_length)
 	);
 	const resolved = $derived(resolvePool(pool, character));
+	// Picks the character lacks (from an edited macro), which the bot won't save
+	const missing = $derived(
+		resolved.terms.filter((term) => term.missing !== null).map((term) => term.name)
+	);
 	// A macro rolls a pool or makes Rouse Checks (the bot's `check_has_action`)
 	const hasAction = $derived(pool.length > 0 || rouses > 0);
-	const valid = $derived(!nameError && !commentError && hasAction);
-
-	// Anything typed, picked, or toggled away from the defaults
-	$effect(() => {
-		dirty =
-			trimmedName !== '' ||
-			comment.trim() !== '' ||
-			difficulty !== DEFAULT_DIFFICULTY ||
-			rouses !== 0 ||
-			!hunger ||
-			hunt ||
-			rerollRouses ||
-			stains ||
-			pool.length > 0;
-	});
 
 	/** The macro as the bot stores it. Options that can't apply are off. */
 	const macro = (): Macro => ({
@@ -99,17 +96,36 @@
 		difficulty,
 		rouses: rousing ? rouses : 0,
 		reroll_rouses: vampiric && rouses > 0 && rerollRouses,
-		staining: vampiric && rouses > 0 && stains ? 'apply' : 'show',
+		// Without Stains, an edited macro keeps how it showed them
+		staining:
+			vampiric && rouses > 0 && stains
+				? 'apply'
+				: start && start.staining !== 'apply'
+					? start.staining
+					: 'show',
 		hunt: vampiric && hunt,
 		comment: comment.trim() || null
 	});
+
+	// Anything typed, picked, or toggled since the form opened (blank, or the macro as it was)
+	const initial = untrack(() => JSON.stringify(macro()));
+	const changed = $derived(JSON.stringify(macro()) !== initial);
+	$effect(() => {
+		dirty = changed;
+	});
+	// An edit saves once something changed
+	const valid = $derived(
+		!nameError && !commentError && hasAction && missing.length === 0 && (!start || changed)
+	);
 
 	const submit = new BusySubmit();
 
 	const save = async (e: SubmitEvent) => {
 		e.preventDefault();
 		if (!valid) return;
-		const macros = [...(character.macros ?? []), macro()];
+		// An edited macro replaces itself (if it's still there), keeping the others
+		const others = (character.macros ?? []).filter((m) => m.name !== start?.name);
+		const macros = [...others, macro()];
 		if (await submit.run(() => saveMacros(character._id, macros))) onsaved();
 	};
 
@@ -158,18 +174,23 @@
 
 <!--
 @component
-A new macro's form, in the macro panel: its name, then the pool (built by clicking traits on the
+A macro's form, in the macro panel, for a new one or (with `macro`) editing one: its name, then the pool (built by clicking traits on the
 sheet), then its Difficulty, Rouse Checks, options, and comment. Adding saves the character's macros with it.
 `compact` collapses it to a strip (the name, the pool and its dice, Cancel, and Done), so the sheet stays clear while traits are picked; Done returns to the
-details, kept as they were, where the macro is added.
+details, kept as they were, where the macro is added (or saved). Editing loads the macro's pool
+into the picker, and saving replaces the macro, by its name as it started.
 -->
-<form class="flex flex-col gap-4" onsubmit={save} aria-label="New macro">
+<form
+	class="flex flex-col gap-4"
+	onsubmit={save}
+	aria-label={start ? `Edit ${start.name}` : 'New macro'}
+>
 	{#if compact}
 		<div class="flex items-center gap-2">
 			<div class="min-w-0 flex-1">
 				<div class="flex items-baseline gap-2">
 					<span class="font-display truncate text-sm tracking-[0.04em]">
-						{trimmedName || 'New Macro'}
+						{trimmedName || start?.name || 'New Macro'}
 					</span>
 					{#if pool.length > 0 && resolved.dice !== null}
 						<span class="font-display text-primary-300 shrink-0 text-sm tabular-nums">
@@ -178,7 +199,7 @@ details, kept as they were, where the macro is added.
 					{/if}
 				</div>
 				{#if pool.length > 0}
-					{#if picker}<PoolChips {picker} traits={character.traits} />{/if}
+					{#if picker}<PoolChips {picker} traits={character.traits} {missing} />{/if}
 				{:else}
 					<p class="text-surface-300 text-sm italic">
 						Click traits on the sheet to build the pool.
@@ -205,7 +226,7 @@ details, kept as they were, where the macro is added.
 			</button>
 		</div>
 	{:else if submit.busy}
-		<BusySpinner label="Adding the macro…" />
+		<BusySpinner label={start ? 'Saving the macro…' : 'Adding the macro…'} />
 	{:else}
 		<div>
 			<label class="mb-1 block font-semibold" for="{id}-name">Name</label>
@@ -242,9 +263,17 @@ details, kept as they were, where the macro is added.
 				</button>
 			</div>
 			{#if pool.length > 0}
-				{#if picker}<PoolChips {picker} traits={character.traits} />{/if}
+				{#if picker}<PoolChips {picker} traits={character.traits} {missing} />{/if}
 			{:else}
 				<p class="text-surface-300 italic">Click traits on the sheet to build the pool.</p>
+			{/if}
+			{#if missing.length > 0}
+				<p class="text-warning-300 text-sm">
+					{orList(missing)}
+					{missing.length === 1 ? 'isn’t' : 'aren’t'} on the sheet. Remove {missing.length === 1
+						? 'it'
+						: 'them'} to save.
+				</p>
 			{/if}
 		</section>
 
@@ -310,8 +339,13 @@ details, kept as they were, where the macro is added.
 				Cancel
 			</button>
 			<button type="submit" class="btn btn-gothic btn-gothic-blood" disabled={!valid}>
-				<Plus size={18} />
-				<span>Add Macro</span>
+				{#if start}
+					<SaveCheck size={18} />
+					<span>Save Macro</span>
+				{:else}
+					<Plus size={18} />
+					<span>Add Macro</span>
+				{/if}
 			</button>
 		</div>
 	{/if}

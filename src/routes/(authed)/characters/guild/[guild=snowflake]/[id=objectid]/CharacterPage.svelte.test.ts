@@ -1914,3 +1914,63 @@ test('a trait subtracted from the bar is saved with a minus', async () => {
 		'Obvious Predator'
 	]);
 });
+
+test("a macro's Edit opens its form with its pool picked on the sheet; saving returns to editing", async () => {
+	const user = userEvent.setup();
+	navigate('/char?macros=panel');
+	const char = withMacros();
+	char.traits.push({ name: 'Dexterity', rating: 3, type: 'attribute', subtraits: [] });
+	renderOwnerPage(char);
+	const panel = await editMacros(user);
+
+	await user.click(within(panel).getByRole('button', { name: 'Edit lift' }));
+
+	const dialog = await screen.findByRole('dialog', { name: 'Edit Macro' });
+	expect(within(dialog).getByRole('textbox', { name: 'Name' })).toHaveValue('lift');
+	expect(screen.getByRole('button', { name: 'Pick Strength' })).toHaveAttribute(
+		'aria-pressed',
+		'true'
+	);
+	await user.click(screen.getByRole('button', { name: 'Pick Dexterity' }));
+	await user.click(within(dialog).getByRole('button', { name: 'Done' }));
+	await user.click(within(dialog).getByRole('button', { name: 'Save Macro' }));
+
+	const body = JSON.parse(fetchMock.mock.calls[0][1]?.body as string) as {
+		macros: { name: string; pool: string[] }[];
+	};
+	expect(body.macros.map((macro) => [macro.name, macro.pool])).toEqual([
+		['lift', ['Strength', '+', 'Dexterity', '+', '2']],
+		['punch', ['Strength', '+', '2']]
+	]);
+	await screen.findByRole('dialog', { name: 'Edit Macros' });
+	expect(screen.queryByRole('button', { name: 'Pick Strength' })).not.toBeInTheDocument();
+});
+
+test("Escape backs out of a macro's form to editing", async () => {
+	const user = userEvent.setup();
+	navigate('/char?macros=panel');
+	renderOwnerPage(withMacros());
+	const panel = await editMacros(user);
+	await user.click(within(panel).getByRole('button', { name: 'Edit punch' }));
+	await screen.findByRole('dialog', { name: 'Edit Macro' });
+
+	await user.keyboard('{Escape}');
+
+	await screen.findByRole('dialog', { name: 'Edit Macros' });
+	expect(fetchMock).not.toHaveBeenCalled();
+});
+
+test('editing a macro with deletions marked asks first, keeping them if declined', async () => {
+	const user = userEvent.setup();
+	navigate('/char?macros=panel');
+	renderOwnerPage(withMacros());
+	const panel = await editMacros(user);
+	await user.click(within(panel).getByRole('button', { name: 'Delete punch' }));
+	const confirm = vi.spyOn(window, 'confirm').mockReturnValue(false);
+
+	await user.click(within(panel).getByRole('button', { name: 'Edit lift' }));
+
+	expect(confirm).toHaveBeenCalledWith('Discard your unsaved changes?');
+	expect(screen.getByRole('dialog', { name: 'Edit Macros' })).toBeInTheDocument();
+	expect(within(panel).getByRole('button', { name: 'Save' })).toBeEnabled();
+});

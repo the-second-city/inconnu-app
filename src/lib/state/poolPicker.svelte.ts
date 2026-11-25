@@ -7,8 +7,8 @@
 
 import { getContext, setContext } from 'svelte';
 
-import { KEY_DELIMITER } from '$lib/rules/macros';
-import type { Trait } from '$lib/types';
+import { KEY_DELIMITER, resolvePool } from '$lib/rules/macros';
+import type { Character, Trait } from '$lib/types';
 
 /** A picked trait, its specialty (null for none), and whether it's subtracted (a flaw, say). */
 export interface Pick {
@@ -22,6 +22,9 @@ export class PoolPicker {
 	picks: Pick[] = $state([]);
 	// The trait whose specialty menu is open, so only one is
 	open: string | null = $state(null);
+	// How many times a trait was added by picking (not loading), so the panel can collapse to its
+	// strip when one is
+	added = $state(0);
 
 	/** A trait's pick: undefined when it isn't picked, null for no specialty, else the specialty. */
 	selection(trait: string): string | null | undefined {
@@ -41,6 +44,7 @@ export class PoolPicker {
 		const index = this.picks.findIndex((pick) => pick.trait === trait);
 		if (index === -1) {
 			this.picks.push({ trait, specialty, negative: false });
+			this.added++;
 		} else if (this.picks[index].specialty === specialty) {
 			this.picks.splice(index, 1);
 		} else {
@@ -65,6 +69,33 @@ export class PoolPicker {
 	/** Drop a trait from the pool. */
 	remove(trait: string): void {
 		this.picks = this.picks.filter((pick) => pick.trait !== trait);
+	}
+
+	/**
+	 * Load a macro's pool (the bot's tokens) to edit it. Traits take the names the character has
+	 * now, so the sheet shows them picked; what the sheet can't pick (numbers, Willpower or Hunger, a
+	 * trait the character lost) loads too, to keep or remove. A trait in the pool twice loads once,
+	 * and its numbers combine into one.
+	 */
+	load(pool: string[], character: Character): void {
+		const picks: Pick[] = [];
+		let number = 0;
+		let numbered = false;
+		for (const term of resolvePool(pool, character).terms) {
+			const negative = term.sign === '-';
+			if (term.kind === 'number') {
+				number += (negative ? -1 : 1) * Number(term.name);
+				numbered = true;
+			} else if (!picks.some((pick) => pick.trait === term.name)) {
+				const specialty = term.specialties.length ? term.specialties.join(KEY_DELIMITER) : null;
+				picks.push({ trait: term.name, specialty, negative });
+			}
+		}
+		if (numbered && number !== 0) {
+			picks.push({ trait: String(Math.abs(number)), specialty: null, negative: number < 0 });
+		}
+		this.picks = picks;
+		this.open = null;
 	}
 
 	/** Empty the pool and close any menu. */

@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { fade, slide } from 'svelte/transition';
-	import { Trash2 } from '@lucide/svelte';
+	import { Pencil, Trash2 } from '@lucide/svelte';
 
 	import type { Character, Macro } from '$lib/types';
 	import MacroCard from './MacroCard.svelte';
@@ -10,9 +10,10 @@
 		macros?: Macro[]; // The macros to show; the character's by default
 		layout?: 'grid' | 'stack'; // Framed cards in columns (the sheet), or a divided list (a panel)
 		ondelete?: (macro: Macro) => void; // Gives each macro a Delete button (stack layout)
+		onedit?: (macro: Macro) => void; // Gives each macro an Edit button (stack layout)
 	}
 
-	let { character, macros, layout = 'grid', ondelete }: ComponentProps = $props();
+	let { character, macros, layout = 'grid', ondelete, onedit }: ComponentProps = $props();
 
 	const shown = $derived(macros ?? character.macros ?? []);
 </script>
@@ -21,7 +22,7 @@
 @component
 A character's macros, in the order the bot keeps them (by name). `grid` frames each in a card, in up
 to three columns, for below the sheet; `stack` divides them with rules, for a narrow panel, where
-`ondelete` adds a Delete button to each. A macro taken out of `macros` slides away.
+`onedit` and `ondelete` add Edit and Delete buttons to each. A macro taken out of `macros` slides away.
 -->
 {#if layout === 'grid'}
 	<ul class="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-3">
@@ -41,6 +42,18 @@ to three columns, for below the sheet; `stack` divides them with rules, for a na
 				<div class="min-w-0 flex-1">
 					<MacroCard {macro} {character} />
 				</div>
+				{#if onedit}
+					<button
+						type="button"
+						class="hover:preset-tonal-surface -mr-1 shrink-0 rounded-full p-1.5"
+						onclick={() => onedit(macro)}
+						aria-label="Edit {macro.name}"
+						title="Edit"
+						transition:fade={{ duration: 200 }}
+					>
+						<Pencil size={16} />
+					</button>
+				{/if}
 				{#if ondelete}
 					<button
 						type="button"

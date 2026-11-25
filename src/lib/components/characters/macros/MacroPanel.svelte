@@ -1,3 +1,8 @@
+<script module lang="ts">
+	/** Whether the panel's view is a macro's form, where the pool is picked from the sheet. */
+	export const isFormView = (view: string): boolean => view === 'add' || view === 'modify';
+</script>
+
 <script lang="ts">
 	import { untrack } from 'svelte';
 	import { fade, fly } from 'svelte/transition';
@@ -7,13 +12,16 @@
 	import { deleteMacro } from '$lib/api/macros';
 	import { BusySubmit } from '$lib/state/busySubmit.svelte';
 	import { getPoolPicker } from '$lib/state/poolPicker.svelte';
-	import type { Character } from '$lib/types';
+	import type { Character, Macro } from '$lib/types';
 	import BusySpinner from '$lib/components/ui/BusySpinner.svelte';
 	import MacroForm from './MacroForm.svelte';
 	import MacroList from './MacroList.svelte';
 
-	/** What the panel shows: the macros, the form for a new one, or the macros to edit. */
-	export type MacroPanelView = 'list' | 'add' | 'edit';
+	/**
+	 * What the panel shows: the macros, the form for a new one, the macros to edit (delete, or pick
+	 * one to change), or the form for one of them.
+	 */
+	export type MacroPanelView = 'list' | 'add' | 'edit' | 'modify';
 
 	interface ComponentProps {
 		character: Character;
@@ -55,27 +63,31 @@
 		macros.filter((macro) => !deleted.has(macro.name) && !removed.has(macro.name))
 	);
 	const hasChanges = $derived(view === 'edit' && deleted.size > 0);
-	let formDirty = $state(false); // The new macro form has input
+	// The macro being changed, in the modify view
+	let target: Macro | null = $state(null);
+	const inForm = $derived(isFormView(view));
+	let formDirty = $state(false); // The form has input (or changes)
 	// The new macro form collapsed to a strip at the bottom, so the sheet is clear for picking traits
 	let formCompact = $state(false);
-	const compact = $derived(view === 'add' && formCompact);
+	const compact = $derived(inForm && formCompact);
 	// A new form starts full
 	$effect(() => {
-		if (view !== 'add') formCompact = false;
+		if (!inForm) formCompact = false;
 	});
 
-	// Picking a trait from the sheet collapses the form, clearing the sheet for the rest
+	// Picking a trait from the sheet collapses the form, clearing the sheet for the rest (loading
+	// an edited macro's pool doesn't count)
 	const picker = getPoolPicker();
 	let picked = 0;
 	$effect(() => {
-		const count = picker?.picks.length ?? 0;
+		const count = picker?.added ?? 0;
 		untrack(() => {
-			if (view === 'add' && count > picked) formCompact = true;
+			if (inForm && count > picked) formCompact = true;
 			picked = count;
 		});
 	});
-	// What leaving would lose: deletions not saved, or a new macro not added
-	const unsaved = $derived(hasChanges || (view === 'add' && formDirty));
+	// What leaving would lose: deletions not saved, or a macro not added or saved
+	const unsaved = $derived(hasChanges || (inForm && formDirty));
 	$effect(() => {
 		dirty = unsaved;
 	});
@@ -84,11 +96,27 @@
 	 * when there's nothing to lose, or the user agrees. */
 	const confirmDiscard = (): boolean => !unsaved || confirm('Discard your unsaved changes?');
 
-	/** Back out of the new macro form (its Cancel, Escape), asking first if it has input. */
-	const cancelAdding = () => {
+	/**
+	 * Back out of a form (its Cancel, Escape), asking first if it has input: a new macro's to the
+	 * list, an edited one's to editing.
+	 */
+	const cancelForm = () => {
 		if (!confirmDiscard()) return;
+		leaveForm();
+	};
+
+	/** Leave a form, back where it came from. */
+	const leaveForm = () => {
 		formDirty = false;
-		view = 'list';
+		view = view === 'modify' ? 'edit' : 'list';
+	};
+
+	/** Change a macro (its Edit button), asking first if deletions are marked, which it discards. */
+	const modify = (macro: Macro) => {
+		if (!confirmDiscard()) return;
+		deleted.clear();
+		target = macro;
+		view = 'modify';
 	};
 
 	/** Leave editing, restoring the macros marked for deletion. */
@@ -125,6 +153,7 @@
 		untrack(() => {
 			// Whoever closed it has asked already (the ✕, or the page's Macros button)
 			if (view === 'edit') discardEdits();
+			formDirty = false;
 			view = 'list';
 		});
 	});
@@ -157,8 +186,8 @@
 	// popover or dialog) takes the key first
 	const handleKey = (e: KeyboardEvent) => {
 		if (!open || e.key !== 'Escape' || e.defaultPrevented) return;
-		if (view === 'add') {
-			cancelAdding();
+		if (inForm) {
+			cancelForm();
 		} else if (view === 'edit') {
 			cancelEditing();
 		} else {
@@ -169,7 +198,8 @@
 	const titles: Record<MacroPanelView, string> = {
 		list: 'Macros',
 		add: 'New Macro',
-		edit: 'Edit Macros'
+		edit: 'Edit Macros',
+		modify: 'Edit Macro'
 	};
 
 	// Switching views crossfades: the old and new share a grid cell while one fades out and the
@@ -185,8 +215,8 @@
 @component
 The macros in a floating panel, opened from a Macros button. It isn't modal: the sheet stays usable
 beside it (it's where a new macro's pool will come from). With `onswitch`, Add switches it to the
-new macro form, and Edit (with macros to edit) to editing: each macro gets a Delete button, and
-Cancel and Save replace Add and Edit. On phones it sits above the floating buttons; wider, at the
+new macro form, and Edit (with macros to edit) to editing: each macro gets Edit and Delete buttons,
+and Cancel and Save replace Add and Edit. A macro's Edit opens its form, which returns to editing. On phones it sits above the floating buttons; wider, at the
 window's right, below the tab row (and the Macros button).
 -->
 {#if compact}
@@ -208,7 +238,7 @@ window's right, below the tab row (and the Macros button).
 				: 'inset-x-4 bottom-46 max-h-[60vh] sm:inset-x-auto sm:top-60 sm:right-6 sm:bottom-auto sm:max-h-[calc(100vh-16.5rem)] sm:w-96'
 		]}
 		aria-labelledby={compact ? undefined : 'macro-panel-title'}
-		aria-label={compact ? 'New Macro' : undefined}
+		aria-label={compact ? titles[view] : undefined}
 		transition:fly={{ x: 24, duration: 200 }}
 	>
 		<header class="border-surface-500 flex items-center gap-2 border-b px-4 py-3" hidden={compact}>
@@ -282,19 +312,20 @@ window's right, below the tab row (and the Macros button).
 		</header>
 		<!-- In the strip, a list still fading out (picking straight after Add) stays out of it -->
 		<div class={['grid overflow-y-auto px-4', compact ? 'py-2 [&>[data-list]]:hidden' : 'py-3']}>
-			{#if view === 'add'}
-				<div class="col-start-1 row-start-1" transition:fade={crossfade}>
-					<MacroForm
-						{character}
-						bind:dirty={formDirty}
-						bind:compact={formCompact}
-						oncancel={cancelAdding}
-						onsaved={() => {
-							formDirty = false;
-							view = 'list';
-						}}
-					/>
-				</div>
+			{#if inForm}
+				<!-- Keyed, so editing another macro starts a fresh form -->
+				{#key view === 'modify' ? target : null}
+					<div class="col-start-1 row-start-1" transition:fade={crossfade}>
+						<MacroForm
+							{character}
+							macro={view === 'modify' ? (target ?? undefined) : undefined}
+							bind:dirty={formDirty}
+							bind:compact={formCompact}
+							oncancel={cancelForm}
+							onsaved={leaveForm}
+						/>
+					</div>
+				{/key}
 			{:else}
 				<!-- The list and editing share this: editing adds the Delete buttons -->
 				<div
@@ -311,6 +342,7 @@ window's right, below the tab row (and the Macros button).
 								macros={remaining}
 								layout="stack"
 								ondelete={view === 'edit' ? (macro) => deleted.add(macro.name) : undefined}
+								onedit={view === 'edit' ? modify : undefined}
 							/>
 						{:else if view === 'edit'}
 							<p class="text-surface-300 italic">Saving will delete all of the macros.</p>

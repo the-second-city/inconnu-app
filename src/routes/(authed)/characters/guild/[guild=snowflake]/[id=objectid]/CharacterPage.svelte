@@ -50,6 +50,7 @@
 	import RemorseModal from '$lib/components/characters/actions/RemorseModal.svelte';
 	import FrenzyModal from '$lib/components/characters/actions/FrenzyModal.svelte';
 	import MacroPanel, {
+		isFormView,
 		type MacroPanelView
 	} from '$lib/components/characters/macros/MacroPanel.svelte';
 	import PremiumModal from '$lib/components/premium/PremiumModal.svelte';
@@ -219,7 +220,7 @@
 	const picker = new PoolPicker();
 	setPoolPicker(picker);
 	$effect(() => {
-		const active = macrosOpen && macroView === 'add';
+		const active = macrosOpen && isFormView(macroView);
 		untrack(() => {
 			if (picker.active && !active) picker.clear();
 			picker.active = active;
