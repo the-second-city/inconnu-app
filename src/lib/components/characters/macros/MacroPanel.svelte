@@ -86,8 +86,9 @@
 	$effect(() => () => layout.cancel());
 	const compact = $derived(layout.shown);
 	// A new macro starts as the strip, since its pool is the main work (and the sheet should be clear
-	// for it); Continue opens the name and details. An edited macro's form starts full
-	$effect(() => {
+	// for it); Continue opens the name and details. An edited macro's form starts full. (Before the form
+	// mounts, which focuses its name only if it's to stay full)
+	$effect.pre(() => {
 		const next = view;
 		untrack(() => (formCompact = next === 'add'));
 	});
@@ -433,6 +434,7 @@ Macros button), resized by a handle of its own.
 							macro={view === 'modify' ? (target ?? undefined) : undefined}
 							bind:dirty={formDirty}
 							bind:busy={formBusy}
+							focusName={!wantsCompact}
 							bind:compact={() => compact, (value) => (formCompact = value)}
 							oncancel={cancelForm}
 							{refetch}

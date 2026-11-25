@@ -28,6 +28,13 @@
 
 	let { picker, traits, title, resolved, oncancel, oncontinue }: ComponentProps = $props();
 
+	/** Take the focus from what the strip replaced in the panel (the Add button), which would lose it,
+	 * but not from the sheet, where a trait was picked. */
+	const takeFocus = (button: HTMLElement) => {
+		const focused = document.activeElement;
+		if (!focused || focused === document.body || focused.closest('[role="dialog"]')) button.focus();
+	};
+
 	const missing = $derived(missingTraits(resolved.terms));
 
 	const empty = $derived(picker.picks.length === 0);
@@ -51,6 +58,7 @@ there, not squeezing the buttons), and the modifier at the row's end.
 		<button
 			type="button"
 			class="btn btn-sm btn-gothic btn-gothic-bone shrink-0"
+			{@attach takeFocus}
 			onclick={oncontinue}
 		>
 			<span>{empty ? 'Skip pool' : 'Continue'}</span>

@@ -28,6 +28,7 @@
 		onsaved: () => void; // The macro saved
 		dirty?: boolean; // Whether anything differs from where it started, so leaving should ask
 		busy?: boolean; // Whether it's saving, when it can't be left or its pool changed
+		focusName?: boolean; // Focus the name as it shows (not in passing, on the way to the strip)
 		// Collapsed to a strip (the name, the pool, Continue), leaving the sheet clear for picking traits
 		compact?: boolean;
 	}
@@ -41,6 +42,7 @@
 		onsaved,
 		dirty = $bindable(false),
 		busy = $bindable(false),
+		focusName = true,
 		compact = $bindable(false)
 	}: ComponentProps = $props();
 
@@ -246,7 +248,9 @@ edit saves once something changed.
 			<label class="mb-1 block font-semibold" for="{id}-name">Name</label>
 			<input
 				bind:value={name}
-				{@attach (input) => input.focus()}
+				{@attach (input) => {
+					if (untrack(() => focusName)) input.focus();
+				}}
 				class="input {trimmedName && nameError ? 'border-error-500' : ''}"
 				id="{id}-name"
 				type="text"

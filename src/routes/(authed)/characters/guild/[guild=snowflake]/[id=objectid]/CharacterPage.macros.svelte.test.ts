@@ -1149,3 +1149,30 @@ test('another macro changing elsewhere is no matter', async () => {
 
 	expect(within(panel).queryByRole('alert')).not.toBeInTheDocument();
 });
+
+test('Add never focuses the name on the way to the strip, whose button takes the focus', async () => {
+	reduceMotion(false);
+	const focus = vi.spyOn(HTMLInputElement.prototype, 'focus');
+	const user = userEvent.setup();
+	renderOwnerPage(withMacros());
+	await user.click(screen.getAllByRole('button', { name: 'Macros' })[0]);
+	const dialog = screen.getByRole('dialog', { name: 'Macros' });
+
+	await user.click(screen.getByRole('button', { name: 'Add macro' }));
+
+	const skip = await within(dialog).findByRole('button', { name: 'Skip pool' });
+	expect(skip).toHaveFocus();
+	expect(focus).not.toHaveBeenCalled();
+	await user.click(skip);
+	expect(await within(dialog).findByRole('textbox', { name: 'Name' })).toHaveFocus();
+});
+
+test('collapsing the form by picking a trait leaves the focus on the sheet', async () => {
+	const user = userEvent.setup();
+	await addMacroForm(user);
+
+	await user.click(screen.getByRole('button', { name: 'Pick Strength' }));
+
+	await screen.findByRole('button', { name: 'Continue' });
+	expect(screen.getByRole('button', { name: 'Pick Strength' })).toHaveFocus();
+});
