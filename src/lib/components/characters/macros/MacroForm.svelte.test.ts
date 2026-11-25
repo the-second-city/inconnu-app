@@ -255,7 +255,7 @@ test('Pick traits collapses the form to a strip, keeping what was entered', asyn
 	expect(form).toHaveTextContent('surge');
 	expect(form).toHaveTextContent('Click traits on the sheet to build the pool.');
 
-	await user.click(screen.getByRole('button', { name: 'Done' }));
+	await user.click(screen.getByRole('button', { name: 'Continue' }));
 
 	expect(state.compact).toBe(false);
 	expect(nameField()).toHaveValue('surge');
@@ -278,7 +278,7 @@ test("the strip's Done returns to the details without adding", async () => {
 	await user.click(screen.getByRole('button', { name: 'Pick traits' }));
 	expect(screen.queryByRole('button', { name: 'Add Macro' })).not.toBeInTheDocument();
 
-	await user.click(screen.getByRole('button', { name: 'Done' }));
+	await user.click(screen.getByRole('button', { name: 'Continue' }));
 
 	expect(state.compact).toBe(false);
 	expect(fetchMock).not.toHaveBeenCalled();

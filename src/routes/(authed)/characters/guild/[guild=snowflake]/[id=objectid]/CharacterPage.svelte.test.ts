@@ -1454,7 +1454,7 @@ test('reopening the panel shows the list, not a macro in progress', async () => 
 	await user.click(screen.getByRole('button', { name: 'Add macro' }));
 	await user.click(
 		within(await screen.findByRole('dialog', { name: 'New Macro' })).getByRole('button', {
-			name: 'Done'
+			name: 'Continue'
 		})
 	);
 
@@ -1736,7 +1736,7 @@ const addMacroForm = async (user: ReturnType<typeof userEvent.setup>): Promise<H
 	await user.click(screen.getByRole('button', { name: 'Add macro' }));
 	const dialog = await screen.findByRole('dialog', { name: 'New Macro' });
 	// It opens as the strip; Done opens the name and details
-	await user.click(within(dialog).getByRole('button', { name: 'Done' }));
+	await user.click(within(dialog).getByRole('button', { name: 'Continue' }));
 	return dialog;
 };
 
@@ -1830,7 +1830,7 @@ test("the strip's Cancel asks about a new macro, and the next one starts afresh,
 	await user.click(await screen.findByRole('button', { name: 'Add macro' }));
 	const next = await screen.findByRole('dialog', { name: 'New Macro' });
 	expect(within(next).queryByRole('textbox', { name: 'Name' })).not.toBeInTheDocument();
-	await user.click(within(next).getByRole('button', { name: 'Done' }));
+	await user.click(within(next).getByRole('button', { name: 'Continue' }));
 	expect(within(next).getByRole('textbox', { name: 'Name' })).toHaveValue('');
 });
 
@@ -1878,7 +1878,7 @@ test('adding sends the picked pool', async () => {
 	const dialog = await addMacroForm(user);
 	await user.type(within(dialog).getByRole('textbox', { name: 'Name' }), 'lift_more');
 	await user.click(screen.getByRole('button', { name: 'Pick Strength' }));
-	await user.click(within(dialog).getByRole('button', { name: 'Done' }));
+	await user.click(within(dialog).getByRole('button', { name: 'Continue' }));
 
 	await user.click(within(dialog).getByRole('button', { name: 'Add Macro' }));
 
@@ -1897,14 +1897,14 @@ test('a trait subtracted from the bar is saved with a minus', async () => {
 	await user.click(screen.getAllByRole('button', { name: 'Macros' })[0]);
 	await user.click(screen.getByRole('button', { name: 'Add macro' }));
 	const dialog = await screen.findByRole('dialog', { name: 'New Macro' });
-	await user.click(within(dialog).getByRole('button', { name: 'Done' }));
+	await user.click(within(dialog).getByRole('button', { name: 'Continue' }));
 	await user.type(within(dialog).getByRole('textbox', { name: 'Name' }), 'hunt_mortal');
 	await user.click(screen.getByRole('button', { name: 'Pick Strength' }));
 	await user.click(screen.getByRole('button', { name: 'Pick Obvious Predator' }));
 
 	await user.click(within(dialog).getByRole('button', { name: 'Subtract Obvious Predator' }));
 	expect(within(dialog).getByRole('form')).toHaveTextContent('1 die'); // 2 - 2, but the bot rolls at least 1
-	await user.click(within(dialog).getByRole('button', { name: 'Done' }));
+	await user.click(within(dialog).getByRole('button', { name: 'Continue' }));
 	await user.click(within(dialog).getByRole('button', { name: 'Add Macro' }));
 
 	const body = JSON.parse(fetchMock.mock.calls[0][1]?.body as string) as {
@@ -1934,7 +1934,7 @@ test("a macro's Edit opens its form with its pool picked on the sheet; saving re
 		'true'
 	);
 	await user.click(screen.getByRole('button', { name: 'Pick Dexterity' }));
-	await user.click(within(dialog).getByRole('button', { name: 'Done' }));
+	await user.click(within(dialog).getByRole('button', { name: 'Continue' }));
 	await user.click(within(dialog).getByRole('button', { name: 'Save Macro' }));
 
 	const body = JSON.parse(fetchMock.mock.calls[0][1]?.body as string) as {
@@ -2000,13 +2000,13 @@ test('Willpower and Humanity are picked from their trackers, by the names the bo
 	await user.click(screen.getAllByRole('button', { name: 'Macros' })[0]);
 	await user.click(screen.getByRole('button', { name: 'Add macro' }));
 	const dialog = await screen.findByRole('dialog', { name: 'New Macro' });
-	await user.click(within(dialog).getByRole('button', { name: 'Done' }));
+	await user.click(within(dialog).getByRole('button', { name: 'Continue' }));
 	await user.type(within(dialog).getByRole('textbox', { name: 'Name' }), 'resist');
 	await user.click(screen.getByRole('button', { name: 'Pick Willpower' }));
 	await user.click(screen.getByRole('button', { name: 'Pick Humanity' }));
 	expect(screen.queryByRole('button', { name: 'Pick Health' })).not.toBeInTheDocument();
 
-	await user.click(within(dialog).getByRole('button', { name: 'Done' }));
+	await user.click(within(dialog).getByRole('button', { name: 'Continue' }));
 	await user.click(within(dialog).getByRole('button', { name: 'Add Macro' }));
 
 	const body = JSON.parse(fetchMock.mock.calls[0][1]?.body as string) as {

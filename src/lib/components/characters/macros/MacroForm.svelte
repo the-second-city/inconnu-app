@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { untrack } from 'svelte';
-	import { Check, Minimize2, Plus, SaveCheck, X } from '@lucide/svelte';
+	import { ArrowRight, Minimize2, Plus, SaveCheck, X } from '@lucide/svelte';
 
 	import { orList, plural } from '$lib';
 
@@ -25,7 +25,7 @@
 		oncancel: () => void; // Back to the list, discarding the macro
 		onsaved: () => void; // The macro saved; the live update brings it to the list
 		dirty?: boolean; // Whether anything differs from where it started, so leaving should ask
-		// Collapsed to a strip (the name, the pool, Done), leaving the sheet clear for picking traits
+		// Collapsed to a strip (the name, the pool, Continue), leaving the sheet clear for picking traits
 		compact?: boolean;
 	}
 
@@ -200,7 +200,7 @@
 @component
 A macro's form, in the macro panel, for a new one or (with `macro`) editing one: its name, then the pool (built by clicking traits on the
 sheet), then its Difficulty, Rouse Checks, options, and comment. Adding saves the character's macros with it.
-`compact` collapses it to a strip (the name, the pool and its dice, Cancel, and Done), so the sheet stays clear while traits are picked; Done returns to the
+`compact` collapses it to a strip (the name, the pool and its dice, Cancel, and Continue), so the sheet stays clear while traits are picked; Continue opens the
 details, kept as they were, where the macro is added (or saved). Editing loads the macro's pool
 into the picker, and saving replaces the macro, by its name as it started.
 -->
@@ -237,14 +237,14 @@ into the picker, and saving replaces the macro, by its name as it started.
 				>
 					<X size={18} />
 				</button>
-				<!-- Done with the pool: back to the details, where the macro is added -->
+				<!-- On from the pool to the details, where the macro is added -->
 				<button
 					type="button"
 					class="btn btn-sm btn-gothic btn-gothic-bone shrink-0"
 					onclick={() => (compact = false)}
 				>
-					<Check size={16} />
-					<span>Done</span>
+					<span>Continue</span>
+					<ArrowRight size={16} />
 				</button>
 			</div>
 			<!-- Below, the whole width: many traits wrap here rather than squeezing the buttons -->
