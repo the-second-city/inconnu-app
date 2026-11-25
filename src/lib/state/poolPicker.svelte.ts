@@ -7,15 +7,39 @@
 
 import { getContext, setContext } from 'svelte';
 
-import { KEY_DELIMITER, isNumberToken, resolvePool } from '$lib/rules/macros';
+import { KEY_DELIMITER, resolvePool } from '$lib/rules/macros';
 import type { Character, Trait } from '$lib/types';
 
 /** A picked trait, its specialty (null for none), and whether it's subtracted (a flaw, say). */
-export interface Pick {
+export interface TraitPick {
+	kind: 'trait';
 	trait: string;
 	specialty: string | null;
 	negative: boolean;
 }
+
+/** The pool's number: dice added (or, `negative`, taken away) beyond its traits. */
+export interface NumberPick {
+	kind: 'number';
+	dice: number; // More than 0; the sign is `negative`
+	negative: boolean;
+}
+
+/** One term of a pool being picked: a trait, or its one number. */
+export type Pick = TraitPick | NumberPick;
+
+/** The key of the pool's number, among the traits' names (which can't be it). */
+const NUMBER_KEY = '#';
+
+/** How a pick is addressed (to flip or remove it): a trait's name, or the number's key. */
+export const pickKey = (pick: Pick): string => (pick.kind === 'trait' ? pick.trait : NUMBER_KEY);
+
+/** How a pick reads: a trait's name, or the number ("2"). */
+export const pickLabel = (pick: Pick): string =>
+	pick.kind === 'trait' ? pick.trait : String(pick.dice);
+
+/** Whether a pick is the pool's number, not a trait. */
+export const isNumber = (pick: Pick): pick is NumberPick => pick.kind === 'number';
 
 export class PoolPicker {
 	active = $state(false);
@@ -26,14 +50,21 @@ export class PoolPicker {
 	// strip when one is
 	added = $state(0);
 
+	/** A trait's pick, if it's picked. */
+	#trait(trait: string): TraitPick | undefined {
+		return this.picks.find(
+			(pick): pick is TraitPick => pick.kind === 'trait' && pick.trait === trait
+		);
+	}
+
 	/** A trait's pick: undefined when it isn't picked, null for no specialty, else the specialty. */
 	selection(trait: string): string | null | undefined {
-		return this.picks.find((pick) => pick.trait === trait)?.specialty;
+		return this.#trait(trait)?.specialty;
 	}
 
 	/** Whether a picked trait is subtracted. */
 	isNegative(trait: string): boolean {
-		return this.picks.find((pick) => pick.trait === trait)?.negative ?? false;
+		return this.#trait(trait)?.negative ?? false;
 	}
 
 	/**
@@ -41,34 +72,45 @@ export class PoolPicker {
 	 * removes the trait; picking it another way switches it, keeping its place and sign.
 	 */
 	pick(trait: string, specialty: string | null): void {
-		const index = this.picks.findIndex((pick) => pick.trait === trait);
-		if (index === -1) {
-			this.picks.push({ trait, specialty, negative: false });
+		const picked = this.#trait(trait);
+		if (!picked) {
+			this.picks.push({ kind: 'trait', trait, specialty, negative: false });
 			this.added++;
-		} else if (this.picks[index].specialty === specialty) {
-			this.picks.splice(index, 1);
+		} else if (picked.specialty === specialty) {
+			this.remove(trait);
 		} else {
-			this.picks[index] = { ...this.picks[index], specialty };
+			this.#replace(picked, { ...picked, specialty });
 		}
 	}
 
-	/** Whether a picked trait's sign can flip: a pool must keep something to add. */
-	canFlip(trait: string): boolean {
-		const pick = this.picks.find((p) => p.trait === trait);
+	/** Put `next` where `pick` is. */
+	#replace(pick: Pick, next: Pick): void {
+		const index = this.picks.indexOf(pick);
+		if (index !== -1) this.picks[index] = next;
+	}
+
+	/** The pick of a key (see `pickKey`). */
+	#byKey(key: string): Pick | undefined {
+		return this.picks.find((pick) => pickKey(pick) === key);
+	}
+
+	/** Whether a pick's sign can flip (by its key): a pool must keep something to add. */
+	canFlip(key: string): boolean {
+		const pick = this.#byKey(key);
 		if (!pick) return false;
 		return pick.negative || this.picks.some((p) => p !== pick && !p.negative);
 	}
 
-	/** Flip a picked trait between added and subtracted. */
-	flip(trait: string): void {
-		const index = this.picks.findIndex((pick) => pick.trait === trait);
-		if (index === -1 || !this.canFlip(trait)) return;
-		this.picks[index] = { ...this.picks[index], negative: !this.picks[index].negative };
+	/** Flip a pick (by its key) between added and subtracted. */
+	flip(key: string): void {
+		const pick = this.#byKey(key);
+		if (!pick || !this.canFlip(key)) return;
+		this.#replace(pick, { ...pick, negative: !pick.negative });
 	}
 
-	/** Drop a trait from the pool. */
-	remove(trait: string): void {
-		this.picks = this.picks.filter((pick) => pick.trait !== trait);
+	/** Drop a pick (by its key: a trait's name, or the number's) from the pool. */
+	remove(key: string): void {
+		this.picks = this.picks.filter((pick) => pickKey(pick) !== key);
 	}
 
 	/**
@@ -89,25 +131,30 @@ export class PoolPicker {
 	get modifier(): number {
 		const pick = this.picks.find(isNumber);
 		if (!pick) return 0;
-		return (pick.negative ? -1 : 1) * Number(pick.trait);
+		return (pick.negative ? -1 : 1) * pick.dice;
 	}
 
 	/** Set the pool's number (0 drops it), keeping its place. */
 	set modifier(value: number) {
-		const index = this.picks.findIndex(isNumber);
-		const pick = { trait: String(Math.abs(value)), specialty: null, negative: value < 0 };
+		const pick = this.picks.find(isNumber);
+		const next: NumberPick = { kind: 'number', dice: Math.abs(value), negative: value < 0 };
 		if (value === 0) {
-			if (index !== -1) this.picks.splice(index, 1);
-		} else if (index === -1) {
-			this.picks.push(pick);
+			if (pick) this.remove(NUMBER_KEY);
+		} else if (!pick) {
+			this.picks.push(next);
 		} else {
-			this.picks[index] = pick;
+			this.#replace(pick, next);
 		}
 	}
 
 	/** Whether the pool adds anything: it can't be all subtracted (or empty). */
 	get adds(): boolean {
 		return this.picks.some((pick) => !pick.negative);
+	}
+
+	/** Whether the pool has a trait being added (something for the modifier to subtract from). */
+	get addsTrait(): boolean {
+		return this.picks.some((pick) => pick.kind === 'trait' && !pick.negative);
 	}
 
 	/** Empty the pool and close any menu. */
@@ -122,6 +169,7 @@ export class PoolPicker {
 	 */
 	ordered(traits: Trait[]): Pick[] {
 		const isAttribute = (pick: Pick): boolean =>
+			pick.kind === 'trait' &&
 			traits.some((trait) => trait.name === pick.trait && trait.type === 'attribute');
 		const added = this.picks.filter((pick) => !pick.negative);
 		return [
@@ -131,18 +179,20 @@ export class PoolPicker {
 		];
 	}
 
-	/** The pool as a macro stores it: trait keys ("Brawl.Kindred") joined by `+` and `-`. */
+	/** The pool as a macro stores it: trait keys ("Brawl.Kindred") and numbers, joined by `+` and `-`. */
 	tokens(traits: Trait[]): string[] {
 		return this.ordered(traits).flatMap((pick, i) => {
-			const key = pick.specialty ? `${pick.trait}${KEY_DELIMITER}${pick.specialty}` : pick.trait;
-			if (i === 0) return [key];
-			return [pick.negative ? '-' : '+', key];
+			const token =
+				pick.kind === 'number'
+					? String(pick.dice)
+					: pick.specialty
+						? `${pick.trait}${KEY_DELIMITER}${pick.specialty}`
+						: pick.trait;
+			if (i === 0) return [token];
+			return [pick.negative ? '-' : '+', token];
 		});
 	}
 }
-
-/** Whether a pick is the pool's number, not a trait. */
-export const isNumber = (pick: Pick): boolean => isNumberToken(pick.trait);
 
 /**
  * A macro's pool as picks (see `PoolPicker.load`): traits by the sheet's names, numbers combined
@@ -157,13 +207,13 @@ export const picksFromPool = (pool: string[], character: Character): Pick[] => {
 		if (term.kind === 'number') {
 			number += (negative ? -1 : 1) * Number(term.name);
 			numbered = true;
-		} else if (!picks.some((pick) => pick.trait === term.name)) {
+		} else if (!picks.some((pick) => pick.kind === 'trait' && pick.trait === term.name)) {
 			const specialty = term.specialties.length ? term.specialties.join(KEY_DELIMITER) : null;
-			picks.push({ trait: term.name, specialty, negative });
+			picks.push({ kind: 'trait', trait: term.name, specialty, negative });
 		}
 	}
 	if (numbered && number !== 0) {
-		picks.push({ trait: String(Math.abs(number)), specialty: null, negative: number < 0 });
+		picks.push({ kind: 'number', dice: Math.abs(number), negative: number < 0 });
 	}
 	return picks;
 };

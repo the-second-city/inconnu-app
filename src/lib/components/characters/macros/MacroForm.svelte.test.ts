@@ -3,7 +3,7 @@ import userEvent from '@testing-library/user-event';
 import { beforeEach, expect, test, vi } from 'vitest';
 
 import MacroForm from './MacroForm.svelte';
-import { PoolPicker, poolPickerContext } from '$lib/state/poolPicker.svelte';
+import { PoolPicker, pickLabel, poolPickerContext } from '$lib/state/poolPicker.svelte';
 import type { Character, Macro, Splat } from '$lib/types';
 
 vi.mock('$app/paths', () => ({
@@ -355,7 +355,7 @@ test("editing fills the form from the macro, its pool picked, and saves once the
 	expect(screen.getByRole('checkbox', { name: 'Re-roll Rouse failures' })).toBeChecked();
 	expect(screen.getByRole('checkbox', { name: 'Oblivion Stains' })).toBeChecked();
 	expect(screen.getByRole('textbox', { name: /Comment/ })).toHaveValue('Dinner time.');
-	expect(picker.picks.map((pick) => pick.trait)).toEqual(['Strength', 'Brawl', 'Obvious Predator']);
+	expect(picker.picks.map(pickLabel)).toEqual(['Strength', 'Brawl', 'Obvious Predator']);
 	expect(within(screen.getByRole('list', { name: 'Pool' })).getAllByRole('listitem')).toHaveLength(
 		3
 	);

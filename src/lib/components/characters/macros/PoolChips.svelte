@@ -2,7 +2,7 @@
 	import { Minus, Plus, X } from '@lucide/svelte';
 
 	import { KEY_DELIMITER } from '$lib/rules/macros';
-	import { isNumber, type PoolPicker } from '$lib/state/poolPicker.svelte';
+	import { isNumber, pickKey, pickLabel, type PoolPicker } from '$lib/state/poolPicker.svelte';
 	import type { Trait } from '$lib/types';
 
 	interface ComponentProps {
@@ -27,8 +27,10 @@ Clicking the chip flips it between added and subtracted (a flaw, say; never the 
 warning colors.
 -->
 <ul class="flex flex-wrap gap-1.5" aria-label="Pool">
-	{#each picks as pick (pick.trait)}
-		{@const lacking = missing.includes(pick.trait)}
+	{#each picks as pick (pickKey(pick))}
+		{@const key = pickKey(pick)}
+		{@const label = pickLabel(pick)}
+		{@const lacking = pick.kind === 'trait' && missing.includes(pick.trait)}
 		<li
 			class={[
 				'flex items-center rounded-full border text-sm transition-colors',
@@ -46,22 +48,22 @@ warning colors.
 					'group flex items-center gap-1 rounded-l-full py-0.5 pr-0.5 pl-1 enabled:cursor-pointer disabled:cursor-default disabled:opacity-100',
 					pick.negative ? 'enabled:hover:bg-error-500/15' : 'enabled:hover:bg-surface-200/10'
 				]}
-				onclick={() => picker.flip(pick.trait)}
-				disabled={!picker.canFlip(pick.trait)}
+				onclick={() => picker.flip(key)}
+				disabled={!picker.canFlip(key)}
 				aria-pressed={pick.negative}
-				aria-label="Subtract {pick.trait}"
+				aria-label="Subtract {label}"
 				title={(lacking ? 'Not on the sheet. ' : '') +
 					(pick.negative
-						? `Subtracted: click to add ${pick.trait}`
-						: picker.canFlip(pick.trait)
-							? `Added: click to subtract ${pick.trait}`
+						? `Subtracted: click to add ${label}`
+						: picker.canFlip(key)
+							? `Added: click to subtract ${label}`
 							: 'A pool needs something to add')}
 			>
 				<span class="flex size-4 shrink-0 items-center justify-center group-disabled:opacity-40">
 					{#if pick.negative}<Minus size={12} />{:else}<Plus size={12} />{/if}
 				</span>
 				<span class="whitespace-nowrap">
-					{pick.trait}{#if pick.specialty}{SPACE}<em class="text-primary-300"
+					{label}{#if pick.kind === 'trait' && pick.specialty}{SPACE}<em class="text-primary-300"
 							>({pick.specialty.split(KEY_DELIMITER).join(', ')})</em
 						>{/if}
 				</span>
@@ -69,8 +71,8 @@ warning colors.
 			<button
 				type="button"
 				class="hover:preset-tonal-error mr-0.5 flex size-5 shrink-0 items-center justify-center rounded-full opacity-60 hover:opacity-100"
-				onclick={() => picker.remove(pick.trait)}
-				aria-label="Remove {pick.trait}"
+				onclick={() => picker.remove(key)}
+				aria-label="Remove {label}"
 				title="Remove"
 			>
 				<X size={12} />

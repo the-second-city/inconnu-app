@@ -29,7 +29,12 @@ test("showing a macro highlights its traits by the sheet's names, with their sig
 
 	highlight.show(['strength', '-', 'brawl'], character(traits));
 
-	expect(highlight.of('Strength')).toEqual({ trait: 'Strength', specialty: null, negative: false });
+	expect(highlight.of('Strength')).toEqual({
+		kind: 'trait',
+		trait: 'Strength',
+		specialty: null,
+		negative: false
+	});
 	expect(highlight.of('Brawl')?.negative).toBe(true);
 	expect(highlight.of('Potence')).toBeUndefined();
 

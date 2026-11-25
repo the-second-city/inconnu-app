@@ -1,6 +1,6 @@
 import { expect, test } from 'vitest';
 
-import { PoolPicker } from './poolPicker.svelte';
+import { PoolPicker, pickKey, pickLabel } from './poolPicker.svelte';
 import type { Character, Trait } from '$lib/types';
 
 /** A trait of the type, rated 2. */
@@ -30,12 +30,14 @@ test('picking it again the same way drops it; another way switches it in place',
 
 	picker.pick('Brawl', 'Kindred');
 	expect(picker.picks).toEqual([
-		{ trait: 'Brawl', specialty: 'Kindred', negative: false },
-		{ trait: 'Potence', specialty: null, negative: false }
+		{ kind: 'trait', trait: 'Brawl', specialty: 'Kindred', negative: false },
+		{ kind: 'trait', trait: 'Potence', specialty: null, negative: false }
 	]);
 
 	picker.pick('Brawl', 'Kindred');
-	expect(picker.picks).toEqual([{ trait: 'Potence', specialty: null, negative: false }]);
+	expect(picker.picks).toEqual([
+		{ kind: 'trait', trait: 'Potence', specialty: null, negative: false }
+	]);
 });
 
 test('the tokens put attributes first, then the order picked, joined by +', () => {
@@ -64,7 +66,9 @@ test('remove and clear drop picks; clear closes the menu too', () => {
 	picker.open = 'Brawl';
 
 	picker.remove('Brawl');
-	expect(picker.picks).toEqual([{ trait: 'Strength', specialty: null, negative: false }]);
+	expect(picker.picks).toEqual([
+		{ kind: 'trait', trait: 'Strength', specialty: null, negative: false }
+	]);
 
 	picker.clear();
 	expect(picker.picks).toEqual([]);
@@ -143,9 +147,9 @@ test("loading a pool picks its traits by the sheet's names, with their specialti
 	picker.load(['strength', '+', 'brawl.kindred', '-', 'ObviousPredator'], character(traits));
 
 	expect(picker.picks).toEqual([
-		{ trait: 'Strength', specialty: null, negative: false },
-		{ trait: 'Brawl', specialty: 'Kindred', negative: false },
-		{ trait: 'Obvious Predator', specialty: null, negative: true }
+		{ kind: 'trait', trait: 'Strength', specialty: null, negative: false },
+		{ kind: 'trait', trait: 'Brawl', specialty: 'Kindred', negative: false },
+		{ kind: 'trait', trait: 'Obvious Predator', specialty: null, negative: true }
 	]);
 	expect(picker.open).toBeNull();
 	expect(picker.added).toBe(added); // Loading isn't picking
@@ -168,10 +172,10 @@ test("what the sheet can't pick loads too: inherent traits, lost traits, numbers
 	);
 
 	expect(picker.picks).toEqual([
-		{ trait: 'Willpower', specialty: null, negative: false },
-		{ trait: 'Gone', specialty: 'Thing.Other', negative: false },
-		{ trait: 'Strength', specialty: null, negative: false },
-		{ trait: '1', specialty: null, negative: true }
+		{ kind: 'trait', trait: 'Willpower', specialty: null, negative: false },
+		{ kind: 'trait', trait: 'Gone', specialty: 'Thing.Other', negative: false },
+		{ kind: 'trait', trait: 'Strength', specialty: null, negative: false },
+		{ kind: 'number', dice: 1, negative: true }
 	]);
 	expect(picker.tokens(traits)).toEqual([
 		'Strength',
@@ -229,4 +233,20 @@ test('a pool adds something unless it is all subtracted', () => {
 	picker.remove('Strength');
 
 	expect(picker.adds).toBe(false);
+});
+
+test('the number is a pick of its own kind, flipped and removed by its key', () => {
+	const picker = new PoolPicker();
+	picker.pick('Strength', null);
+	picker.modifier = 2;
+	const number = picker.picks[1];
+	expect(number).toEqual({ kind: 'number', dice: 2, negative: false });
+	expect(pickLabel(number)).toBe('2');
+
+	picker.flip(pickKey(number));
+	expect(picker.modifier).toBe(-2);
+
+	picker.remove(pickKey(number));
+	expect(picker.modifier).toBe(0);
+	expect(picker.picks.map(pickLabel)).toEqual(['Strength']);
 });

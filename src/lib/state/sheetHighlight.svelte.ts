@@ -6,16 +6,18 @@
 
 import { getContext, setContext } from 'svelte';
 
-import { picksFromPool, type Pick } from '$lib/state/poolPicker.svelte';
+import { picksFromPool, type TraitPick } from '$lib/state/poolPicker.svelte';
 import type { Character } from '$lib/types';
 
 export class SheetHighlight {
-	/** The highlighted traits, read as picks (by the sheet's names, with their signs). */
-	picks: Pick[] = $state([]);
+	/** The highlighted traits, read as picks (by the sheet's names, with their signs; no number). */
+	picks: TraitPick[] = $state([]);
 
 	/** Highlight a macro's traits. */
 	show(pool: string[], character: Character): void {
-		this.picks = picksFromPool(pool, character);
+		this.picks = picksFromPool(pool, character).filter(
+			(pick): pick is TraitPick => pick.kind === 'trait'
+		);
 	}
 
 	/** Stop highlighting. */
@@ -24,7 +26,7 @@ export class SheetHighlight {
 	}
 
 	/** A trait's highlight: undefined when the highlighted pool doesn't roll it. */
-	of(trait: string): Pick | undefined {
+	of(trait: string): TraitPick | undefined {
 		return this.picks.find((pick) => pick.trait === trait);
 	}
 }

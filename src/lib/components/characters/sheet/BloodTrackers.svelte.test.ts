@@ -206,6 +206,8 @@ test('while a pool is picked, Blood Potency picks Potency, as the bot rolls it',
 
 	await user.click(screen.getByRole('button', { name: 'Pick Blood Potency' }));
 
-	expect(picker.picks).toEqual([{ trait: 'Potency', specialty: null, negative: false }]);
+	expect(picker.picks).toEqual([
+		{ kind: 'trait', trait: 'Potency', specialty: null, negative: false }
+	]);
 	expect(screen.getByRole('img', { name: 'Blood Potency 3' })).toBeInTheDocument();
 });

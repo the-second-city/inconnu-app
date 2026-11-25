@@ -5,7 +5,7 @@
 
 import { plural } from '$lib';
 import type { PoolTerm } from '$lib/rules/macros';
-import { isNumber, type PoolPicker } from '$lib/state/poolPicker.svelte';
+import type { PoolPicker } from '$lib/state/poolPicker.svelte';
 
 /** What the pool says while it's empty. */
 export const POOL_HINT = 'Click traits on the sheet to build the pool.';
@@ -15,9 +15,7 @@ export const MODIFIER_LIMIT = 10;
 
 /** The modifier's least: it can only subtract from a trait being added, or stay where it is. */
 export const modifierMin = (picker: PoolPicker): number =>
-	picker.picks.some((pick) => !pick.negative && !isNumber(pick)) || picker.modifier < 0
-		? -MODIFIER_LIMIT
-		: 0;
+	picker.addsTrait || picker.modifier < 0 ? -MODIFIER_LIMIT : 0;
 
 /** What the modifier does: "Adds 2 dice", "Subtracts 1 die". */
 export const modifierDetail = (value: number): string =>

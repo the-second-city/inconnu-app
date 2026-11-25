@@ -63,7 +63,9 @@ test('a trait without specialties is picked, and dropped, by clicking its line',
 	expect(button).toHaveAttribute('aria-pressed', 'false');
 
 	await user.click(button);
-	expect(picker.picks).toEqual([{ trait: 'Strength', specialty: null, negative: false }]);
+	expect(picker.picks).toEqual([
+		{ kind: 'trait', trait: 'Strength', specialty: null, negative: false }
+	]);
 	expect(button).toHaveAttribute('aria-pressed', 'true');
 
 	await user.click(button);
@@ -103,7 +105,9 @@ test('picking a specialty picks the trait with it; picking it again drops the tr
 	await user.click(line()); // A click (or tap) opens it too
 	await user.click(screen.getByRole('menuitemradio', { name: /Kindred/ }));
 
-	expect(picker.picks).toEqual([{ trait: 'Brawl', specialty: 'Kindred', negative: false }]);
+	expect(picker.picks).toEqual([
+		{ kind: 'trait', trait: 'Brawl', specialty: 'Kindred', negative: false }
+	]);
 	await waitFor(() => expect(screen.queryByRole('menu')).not.toBeInTheDocument());
 
 	await user.click(line());
@@ -120,7 +124,9 @@ test('picking the trait itself picks it without a specialty, switching from one'
 	await user.click(line());
 	await user.click(screen.getByRole('menuitemradio', { name: 'Brawl' }));
 
-	expect(picker.picks).toEqual([{ trait: 'Brawl', specialty: null, negative: false }]);
+	expect(picker.picks).toEqual([
+		{ kind: 'trait', trait: 'Brawl', specialty: null, negative: false }
+	]);
 });
 
 test("a Discipline's powers add no dice", async () => {
@@ -161,7 +167,9 @@ test('choosing with the keyboard returns focus to the line', async () => {
 	await waitFor(() => expect(rows[0]).toHaveFocus());
 	await user.keyboard('{ArrowDown}{Enter}');
 
-	expect(picker.picks).toEqual([{ trait: 'Brawl', specialty: 'Kindred', negative: false }]);
+	expect(picker.picks).toEqual([
+		{ kind: 'trait', trait: 'Brawl', specialty: 'Kindred', negative: false }
+	]);
 	expect(line()).toHaveFocus();
 });
 
@@ -211,7 +219,7 @@ test.each([
 	renderTrait({ active: false, highlight });
 	expect(plainLine()).not.toHaveAttribute('data-highlight');
 
-	highlight.picks = [{ trait: 'Brawl', specialty: null, negative }];
+	highlight.picks = [{ kind: 'trait', trait: 'Brawl', specialty: null, negative }];
 
 	await waitFor(() => expect(plainLine()).toHaveAttribute('data-highlight', mark));
 	highlight.hide();
@@ -221,7 +229,7 @@ test.each([
 test("editing doesn't highlight", () => {
 	const highlight = new SheetHighlight();
 	renderTrait({ active: false, editing: true, highlight });
-	highlight.picks = [{ trait: 'Brawl', specialty: null, negative: false }];
+	highlight.picks = [{ kind: 'trait', trait: 'Brawl', specialty: null, negative: false }];
 
 	expect(document.querySelector('[data-highlight]')).toBeNull();
 });
