@@ -7,6 +7,7 @@
 
 	import { mendAmount } from '$lib/rules/damage';
 	import { getConstraints } from '$lib/constraints';
+	import { getPoolPicker } from '$lib/state/poolPicker.svelte';
 	import type { Character, TrackType } from '$lib/types';
 
 	import MenuAction from './MenuAction.svelte';
@@ -51,6 +52,9 @@
 		onRouse !== undefined && track === 'health' && character.splat === 'ghoul'
 	);
 
+	// While a pool is being picked, the track is only to look at (Willpower's row is a choice instead)
+	const picker = getPoolPicker();
+
 	let trackLabel = $derived(capitalize(track));
 	// The actions menu's hover text: what it offers this viewer
 	const actionsTitle = $derived(
@@ -63,7 +67,7 @@
 	// So neither popover reopens by itself when the mode switches back
 	$effect(() => {
 		if (!editing) showControls = false;
-		if (editing) showActions = false;
+		if (editing || picker?.active) showActions = false;
 	});
 
 	// Edits happen on a local copy, which is written back to the character
@@ -263,7 +267,7 @@
 			triggerClass={CLICKABLE}
 			arrow
 		/>
-	{:else if actionable}
+	{:else if actionable && !picker?.active}
 		<Popover
 			bind:open={showActions}
 			trigger={boxes}

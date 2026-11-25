@@ -211,3 +211,23 @@ test('while a pool is picked, Blood Potency picks Potency, as the bot rolls it',
 	]);
 	expect(screen.getByRole('img', { name: 'Blood Potency 3' })).toBeInTheDocument();
 });
+
+test('while a pool is picked, Hunger and Frenzy show without being buttons', () => {
+	const picker = new PoolPicker();
+	picker.active = true;
+	render(BloodTrackers, {
+		props: {
+			character: vampire({ potency: 3, hunger: 2 }),
+			onRouse: vi.fn(),
+			onSlake: vi.fn(),
+			onFrenzy: vi.fn()
+		},
+		context: poolPickerContext(picker)
+	});
+
+	expect(screen.getAllByRole('img', { name: 'Hunger' })).toHaveLength(2);
+	expect(screen.getByText(/Resist with/)).not.toHaveAttribute('title');
+	expect(screen.getAllByRole('button').map((b) => b.getAttribute('aria-label'))).toEqual([
+		'Pick Blood Potency'
+	]);
+});

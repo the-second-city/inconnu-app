@@ -1,12 +1,15 @@
-import { screen, waitFor, within } from '@testing-library/svelte';
+import { render, screen, waitFor, within } from '@testing-library/svelte';
 import userEvent from '@testing-library/user-event';
 import { beforeEach, expect, test, vi } from 'vitest';
 
 import type { Character } from '$lib/types';
 import { navigate } from '$lib/testing/page.svelte';
+import { TEST_CONSTRAINTS } from '$lib/testing/constraints';
+import CharacterPage from './CharacterPage.svelte';
 import {
 	character,
 	editButton,
+	GUILD,
 	leaveVia,
 	panel,
 	reduceMotion,
@@ -1041,4 +1044,25 @@ test("closing the panel during Add's premium check doesn't reopen it on the form
 	await user.click(toggle);
 
 	expect(screen.getByRole('dialog', { name: 'Macros' })).toBeInTheDocument();
+});
+
+test("while a pool is picked, Health isn't a button; it is again after", async () => {
+	const user = userEvent.setup();
+	render(CharacterPage, {
+		constraints: TEST_CONSTRAINTS,
+		guild: GUILD,
+		character: withMacros(),
+		editable: true,
+		actionable: true,
+		ownerActions: true
+	});
+	expect(screen.getByRole('button', { name: 'Health actions' })).toBeInTheDocument();
+
+	await user.click(screen.getAllByRole('button', { name: 'Macros' })[0]);
+	await user.click(screen.getByRole('button', { name: 'Add macro' }));
+	await screen.findByRole('dialog', { name: 'New Macro' });
+	expect(screen.queryByRole('button', { name: 'Health actions' })).not.toBeInTheDocument();
+
+	await user.keyboard('{Escape}');
+	expect(await screen.findByRole('button', { name: 'Health actions' })).toBeInTheDocument();
 });

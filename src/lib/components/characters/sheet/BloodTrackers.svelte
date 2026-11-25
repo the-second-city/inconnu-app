@@ -6,6 +6,7 @@
 	import { frenzyPool } from '$lib/rules/frenzy';
 	import { bloodPotency } from '$lib/rules/vampire';
 	import { getConstraints } from '$lib/constraints';
+	import { getPoolPicker } from '$lib/state/poolPicker.svelte';
 	import type { Character } from '$lib/types';
 
 	import Card from '$lib/components/ui/Card.svelte';
@@ -34,6 +35,10 @@
 		onFrenzy
 	}: ComponentProps = $props();
 
+	// While a pool is being picked, Hunger and Frenzy are only to look at
+	const picker = getPoolPicker();
+	const picking = $derived(picker?.active === true);
+
 	// The dice to resist frenzy with, before any penalty or bonus
 	const resistDice = $derived(frenzyPool(character).total);
 
@@ -43,9 +48,9 @@
 	);
 
 	let showHungerMenu = $state(false);
-	// So the menu doesn't reopen by itself when edit mode ends
+	// So the menu doesn't reopen by itself when edit mode, or picking, ends
 	$effect(() => {
-		if (editing) showHungerMenu = false;
+		if (editing || picking) showHungerMenu = false;
 	});
 
 	/** Close the Hunger menu, then run an action from it. */
@@ -156,8 +161,8 @@
 				{/if}
 			</div>
 		{/snippet}
-		{#if (onRouse || onSlake) && !editing}
-			<!-- Outside edit mode, the drops open the Hunger menu -->
+		{#if (onRouse || onSlake) && !editing && !picking}
+			<!-- Outside edit mode (and picking), the drops open the Hunger menu -->
 			<Popover
 				bind:open={showHungerMenu}
 				trigger={hungerPips}
@@ -173,16 +178,23 @@
 
 		{#if onFrenzy && !editing}
 			<div>Frenzy</div>
-			<button
-				type="button"
-				class={[CLICKABLE, 'flex items-center gap-1.5 text-left']}
-				title="Test for frenzy"
-				onclick={onFrenzy}
-			>
+			{#snippet frenzy()}
 				<Flame size={16} class="text-primary-500" aria-hidden="true" />
 				Resist with {resistDice}
 				{resistDice === 1 ? 'die' : 'dice'}
-			</button>
+			{/snippet}
+			{#if picking}
+				<div class="flex items-center gap-1.5">{@render frenzy()}</div>
+			{:else}
+				<button
+					type="button"
+					class={[CLICKABLE, 'flex items-center gap-1.5 text-left']}
+					title="Test for frenzy"
+					onclick={onFrenzy}
+				>
+					{@render frenzy()}
+				</button>
+			{/if}
 		{/if}
 	</div>
 </Card>
