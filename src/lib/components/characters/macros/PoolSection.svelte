@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { getConstraints } from '$lib/constraints';
 	import { Minimize2 } from '@lucide/svelte';
 
 	import { orList, plural } from '$lib';
@@ -9,7 +10,8 @@
 	import DiceCount from './DiceCount.svelte';
 	import PoolChips from './PoolChips.svelte';
 	import {
-		MODIFIER_LIMIT,
+		modifierLimit,
+		poolSizeError,
 		POOL_HINT,
 		missingTraits,
 		modifierDetail,
@@ -36,6 +38,12 @@
 	);
 	// All subtracted (say, its last added trait removed), it can't roll
 	const addsNothing = $derived(!empty && !picker.adds);
+
+	// The modifier's range, within the bot's limits
+	const constraints = getConstraints();
+	const limit = $derived(modifierLimit(constraints()));
+	// Past the bot's limits on a pool's size
+	const sizeError = $derived(poolSizeError(picker.tokens(traits), picker.modifier, constraints()));
 </script>
 
 <!--
@@ -75,6 +83,9 @@ nothing to add), what saving does about repeated traits, and the modifier.
 				: 'them'} to save.
 		</p>
 	{/if}
+	{#if sizeError}
+		<p class="text-warning-300 text-sm">{sizeError}</p>
+	{/if}
 	{#each picker.repeats as repeat (repeat.trait)}
 		<p class="text-warning-300 text-sm">{repeatNote(repeat)}</p>
 	{/each}
@@ -84,8 +95,8 @@ nothing to add), what saving does about repeated traits, and the modifier.
 	<Stepper
 		label="Modifier"
 		bind:value={() => picker.modifier, (value) => (picker.modifier = value)}
-		min={modifierMin(picker)}
-		max={MODIFIER_LIMIT}
+		min={modifierMin(picker, limit)}
+		max={limit}
 		detail={modifierDetail(picker.modifier)}
 	/>
 </section>

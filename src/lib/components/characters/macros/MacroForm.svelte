@@ -17,6 +17,7 @@
 	import Stepper from '$lib/components/ui/Stepper.svelte';
 	import PoolSection from './PoolSection.svelte';
 	import PoolStrip from './PoolStrip.svelte';
+	import { poolSizeError } from './pool';
 	import { randomPlaceholder } from './placeholders';
 
 	interface ComponentProps {
@@ -142,6 +143,7 @@
 		if (nameError) return 'The name needs fixing';
 		if (!hasAction) return rousing ? 'Needs a pool or Rouse Checks' : 'Needs a pool';
 		if (addsNothing) return 'The pool needs something to add';
+		if (poolSizeError(pool, picker?.modifier ?? 0, constraints())) return 'The pool is too big';
 		if (lacksTraits) return 'The pool has traits that aren’t on the sheet';
 		if (conflicted) return 'The pool adds and subtracts the same trait';
 		if (commentError) return 'The comment is too long';

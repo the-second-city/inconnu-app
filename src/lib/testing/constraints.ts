@@ -47,7 +47,9 @@ export const TEST_CONSTRAINTS: Constraints = {
 	macro_comment_max_length: 300,
 	macro_difficulty: { min: 0, max: 100 },
 	macro_rouses: { min: 0, max: 5 },
-	macro_staining: ['apply', 'show', 'no']
+	macro_staining: ['apply', 'show', 'no'],
+	macro_pool_max_tokens: 50,
+	pool_max: 100
 };
 
 /**

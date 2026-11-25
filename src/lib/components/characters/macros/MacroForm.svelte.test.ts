@@ -596,3 +596,38 @@ test("a mortal's macro of Rouse Checks alone needs a pool", async () => {
 	expect(saveButton()).toBeDisabled();
 	expect(saveButton()).toHaveAccessibleDescription('Needs a pool');
 });
+
+test("a pool past the bot's limits holds the save, and says why", async () => {
+	const user = userEvent.setup();
+	renderEditing({ ...FEED, pool: ['Strength', '+', '60', '+', '60'] });
+	await user.click(screen.getByRole('button', { name: 'Less Difficulty' }));
+
+	expect(screen.getByRole('region', { name: 'Pool' })).toHaveTextContent(
+		"The modifier can't be more than 100."
+	);
+	expect(saveButton()).toHaveAccessibleDescription('The pool is too big');
+});
+
+test('a pool of too many terms holds the save', () => {
+	const traits = Array.from({ length: 26 }, (_, i) => ({
+		name: `Trait ${String.fromCharCode(65 + i)}`,
+		rating: 1,
+		type: 'custom',
+		subtraits: []
+	}));
+	const pool = traits.flatMap((trait, i) => (i === 0 ? [trait.name] : ['+', trait.name]));
+	const macro = { ...FEED, pool };
+	render(MacroForm, {
+		props: {
+			character: { ...character(), traits, macros: [macro] },
+			macro,
+			oncancel: vi.fn(),
+			onsaved: vi.fn()
+		},
+		context: poolPickerContext(new PoolPicker())
+	});
+
+	expect(screen.getByRole('region', { name: 'Pool' })).toHaveTextContent(
+		'A pool can have at most 25 traits and numbers.'
+	);
+});

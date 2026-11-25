@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { getConstraints } from '$lib/constraints';
 	import { ArrowRight, X } from '@lucide/svelte';
 
 	import type { PoolPicker } from '$lib/state/poolPicker.svelte';
@@ -9,7 +10,7 @@
 	import DiceCount from './DiceCount.svelte';
 	import PoolChips from './PoolChips.svelte';
 	import {
-		MODIFIER_LIMIT,
+		modifierLimit,
 		POOL_HINT,
 		formatModifier,
 		missingTraits,
@@ -40,6 +41,10 @@
 	const empty = $derived(picker.picks.length === 0);
 	// The number has no chip here: the modifier shows it
 	const hasTraits = $derived(picker.picks.some((pick) => !isNumber(pick)));
+
+	// The modifier's range, within the bot's limits
+	const constraints = getConstraints();
+	const limit = $derived(modifierLimit(constraints()));
 </script>
 
 <!--
@@ -87,8 +92,8 @@ there, not squeezing the buttons), and the modifier at the row's end.
 			compact
 			label="Modifier"
 			bind:value={() => picker.modifier, (value) => (picker.modifier = value)}
-			min={modifierMin(picker)}
-			max={MODIFIER_LIMIT}
+			min={modifierMin(picker, limit)}
+			max={limit}
 			detail={modifierDetail(picker.modifier)}
 			format={formatModifier}
 		/>

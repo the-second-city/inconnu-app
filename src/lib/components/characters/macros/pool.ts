@@ -6,16 +6,37 @@
 import { andList, plural } from '$lib';
 import { KEY_DELIMITER, type PoolTerm } from '$lib/rules/macros';
 import type { PoolPicker, Repeat } from '$lib/state/poolPicker.svelte';
+import type { Constraints } from '$lib/types';
 
 /** What the pool says while it's empty. */
 export const POOL_HINT = 'Click traits on the sheet to build the pool.';
 
-/** The modifier's bound either way. The bot sets none; this keeps the stepper sensible. */
-export const MODIFIER_LIMIT = 10;
+/** The modifier's stepper goes this far either way, a sensible bound, within the bot's `pool_max`. */
+export const modifierLimit = (constraints: Constraints): number =>
+	Math.min(10, constraints.pool_max);
 
 /** The modifier's least: it can only subtract from a trait being added, or stay where it is. */
-export const modifierMin = (picker: PoolPicker): number =>
-	picker.addsTrait || picker.modifier < 0 ? -MODIFIER_LIMIT : 0;
+export const modifierMin = (picker: PoolPicker, limit: number): number =>
+	picker.addsTrait || picker.modifier < 0 ? -limit : 0;
+
+/**
+ * Why the bot won't take a pool's size, or null: more tokens than `macro_pool_max_tokens`, or a
+ * number past `pool_max` (a macro from Discord's numbers, combined).
+ */
+export const poolSizeError = (
+	tokens: string[],
+	modifier: number,
+	constraints: Constraints
+): string | null => {
+	if (tokens.length > constraints.macro_pool_max_tokens) {
+		const terms = Math.floor((constraints.macro_pool_max_tokens + 1) / 2);
+		return `A pool can have at most ${terms} traits and numbers.`;
+	}
+	if (Math.abs(modifier) > constraints.pool_max) {
+		return `The modifier can't be more than ${constraints.pool_max}.`;
+	}
+	return null;
+};
 
 /** What the modifier does: "Adds 2 dice", "Subtracts 1 die". */
 export const modifierDetail = (value: number): string =>

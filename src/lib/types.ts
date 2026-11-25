@@ -60,6 +60,8 @@ export interface Constraints {
 	macro_difficulty: Range;
 	macro_rouses: Range;
 	macro_staining: string[]; // A macro's `staining` values
+	macro_pool_max_tokens: number; // A pool's most tokens: traits, numbers, and operators
+	pool_max: number; // A roll's most dice, and so a pool's largest number
 }
 
 /**
