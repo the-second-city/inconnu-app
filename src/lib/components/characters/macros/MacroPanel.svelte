@@ -70,9 +70,11 @@
 	// The new macro form collapsed to a strip at the bottom, so the sheet is clear for picking traits
 	let formCompact = $state(false);
 	const compact = $derived(inForm && formCompact);
-	// A new form starts full
+	// A new macro starts as the strip, since its pool is the main work (and the sheet should be clear
+	// for it); Done opens the name and details. An edited macro's form starts full
 	$effect(() => {
-		if (!inForm) formCompact = false;
+		const next = view;
+		untrack(() => (formCompact = next === 'add'));
 	});
 
 	// Picking a trait from the sheet collapses the form, clearing the sheet for the rest (loading

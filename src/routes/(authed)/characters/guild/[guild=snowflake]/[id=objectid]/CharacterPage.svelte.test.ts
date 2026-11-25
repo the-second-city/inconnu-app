@@ -1452,7 +1452,11 @@ test('reopening the panel shows the list, not a macro in progress', async () => 
 	const toggle = screen.getAllByRole('button', { name: 'Macros' })[0];
 	await user.click(toggle);
 	await user.click(screen.getByRole('button', { name: 'Add macro' }));
-	await screen.findByRole('dialog', { name: 'New Macro' });
+	await user.click(
+		within(await screen.findByRole('dialog', { name: 'New Macro' })).getByRole('button', {
+			name: 'Done'
+		})
+	);
 
 	await user.click(screen.getByRole('button', { name: 'Close macros' }));
 	await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
@@ -1729,7 +1733,10 @@ const addMacroForm = async (user: ReturnType<typeof userEvent.setup>): Promise<H
 	renderOwnerPage(withMacros());
 	await user.click(screen.getAllByRole('button', { name: 'Macros' })[0]);
 	await user.click(screen.getByRole('button', { name: 'Add macro' }));
-	return screen.findByRole('dialog', { name: 'New Macro' });
+	const dialog = await screen.findByRole('dialog', { name: 'New Macro' });
+	// It opens as the strip; Done opens the name and details
+	await user.click(within(dialog).getByRole('button', { name: 'Done' }));
+	return dialog;
 };
 
 test.each<
@@ -1809,7 +1816,7 @@ test("leaving the page with the macro panel open but nothing unsaved doesn't ask
 	expect(window.confirm).not.toHaveBeenCalled();
 });
 
-test("the strip's Cancel asks about a new macro, and leaving it starts the next one full", async () => {
+test("the strip's Cancel asks about a new macro, and the next one starts afresh, as the strip", async () => {
 	const user = userEvent.setup();
 	const dialog = await addMacroForm(user);
 	await user.type(within(dialog).getByRole('textbox', { name: 'Name' }), 'feed');
@@ -1821,6 +1828,8 @@ test("the strip's Cancel asks about a new macro, and leaving it starts the next 
 	expect(window.confirm).toHaveBeenCalledOnce();
 	await user.click(await screen.findByRole('button', { name: 'Add macro' }));
 	const next = await screen.findByRole('dialog', { name: 'New Macro' });
+	expect(within(next).queryByRole('textbox', { name: 'Name' })).not.toBeInTheDocument();
+	await user.click(within(next).getByRole('button', { name: 'Done' }));
 	expect(within(next).getByRole('textbox', { name: 'Name' })).toHaveValue('');
 });
 
@@ -1887,6 +1896,7 @@ test('a trait subtracted from the bar is saved with a minus', async () => {
 	await user.click(screen.getAllByRole('button', { name: 'Macros' })[0]);
 	await user.click(screen.getByRole('button', { name: 'Add macro' }));
 	const dialog = await screen.findByRole('dialog', { name: 'New Macro' });
+	await user.click(within(dialog).getByRole('button', { name: 'Done' }));
 	await user.type(within(dialog).getByRole('textbox', { name: 'Name' }), 'hunt_mortal');
 	await user.click(screen.getByRole('button', { name: 'Pick Strength' }));
 	await user.click(screen.getByRole('button', { name: 'Pick Obvious Predator' }));
@@ -1989,6 +1999,7 @@ test('Willpower and Humanity are picked from their trackers, by the names the bo
 	await user.click(screen.getAllByRole('button', { name: 'Macros' })[0]);
 	await user.click(screen.getByRole('button', { name: 'Add macro' }));
 	const dialog = await screen.findByRole('dialog', { name: 'New Macro' });
+	await user.click(within(dialog).getByRole('button', { name: 'Done' }));
 	await user.type(within(dialog).getByRole('textbox', { name: 'Name' }), 'resist');
 	await user.click(screen.getByRole('button', { name: 'Pick Willpower' }));
 	await user.click(screen.getByRole('button', { name: 'Pick Humanity' }));
