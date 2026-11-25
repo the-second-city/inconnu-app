@@ -469,6 +469,51 @@
 	backdrop-filter: blur(4px);
 }
 
+/* Modals and popovers fade in and out (`Modal`, `Popover`, the profile's image viewer). Zag shows and hides them with the
+   `hidden` attribute, at once, so they transition from `@starting-style` on opening, and keep
+   `display` (allow-discrete) through the fade on closing. Panels also settle from a slight
+   scale, toward their trigger for popovers (Zag's `--transform-origin`); the backdrop only
+   fades. With reduced motion, they only fade */
+.fade-panel,
+.fade-backdrop {
+	transition:
+		opacity 150ms ease-out,
+		scale 150ms ease-out,
+		display 150ms allow-discrete;
+}
+
+.fade-panel {
+	transform-origin: var(--transform-origin, center);
+}
+
+.fade-panel[hidden],
+.fade-backdrop[hidden] {
+	opacity: 0;
+	pointer-events: none;
+}
+
+.fade-panel[hidden] {
+	scale: 0.97;
+}
+
+@starting-style {
+	.fade-panel:not([hidden]),
+	.fade-backdrop:not([hidden]) {
+		opacity: 0;
+	}
+
+	.fade-panel:not([hidden]) {
+		scale: 0.97;
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.fade-panel,
+	.fade-panel[hidden] {
+		scale: none;
+	}
+}
+
 /* A sheet line (a trait's, or a tracker's row) rolled by a hovered macro (`data-highlight`): a ring like a picked line's (PickableTrait), drawn behind the line
    without moving it; dashed ash when the macro subtracts it */
 .trait-line {

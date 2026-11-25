@@ -69,7 +69,7 @@ Wraps Skeleton's Popover so its anatomy lives in one place.
 	</SkeletonPopover.Trigger>
 	<ClientPortal>
 		<SkeletonPopover.Positioner>
-			<SkeletonPopover.Content class={contentClass}>
+			<SkeletonPopover.Content class={[contentClass, 'fade-panel']}>
 				{#if arrow}
 					<SkeletonPopover.Arrow style="--arrow-size: 10px; --arrow-background: {arrowColor};">
 						<SkeletonPopover.ArrowTip class={arrowTipClass} />

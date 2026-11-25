@@ -57,6 +57,7 @@
 	import PremiumModal from '$lib/components/premium/PremiumModal.svelte';
 	import { isSupporter, refusedForPremium, showUpsell, upsell } from '$lib/state/premium.svelte';
 	import { PoolPicker, setPoolPicker } from '$lib/state/poolPicker.svelte';
+	import { prefersReducedMotion } from '$lib/state/fadeSwitch.svelte';
 	import { SheetHighlight, setSheetHighlight } from '$lib/state/sheetHighlight.svelte';
 	import { macrosUsing } from '$lib/rules/macros';
 	import { toaster } from '$lib/state/toaster';
@@ -250,11 +251,27 @@
 	setPoolPicker(picker);
 	// A hovered macro's traits, shown on the sheet
 	setSheetHighlight(new SheetHighlight());
+	const PICKER_FADE = 200; // The rings' fade (`.trait-line::before`)
+	// Leaving clears the picks first, so their rings fade on the lines (as they do on hovering a
+	// macro), and the lines turn back into the sheet's own once they have: the new ones would drop
+	// the rings at once. At once with reduced motion
 	$effect(() => {
 		const active = macrosOpen && isFormView(macroView);
-		untrack(() => {
-			if (picker.active && !active) picker.clear();
-			picker.active = active;
+		return untrack(() => {
+			if (active || !picker.active) {
+				picker.active = active;
+				return;
+			}
+			picker.clear();
+			if (prefersReducedMotion()) {
+				picker.active = false;
+				return;
+			}
+			const timer = setTimeout(() => {
+				picker.clear(); // Anything picked meanwhile
+				picker.active = false;
+			}, PICKER_FADE);
+			return () => clearTimeout(timer);
 		});
 	});
 
