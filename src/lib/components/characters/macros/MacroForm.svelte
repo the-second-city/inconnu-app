@@ -16,6 +16,7 @@
 	import ErrorMessage from '$lib/components/ui/ErrorMessage.svelte';
 	import Stepper from '$lib/components/ui/Stepper.svelte';
 	import PoolText from './PoolText.svelte';
+	import { randomPlaceholder } from './placeholders';
 
 	interface ComponentProps {
 		character: Character;
@@ -44,6 +45,7 @@
 
 	// The new macro. As `/macro create`'s defaults: Hunger on, no Rouse Checks
 	let name = $state('');
+	const placeholder = randomPlaceholder(); // Chosen once per form
 	let difficulty = $state(DEFAULT_DIFFICULTY);
 	let rouses = $state(0);
 	let hunger = $state(true);
@@ -216,7 +218,7 @@ details, kept as they were, where the macro is added.
 				maxlength={constraints().macro_name_max_length}
 				autocomplete="off"
 				spellcheck="false"
-				placeholder="feed"
+				{placeholder}
 				aria-required="true"
 				aria-invalid={trimmedName !== '' && nameError !== null}
 				aria-describedby="{id}-name-error"
