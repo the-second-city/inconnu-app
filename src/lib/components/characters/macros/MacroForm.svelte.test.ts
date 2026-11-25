@@ -443,3 +443,26 @@ test("a pool that's all subtracted can't be saved", async () => {
 	);
 	expect(saveButton()).toBeDisabled();
 });
+
+test('Add Macro says why it waits, until nothing does', async () => {
+	const user = userEvent.setup();
+	renderForm();
+	expect(addButton()).toHaveAccessibleDescription('Needs a name');
+
+	await user.type(nameField(), 'two words');
+	expect(addButton()).toHaveAccessibleDescription('The name needs fixing');
+
+	await user.clear(nameField());
+	await user.type(nameField(), 'surge');
+	expect(addButton()).toHaveAccessibleDescription('Needs a pool or Rouse Checks');
+
+	await user.click(screen.getByRole('button', { name: 'More Rouse Checks' }));
+	expect(addButton()).toBeEnabled();
+	expect(addButton()).not.toHaveAccessibleDescription();
+});
+
+test('an edit without changes says so', () => {
+	renderEditing();
+
+	expect(saveButton()).toHaveAccessibleDescription('No changes yet');
+});

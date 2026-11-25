@@ -125,14 +125,19 @@
 		dirty = changed;
 	});
 	// An edit saves once something changed
-	const valid = $derived(
-		!nameError &&
-			!commentError &&
-			hasAction &&
-			!addsNothing &&
-			missing.length === 0 &&
-			(!start || changed)
-	);
+	// Why the macro can't be added (or saved) yet, by the buttons: its own message may be scrolled
+	// out of sight (an empty name's isn't shown at all)
+	const blocker: string | null = $derived.by(() => {
+		if (trimmedName === '') return 'Needs a name';
+		if (nameError) return 'The name needs fixing';
+		if (!hasAction) return 'Needs a pool or Rouse Checks';
+		if (addsNothing) return 'The pool needs something to add';
+		if (missing.length > 0) return 'The pool has traits that aren’t on the sheet';
+		if (commentError) return 'The comment is too long';
+		if (start && !changed) return 'No changes yet';
+		return null;
+	});
+	const valid = $derived(blocker === null);
 
 	const submit = new BusySubmit();
 
@@ -361,19 +366,29 @@ into the picker, and saving replaces the macro, by its name as it started.
 			<p class="{FORM_CLASSES.error} card preset-tonal-error p-3" role="alert">{submit.error}</p>
 		{/if}
 
-		<div class="flex justify-end gap-2">
-			<button type="button" class="btn btn-gothic btn-gothic-ash" onclick={oncancel}>
-				Cancel
-			</button>
-			<button type="submit" class="btn btn-gothic btn-gothic-blood" disabled={!valid}>
-				{#if start}
-					<SaveCheck size={18} />
-					<span>Save Macro</span>
-				{:else}
-					<Plus size={18} />
-					<span>Add Macro</span>
-				{/if}
-			</button>
+		<div class="flex flex-col items-end gap-1.5">
+			{#if blocker}
+				<p id="{id}-blocker" class="text-surface-300 text-sm italic">{blocker}</p>
+			{/if}
+			<div class="flex justify-end gap-2">
+				<button type="button" class="btn btn-gothic btn-gothic-ash" onclick={oncancel}>
+					Cancel
+				</button>
+				<button
+					type="submit"
+					class="btn btn-gothic btn-gothic-blood"
+					disabled={!valid}
+					aria-describedby={blocker ? `${id}-blocker` : undefined}
+				>
+					{#if start}
+						<SaveCheck size={18} />
+						<span>Save Macro</span>
+					{:else}
+						<Plus size={18} />
+						<span>Add Macro</span>
+					{/if}
+				</button>
+			</div>
 		</div>
 	{/if}
 </form>
