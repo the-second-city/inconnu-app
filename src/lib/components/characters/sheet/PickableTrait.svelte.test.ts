@@ -192,3 +192,28 @@ test("a subtracted trait's line is marked as picked, and still drops on a click"
 
 	expect(picker.selection('Obvious Predator')).toBeUndefined();
 });
+
+/** The trait's line, outside picking: the element holding its name. */
+const plainLine = (name = 'Brawl'): HTMLElement | null =>
+	screen.getByText(name).closest('.trait-line');
+
+test.each([
+	[false, 'added'],
+	[true, 'subtracted']
+])("a hovered macro's trait is highlighted on the sheet (negative: %s)", async (negative, mark) => {
+	const picker = renderTrait({ active: false });
+	expect(plainLine()).not.toHaveAttribute('data-highlight');
+
+	picker.highlight = [{ trait: 'Brawl', specialty: null, negative }];
+
+	await waitFor(() => expect(plainLine()).toHaveAttribute('data-highlight', mark));
+	picker.hide();
+	await waitFor(() => expect(plainLine()).not.toHaveAttribute('data-highlight'));
+});
+
+test("editing doesn't highlight", () => {
+	const picker = renderTrait({ active: false, editing: true });
+	picker.highlight = [{ trait: 'Brawl', specialty: null, negative: false }];
+
+	expect(document.querySelector('[data-highlight]')).toBeNull();
+});

@@ -200,3 +200,22 @@ test('picking a new trait counts as added; switching or dropping one does not', 
 
 	expect(picker.added).toBe(1);
 });
+
+test("showing a macro highlights its traits by the sheet's names, apart from the picks", () => {
+	const picker = new PoolPicker();
+	picker.pick('Strength', null);
+
+	picker.show(['strength', '-', 'brawl'], character(TRAITS));
+
+	expect(picker.highlighted('Strength')).toEqual({
+		trait: 'Strength',
+		specialty: null,
+		negative: false
+	});
+	expect(picker.highlighted('Brawl')?.negative).toBe(true);
+	expect(picker.highlighted('Potence')).toBeUndefined();
+	expect(picker.picks).toHaveLength(1);
+
+	picker.hide();
+	expect(picker.highlighted('Strength')).toBeUndefined();
+});

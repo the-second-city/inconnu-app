@@ -1974,3 +1974,19 @@ test('editing a macro with deletions marked asks first, keeping them if declined
 	expect(screen.getByRole('dialog', { name: 'Edit Macros' })).toBeInTheDocument();
 	expect(within(panel).getByRole('button', { name: 'Save' })).toBeEnabled();
 });
+
+test("hovering a macro in the panel highlights its traits on the sheet, until it's left", async () => {
+	const user = userEvent.setup();
+	navigate('/char?macros=panel');
+	const { container } = renderOwnerPage(withMacros());
+	await user.click(screen.getAllByRole('button', { name: 'Macros' })[0]);
+	const lift = await screen.findByRole('article', { name: 'lift' });
+	const highlighted = (): string[] =>
+		[...container.querySelectorAll('[data-highlight]')].map((el) => el.textContent?.trim() ?? '');
+
+	await user.hover(lift);
+	await waitFor(() => expect(highlighted()).toEqual([expect.stringContaining('Strength')]));
+
+	await user.unhover(lift);
+	await waitFor(() => expect(highlighted()).toEqual([]));
+});
