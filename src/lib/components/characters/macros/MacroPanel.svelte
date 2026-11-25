@@ -66,6 +66,8 @@
 	// The macro being changed, in the modify view
 	let target = $state<Macro | null>(null);
 	const inForm = $derived(isFormView(view));
+	// New each time a form is entered, so one that's still fading out isn't brought back as it was
+	const formKey = $derived.by(() => (inForm ? { view, target } : null));
 	let formDirty = $state(false); // The form has input (or changes)
 	let formBusy = $state(false); // The form is saving
 	// A save under way, the form's or the deletions', holds the panel as it is
@@ -418,8 +420,7 @@ Macros button), resized by a handle of its own.
 			]}
 		>
 			{#if inForm}
-				<!-- Keyed, so editing another macro starts a fresh form -->
-				{#key view === 'modify' ? target : null}
+				{#key formKey}
 					<div class="col-start-1 row-start-1" transition:fade={crossfade}>
 						<MacroForm
 							{character}

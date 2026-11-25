@@ -1066,3 +1066,27 @@ test("while a pool is picked, Health isn't a button; it is again after", async (
 	await user.keyboard('{Escape}');
 	expect(await screen.findByRole('button', { name: 'Health actions' })).toBeInTheDocument();
 });
+
+test('reopening a form while it fades out starts it afresh, its pool loaded', async () => {
+	const user = userEvent.setup();
+	renderOwnerPage(withMacros());
+	const panel = await editMacros(user);
+	await user.click(within(panel).getByRole('button', { name: 'Edit lift' }));
+	const name = await within(panel).findByRole('textbox', { name: 'Name' });
+	await user.type(name, '_more');
+	await waitFor(() => expect(within(panel).queryByRole('article')).not.toBeInTheDocument());
+
+	await user.click(within(panel).getByRole('button', { name: 'Cancel' }));
+	await user.click(within(panel).getByRole('button', { name: 'Edit lift' })); // Still fading
+
+	await waitFor(() =>
+		expect(within(panel).getAllByRole('textbox', { name: 'Name' })).toHaveLength(1)
+	);
+	expect(within(panel).getByRole('textbox', { name: 'Name' })).toHaveValue('lift');
+	expect(within(panel).getByRole('button', { name: 'Remove Strength' })).toBeInTheDocument();
+	expect(within(panel).getByRole('button', { name: 'Save Macro' })).toBeDisabled();
+	// Nothing's left of the discarded change to ask about
+	vi.mocked(window.confirm).mockClear();
+	await user.click(within(panel).getByRole('button', { name: 'Close macros' }));
+	expect(window.confirm).not.toHaveBeenCalled();
+});
