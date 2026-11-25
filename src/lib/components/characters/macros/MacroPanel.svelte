@@ -70,7 +70,34 @@
 	let formDirty = $state(false); // The form has input (or changes)
 	// The new macro form collapsed to a strip at the bottom, so the sheet is clear for picking traits
 	let formCompact = $state(false);
-	const compact = $derived(inForm && formCompact);
+	const wantsCompact = $derived(inForm && formCompact);
+	// The layout shown, a beat behind: switching between the strip and the panel fades the one out,
+	// switches while it's unseen, and fades the other in. The form inside stays mounted throughout
+	// (it holds what's been entered), so they can't overlap. At once without motion, or while closed
+	let compact = $state(false);
+	let fading = $state(false);
+	const FADE = 150;
+	let fadeTimer: ReturnType<typeof setTimeout> | undefined;
+	const reducedMotion = (): boolean =>
+		typeof window.matchMedia === 'function' &&
+		window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+	$effect(() => {
+		const wanted = wantsCompact;
+		untrack(() => {
+			clearTimeout(fadeTimer);
+			if (wanted === compact || !open || reducedMotion()) {
+				compact = wanted;
+				fading = false;
+				return;
+			}
+			fading = true;
+			fadeTimer = setTimeout(() => {
+				compact = wanted;
+				fading = false;
+			}, FADE);
+		});
+	});
+	$effect(() => () => clearTimeout(fadeTimer));
 	// A new macro starts as the strip, since its pool is the main work (and the sheet should be clear
 	// for it); Done opens the name and details. An edited macro's form starts full
 	$effect(() => {
@@ -246,7 +273,8 @@ window's right, below the tab row (and the Macros button).
 		role="dialog"
 		aria-modal="false"
 		class={[
-			'card popover-gothic fixed z-40 flex flex-col',
+			'card popover-gothic fixed z-40 flex flex-col transition-opacity duration-150',
+			fading && 'opacity-0',
 			compact && 'pool-strip',
 			compact
 				? // A strip along the bottom: the window's width on phones (the floating buttons make
@@ -343,7 +371,7 @@ window's right, below the tab row (and the Macros button).
 							{character}
 							macro={view === 'modify' ? (target ?? undefined) : undefined}
 							bind:dirty={formDirty}
-							bind:compact={formCompact}
+							bind:compact={() => compact, (value) => (formCompact = value)}
 							oncancel={cancelForm}
 							onsaved={leaveForm}
 						/>

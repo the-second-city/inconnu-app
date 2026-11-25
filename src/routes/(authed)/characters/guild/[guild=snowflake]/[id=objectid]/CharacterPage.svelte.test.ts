@@ -57,7 +57,20 @@ beforeEach(() => {
 	isSupporter.mockReset().mockResolvedValue(true);
 	upsell.open = false;
 	fetchMock.mockReset().mockResolvedValue(new Response(null, { status: 204 }));
+	reduceMotion(true);
 });
+
+/**
+ * Whether the viewer prefers reduced motion (jsdom has no matchMedia). Reduced by default, so the
+ * macro panel switches to and from its strip at once; a test of the fade turns it off.
+ */
+const reduceMotion = (reduce: boolean): void => {
+	window.matchMedia = ((query: string) =>
+		({
+			matches: reduce && query.includes('reduce'),
+			media: query
+		}) as MediaQueryList) as typeof window.matchMedia;
+};
 
 const GUILD: Guild = { id: '111', name: 'Camarilla of Chicago', icon: null, count: null };
 
@@ -2115,4 +2128,22 @@ test('a macro marked for deletion stays, struck through, and Undo brings it back
 
 	expect(macroNames(dialog)).toEqual(['lift', 'punch']);
 	expect(within(dialog).getByRole('button', { name: 'Save' })).toBeDisabled();
+});
+
+test('the panel fades out before the strip fades in, and back', async () => {
+	reduceMotion(false);
+	const user = userEvent.setup();
+	navigate('/char?macros=panel');
+	renderOwnerPage(withMacros());
+	await user.click(screen.getAllByRole('button', { name: 'Macros' })[0]);
+	const dialog = screen.getByRole('dialog', { name: 'Macros' });
+
+	await user.click(screen.getByRole('button', { name: 'Add macro' }));
+
+	// Still the panel, fading; then the strip
+	expect(within(dialog).queryByRole('button', { name: 'Continue' })).not.toBeInTheDocument();
+	await within(dialog).findByRole('button', { name: 'Continue' });
+	await user.click(within(dialog).getByRole('button', { name: 'Continue' }));
+	expect(within(dialog).queryByRole('textbox', { name: 'Name' })).not.toBeInTheDocument();
+	expect(await within(dialog).findByRole('textbox', { name: 'Name' })).toBeInTheDocument();
 });
