@@ -2173,3 +2173,43 @@ test('the strip sets the modifier too, which the form keeps', async () => {
 		'Subtracts 1 die'
 	);
 });
+
+test("on phones, the panel's handle steps its height with the arrow keys", async () => {
+	const user = userEvent.setup();
+	navigate('/char?macros=panel');
+	renderOwnerPage(withMacros());
+	await user.click(screen.getAllByRole('button', { name: 'Macros' })[0]);
+	const handle = screen.getByRole('slider', { name: 'Macros panel height' });
+	handle.focus();
+
+	await user.keyboard('{ArrowUp}');
+	expect(handle).toHaveAttribute('aria-valuenow', '35');
+	await user.keyboard('{ArrowUp}{ArrowUp}{ArrowUp}');
+	expect(handle).toHaveAttribute('aria-valuetext', '90% of the screen');
+	await user.keyboard('{ArrowDown}');
+	expect(handle).toHaveAttribute('aria-valuenow', '60');
+});
+
+test("dragging the handle snaps the panel's height, or below a fifth closes it", async () => {
+	const user = userEvent.setup();
+	navigate('/char?macros=panel');
+	renderOwnerPage(withMacros());
+	await user.click(screen.getAllByRole('button', { name: 'Macros' })[0]);
+	const handle = screen.getByRole('slider', { name: 'Macros panel height' });
+	const height = window.innerHeight;
+
+	/** Drag the handle from one height in the window to another. */
+	const dragHandle = (from: number, to: number) =>
+		user.pointer([
+			{ keys: '[MouseLeft>]', target: handle, coords: { clientX: 10, clientY: from } },
+			{ target: handle, coords: { clientX: 10, clientY: to } },
+			{ keys: '[/MouseLeft]', target: handle, coords: { clientX: 10, clientY: to } }
+		]);
+
+	// jsdom has no layout, so the panel starts at 0 high: dragging up 65% of the window snaps to 60%
+	await dragHandle(height, height * 0.35);
+	expect(handle).toHaveAttribute('aria-valuenow', '60');
+
+	await dragHandle(0, height);
+	await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
+});
