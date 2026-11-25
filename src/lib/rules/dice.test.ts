@@ -1,6 +1,6 @@
 import { expect, test } from 'vitest';
 
-import { countSuccesses, isSuccess, successesLast } from '$lib/rules/dice';
+import { countSuccesses, difficultyName, isSuccess, successesLast } from '$lib/rules/dice';
 
 test.each([
 	[1, false],
@@ -24,4 +24,22 @@ test.each<[number[], number]>([
 	[[10, 10, 10], 5]
 ])('%j has %i successes', (dice, successes) => {
 	expect(countSuccesses(dice)).toBe(successes);
+});
+
+test.each<[number, string]>([
+	[0, 'None'],
+	[1, 'Routine'],
+	[2, 'Straightforward'],
+	[3, 'Moderate'],
+	[4, 'Challenging'],
+	[5, 'Hard'],
+	[6, 'Very Hard'],
+	[7, 'Nearly Impossible'],
+	[8, 'Uh, sure'],
+	[9, 'Yeah, right'],
+	[10, 'How often do you even roll this?'],
+	[11, 'LOL'],
+	[100, 'LOL']
+])('Difficulty %i is %s', (difficulty, name) => {
+	expect(difficultyName(difficulty)).toBe(name);
 });

@@ -10,6 +10,7 @@
 		canAdd?: boolean; // Whether it may go up at all, for limits a maximum can't express
 		disabled?: boolean;
 		icon?: Snippet; // Drawn before the label (say, the track box the amount adds)
+		detail?: string; // A line under the label (say, what the value means), describing the group
 	}
 
 	let {
@@ -19,7 +20,8 @@
 		max = Infinity,
 		canAdd = true,
 		disabled = false,
-		icon
+		icon,
+		detail
 	}: ComponentProps = $props();
 
 	// Unique per stepper, as two can share a label (Superficial in a popover and a modal)
@@ -30,9 +32,21 @@
 <div class="flex items-center justify-between">
 	<span class="flex items-center gap-2">
 		{#if icon}<span class="flex shrink-0" aria-hidden="true">{@render icon()}</span>{/if}
-		<span {id}>{label}</span>
+		{#if detail === undefined}
+			<span {id}>{label}</span>
+		{:else}
+			<span class="flex flex-col leading-tight">
+				<span {id}>{label}</span>
+				<span id="{id}-detail" class="text-surface-300 text-sm" aria-live="polite">{detail}</span>
+			</span>
+		{/if}
 	</span>
-	<div class="flex items-center gap-3" role="group" aria-labelledby={id}>
+	<div
+		class="flex items-center gap-3"
+		role="group"
+		aria-labelledby={id}
+		aria-describedby={detail === undefined ? undefined : `${id}-detail`}
+	>
 		<button
 			type="button"
 			class="btn-icon preset-tonal-surface"

@@ -8,6 +8,7 @@
 	import { saveMacros } from '$lib/api/macros';
 	import { BusySubmit } from '$lib/state/busySubmit.svelte';
 	import { getPoolPicker } from '$lib/state/poolPicker.svelte';
+	import { difficultyName } from '$lib/rules/dice';
 	import { resolvePool } from '$lib/rules/macros';
 	import { isVampiric } from '$lib/rules/vampire';
 	import type { Character, Macro } from '$lib/types';
@@ -38,9 +39,12 @@
 	// The bot's limits, from the page (CharacterPage provides them)
 	const constraints = getConstraints();
 
-	// The new macro. Defaults as `/macro create`'s: Hunger on, no Rouse Checks, no Difficulty.
+	// A new macro's Difficulty: 2, Straightforward in V5's table, as most rolls' default; 0 is none
+	const DEFAULT_DIFFICULTY = 2;
+
+	// The new macro. As `/macro create`'s defaults: Hunger on, no Rouse Checks
 	let name = $state('');
-	let difficulty = $state(0);
+	let difficulty = $state(DEFAULT_DIFFICULTY);
 	let rouses = $state(0);
 	let hunger = $state(true);
 	let rerollRouses = $state(false);
@@ -76,7 +80,7 @@
 		dirty =
 			trimmedName !== '' ||
 			comment.trim() !== '' ||
-			difficulty !== 0 ||
+			difficulty !== DEFAULT_DIFFICULTY ||
 			rouses !== 0 ||
 			!hunger ||
 			hunt ||
@@ -120,8 +124,8 @@
 		vampiric
 			? [
 					{
-						label: 'Hunger dice',
-						detail: 'Roll current Hunger as Hunger dice',
+						label: 'Automatic Hunger',
+						detail: 'Use current Hunger when rolling',
 						checked: () => hunger,
 						set: (value) => (hunger = value)
 					},
@@ -243,7 +247,12 @@ details, kept as they were, where the macro is added.
 		</section>
 
 		<div class="flex flex-col gap-2">
-			<Stepper label="Difficulty" bind:value={difficulty} {...constraints().macro_difficulty} />
+			<Stepper
+				label="Difficulty"
+				bind:value={difficulty}
+				{...constraints().macro_difficulty}
+				detail={difficultyName(difficulty)}
+			/>
 			{#if rousing}
 				<Stepper label="Rouse Checks" bind:value={rouses} {...constraints().macro_rouses} />
 			{/if}

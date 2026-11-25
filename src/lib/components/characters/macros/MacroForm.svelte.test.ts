@@ -148,7 +148,7 @@ test('adding saves all the macros, sorted, with the new one', async () => {
 	await user.click(screen.getByRole('button', { name: 'More Difficulty' }));
 	await user.click(screen.getByRole('button', { name: 'More Rouse Checks' }));
 	await user.click(screen.getByRole('button', { name: 'More Rouse Checks' }));
-	await user.click(screen.getByRole('checkbox', { name: 'Hunger dice' }));
+	await user.click(screen.getByRole('checkbox', { name: 'Automatic Hunger' }));
 	await user.click(screen.getByRole('checkbox', { name: 'Hunt' }));
 	await user.click(screen.getByRole('checkbox', { name: 'Re-roll Rouse failures' }));
 	await user.click(screen.getByRole('checkbox', { name: 'Oblivion Stains' }));
@@ -165,7 +165,7 @@ test('adding saves all the macros, sorted, with the new one', async () => {
 		name: 'Feed',
 		pool: [],
 		hunger: false,
-		difficulty: 1,
+		difficulty: 3, // One more than the default, 2
 		rouses: 2,
 		reroll_rouses: true,
 		staining: 'apply',
@@ -283,4 +283,16 @@ test("the strip's Done returns to the details without adding", async () => {
 	expect(fetchMock).not.toHaveBeenCalled();
 	expect(onsaved).not.toHaveBeenCalled();
 	expect(addButton()).toBeEnabled();
+});
+
+test('a new macro starts at Difficulty 2, named as V5 names it', async () => {
+	const user = userEvent.setup();
+	renderForm();
+	const difficulty = screen.getByRole('group', { name: 'Difficulty' });
+	expect(difficulty).toHaveTextContent('2');
+	expect(difficulty).toHaveAccessibleDescription('Straightforward');
+
+	await user.click(screen.getByRole('button', { name: 'More Difficulty' }));
+
+	expect(difficulty).toHaveAccessibleDescription('Moderate');
 });
