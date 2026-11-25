@@ -184,6 +184,14 @@
 
 	// Escape backs out of the form or editing, then closes the panel, unless something over it (a
 	// popover or dialog) takes the key first
+	// Just viewing, a click (or tap) anywhere else closes the panel; editing and the forms stay open,
+	// since the sheet is where their pools come from
+	let panel: HTMLElement | undefined = $state();
+	const handlePointer = (e: PointerEvent) => {
+		if (!open || view !== 'list' || !panel) return;
+		if (!panel.contains(e.target as Node)) open = false;
+	};
+
 	const handleKey = (e: KeyboardEvent) => {
 		if (!open || e.key !== 'Escape' || e.defaultPrevented) return;
 		if (inForm) {
@@ -209,7 +217,7 @@
 	const stacked = 'col-start-1 row-start-1 flex items-center gap-1';
 </script>
 
-<svelte:window onkeydown={handleKey} />
+<svelte:window onkeydown={handleKey} onpointerdown={handlePointer} />
 
 <!--
 @component
@@ -227,6 +235,7 @@ window's right, below the tab row (and the Macros button).
 
 {#if open}
 	<div
+		bind:this={panel}
 		id="macro-panel"
 		role="dialog"
 		aria-modal="false"

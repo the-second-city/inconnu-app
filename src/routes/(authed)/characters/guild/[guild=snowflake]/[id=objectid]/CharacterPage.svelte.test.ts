@@ -2037,3 +2037,33 @@ test("removing a trait a macro rolls warns which macros won't roll without it", 
 	await user.click(editButton('Cancel'));
 	expect(toaster.warning).toHaveBeenCalledOnce();
 });
+
+test('clicking outside the panel closes it while viewing, not while editing or adding', async () => {
+	const user = userEvent.setup();
+	navigate('/char?macros=panel');
+	renderOwnerPage(withMacros());
+	const toggle = screen.getAllByRole('button', { name: 'Macros' })[0];
+	await user.click(toggle);
+	const dialog = screen.getByRole('dialog', { name: 'Macros' });
+
+	await user.click(within(dialog).getByRole('article', { name: 'lift' }));
+	expect(screen.getByRole('dialog', { name: 'Macros' })).toBe(dialog);
+
+	await user.click(document.body);
+	await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
+
+	for (const [button, title] of [
+		['Edit macros', 'Edit Macros'],
+		['Add macro', 'New Macro']
+	]) {
+		await waitFor(() => expect(toggle).toBeEnabled());
+		await user.click(toggle);
+		await user.click(screen.getByRole('button', { name: button }));
+		await screen.findByRole('dialog', { name: title });
+		await user.click(document.body);
+		expect(screen.getByRole('dialog', { name: title })).toBeInTheDocument();
+		await user.keyboard('{Escape}');
+		await user.keyboard('{Escape}');
+		await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
+	}
+});
