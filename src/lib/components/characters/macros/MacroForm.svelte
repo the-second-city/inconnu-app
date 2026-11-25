@@ -1,22 +1,25 @@
 <script lang="ts">
 	import { untrack } from 'svelte';
-	import { ArrowRight, Minimize2, Plus, SaveCheck, X } from '@lucide/svelte';
+	import { Minimize2, Plus, SaveCheck } from '@lucide/svelte';
 
-	import { orList, plural } from '$lib';
+	import { orList } from '$lib';
 
 	import { getConstraints, lengthError, macroNameError } from '$lib/constraints';
 	import { FORM_CLASSES } from '$lib/constants/formStyles';
 	import { saveMacros } from '$lib/api/macros';
 	import { BusySubmit } from '$lib/state/busySubmit.svelte';
-	import { getPoolPicker, isNumber } from '$lib/state/poolPicker.svelte';
+	import { getPoolPicker } from '$lib/state/poolPicker.svelte';
 	import { difficultyName } from '$lib/rules/dice';
-	import { diceLabel, missingLabel, resolvePool } from '$lib/rules/macros';
+	import { missingLabel, resolvePool } from '$lib/rules/macros';
 	import { isVampiric } from '$lib/rules/vampire';
 	import type { Character, Macro } from '$lib/types';
 	import BusySpinner from '$lib/components/ui/BusySpinner.svelte';
 	import ErrorMessage from '$lib/components/ui/ErrorMessage.svelte';
 	import Stepper from '$lib/components/ui/Stepper.svelte';
+	import DiceCount from './DiceCount.svelte';
 	import PoolChips from './PoolChips.svelte';
+	import PoolStrip from './PoolStrip.svelte';
+	import { MODIFIER_LIMIT, POOL_HINT, modifierDetail, modifierMin } from './pool';
 	import { randomPlaceholder } from './placeholders';
 
 	interface ComponentProps {
@@ -42,9 +45,6 @@
 
 	// The bot's limits, from the page (CharacterPage provides them)
 	const constraints = getConstraints();
-
-	// What the pool says while it's empty, in the strip and the form
-	const POOL_HINT = 'Click traits on the sheet to build the pool.';
 
 	// A new macro's Difficulty: 2, Straightforward in V5's table, as most rolls' default; 0 is none
 	const DEFAULT_DIFFICULTY = 2;
@@ -96,16 +96,6 @@
 	const hasAction = $derived(pool.length > 0 || rouses > 0);
 	// A pool must add something: all subtracted (say, its last trait removed), it can't roll
 	const addsNothing = $derived(pool.length > 0 && !picker?.adds);
-
-	// The pool's number, beyond its traits. The bot sets no limit; this keeps the stepper sensible
-	const MODIFIER_LIMIT = 10;
-	// Subtracting needs something to subtract from
-	const canSubtract = $derived(picker?.picks.some((pick) => !pick.negative && !isNumber(pick)));
-	const modifierMin = $derived(canSubtract || (picker?.modifier ?? 0) < 0 ? -MODIFIER_LIMIT : 0);
-	const modifierDetail = (value: number): string =>
-		value === 0
-			? 'Dice beyond the traits'
-			: `${value > 0 ? 'Adds' : 'Subtracts'} ${plural(Math.abs(value), 'die', 'dice')}`;
 
 	/** The macro as the bot stores it. Options that can't apply are off. */
 	const macro = (): Macro => ({
@@ -210,73 +200,23 @@ Continue opens the details, kept as they were, where the macro is added (or save
 the macro's pool into the picker, and saving replaces the macro, by its name as it started. An
 edit saves once something changed.
 -->
-<!-- The pool's dice, in the strip and by the Pool heading: "?" while a trait is missing, as the
-     macro cards show it -->
-{#snippet dice()}
-	{#if pool.length > 0}
-		<span class="font-display text-primary-300 shrink-0 text-sm tabular-nums">
-			{diceLabel(resolved.dice)}
-		</span>
-	{/if}
-{/snippet}
-
 <form
 	class="flex flex-col gap-4"
 	onsubmit={save}
 	aria-label={start ? `Edit ${start.name}` : 'New macro'}
 >
 	{#if compact}
-		<div class="flex flex-col gap-1.5">
-			<div class="flex items-center gap-2">
-				<div class="flex min-w-0 flex-1 items-baseline gap-2">
-					<span class="font-display truncate text-sm tracking-[0.04em]">
-						{trimmedName || start?.name || 'New Macro'}
-					</span>
-					{@render dice()}
-				</div>
-				<button
-					type="button"
-					class="btn-icon hover:preset-tonal-surface shrink-0"
-					onclick={oncancel}
-					aria-label="Cancel"
-					title="Cancel"
-				>
-					<X size={18} />
-				</button>
-				<!-- On from the pool to the details, where the macro is added. With no pool it skips it (a
-				     macro of Rouse Checks alone needs none) -->
-				<button
-					type="button"
-					class="btn btn-sm btn-gothic btn-gothic-bone shrink-0"
-					onclick={() => (compact = false)}
-				>
-					<span>{pool.length === 0 ? 'Skip pool' : 'Continue'}</span>
-					<ArrowRight size={16} />
-				</button>
-			</div>
-			<!-- Below, the whole width: many traits wrap here rather than squeezing the buttons. The
-			     modifier ends the row, as a small stepper (its number has no chip here) -->
-			<div class="flex items-start gap-2">
-				<div class="min-w-0 flex-1">
-					{#if pool.length > 0 && picker && picker.picks.some((pick) => !isNumber(pick))}
-						<PoolChips {picker} traits={character.traits} {missing} numbers={false} />
-					{:else}
-						<p class="text-surface-300 text-sm italic">{POOL_HINT}</p>
-					{/if}
-				</div>
-				{#if picker}
-					<Stepper
-						compact
-						label="Modifier"
-						bind:value={() => picker.modifier, (value) => (picker.modifier = value)}
-						min={modifierMin}
-						max={MODIFIER_LIMIT}
-						detail={modifierDetail(picker.modifier)}
-						format={(value) => (value > 0 ? `+${value}` : value < 0 ? `−${-value}` : '±0')}
-					/>
-				{/if}
-			</div>
-		</div>
+		{#if picker}
+			<PoolStrip
+				{picker}
+				traits={character.traits}
+				title={trimmedName || start?.name || 'New Macro'}
+				dice={resolved.dice}
+				{missing}
+				{oncancel}
+				oncontinue={() => (compact = false)}
+			/>
+		{/if}
 	{:else if submit.busy}
 		<BusySpinner label={start ? 'Saving the macro…' : 'Adding the macro…'} />
 	{:else}
@@ -306,7 +246,7 @@ edit saves once something changed.
 			<div class="flex items-center justify-between">
 				<div class="flex items-baseline gap-2">
 					<h3 id="{id}-pool" class="font-display text-sm tracking-[0.04em] uppercase">Pool</h3>
-					{@render dice()}
+					{#if pool.length > 0}<DiceCount dice={resolved.dice} />{/if}
 				</div>
 				<button
 					type="button"
@@ -337,7 +277,7 @@ edit saves once something changed.
 				<Stepper
 					label="Modifier"
 					bind:value={() => picker.modifier, (value) => (picker.modifier = value)}
-					min={modifierMin}
+					min={modifierMin(picker)}
 					max={MODIFIER_LIMIT}
 					detail={modifierDetail(picker.modifier)}
 				/>

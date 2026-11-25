@@ -229,15 +229,19 @@ const renderCompactable = () => {
 	const state = $state({ compact: false });
 	const onsaved = vi.fn();
 	render(MacroForm, {
-		character: character(),
-		oncancel: vi.fn(),
-		onsaved,
-		get compact() {
-			return state.compact;
+		props: {
+			character: character(),
+			oncancel: vi.fn(),
+			onsaved,
+			get compact() {
+				return state.compact;
+			},
+			set compact(value: boolean) {
+				state.compact = value;
+			}
 		},
-		set compact(value: boolean) {
-			state.compact = value;
-		}
+		// The panel's form always has the page's picker
+		context: poolPickerContext(new PoolPicker())
 	});
 	return { state, onsaved };
 };
