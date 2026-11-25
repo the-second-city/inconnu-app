@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { untrack } from 'svelte';
-	import { ArrowRight, Minimize2, Plus, SaveCheck, X } from '@lucide/svelte';
+	import { ArrowRight, Minus, Minimize2, Plus, SaveCheck, X } from '@lucide/svelte';
 
 	import { orList, plural } from '$lib';
 
@@ -97,6 +97,7 @@
 	const MODIFIER_LIMIT = 10;
 	// Subtracting needs something to subtract from
 	const canSubtract = $derived(picker?.picks.some((pick) => !pick.negative && !isNumber(pick)));
+	const modifierMin = $derived(canSubtract || (picker?.modifier ?? 0) < 0 ? -MODIFIER_LIMIT : 0);
 	const modifierDetail = (value: number): string =>
 		value === 0
 			? 'Dice beyond the traits'
@@ -247,12 +248,51 @@ into the picker, and saving replaces the macro, by its name as it started.
 					<ArrowRight size={16} />
 				</button>
 			</div>
-			<!-- Below, the whole width: many traits wrap here rather than squeezing the buttons -->
-			{#if pool.length > 0}
-				{#if picker}<PoolChips {picker} traits={character.traits} {missing} />{/if}
-			{:else}
-				<p class="text-surface-300 text-sm italic">Click traits on the sheet to build the pool.</p>
-			{/if}
+			<!-- Below, the whole width: many traits wrap here rather than squeezing the buttons. The
+			     modifier ends the row, as a small stepper (its number has no chip here) -->
+			<div class="flex items-start gap-2">
+				<div class="min-w-0 flex-1">
+					{#if pool.length > 0 && picker && picker.picks.some((pick) => !isNumber(pick))}
+						<PoolChips {picker} traits={character.traits} {missing} numbers={false} />
+					{:else}
+						<p class="text-surface-300 text-sm italic">
+							Click traits on the sheet to build the pool.
+						</p>
+					{/if}
+				</div>
+				{#if picker}
+					{@const value = picker.modifier}
+					<div
+						role="group"
+						aria-label="Modifier"
+						aria-describedby="{id}-strip-modifier"
+						class="border-surface-500 bg-surface-800/60 flex shrink-0 items-center rounded-full border text-sm"
+					>
+						<button
+							type="button"
+							class="hover:preset-tonal-surface flex size-6 items-center justify-center rounded-full disabled:opacity-40"
+							onclick={() => (picker.modifier = value - 1)}
+							disabled={value <= modifierMin}
+							aria-label="Less Modifier"
+						>
+							<Minus size={12} />
+						</button>
+						<span class="w-7 text-center tabular-nums" title={modifierDetail(value)}>
+							{value > 0 ? `+${value}` : value < 0 ? `−${-value}` : '±0'}
+						</span>
+						<span id="{id}-strip-modifier" class="sr-only">{modifierDetail(value)}</span>
+						<button
+							type="button"
+							class="hover:preset-tonal-surface flex size-6 items-center justify-center rounded-full disabled:opacity-40"
+							onclick={() => (picker.modifier = value + 1)}
+							disabled={value >= MODIFIER_LIMIT}
+							aria-label="More Modifier"
+						>
+							<Plus size={12} />
+						</button>
+					</div>
+				{/if}
+			</div>
 		</div>
 	{:else if submit.busy}
 		<BusySpinner label={start ? 'Saving the macro…' : 'Adding the macro…'} />
@@ -314,7 +354,7 @@ into the picker, and saving replaces the macro, by its name as it started.
 				<Stepper
 					label="Modifier"
 					bind:value={() => picker.modifier, (value) => (picker.modifier = value)}
-					min={canSubtract || picker.modifier < 0 ? -MODIFIER_LIMIT : 0}
+					min={modifierMin}
 					max={MODIFIER_LIMIT}
 					detail={modifierDetail(picker.modifier)}
 				/>

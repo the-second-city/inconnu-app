@@ -2,18 +2,19 @@
 	import { Minus, Plus, X } from '@lucide/svelte';
 
 	import { KEY_DELIMITER } from '$lib/rules/macros';
-	import type { PoolPicker } from '$lib/state/poolPicker.svelte';
+	import { isNumber, type PoolPicker } from '$lib/state/poolPicker.svelte';
 	import type { Trait } from '$lib/types';
 
 	interface ComponentProps {
 		picker: PoolPicker;
 		traits: Trait[]; // The character's, for the pool's order (attributes first)
 		missing?: string[]; // Picks the character lacks (a trait or specialty), from an edited macro
+		numbers?: boolean; // Whether the pool's number gets a chip (not where a control shows it)
 	}
 
-	let { picker, traits, missing = [] }: ComponentProps = $props();
+	let { picker, traits, missing = [], numbers = true }: ComponentProps = $props();
 
-	const picks = $derived(picker.ordered(traits));
+	const picks = $derived(picker.ordered(traits).filter((pick) => numbers || !isNumber(pick)));
 	// Between a trait and its specialty ({' '} doesn't pass lint)
 	const SPACE = ' ';
 </script>

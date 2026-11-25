@@ -2147,3 +2147,29 @@ test('the panel fades out before the strip fades in, and back', async () => {
 	expect(within(dialog).queryByRole('textbox', { name: 'Name' })).not.toBeInTheDocument();
 	expect(await within(dialog).findByRole('textbox', { name: 'Name' })).toBeInTheDocument();
 });
+
+test('the strip sets the modifier too, which the form keeps', async () => {
+	const user = userEvent.setup();
+	navigate('/char?macros=panel');
+	renderOwnerPage(withMacros());
+	await user.click(screen.getAllByRole('button', { name: 'Macros' })[0]);
+	await user.click(screen.getByRole('button', { name: 'Add macro' }));
+	const dialog = await screen.findByRole('dialog', { name: 'New Macro' });
+	const modifier = within(dialog).getByRole('group', { name: 'Modifier' });
+	expect(within(dialog).getByRole('button', { name: 'Less Modifier' })).toBeDisabled();
+
+	await user.click(screen.getByRole('button', { name: 'Pick Strength' }));
+	await user.click(within(dialog).getByRole('button', { name: 'Less Modifier' }));
+
+	expect(modifier).toHaveTextContent('−1');
+	expect(modifier).toHaveAccessibleDescription('Subtracts 1 die');
+	// The number has no chip in the strip: the modifier shows it
+	expect(
+		within(within(dialog).getByRole('list', { name: 'Pool' })).getAllByRole('listitem')
+	).toHaveLength(1);
+
+	await user.click(within(dialog).getByRole('button', { name: 'Continue' }));
+	expect(within(dialog).getByRole('group', { name: 'Modifier' })).toHaveAccessibleDescription(
+		'Subtracts 1 die'
+	);
+});
