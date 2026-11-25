@@ -226,39 +226,6 @@
 {/if}
 
 <style lang="postcss">
-	/* A hovered macro's trait: a ring like a picked line's (PickableTrait), drawn behind the line
-	   without moving it; dashed ash when the macro subtracts it */
-	.trait-line {
-		position: relative;
-		isolation: isolate;
-	}
-
-	.trait-line::before {
-		content: '';
-		position: absolute;
-		inset: -0.15rem -0.4rem;
-		z-index: -1;
-		border-radius: 0.5rem;
-		pointer-events: none;
-		opacity: 0;
-		background-color: color-mix(in oklab, var(--blood) 18%, transparent);
-		box-shadow:
-			0 0 0 1px color-mix(in oklab, var(--blood-bright) 70%, transparent),
-			0 0 10px color-mix(in oklab, var(--blood-bright) 35%, transparent);
-		transition: opacity 0.2s ease;
-	}
-
-	.trait-line[data-highlight='subtracted']::before {
-		background-color: color-mix(in oklab, var(--color-surface-200) 6%, transparent);
-		box-shadow: none;
-		outline: 1px dashed color-mix(in oklab, var(--color-surface-200) 60%, transparent);
-		outline-offset: -1px;
-	}
-
-	.trait-line[data-highlight]::before {
-		opacity: 1;
-	}
-
 	.rating-circle {
 		width: 1.45rem;
 		height: 1.45rem;

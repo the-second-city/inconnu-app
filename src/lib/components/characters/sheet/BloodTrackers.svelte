@@ -15,6 +15,7 @@
 	import PipSelector, { type PipState } from './PipSelector.svelte';
 	import Popover from '$lib/components/ui/Popover.svelte';
 	import { CLICKABLE } from './clickable';
+	import TrackerRow from './TrackerRow.svelte';
 
 	interface ComponentProps {
 		character: Character;
@@ -92,16 +93,33 @@
 
 <Card alignment="center" extraClasses="px-2 h-full justify-center">
 	<div class="grid grid-cols-[120px_1fr] items-center gap-2">
-		<div>Blood Potency</div>
-		<!-- The API sends `potency`; `blood_potency` is the wizard's name for it -->
-		<PipSelector
+		<!-- A pool rolls it as Potency, the bot's name -->
+		{#snippet potencyPips()}
+			<PipSelector
+				label="Blood Potency"
+				rating={bloodPotency(character)}
+				max={maxBloodPotency}
+				editing={false}
+				pip={potencyPip}
+			/>
+		{/snippet}
+		<TrackerRow
 			label="Blood Potency"
-			bind:rating={() => bloodPotency(character), (value) => (character.potency = value)}
-			min={minBloodPotency}
-			max={maxBloodPotency}
+			trait="Potency"
 			{editing}
-			pip={potencyPip}
-		/>
+			value={potencyPips}
+			class="items-center"
+		>
+			<!-- The API sends `potency`; `blood_potency` is the wizard's name for it -->
+			<PipSelector
+				label="Blood Potency"
+				bind:rating={() => bloodPotency(character), (value) => (character.potency = value)}
+				min={minBloodPotency}
+				max={maxBloodPotency}
+				{editing}
+				pip={potencyPip}
+			/>
+		</TrackerRow>
 
 		<div>Hunger</div>
 		{#snippet hungerPips()}

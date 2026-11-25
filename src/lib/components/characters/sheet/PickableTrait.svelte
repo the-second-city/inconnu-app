@@ -12,9 +12,21 @@
 		subtraits: string[];
 		type?: string; // A Discipline's subtraits are powers, which add no dice
 		line: Snippet; // The trait's line as the sheet draws it (its name and pips)
+		label?: string; // Its name as the sheet shows it, if not `name` (Blood Potency is Potency)
+		// The line's layout, in place of a row with the name and pips at either end (a tracker's row
+		// spans its card's grid)
+		lineClass?: string;
 	}
 
-	let { picker, name, subtraits, type, line }: ComponentProps = $props();
+	let {
+		picker,
+		name,
+		subtraits,
+		type,
+		line,
+		label = name,
+		lineClass = 'flex w-full flex-wrap items-center justify-between'
+	}: ComponentProps = $props();
 
 	const id = $props.id();
 	const selection = $derived(picker.selection(name));
@@ -179,7 +191,7 @@ trait. A picked line glows; a subtracted one has a dashed ash ring.
 <button
 	bind:this={lineEl}
 	type="button"
-	class="pick-line flex w-full flex-wrap items-center justify-between text-left"
+	class="pick-line text-left {lineClass}"
 	class:picked
 	class:negative
 	onclick={onLineClick}
@@ -189,7 +201,7 @@ trait. A picked line glows; a subtracted one has a dashed ash ring.
 	aria-haspopup={hasMenu ? 'menu' : undefined}
 	aria-expanded={hasMenu ? open : undefined}
 	aria-controls={open ? `${id}-menu` : undefined}
-	aria-label={hasMenu ? `${name}: pick for the pool` : `Pick ${name}`}
+	aria-label={hasMenu ? `${label}: pick for the pool` : `Pick ${label}`}
 >
 	{@render line()}
 </button>

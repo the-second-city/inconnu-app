@@ -1990,3 +1990,28 @@ test("hovering a macro in the panel highlights its traits on the sheet, until it
 	await user.unhover(lift);
 	await waitFor(() => expect(highlighted()).toEqual([]));
 });
+
+test('Willpower and Humanity are picked from their trackers, by the names the bot rolls', async () => {
+	const user = userEvent.setup();
+	navigate('/char?macros=panel');
+	renderOwnerPage(withMacros());
+	await user.click(screen.getAllByRole('button', { name: 'Macros' })[0]);
+	await user.click(screen.getByRole('button', { name: 'Add macro' }));
+	const dialog = await screen.findByRole('dialog', { name: 'New Macro' });
+	await user.type(within(dialog).getByRole('textbox', { name: 'Name' }), 'resist');
+	await user.click(screen.getByRole('button', { name: 'Pick Willpower' }));
+	await user.click(screen.getByRole('button', { name: 'Pick Humanity' }));
+	expect(screen.queryByRole('button', { name: 'Pick Health' })).not.toBeInTheDocument();
+
+	await user.click(within(dialog).getByRole('button', { name: 'Done' }));
+	await user.click(within(dialog).getByRole('button', { name: 'Add Macro' }));
+
+	const body = JSON.parse(fetchMock.mock.calls[0][1]?.body as string) as {
+		macros: { name: string; pool: string[] }[];
+	};
+	expect(body.macros.find((macro) => macro.name === 'resist')?.pool).toEqual([
+		'Willpower',
+		'+',
+		'Humanity'
+	]);
+});

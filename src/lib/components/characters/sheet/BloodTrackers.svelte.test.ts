@@ -4,6 +4,7 @@ import { expect, test, vi } from 'vitest';
 
 import type { Character, Splat } from '$lib/types';
 import BloodTrackers from './BloodTrackers.svelte';
+import { PoolPicker, poolPickerContext } from '$lib/state/poolPicker.svelte';
 
 // Constraints come from the character page or wizard; these are the bot's
 vi.mock('$lib/constraints', async (original) =>
@@ -192,4 +193,19 @@ test("the Hunger menu's hover text lists its actions", () => {
 		'title',
 		'Rouse or slake'
 	);
+});
+
+test('while a pool is picked, Blood Potency picks Potency, as the bot rolls it', async () => {
+	const user = userEvent.setup();
+	const picker = new PoolPicker();
+	picker.active = true;
+	render(BloodTrackers, {
+		props: { character: vampire({ potency: 3 }) },
+		context: poolPickerContext(picker)
+	});
+
+	await user.click(screen.getByRole('button', { name: 'Pick Blood Potency' }));
+
+	expect(picker.picks).toEqual([{ trait: 'Potency', specialty: null, negative: false }]);
+	expect(screen.getByRole('img', { name: 'Blood Potency 3' })).toBeInTheDocument();
 });

@@ -16,6 +16,7 @@
 	import HaleBox from '$lib/components/characters/glyphs/damage/Hale.svelte';
 	import TrackBox from '$lib/components/characters/glyphs/damage/TrackBox.svelte';
 	import { CLICKABLE } from './clickable';
+	import TrackerRow from './TrackerRow.svelte';
 
 	type DamageSymbol = '.' | '/' | 'x';
 	type DamageAdjust = { title: string; symbol: DamageSymbol; dec: boolean; inc: boolean };
@@ -144,8 +145,6 @@
 	}
 </script>
 
-{trackLabel}
-
 {#snippet boxes()}
 	<div class="flex flex-wrap items-center gap-2">
 		{#each [...Array(trackArray.length).keys()].reverse() as index (index)}
@@ -248,25 +247,33 @@
 	</div>
 {/snippet}
 
-{#if editing}
-	<Popover
-		bind:open={showControls}
-		trigger={boxes}
-		content={controls}
-		triggerTitle="Correct {trackLabel}"
-		triggerClass={CLICKABLE}
-		arrow
-	/>
-{:else if actionable}
-	<Popover
-		bind:open={showActions}
-		trigger={boxes}
-		content={actions}
-		triggerLabel="{trackLabel} actions"
-		triggerTitle={actionsTitle}
-		triggerClass={CLICKABLE}
-		arrow
-	/>
-{:else}
-	{@render boxes()}
-{/if}
+<!-- Willpower's undamaged boxes are a pool's Willpower; Health isn't rollable -->
+<TrackerRow
+	label={trackLabel}
+	trait={track === 'willpower' ? 'Willpower' : undefined}
+	{editing}
+	value={boxes}
+>
+	{#if editing}
+		<Popover
+			bind:open={showControls}
+			trigger={boxes}
+			content={controls}
+			triggerTitle="Correct {trackLabel}"
+			triggerClass={CLICKABLE}
+			arrow
+		/>
+	{:else if actionable}
+		<Popover
+			bind:open={showActions}
+			trigger={boxes}
+			content={actions}
+			triggerLabel="{trackLabel} actions"
+			triggerTitle={actionsTitle}
+			triggerClass={CLICKABLE}
+			arrow
+		/>
+	{:else}
+		{@render boxes()}
+	{/if}
+</TrackerRow>

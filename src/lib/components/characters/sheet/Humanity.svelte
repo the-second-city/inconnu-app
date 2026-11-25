@@ -13,6 +13,7 @@
 	import Stain from '$lib/components/characters/glyphs/humanity/Stain.svelte';
 	import Degeneration from '$lib/components/characters/glyphs/humanity/Degeneration.svelte';
 	import { CLICKABLE } from './clickable';
+	import TrackerRow from './TrackerRow.svelte';
 	import MenuAction from './MenuAction.svelte';
 	import Stepper from '$lib/components/ui/Stepper.svelte';
 
@@ -68,8 +69,6 @@
 		};
 	});
 </script>
-
-Humanity
 
 {#snippet boxes()}
 	<div class="flex flex-wrap items-center gap-2">
@@ -150,25 +149,27 @@ Humanity
 	</div>
 {/snippet}
 
-{#if editing}
-	<Popover
-		bind:open={showControls}
-		trigger={boxes}
-		content={controls}
-		triggerTitle="Correct Humanity"
-		triggerClass={CLICKABLE}
-		arrow
-	/>
-{:else if onStain || onRemorse}
-	<Popover
-		bind:open={showActions}
-		trigger={boxes}
-		content={actions}
-		triggerLabel="Humanity actions"
-		triggerTitle={actionsTitle}
-		triggerClass={CLICKABLE}
-		arrow
-	/>
-{:else}
-	{@render boxes()}
-{/if}
+<TrackerRow label="Humanity" trait="Humanity" {editing} value={boxes}>
+	{#if editing}
+		<Popover
+			bind:open={showControls}
+			trigger={boxes}
+			content={controls}
+			triggerTitle="Correct Humanity"
+			triggerClass={CLICKABLE}
+			arrow
+		/>
+	{:else if onStain || onRemorse}
+		<Popover
+			bind:open={showActions}
+			trigger={boxes}
+			content={actions}
+			triggerLabel="Humanity actions"
+			triggerTitle={actionsTitle}
+			triggerClass={CLICKABLE}
+			arrow
+		/>
+	{:else}
+		{@render boxes()}
+	{/if}
+</TrackerRow>
