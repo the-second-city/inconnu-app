@@ -50,7 +50,10 @@
 	const start = untrack(() => original);
 	// The macro. A new one has `/macro create`'s defaults: Hunger on, no Rouse Checks
 	let name = $state(start?.name ?? '');
-	const placeholder = randomPlaceholder(); // Chosen once per form
+	// Chosen once per form, from the names the character hasn't used
+	const placeholder = randomPlaceholder(
+		untrack(() => (character.macros ?? []).map((macro) => macro.name))
+	);
 	let difficulty = $state(start?.difficulty ?? DEFAULT_DIFFICULTY);
 	let rouses = $state(start?.rouses ?? 0);
 	let hunger = $state(start?.hunger ?? true);

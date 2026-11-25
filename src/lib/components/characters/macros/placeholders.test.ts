@@ -19,3 +19,18 @@ test.each([
 	vi.spyOn(Math, 'random').mockReturnValueOnce(random);
 	expect(randomPlaceholder()).toBe(name);
 });
+
+test('it never suggests a name the character has, ignoring case', () => {
+	const taken = NAME_PLACEHOLDERS.slice(1).map((name) => name.toUpperCase());
+
+	for (const random of [0, 0.5, 0.9999]) {
+		vi.spyOn(Math, 'random').mockReturnValueOnce(random);
+		expect(randomPlaceholder(taken)).toBe(NAME_PLACEHOLDERS[0]);
+	}
+});
+
+test('with every name taken, any will do', () => {
+	vi.spyOn(Math, 'random').mockReturnValueOnce(0);
+
+	expect(randomPlaceholder([...NAME_PLACEHOLDERS])).toBe(NAME_PLACEHOLDERS[0]);
+});
