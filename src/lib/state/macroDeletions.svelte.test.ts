@@ -69,3 +69,20 @@ test('a marked macro that goes away elsewhere is unmarked, but not mid-save', ()
 	deletions.sync(macros('feed'));
 	expect([...deletions.marked]).toEqual(['feed']);
 });
+
+test.each([
+	[[null, 'Nope.'], 1],
+	[['Nope.'], 0]
+])('a save whose deletes end in %j refetches %i times', async (errors, times) => {
+	for (const error of errors) {
+		deleteMacro.mockResolvedValueOnce(error === null ? { result: null } : { error });
+	}
+	const deletions = new MacroDeletions();
+	deletions.marked.add('feed');
+	deletions.marked.add('hunt');
+	const refetch = vi.fn(async () => {});
+
+	await deletions.save('abc', refetch);
+
+	expect(refetch).toHaveBeenCalledTimes(times);
+});

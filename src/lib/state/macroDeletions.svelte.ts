@@ -48,18 +48,21 @@ export class MacroDeletions {
 	/**
 	 * Delete the marked macros, one at a time: at once, the bot's saves could race, one undoing
 	 * another. Each deleted macro moves from marked to removed. The first failure stops it, leaving
-	 * the rest marked and saying which (`submit.error`). Once they've all gone, waits for `refetch`.
+	 * the rest marked and saying which (`submit.error`). Waits for `refetch` if any went.
 	 * Returns whether they all went.
 	 */
 	async save(characterId: string, refetch?: () => Promise<void>): Promise<boolean> {
 		const done = await this.submit.run(async () => {
+			let deleted = 0;
 			for (const name of [...this.marked]) {
 				const outcome = await deleteMacro(characterId, name);
 				if (outcome.error !== undefined) {
+					if (deleted > 0) await refetch?.(); // For those that went
 					return { error: `Couldn’t delete ${name}. ${outcome.error}` };
 				}
 				this.marked.delete(name);
 				this.removed.add(name);
+				deleted++;
 			}
 			await refetch?.();
 			return { result: null };
