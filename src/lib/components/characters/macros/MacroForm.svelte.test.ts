@@ -400,3 +400,46 @@ test("a trait the character lacks holds the save until it's removed", async () =
 
 	expect(saveButton()).toBeEnabled();
 });
+
+test('the Modifier adds or subtracts dice beyond the traits, saved as a number', async () => {
+	const user = userEvent.setup();
+	renderEditing({ ...FEED, pool: ['Strength'] });
+	const modifier = screen.getByRole('group', { name: 'Modifier' });
+	expect(modifier).toHaveAccessibleDescription('Dice beyond the traits');
+
+	await user.click(screen.getByRole('button', { name: 'Less Modifier' }));
+	await user.click(screen.getByRole('button', { name: 'Less Modifier' }));
+	expect(modifier).toHaveAccessibleDescription('Subtracts 2 dice');
+	expect(within(screen.getByRole('list', { name: 'Pool' })).getAllByRole('listitem')).toHaveLength(
+		2
+	);
+	await user.click(saveButton());
+
+	const init = fetchMock.mock.calls[0][1];
+	const sent = (JSON.parse(init?.body as string) as { macros: Macro[] }).macros;
+	expect(sent[1].pool).toEqual(['Strength', '-', '2']);
+});
+
+test("without a trait to subtract from, the Modifier can't go below 0", async () => {
+	const user = userEvent.setup();
+	renderEditing({ ...FEED, pool: [] });
+	expect(screen.getByRole('button', { name: 'Less Modifier' })).toBeDisabled();
+
+	await user.click(screen.getByRole('button', { name: 'More Modifier' }));
+
+	expect(screen.getByRole('group', { name: 'Modifier' })).toHaveAccessibleDescription('Adds 1 die');
+	await user.click(screen.getByRole('button', { name: 'Less Modifier' }));
+	expect(screen.getByRole('button', { name: 'Less Modifier' })).toBeDisabled();
+});
+
+test("a pool that's all subtracted can't be saved", async () => {
+	const user = userEvent.setup();
+	renderEditing({ ...FEED, pool: ['Strength', '-', 'Obvious Predator'] });
+
+	await user.click(screen.getByRole('button', { name: 'Remove Strength' }));
+
+	expect(screen.getByRole('region', { name: 'Pool' })).toHaveTextContent(
+		'A pool needs something to add.'
+	);
+	expect(saveButton()).toBeDisabled();
+});

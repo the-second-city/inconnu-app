@@ -100,6 +100,34 @@ export class PoolPicker {
 		return this.highlight.find((pick) => pick.trait === trait);
 	}
 
+	/**
+	 * The pool's number, signed: dice added (or taken away) beyond its traits. A pool has one at
+	 * most (loading combines a macro's numbers).
+	 */
+	get modifier(): number {
+		const pick = this.picks.find(isNumber);
+		if (!pick) return 0;
+		return (pick.negative ? -1 : 1) * Number(pick.trait);
+	}
+
+	/** Set the pool's number (0 drops it), keeping its place. */
+	set modifier(value: number) {
+		const index = this.picks.findIndex(isNumber);
+		const pick = { trait: String(Math.abs(value)), specialty: null, negative: value < 0 };
+		if (value === 0) {
+			if (index !== -1) this.picks.splice(index, 1);
+		} else if (index === -1) {
+			this.picks.push(pick);
+		} else {
+			this.picks[index] = pick;
+		}
+	}
+
+	/** Whether the pool adds anything: it can't be all subtracted (or empty). */
+	get adds(): boolean {
+		return this.picks.some((pick) => !pick.negative);
+	}
+
 	/** Empty the pool and close any menu. */
 	clear(): void {
 		this.picks = [];
@@ -130,6 +158,9 @@ export class PoolPicker {
 		});
 	}
 }
+
+/** Whether a pick is the pool's number, not a trait. */
+export const isNumber = (pick: Pick): boolean => /^\d+$/.test(pick.trait);
 
 /** A macro's pool as picks (see `PoolPicker.load`). */
 const picksFor = (pool: string[], character: Character): Pick[] => {

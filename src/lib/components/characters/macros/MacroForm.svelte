@@ -8,7 +8,7 @@
 	import { FORM_CLASSES } from '$lib/constants/formStyles';
 	import { saveMacros } from '$lib/api/macros';
 	import { BusySubmit } from '$lib/state/busySubmit.svelte';
-	import { getPoolPicker } from '$lib/state/poolPicker.svelte';
+	import { getPoolPicker, isNumber } from '$lib/state/poolPicker.svelte';
 	import { difficultyName } from '$lib/rules/dice';
 	import { resolvePool } from '$lib/rules/macros';
 	import { isVampiric } from '$lib/rules/vampire';
@@ -87,6 +87,17 @@
 	);
 	// A macro rolls a pool or makes Rouse Checks (the bot's `check_has_action`)
 	const hasAction = $derived(pool.length > 0 || rouses > 0);
+	// A pool must add something: all subtracted (say, its last trait removed), it can't roll
+	const addsNothing = $derived(pool.length > 0 && !picker?.adds);
+
+	// The pool's number, beyond its traits. The bot sets no limit; this keeps the stepper sensible
+	const MODIFIER_LIMIT = 10;
+	// Subtracting needs something to subtract from
+	const canSubtract = $derived(picker?.picks.some((pick) => !pick.negative && !isNumber(pick)));
+	const modifierDetail = (value: number): string =>
+		value === 0
+			? 'Dice beyond the traits'
+			: `${value > 0 ? 'Adds' : 'Subtracts'} ${plural(Math.abs(value), 'die', 'dice')}`;
 
 	/** The macro as the bot stores it. Options that can't apply are off. */
 	const macro = (): Macro => ({
@@ -115,7 +126,12 @@
 	});
 	// An edit saves once something changed
 	const valid = $derived(
-		!nameError && !commentError && hasAction && missing.length === 0 && (!start || changed)
+		!nameError &&
+			!commentError &&
+			hasAction &&
+			!addsNothing &&
+			missing.length === 0 &&
+			(!start || changed)
 	);
 
 	const submit = new BusySubmit();
@@ -274,6 +290,18 @@ into the picker, and saving replaces the macro, by its name as it started.
 						? 'it'
 						: 'them'} to save.
 				</p>
+			{/if}
+			{#if addsNothing}
+				<p class="text-warning-300 text-sm">A pool needs something to add.</p>
+			{/if}
+			{#if picker}
+				<Stepper
+					label="Modifier"
+					bind:value={() => picker.modifier, (value) => (picker.modifier = value)}
+					min={canSubtract || picker.modifier < 0 ? -MODIFIER_LIMIT : 0}
+					max={MODIFIER_LIMIT}
+					detail={modifierDetail(picker.modifier)}
+				/>
 			{/if}
 		</section>
 

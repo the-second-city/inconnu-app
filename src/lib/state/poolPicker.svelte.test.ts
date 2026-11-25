@@ -219,3 +219,33 @@ test("showing a macro highlights its traits by the sheet's names, apart from the
 	picker.hide();
 	expect(picker.highlighted('Strength')).toBeUndefined();
 });
+
+test('the modifier is the pool’s one number, signed, kept in its place', () => {
+	const picker = new PoolPicker();
+	picker.pick('Brawl', null);
+	expect(picker.modifier).toBe(0);
+
+	picker.modifier = 2;
+	picker.pick('Strength', null);
+	picker.modifier = -1;
+
+	expect(picker.modifier).toBe(-1);
+	expect(picker.tokens(TRAITS)).toEqual(['Strength', '+', 'Brawl', '-', '1']);
+	picker.modifier = 3;
+	expect(picker.tokens(TRAITS)).toEqual(['Strength', '+', 'Brawl', '+', '3']);
+
+	picker.modifier = 0;
+	expect(picker.tokens(TRAITS)).toEqual(['Strength', '+', 'Brawl']);
+});
+
+test('a pool adds something unless it is all subtracted', () => {
+	const picker = new PoolPicker();
+	expect(picker.adds).toBe(false);
+	picker.pick('Strength', null);
+	picker.modifier = -2;
+	expect(picker.adds).toBe(true);
+
+	picker.remove('Strength');
+
+	expect(picker.adds).toBe(false);
+});
