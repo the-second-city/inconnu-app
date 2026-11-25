@@ -1817,3 +1817,18 @@ test("leaving the page with the macro panel open but nothing unsaved doesn't ask
 	expect(leave('link')).toBe(false);
 	expect(window.confirm).not.toHaveBeenCalled();
 });
+
+test("the strip's Cancel asks about a new macro, and leaving it starts the next one full", async () => {
+	const user = userEvent.setup();
+	const dialog = await addMacroForm(user);
+	await user.type(within(dialog).getByRole('textbox', { name: 'Name' }), 'feed');
+	await user.click(within(dialog).getByRole('button', { name: 'Pick traits' }));
+	expect(screen.getByRole('dialog', { name: 'New Macro' })).toBe(dialog);
+
+	await user.click(within(dialog).getByRole('button', { name: 'Cancel' }));
+
+	expect(window.confirm).toHaveBeenCalledOnce();
+	await user.click(await screen.findByRole('button', { name: 'Add macro' }));
+	const next = await screen.findByRole('dialog', { name: 'New Macro' });
+	expect(within(next).getByRole('textbox', { name: 'Name' })).toHaveValue('');
+});

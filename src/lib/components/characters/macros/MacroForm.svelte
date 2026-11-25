@@ -1,5 +1,7 @@
 <script lang="ts">
-	import { Plus } from '@lucide/svelte';
+	import { ChevronUp, Loader2, Minimize2, Plus, X } from '@lucide/svelte';
+
+	import { plural } from '$lib';
 
 	import { getConstraints, lengthError, macroNameError } from '$lib/constraints';
 	import { FORM_CLASSES } from '$lib/constants/formStyles';
@@ -18,9 +20,17 @@
 		oncancel: () => void; // Back to the list, discarding the macro
 		onsaved: () => void; // The macro saved; the live update brings it to the list
 		dirty?: boolean; // Whether anything differs from a blank form, so leaving should ask
+		// Collapsed to a strip (the name, the pool, Add), leaving the sheet clear for picking traits
+		compact?: boolean;
 	}
 
-	let { character, oncancel, onsaved, dirty = $bindable(false) }: ComponentProps = $props();
+	let {
+		character,
+		oncancel,
+		onsaved,
+		dirty = $bindable(false),
+		compact = $bindable(false)
+	}: ComponentProps = $props();
 
 	const id = $props.id();
 
@@ -140,13 +150,73 @@
 
 <!--
 @component
-A new macro's form, in the macro panel: its name, Difficulty, Rouse Checks, options, and comment,
-then the pool, built by clicking traits on the sheet. Adding saves the character's macros with it.
+A new macro's form, in the macro panel: its name, then the pool (built by clicking traits on the
+sheet), then its Difficulty, Rouse Checks, options, and comment. Adding saves the character's macros with it.
+`compact` collapses it to a strip (the name, the pool and its dice, and buttons to show the details,
+cancel, and add), so the sheet stays clear while traits are picked; the details are kept.
 -->
-{#if submit.busy}
-	<BusySpinner label="Adding the macro…" />
-{:else}
-	<form class="flex flex-col gap-4" onsubmit={save} aria-label="New macro">
+<form class="flex flex-col gap-4" onsubmit={save} aria-label="New macro">
+	{#if compact}
+		<div class="flex items-center gap-2">
+			<div class="min-w-0 flex-1">
+				<div class="flex items-baseline gap-2">
+					<span class="font-display truncate text-sm tracking-[0.04em]">
+						{trimmedName || 'New Macro'}
+					</span>
+					{#if pool.length > 0 && resolved.dice !== null}
+						<span class="font-display text-primary-300 shrink-0 text-sm tabular-nums">
+							{plural(resolved.dice, 'die', 'dice')}
+						</span>
+					{/if}
+				</div>
+				{#if pool.length > 0}
+					<PoolText terms={resolved.terms} />
+				{:else}
+					<p class="text-surface-300 text-sm italic">
+						Click traits on the sheet to build the pool.
+					</p>
+				{/if}
+			</div>
+			<button
+				type="button"
+				class="btn-icon hover:preset-tonal-surface shrink-0"
+				onclick={() => (compact = false)}
+				aria-label="Show details"
+				title="Show details"
+			>
+				<ChevronUp size={18} />
+			</button>
+			<button
+				type="button"
+				class="btn-icon hover:preset-tonal-surface shrink-0"
+				onclick={oncancel}
+				disabled={submit.busy}
+				aria-label="Cancel"
+				title="Cancel"
+			>
+				<X size={18} />
+			</button>
+			<button
+				type="submit"
+				class="btn btn-sm btn-gothic btn-gothic-blood shrink-0"
+				disabled={!valid || submit.busy}
+				aria-busy={submit.busy}
+				aria-label="Add Macro"
+			>
+				{#if submit.busy}
+					<Loader2 size={16} class="animate-spin" />
+				{:else}
+					<Plus size={16} />
+				{/if}
+				<span>Add</span>
+			</button>
+		</div>
+		{#if submit.error}
+			<p class="{FORM_CLASSES.error} card preset-tonal-error p-2" role="alert">{submit.error}</p>
+		{/if}
+	{:else if submit.busy}
+		<BusySpinner label="Adding the macro…" />
+	{:else}
 		<div>
 			<label class="mb-1 block font-semibold" for="{id}-name">Name</label>
 			<input
@@ -166,6 +236,27 @@ then the pool, built by clicking traits on the sheet. Adding saves the character
 			<!-- Not while it's empty: a new form isn't wrong yet -->
 			<ErrorMessage error={trimmedName ? nameError : null} id="{id}-name-error" />
 		</div>
+		<section
+			class="border-surface-500 flex flex-col gap-2 border-y py-3"
+			aria-labelledby="{id}-pool"
+		>
+			<div class="flex items-center justify-between">
+				<h3 id="{id}-pool" class="font-display text-sm tracking-[0.04em] uppercase">Pool</h3>
+				<button
+					type="button"
+					class="btn btn-sm hover:preset-tonal-surface"
+					onclick={() => (compact = true)}
+				>
+					<Minimize2 size={14} />
+					<span>Pick traits</span>
+				</button>
+			</div>
+			{#if pool.length > 0}
+				<PoolText terms={resolved.terms} />
+			{:else}
+				<p class="text-surface-300 italic">Click traits on the sheet to build the pool.</p>
+			{/if}
+		</section>
 
 		<div class="flex flex-col gap-2">
 			<Stepper label="Difficulty" bind:value={difficulty} {...constraints().macro_difficulty} />
@@ -215,20 +306,6 @@ then the pool, built by clicking traits on the sheet. Adding saves the character
 			<ErrorMessage error={commentError} id="{id}-comment-error" />
 		</div>
 
-		<section class="flex flex-col gap-2" aria-labelledby="{id}-pool">
-			<h3
-				id="{id}-pool"
-				class="font-display border-surface-500 border-t pt-3 text-sm tracking-[0.04em] uppercase"
-			>
-				Pool
-			</h3>
-			{#if pool.length > 0}
-				<PoolText terms={resolved.terms} />
-			{:else}
-				<p class="text-surface-300 italic">Click traits on the sheet to build the pool.</p>
-			{/if}
-		</section>
-
 		{#if submit.error}
 			<p class="{FORM_CLASSES.error} card preset-tonal-error p-3" role="alert">{submit.error}</p>
 		{/if}
@@ -242,5 +319,5 @@ then the pool, built by clicking traits on the sheet. Adding saves the character
 				<span>Add Macro</span>
 			</button>
 		</div>
-	</form>
-{/if}
+	{/if}
+</form>

@@ -55,6 +55,13 @@
 	);
 	const hasChanges = $derived(view === 'edit' && deleted.size > 0);
 	let formDirty = $state(false); // The new macro form has input
+	// The new macro form collapsed to a strip at the bottom, so the sheet is clear for picking traits
+	let formCompact = $state(false);
+	const compact = $derived(view === 'add' && formCompact);
+	// A new form starts full
+	$effect(() => {
+		if (view !== 'add') formCompact = false;
+	});
 	// What leaving would lose: deletions not saved, or a new macro not added
 	const unsaved = $derived(hasChanges || (view === 'add' && formDirty));
 	$effect(() => {
@@ -170,16 +177,29 @@ new macro form, and Edit (with macros to edit) to editing: each macro gets a Del
 Cancel and Save replace Add and Edit. On phones it sits above the floating buttons; wider, at the
 window's right, below the tab row (and the Macros button).
 -->
+{#if compact}
+	<!-- Room at the end of the page, so its last rows can scroll clear of the strip. Phones have the
+	     page's own, for the floating buttons beside it -->
+	<div class="hidden h-24 sm:block" aria-hidden="true"></div>
+{/if}
+
 {#if open}
 	<div
 		id="macro-panel"
 		role="dialog"
 		aria-modal="false"
-		class="card popover-gothic fixed inset-x-4 bottom-46 z-40 flex max-h-[60vh] flex-col sm:inset-x-auto sm:top-60 sm:right-6 sm:bottom-auto sm:max-h-[calc(100vh-16.5rem)] sm:w-96"
-		aria-labelledby="macro-panel-title"
+		class={[
+			'card popover-gothic fixed z-40 flex flex-col',
+			compact
+				? // A strip along the bottom: on phones, clear of the floating buttons at the right
+					'right-28 bottom-6 left-4 sm:right-auto sm:left-1/2 sm:w-[36rem] sm:-translate-x-1/2'
+				: 'inset-x-4 bottom-46 max-h-[60vh] sm:inset-x-auto sm:top-60 sm:right-6 sm:bottom-auto sm:max-h-[calc(100vh-16.5rem)] sm:w-96'
+		]}
+		aria-labelledby={compact ? undefined : 'macro-panel-title'}
+		aria-label={compact ? 'New Macro' : undefined}
 		transition:fly={{ x: 24, duration: 200 }}
 	>
-		<header class="border-surface-500 flex items-center gap-2 border-b px-4 py-3">
+		<header class="border-surface-500 flex items-center gap-2 border-b px-4 py-3" hidden={compact}>
 			<SquareFunction size={18} class="text-primary-400 shrink-0" />
 			<h2 id="macro-panel-title" class="font-display grid text-sm tracking-[0.04em] uppercase">
 				{#key view}
@@ -248,12 +268,13 @@ window's right, below the tab row (and the Macros button).
 				<X size={16} />
 			</button>
 		</header>
-		<div class="grid overflow-y-auto px-4 py-3">
+		<div class={['grid overflow-y-auto px-4', compact ? 'py-2' : 'py-3']}>
 			{#if view === 'add'}
 				<div class="col-start-1 row-start-1" transition:fade={crossfade}>
 					<MacroForm
 						{character}
 						bind:dirty={formDirty}
+						bind:compact={formCompact}
 						oncancel={cancelAdding}
 						onsaved={() => {
 							formDirty = false;
