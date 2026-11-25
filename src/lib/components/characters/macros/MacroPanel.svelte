@@ -20,6 +20,7 @@
 	import { getPoolPicker } from '$lib/state/poolPicker.svelte';
 	import type { Character, Macro } from '$lib/types';
 	import BusySpinner from '$lib/components/ui/BusySpinner.svelte';
+	import SheetHandle from '$lib/components/ui/SheetHandle.svelte';
 	import MacroForm from './MacroForm.svelte';
 	import MacroList from './MacroList.svelte';
 
@@ -168,58 +169,16 @@
 		open = false;
 	};
 
-	// On phones, the panel is a sheet from the bottom, resized by dragging its handle: released, it
-	// snaps to a third, 60%, or 90% of the window; dragged below a fifth, it closes (asking first,
-	// as its ✕ does). Until it's dragged, it fits its content, up to 60%
-	const MIN_SNAP = 0.35;
-	const MAX_SNAP = 0.9;
-	const SNAPS = [MIN_SNAP, 0.6, MAX_SNAP];
-	const CLOSE_BELOW = 0.2;
+	// On phones, the panel is a sheet from the bottom, resized by dragging its handle (SheetHandle).
+	// Until it's dragged, it fits its content, up to 60%
 	let sheetHeight: number | null = $state(null); // In pixels, once dragged
-	let drag: { y: number; height: number } | null = $state(null);
-	// The window's height and the panel's, as laid out (so the slider's value is real before any drag)
-	let windowHeight = $state(0);
-	let panelHeight = $state(0);
-	const snapTo = (fraction: number) => (sheetHeight = fraction * windowHeight);
-	const onHandleDown = (e: PointerEvent) => {
-		(e.currentTarget as HTMLElement).setPointerCapture?.(e.pointerId);
-		drag = { y: e.clientY, height: panelHeight };
+	let dragging = $state(false);
+	let panelHeight = $state(0); // As laid out, where a drag starts from
+	/** Close from the handle (asking first, as the ✕ does), saying whether it closed. */
+	const closeFromHandle = (): boolean => {
+		close();
+		return !open;
 	};
-	const onHandleMove = (e: PointerEvent) => {
-		if (!drag) return;
-		const height = drag.height + (drag.y - e.clientY);
-		sheetHeight = Math.min(Math.max(height, 64), windowHeight * MAX_SNAP);
-	};
-	const onHandleUp = () => {
-		if (!drag) return;
-		drag = null;
-		const fraction = (sheetHeight ?? 0) / windowHeight;
-		if (fraction < CLOSE_BELOW) {
-			sheetHeight = null;
-			close();
-			// Declined: back to the smallest size
-			if (open) snapTo(MIN_SNAP);
-			return;
-		}
-		const nearest = SNAPS.reduce((a, b) =>
-			Math.abs(b - fraction) < Math.abs(a - fraction) ? b : a
-		);
-		snapTo(nearest);
-	};
-	// The keyboard steps between the sizes
-	const onHandleKey = (e: KeyboardEvent) => {
-		if (e.key !== 'ArrowUp' && e.key !== 'ArrowDown') return;
-		e.preventDefault();
-		const fraction = (sheetHeight ?? panelHeight) / windowHeight;
-		const next =
-			e.key === 'ArrowUp'
-				? SNAPS.find((snap) => snap > fraction + 0.01)
-				: SNAPS.findLast((snap) => snap < fraction - 0.01);
-		if (next !== undefined) snapTo(next);
-	};
-	const sheetPercent = $derived(
-		windowHeight > 0 ? Math.round(((sheetHeight ?? panelHeight) / windowHeight) * 100) : 0
-	);
 
 	// Entering editing starts fresh
 	$effect(() => {
@@ -303,11 +262,7 @@
 	const stacked = 'col-start-1 row-start-1 flex items-center gap-1';
 </script>
 
-<svelte:window
-	bind:innerHeight={windowHeight}
-	onkeydown={handleKey}
-	onpointerdown={handlePointer}
-/>
+<svelte:window onkeydown={handleKey} onpointerdown={handlePointer} />
 
 <!--
 @component
@@ -334,7 +289,7 @@ button).
 		aria-modal="false"
 		class={[
 			'card popover-gothic fixed z-40 flex flex-col transition-[opacity,height] duration-150',
-			drag && 'transition-none',
+			dragging && 'transition-none',
 			// Resized as a sheet (phones only)
 			!compact && sheetHeight !== null && 'max-sm:h-(--sheet-height) max-sm:max-h-none',
 			fading && 'opacity-0',
@@ -351,25 +306,14 @@ button).
 		transition:fly={{ x: 24, duration: 200 }}
 	>
 		{#if !compact}
-			<!-- The sheet's handle (phones): drag it to resize the panel, or below a fifth to close it -->
-			<div
-				role="slider"
-				aria-orientation="vertical"
-				aria-label="Macros panel height"
-				aria-valuenow={sheetPercent}
-				aria-valuetext="{sheetPercent}% of the screen"
-				aria-valuemin={Math.round(MIN_SNAP * 100)}
-				aria-valuemax={Math.round(MAX_SNAP * 100)}
-				tabindex="0"
-				class="[&:focus-visible>span]:bg-primary-300 flex shrink-0 cursor-grab touch-none justify-center pt-2 pb-1 focus-visible:outline-none sm:hidden"
-				onpointerdown={onHandleDown}
-				onpointermove={onHandleMove}
-				onpointerup={onHandleUp}
-				onpointercancel={onHandleUp}
-				onkeydown={onHandleKey}
-			>
-				<span class="bg-surface-400 h-1 w-10 rounded-full"></span>
-			</div>
+			<!-- On phones: drag to resize the panel, or below a fifth to close it -->
+			<SheetHandle
+				label="Macros panel height"
+				bind:height={sheetHeight}
+				bind:dragging
+				current={panelHeight}
+				onclose={closeFromHandle}
+			/>
 		{/if}
 		<header class="border-surface-500 flex items-center gap-2 border-b px-4 py-3" hidden={compact}>
 			<SquareFunction size={18} class="text-primary-400 shrink-0" />
