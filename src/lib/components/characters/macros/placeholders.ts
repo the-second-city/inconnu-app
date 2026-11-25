@@ -28,7 +28,14 @@ export const NAME_PLACEHOLDERS = [
 	'brood_dramatically',
 	'defenestrate',
 	'waltz',
-	'photosynthesize'
+	'photosynthesize',
+	'effervesce',
+	'effluviate',
+	'cogitate',
+	'juxtapose',
+	'menace',
+	'juggle',
+	'catapult'
 ];
 
 /**
