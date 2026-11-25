@@ -65,7 +65,7 @@
 	const remaining = $derived(shown.filter((macro) => !deleted.has(macro.name)));
 	const hasChanges = $derived(view === 'edit' && deleted.size > 0);
 	// The macro being changed, in the modify view
-	let target: Macro | null = $state(null);
+	let target = $state<Macro | null>(null);
 	const inForm = $derived(isFormView(view));
 	let formDirty = $state(false); // The form has input (or changes)
 	// The new macro form collapsed to a strip at the bottom, so the sheet is clear for picking traits
@@ -234,14 +234,14 @@
 	};
 
 	// The panel's name, for screen readers, and its title, which editing shortens so the header's
-	// buttons (Cancel, Delete N) fit on one line beside it
-	const names: Record<MacroPanelView, string> = {
+	// buttons (Cancel, Delete N) fit on one line beside it. Editing a macro names it
+	const names: Record<MacroPanelView, string> = $derived({
 		list: 'Macros',
 		add: 'New Macro',
 		edit: 'Edit Macros',
-		modify: 'Edit Macro'
-	};
-	const titles: Record<MacroPanelView, string> = { ...names, edit: 'Edit' };
+		modify: target ? `Edit ${target.name}` : 'Edit Macro'
+	});
+	const titles: Record<MacroPanelView, string> = $derived({ ...names, edit: 'Edit' });
 
 	// Switching views crossfades: the old and new share a grid cell while one fades out and the
 	// other in, so neither waits for the other
@@ -288,11 +288,16 @@ window's right, below the tab row (and the Macros button).
 	>
 		<header class="border-surface-500 flex items-center gap-2 border-b px-4 py-3" hidden={compact}>
 			<SquareFunction size={18} class="text-primary-400 shrink-0" />
-			<h2 id="macro-panel-title" class="font-display grid text-sm tracking-[0.04em] uppercase">
+			<h2
+				id="macro-panel-title"
+				class="font-display grid min-w-0 text-sm tracking-[0.04em] uppercase"
+			>
 				<span class="sr-only">{names[view]}</span>
 				{#key view}
-					<span class="col-start-1 row-start-1" aria-hidden="true" transition:fade={crossfade}
-						>{titles[view]}</span
+					<span
+						class="col-start-1 row-start-1 truncate"
+						aria-hidden="true"
+						transition:fade={crossfade}>{titles[view]}</span
 					>
 				{/key}
 			</h2>

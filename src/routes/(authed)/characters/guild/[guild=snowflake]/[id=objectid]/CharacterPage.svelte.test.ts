@@ -1940,7 +1940,7 @@ test("a macro's Edit opens its form with its pool picked on the sheet; saving re
 
 	await user.click(within(panel).getByRole('button', { name: 'Edit lift' }));
 
-	const dialog = await screen.findByRole('dialog', { name: 'Edit Macro' });
+	const dialog = await screen.findByRole('dialog', { name: 'Edit lift' });
 	expect(within(dialog).getByRole('textbox', { name: 'Name' })).toHaveValue('lift');
 	expect(screen.getByRole('button', { name: 'Pick Strength' })).toHaveAttribute(
 		'aria-pressed',
@@ -1967,7 +1967,7 @@ test("Escape backs out of a macro's form to editing", async () => {
 	renderOwnerPage(withMacros());
 	const panel = await editMacros(user);
 	await user.click(within(panel).getByRole('button', { name: 'Edit punch' }));
-	await screen.findByRole('dialog', { name: 'Edit Macro' });
+	await screen.findByRole('dialog', { name: 'Edit punch' });
 
 	await user.keyboard('{Escape}');
 
