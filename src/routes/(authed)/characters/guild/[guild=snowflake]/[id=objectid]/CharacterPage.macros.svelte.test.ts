@@ -995,3 +995,16 @@ test("a macro being saved can't be discarded, or its pool changed, until it's do
 	await user.keyboard('{Escape}');
 	await screen.findByRole('dialog', { name: 'Macros' });
 });
+
+test("the last macro going away closes a Storyteller's panel, so Edit doesn't wait on it", async () => {
+	const user = userEvent.setup();
+	const { rerender } = renderPage(withMacro());
+	await user.click(screen.getAllByRole('button', { name: 'Macros' })[0]);
+	expect(editButton('Edit')).toBeDisabled();
+
+	await rerender({ character: { ...withMacro(), macros: [] } });
+
+	await waitFor(() => expect(editButton('Edit')).toBeEnabled());
+	await rerender({ character: withMacro() });
+	expect(screen.queryByRole('dialog', { name: 'Macros' })).not.toBeInTheDocument();
+});

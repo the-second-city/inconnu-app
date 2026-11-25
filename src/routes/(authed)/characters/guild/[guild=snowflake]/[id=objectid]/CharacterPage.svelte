@@ -235,6 +235,15 @@
 	let macroView: MacroPanelView = $state('list');
 	let macrosDirty = $state(false); // Macro editing has unsaved deletions, or a new macro has input
 
+	// Without the button there's no panel (a Storyteller's view of a player's last macro going away),
+	// so it isn't open, which would hold Edit
+	$effect(() => {
+		if (macroButton) return;
+		macrosOpen = false;
+		macroView = 'list';
+		macrosDirty = false;
+	});
+
 	// A new macro's pool is picked from the sheet: its traits become choices while the form is open.
 	// It lives here, not in the sheet, which a refetch rebuilds
 	const picker = new PoolPicker();
