@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { untrack } from 'svelte';
-	import { ArrowRight, Minus, Minimize2, Plus, SaveCheck, X } from '@lucide/svelte';
+	import { ArrowRight, Minimize2, Plus, SaveCheck, X } from '@lucide/svelte';
 
 	import { orList, plural } from '$lib';
 
@@ -265,36 +265,15 @@ edit saves once something changed.
 					{/if}
 				</div>
 				{#if picker}
-					{@const value = picker.modifier}
-					<div
-						role="group"
-						aria-label="Modifier"
-						aria-describedby="{id}-strip-modifier"
-						class="border-surface-500 bg-surface-800/60 flex shrink-0 items-center rounded-full border text-sm"
-					>
-						<button
-							type="button"
-							class="hover:preset-tonal-surface flex size-6 items-center justify-center rounded-full disabled:opacity-40"
-							onclick={() => (picker.modifier = value - 1)}
-							disabled={value <= modifierMin}
-							aria-label="Less Modifier"
-						>
-							<Minus size={12} />
-						</button>
-						<span class="w-7 text-center tabular-nums" title={modifierDetail(value)}>
-							{value > 0 ? `+${value}` : value < 0 ? `−${-value}` : '±0'}
-						</span>
-						<span id="{id}-strip-modifier" class="sr-only">{modifierDetail(value)}</span>
-						<button
-							type="button"
-							class="hover:preset-tonal-surface flex size-6 items-center justify-center rounded-full disabled:opacity-40"
-							onclick={() => (picker.modifier = value + 1)}
-							disabled={value >= MODIFIER_LIMIT}
-							aria-label="More Modifier"
-						>
-							<Plus size={12} />
-						</button>
-					</div>
+					<Stepper
+						compact
+						label="Modifier"
+						bind:value={() => picker.modifier, (value) => (picker.modifier = value)}
+						min={modifierMin}
+						max={MODIFIER_LIMIT}
+						detail={modifierDetail(picker.modifier)}
+						format={(value) => (value > 0 ? `+${value}` : value < 0 ? `−${-value}` : '±0')}
+					/>
 				{/if}
 			</div>
 		</div>
