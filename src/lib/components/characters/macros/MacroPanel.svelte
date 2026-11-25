@@ -428,7 +428,8 @@ Macros button), resized by a handle of its own.
 		>
 			{#if inForm}
 				{#key formKey}
-					<div class="col-start-1 row-start-1" transition:fade={crossfade}>
+					<!-- Global, as it's the view that changes, outside the key -->
+					<div class="col-start-1 row-start-1" transition:fade|global={crossfade}>
 						<MacroForm
 							{character}
 							macro={view === 'modify' ? (target ?? undefined) : undefined}
