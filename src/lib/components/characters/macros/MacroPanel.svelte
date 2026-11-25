@@ -30,6 +30,9 @@
 		// Shows the Add and Edit buttons, which call this with the view they open (so the page can
 		// check first, then set `view`)
 		onswitch?: (view: 'add' | 'edit') => void;
+		// Brings the macros up to date after a save, which waits for it, so what's shown next (and
+		// edited) isn't what was replaced
+		refetch?: () => Promise<void>;
 		// Whether editing has unsaved deletions or the new macro form has input, for the page to ask
 		// before it closes the panel or leaves
 		dirty?: boolean;
@@ -40,6 +43,7 @@
 		open = $bindable(),
 		view = $bindable('list'),
 		onswitch,
+		refetch,
 		dirty = $bindable(false)
 	}: ComponentProps = $props();
 
@@ -176,7 +180,7 @@
 	/** Save the deletions (one at a time; see MacroDeletions), then back to the list. */
 	const save = async () => {
 		if (!hasChanges) return;
-		if (await deletions.save(character._id)) view = 'list';
+		if (await deletions.save(character._id, refetch)) view = 'list';
 	};
 
 	// Just viewing, a click (or tap) anywhere else closes the panel; editing and the forms stay open,
@@ -367,6 +371,7 @@ button).
 							bind:dirty={formDirty}
 							bind:compact={() => compact, (value) => (formCompact = value)}
 							oncancel={cancelForm}
+							{refetch}
 							onsaved={leaveForm}
 						/>
 					</div>

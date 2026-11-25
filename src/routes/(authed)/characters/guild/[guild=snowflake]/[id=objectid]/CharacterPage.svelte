@@ -22,7 +22,8 @@
 		tooLongFields
 	} from '$lib/constraints';
 
-	import { beforeNavigate, goto } from '$app/navigation';
+	import { beforeNavigate, goto, invalidate } from '$app/navigation';
+	import { CHARACTER_DEPENDENCY } from '$lib/api/liveUpdates';
 	import { resolve } from '$app/paths';
 	import { atLeast } from '$lib/state/busy';
 	import {
@@ -253,6 +254,9 @@
 	const openMacros = () => (macrosOpen = true);
 	// The panel's Escape and ✕ are how it closes; while it's open, Edit and Macros wait
 	const macrosTitle = 'Close the macros panel first';
+	/** Refetch the character after a macro save, without waiting for its live update. A failed
+	 * refetch shows itself (the error page), and the save stands. */
+	const refetch = (): Promise<void> => invalidate(CHARACTER_DEPENDENCY).catch(() => {});
 	// Adding and editing macros are for supporters, like the rest of editing
 	const switchMacroView = forSupporters(
 		'Editing macros',
@@ -682,6 +686,7 @@
 		bind:view={macroView}
 		bind:dirty={macrosDirty}
 		onswitch={ownerActions ? switchMacroView : undefined}
+		{refetch}
 	/>
 {/if}
 

@@ -904,3 +904,53 @@ test("dragging the handle snaps the panel's height, or below a fifth closes it",
 	await dragHandle(0, height);
 	await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
 });
+
+test('a save waits for the fresh macros, so the list it returns to has them', async () => {
+	let arrive: () => void = () => {};
+	invalidate.mockImplementationOnce(() => new Promise<void>((resolve) => (arrive = resolve)));
+	const user = userEvent.setup();
+	const { rerender } = renderOwnerPage(withMacros());
+	const panel = await editMacros(user);
+	await user.click(within(panel).getByRole('button', { name: 'Edit lift' }));
+	const form = await screen.findByRole('dialog', { name: 'Edit lift' });
+	await user.click(within(form).getByRole('button', { name: 'More Difficulty' }));
+
+	await user.click(within(form).getByRole('button', { name: 'Save Macro' }));
+
+	await waitFor(() => expect(invalidate).toHaveBeenCalledWith('app:character'));
+	expect(screen.getByRole('dialog', { name: 'Edit lift' })).toBe(form);
+
+	const fresh = withMacros();
+	if (fresh.macros) fresh.macros[0].difficulty = 3;
+	await rerender({ character: fresh });
+	arrive();
+	const list = await screen.findByRole('dialog', { name: 'Edit Macros' });
+	expect(within(list).getByRole('article', { name: 'lift' })).toHaveTextContent('Difficulty 3');
+});
+
+test("a failed save doesn't refetch", async () => {
+	fetchMock.mockResolvedValueOnce(Response.json({ detail: 'Nope' }, { status: 409 }));
+	const user = userEvent.setup();
+	const form = await addMacroForm(user);
+	await user.type(within(form).getByRole('textbox', { name: 'Name' }), 'surge');
+	await user.click(screen.getByRole('button', { name: 'Pick Strength' }));
+	await user.click(within(form).getByRole('button', { name: 'Continue' }));
+
+	await user.click(within(form).getByRole('button', { name: 'Add Macro' }));
+
+	expect(await within(form).findByRole('alert')).toHaveTextContent('Nope');
+	expect(invalidate).not.toHaveBeenCalled();
+});
+
+test('deleting refetches once, after the last delete', async () => {
+	const user = userEvent.setup();
+	renderOwnerPage(withMacros());
+	const dialog = await editMacros(user);
+	await user.click(within(dialog).getByRole('button', { name: 'Delete lift' }));
+	await user.click(within(dialog).getByRole('button', { name: 'Delete punch' }));
+
+	await user.click(within(dialog).getByRole('button', { name: 'Delete 2' }));
+
+	await waitFor(() => expect(invalidate).toHaveBeenCalledOnce());
+	expect(requests()).toHaveLength(2);
+});

@@ -23,7 +23,8 @@
 		character: Character;
 		macro?: Macro; // The macro to edit; a new one without it
 		oncancel: () => void; // Back to the list, discarding the macro
-		onsaved: () => void; // The macro saved; the live update brings it to the list
+		refetch?: () => Promise<void>; // Brings the saved macro to the page, before `onsaved`
+		onsaved: () => void; // The macro saved
 		dirty?: boolean; // Whether anything differs from where it started, so leaving should ask
 		// Collapsed to a strip (the name, the pool, Continue), leaving the sheet clear for picking traits
 		compact?: boolean;
@@ -33,6 +34,7 @@
 		character,
 		macro: original,
 		oncancel,
+		refetch,
 		onsaved,
 		dirty = $bindable(false),
 		compact = $bindable(false)
@@ -141,7 +143,11 @@
 		if (!valid) return;
 		const id = character._id;
 		const saved = macro();
-		const request = () => (start ? updateMacro(id, start.name, saved) : createMacro(id, saved));
+		const request = async () => {
+			const outcome = await (start ? updateMacro(id, start.name, saved) : createMacro(id, saved));
+			if (outcome.error === undefined) await refetch?.();
+			return outcome;
+		};
 		if (await submit.run(request)) onsaved();
 	};
 
