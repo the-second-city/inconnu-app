@@ -8,7 +8,7 @@
 
 import { getContext, setContext } from 'svelte';
 
-import { KEY_DELIMITER, resolvePool } from '$lib/rules/macros';
+import { KEY_DELIMITER, isNumberToken, resolvePool } from '$lib/rules/macros';
 import type { Character, Trait } from '$lib/types';
 
 /** A picked trait, its specialty (null for none), and whether it's subtracted (a flaw, say). */
@@ -160,7 +160,7 @@ export class PoolPicker {
 }
 
 /** Whether a pick is the pool's number, not a trait. */
-export const isNumber = (pick: Pick): boolean => /^\d+$/.test(pick.trait);
+export const isNumber = (pick: Pick): boolean => isNumberToken(pick.trait);
 
 /** A macro's pool as picks (see `PoolPicker.load`). */
 const picksFor = (pool: string[], character: Character): Pick[] => {

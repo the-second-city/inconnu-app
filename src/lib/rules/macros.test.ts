@@ -1,6 +1,6 @@
 import { expect, test } from 'vitest';
 
-import { macrosUsing, resolvePool } from './macros';
+import { macrosUsing, missingLabel, parsePool, resolvePool } from './macros';
 import type { Character, Macro, Splat, Trait } from '$lib/types';
 
 /** A trait with a rating and any specialties (or powers). */
@@ -134,4 +134,24 @@ test('finds the macros rolling a trait, with or without a specialty, as the bot 
 	expect(macrosUsing([hunt, brawl, occult], 'Obvious Predator')).toEqual([hunt]);
 	expect(macrosUsing([hunt, brawl, occult], 'Occult')).toEqual([hunt, occult]);
 	expect(macrosUsing([hunt, brawl, occult], 'Potence')).toEqual([]);
+});
+
+test('parses a pool into its terms, each with its sign', () => {
+	expect(parsePool(['Strength', '+', 'Brawl.Kindred', '-', '2'])).toEqual([
+		{ sign: '+', token: 'Strength' },
+		{ sign: '+', token: 'Brawl.Kindred' },
+		{ sign: '-', token: '2' }
+	]);
+	expect(parsePool([])).toEqual([]);
+});
+
+test('names what a term lacks: the trait, or the trait and its specialty', () => {
+	const [gone, lost, fine] = resolvePool(
+		['Melee', '+', 'Brawl.Boxing', '+', 'Strength'],
+		character(TRAITS)
+	).terms;
+
+	expect(missingLabel(gone)).toBe('Melee');
+	expect(missingLabel(lost)).toBe('Brawl (Boxing)');
+	expect(missingLabel(fine)).toBeNull();
 });

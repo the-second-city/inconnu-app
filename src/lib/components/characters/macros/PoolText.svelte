@@ -1,5 +1,5 @@
 <script lang="ts">
-	import type { PoolTerm } from '$lib/rules/macros';
+	import { missingLabel, type PoolTerm } from '$lib/rules/macros';
 
 	interface ComponentProps {
 		terms: PoolTerm[]; // A resolved pool's terms (see resolvePool)
@@ -27,7 +27,8 @@ lacks are struck through.
 			{/if}
 			<span
 				class={term.missing ? 'text-error-400 line-through decoration-1' : ''}
-				title={term.missing ? `Not on the sheet: ${term.missing}` : undefined}>{term.name}</span
+				title={term.missing ? `Not on the sheet: ${missingLabel(term)}` : undefined}
+				>{term.name}</span
 			>
 			{#if term.specialties.length > 0}
 				<em class="text-primary-300">({term.specialties.join(', ')})</em>

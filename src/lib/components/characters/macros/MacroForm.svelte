@@ -10,7 +10,7 @@
 	import { BusySubmit } from '$lib/state/busySubmit.svelte';
 	import { getPoolPicker, isNumber } from '$lib/state/poolPicker.svelte';
 	import { difficultyName } from '$lib/rules/dice';
-	import { resolvePool } from '$lib/rules/macros';
+	import { missingLabel, resolvePool } from '$lib/rules/macros';
 	import { isVampiric } from '$lib/rules/vampire';
 	import type { Character, Macro } from '$lib/types';
 	import BusySpinner from '$lib/components/ui/BusySpinner.svelte';
@@ -84,10 +84,11 @@
 		lengthError(comment.trim(), constraints().macro_comment_max_length)
 	);
 	const resolved = $derived(resolvePool(pool, character));
-	// Picks the character lacks (from an edited macro), which the bot won't save
-	const missing = $derived(
-		resolved.terms.filter((term) => term.missing !== null).map((term) => term.name)
-	);
+	// Picks the character lacks (from an edited macro), which the bot won't save: the traits, to mark
+	// their chips, and what each lacks, to say so ("Occult (Bahari)" when it's the specialty)
+	const lacking = $derived(resolved.terms.filter((term) => term.missing !== null));
+	const missing = $derived(lacking.map((term) => term.name));
+	const missingLabels = $derived(lacking.map((term) => missingLabel(term) ?? term.name));
 	// A macro rolls a pool or makes Rouse Checks (the bot's `check_has_action`)
 	const hasAction = $derived(pool.length > 0 || rouses > 0);
 	// A pool must add something: all subtracted (say, its last trait removed), it can't roll
@@ -343,7 +344,7 @@ edit saves once something changed.
 			{/if}
 			{#if missing.length > 0}
 				<p class="text-warning-300 text-sm">
-					{orList(missing)}
+					{orList(missingLabels)}
 					{missing.length === 1 ? 'isn’t' : 'aren’t'} on the sheet. Remove {missing.length === 1
 						? 'it'
 						: 'them'} to save.

@@ -7,6 +7,30 @@ import type { Character, Macro } from '$lib/types';
 /** The separator between a pool token's trait and its specialties ("Brawl.Kindred"). */
 export const KEY_DELIMITER = '.';
 
+/** Whether a pool token is a number of dice, not a trait. */
+export const isNumberToken = (token: string): boolean => /^\d+$/.test(token);
+
+/** A pool's terms as written: each token (a trait key or a number) with the sign before it. */
+export interface PoolPart {
+	sign: '+' | '-';
+	token: string;
+}
+
+/** Split a pool's tokens ("Strength", "+", "Brawl.Kindred") into its terms, each with its sign. */
+export const parsePool = (pool: string[]): PoolPart[] => {
+	const parts: PoolPart[] = [];
+	let sign: PoolPart['sign'] = '+';
+	for (const token of pool) {
+		if (token === '+' || token === '-') {
+			sign = token;
+		} else {
+			parts.push({ sign, token });
+			sign = '+';
+		}
+	}
+	return parts;
+};
+
 /** One term of a macro's pool: a trait (with any specialties or powers) or a number. */
 export interface PoolTerm {
 	sign: '+' | '-';
@@ -52,7 +76,7 @@ const resolveTerm = (
 	character: Character,
 	inherent: Record<string, [string, number]>
 ): PoolTerm => {
-	if (/^\d+$/.test(token)) {
+	if (isNumberToken(token)) {
 		return {
 			sign,
 			kind: 'number',
@@ -104,16 +128,9 @@ const resolveTerm = (
  */
 export const resolvePool = (pool: string[], character: Character): ResolvedPool => {
 	const inherent = inherentRatings(character);
-	const terms: PoolTerm[] = [];
-	let sign: PoolTerm['sign'] = '+';
-	for (const token of pool) {
-		if (token === '+' || token === '-') {
-			sign = token;
-			continue;
-		}
-		terms.push(resolveTerm(token, sign, character, inherent));
-		sign = '+';
-	}
+	const terms = parsePool(pool).map(({ sign, token }) =>
+		resolveTerm(token, sign, character, inherent)
+	);
 
 	const resolved = terms.every((term) => term.dice !== null);
 	const total = terms.reduce(
@@ -128,12 +145,17 @@ export const resolvePool = (pool: string[], character: Character): ResolvedPool 
 export const macrosUsing = (macros: Macro[], trait: string): Macro[] => {
 	const key = nameKey(trait);
 	return macros.filter((macro) =>
-		macro.pool.some(
-			(token) =>
-				token !== '+' &&
-				token !== '-' &&
-				!/^\d+$/.test(token) &&
-				nameKey(token.split(KEY_DELIMITER)[0]) === key
+		parsePool(macro.pool).some(
+			({ token }) => !isNumberToken(token) && nameKey(token.split(KEY_DELIMITER)[0]) === key
 		)
 	);
+};
+
+/**
+ * What a term lacks, as the sheet would name it: a trait ("Melee"), or a trait's specialty
+ * ("Occult (Bahari)"). Null when it lacks nothing.
+ */
+export const missingLabel = (term: PoolTerm): string | null => {
+	if (term.missing === null) return null;
+	return term.missing === term.name ? term.name : `${term.name} (${term.missing})`;
 };

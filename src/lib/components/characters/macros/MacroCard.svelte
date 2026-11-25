@@ -3,7 +3,7 @@
 	import type { Component } from 'svelte';
 
 	import { plural } from '$lib';
-	import { resolvePool } from '$lib/rules/macros';
+	import { missingLabel, resolvePool } from '$lib/rules/macros';
 	import type { Character, Macro } from '$lib/types';
 	import PoolText from './PoolText.svelte';
 
@@ -15,7 +15,7 @@
 	let { macro, character }: ComponentProps = $props();
 
 	const pool = $derived(resolvePool(macro.pool, character));
-	const missing = $derived(pool.terms.filter((term) => term.missing).map((term) => term.missing));
+	const missing = $derived(pool.terms.map(missingLabel).filter((label) => label !== null));
 
 	interface Detail {
 		icon: Component;
