@@ -1,4 +1,5 @@
 /** Roll macros' pools, read as the bot rolls them. */
+import { plural } from '$lib';
 import { nameKey } from '$lib/constraints';
 import { baneSeverity } from '$lib/rules/remorse';
 import { bloodPotency, isVampiric } from '$lib/rules/vampire';
@@ -150,6 +151,10 @@ export const macrosUsing = (macros: Macro[], trait: string): Macro[] => {
 		)
 	);
 };
+
+/** A pool's dice, as the macros show them: "5 dice", or "? dice" while a trait is missing. */
+export const diceLabel = (dice: number | null): string =>
+	dice === null ? '? dice' : plural(dice, 'die', 'dice');
 
 /**
  * What a term lacks, as the sheet would name it: a trait ("Melee"), or a trait's specialty

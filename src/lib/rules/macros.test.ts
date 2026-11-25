@@ -1,6 +1,6 @@
 import { expect, test } from 'vitest';
 
-import { macrosUsing, missingLabel, parsePool, resolvePool } from './macros';
+import { diceLabel, macrosUsing, missingLabel, parsePool, resolvePool } from './macros';
 import type { Character, Macro, Splat, Trait } from '$lib/types';
 
 /** A trait with a rating and any specialties (or powers). */
@@ -154,4 +154,12 @@ test('names what a term lacks: the trait, or the trait and its specialty', () =>
 	expect(missingLabel(gone)).toBe('Melee');
 	expect(missingLabel(lost)).toBe('Brawl (Boxing)');
 	expect(missingLabel(fine)).toBeNull();
+});
+
+test.each([
+	[1, '1 die'],
+	[5, '5 dice'],
+	[null, '? dice']
+])('%s dice read as %j', (dice, label) => {
+	expect(diceLabel(dice)).toBe(label);
 });

@@ -10,7 +10,7 @@
 	import { BusySubmit } from '$lib/state/busySubmit.svelte';
 	import { getPoolPicker, isNumber } from '$lib/state/poolPicker.svelte';
 	import { difficultyName } from '$lib/rules/dice';
-	import { missingLabel, resolvePool } from '$lib/rules/macros';
+	import { diceLabel, missingLabel, resolvePool } from '$lib/rules/macros';
 	import { isVampiric } from '$lib/rules/vampire';
 	import type { Character, Macro } from '$lib/types';
 	import BusySpinner from '$lib/components/ui/BusySpinner.svelte';
@@ -42,6 +42,9 @@
 
 	// The bot's limits, from the page (CharacterPage provides them)
 	const constraints = getConstraints();
+
+	// What the pool says while it's empty, in the strip and the form
+	const POOL_HINT = 'Click traits on the sheet to build the pool.';
 
 	// A new macro's Difficulty: 2, Straightforward in V5's table, as most rolls' default; 0 is none
 	const DEFAULT_DIFFICULTY = 2;
@@ -212,7 +215,7 @@ edit saves once something changed.
 {#snippet dice()}
 	{#if pool.length > 0}
 		<span class="font-display text-primary-300 shrink-0 text-sm tabular-nums">
-			{resolved.dice === null ? '? dice' : plural(resolved.dice, 'die', 'dice')}
+			{diceLabel(resolved.dice)}
 		</span>
 	{/if}
 {/snippet}
@@ -258,9 +261,7 @@ edit saves once something changed.
 					{#if pool.length > 0 && picker && picker.picks.some((pick) => !isNumber(pick))}
 						<PoolChips {picker} traits={character.traits} {missing} numbers={false} />
 					{:else}
-						<p class="text-surface-300 text-sm italic">
-							Click traits on the sheet to build the pool.
-						</p>
+						<p class="text-surface-300 text-sm italic">{POOL_HINT}</p>
 					{/if}
 				</div>
 				{#if picker}
@@ -340,7 +341,7 @@ edit saves once something changed.
 			{#if pool.length > 0}
 				{#if picker}<PoolChips {picker} traits={character.traits} {missing} />{/if}
 			{:else}
-				<p class="text-surface-300 italic">Click traits on the sheet to build the pool.</p>
+				<p class="text-surface-300 italic">{POOL_HINT}</p>
 			{/if}
 			{#if missing.length > 0}
 				<p class="text-warning-300 text-sm">

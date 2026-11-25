@@ -3,7 +3,7 @@
 	import type { Component } from 'svelte';
 
 	import { plural } from '$lib';
-	import { missingLabel, resolvePool } from '$lib/rules/macros';
+	import { diceLabel, missingLabel, resolvePool } from '$lib/rules/macros';
 	import type { Character, Macro } from '$lib/types';
 	import PoolText from './PoolText.svelte';
 
@@ -55,10 +55,11 @@ what it does besides rolling (Difficulty, Rouse Checks, Hunger, hunting), and it
 		{#if pool.terms.length > 0}
 			<span class="font-display text-primary-300 shrink-0 tabular-nums">
 				{#if pool.dice === null}
-					<span class="text-surface-400" title="Some of its traits aren't on the sheet">? dice</span
+					<span class="text-surface-400" title="Some of its traits aren't on the sheet"
+						>{diceLabel(null)}</span
 					>
 				{:else}
-					{plural(pool.dice, 'die', 'dice')}
+					{diceLabel(pool.dice)}
 				{/if}
 			</span>
 		{/if}
