@@ -307,3 +307,13 @@ test('locked, picking from the sheet does nothing', () => {
 	expect(picker.picks.map(pickLabel)).toEqual(['Strength']);
 	expect(picker.added).toBe(1);
 });
+
+test('a pool that is all subtracted keeps its first sign', () => {
+	const picker = new PoolPicker();
+	picker.pick('Strength', null);
+	picker.pick('Brawl', null);
+	picker.flip('Brawl');
+	picker.remove('Strength');
+
+	expect(picker.tokens(TRAITS)).toEqual(['-', 'Brawl']);
+});

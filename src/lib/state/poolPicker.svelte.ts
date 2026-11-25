@@ -213,7 +213,7 @@ export class PoolPicker {
 					: pick.specialty
 						? `${pick.trait}${KEY_DELIMITER}${pick.specialty}`
 						: pick.trait;
-			if (i === 0) return [token];
+			if (i === 0 && !pick.negative) return [token];
 			return [pick.negative ? '-' : '+', token];
 		});
 	}
