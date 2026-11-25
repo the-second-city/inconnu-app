@@ -162,9 +162,32 @@
 
 	// On phones, the panel is a sheet from the bottom, resized by dragging its handle (SheetHandle).
 	// Until it's dragged, it fits its content, up to 60%
-	let sheetHeight: number | null = $state(null); // In pixels, once dragged
-	let dragging = $state(false);
 	let panelHeight = $state(0); // As laid out, where a drag starts from
+	let sheetHeight: number | null = $state(null); // In pixels, once dragged
+	// On wider windows it hangs below the tab row, fitting its content, until its handle is dragged:
+	// then its bottom edge stays where it was, and its top goes as far up as the site's header
+	let desktopHeight: number | null = $state(null); // In pixels, once dragged
+	let droppedTo = $state(0); // The room below it then, in pixels
+	let windowHeight = $state(0);
+	const DESKTOP_TOP = 240; // Below the tab row: top-60
+	const HEADER_ROOM = 88; // Above it at its tallest
+	const MIN_ROOM = 160 + HEADER_ROOM; // So a window that shrinks can't squeeze it away
+	const desktopBottom = $derived(
+		Math.max(
+			0,
+			Math.min(
+				desktopHeight === null ? windowHeight - DESKTOP_TOP - panelHeight : droppedTo,
+				windowHeight - MIN_ROOM
+			)
+		)
+	);
+	const desktopMax = $derived(windowHeight - desktopBottom - HEADER_ROOM);
+	/** Resize it from its handle, holding its bottom edge where it was. */
+	const resizeDesktop = (height: number | null) => {
+		if (desktopHeight === null) droppedTo = desktopBottom;
+		desktopHeight = height;
+	};
+	let dragging = $state(false);
 	/** Close from the handle (asking first, as the ✕ does), saying whether it closed. */
 	const closeFromHandle = (): boolean => {
 		close();
@@ -233,7 +256,11 @@
 	const stacked = 'col-start-1 row-start-1 flex items-center gap-1';
 </script>
 
-<svelte:window onkeydown={handleKey} onpointerdown={handlePointer} />
+<svelte:window
+	bind:innerHeight={windowHeight}
+	onkeydown={handleKey}
+	onpointerdown={handlePointer}
+/>
 
 <!--
 @component
@@ -242,8 +269,8 @@ beside it (it's where a new macro's pool will come from). With `onswitch`, Add s
 new macro form, and Edit (with macros to edit) to editing: each macro gets Edit and Delete buttons,
 and Cancel and Save replace Add and Edit. A macro's Edit opens its form, which returns to editing.
 On phones it's a sheet at the bottom, where the floating buttons were (they make way while it's
-open), resized by its handle; wider, at the window's right, below the tab row (and the Macros
-button).
+open), resized by its handle; wider, at the window's right, below the tab row (and the
+Macros button), resized by a handle of its own.
 -->
 {#if compact}
 	<!-- Room at the end of the page, so its last rows can scroll clear of the strip. Phones have the
@@ -263,6 +290,10 @@ button).
 			dragging && 'transition-none',
 			// Resized as a sheet (phones only)
 			!compact && sheetHeight !== null && 'max-sm:h-(--sheet-height) max-sm:max-h-none',
+			!compact &&
+				desktopHeight !== null &&
+				// (No margin, which the page's spacing adds, as it would lift the bottom edge)
+				'sm:top-auto! sm:bottom-(--desktop-bottom)! sm:mb-0! sm:h-(--desktop-height) sm:max-h-(--desktop-max)!',
 			layout.fading && 'opacity-0',
 			compact && 'pool-strip',
 			compact
@@ -274,6 +305,9 @@ button).
 		aria-labelledby={compact ? undefined : 'macro-panel-title'}
 		aria-label={compact ? names[view] : undefined}
 		style:--sheet-height={sheetHeight === null ? undefined : `${sheetHeight}px`}
+		style:--desktop-height={desktopHeight === null ? undefined : `${desktopHeight}px`}
+		style:--desktop-bottom="{desktopBottom}px"
+		style:--desktop-max="{desktopMax}px"
 		transition:fly={{ x: 24, duration: 200 }}
 	>
 		{#if !compact}
@@ -284,6 +318,15 @@ button).
 				bind:dragging
 				current={panelHeight}
 				onclose={closeFromHandle}
+			/>
+			<!-- On wider windows: drag to resize it -->
+			<SheetHandle
+				free
+				label="Resize the macros panel"
+				bind:height={() => desktopHeight, resizeDesktop}
+				bind:dragging
+				current={panelHeight}
+				max={desktopMax}
 			/>
 		{/if}
 		<header class="border-surface-500 flex items-center gap-2 border-b px-4 py-3" hidden={compact}>
@@ -370,7 +413,7 @@ button).
 		<!-- In the strip, a list still fading out (picking straight after Add) stays out of it -->
 		<div
 			class={[
-				'grid min-h-0 overflow-y-auto px-4',
+				'grid min-h-0 grow content-start overflow-y-auto px-4',
 				compact ? 'py-2 [&>[data-list]]:hidden' : 'py-3'
 			]}
 		>

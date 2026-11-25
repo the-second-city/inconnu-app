@@ -4,8 +4,11 @@
 		// The sheet's height in pixels once it's been resized (bindable); null fits its content
 		height: number | null;
 		current: number; // The sheet's laid-out height, where a drag starts from
-		snaps?: number[]; // The heights it settles at, as fractions of the window, in order
-		closeBelow?: number; // Dragged below this fraction, it asks to close
+		// On wider windows instead of phones, and sized freely, up to `max`: it stays where it's left
+		free?: boolean;
+		max?: number; // The most a free one goes to, in pixels
+		snaps?: number[]; // The heights a phone's settles at, as fractions of the window, in order
+		closeBelow?: number; // A phone's dragged below this fraction, it asks to close
 		// Close the sheet, returning whether it did (asking first may keep it open)
 		onclose?: () => boolean;
 		dragging?: boolean; // Whether it's being dragged (bindable), say to pause a height transition
@@ -15,6 +18,8 @@
 		label,
 		height = $bindable(),
 		current,
+		free = false,
+		max = Infinity,
 		snaps = [0.35, 0.6, 0.9],
 		closeBelow = 0.2,
 		onclose,
@@ -23,11 +28,22 @@
 
 	const minSnap = $derived(snaps[0]);
 	const maxSnap = $derived(snaps[snaps.length - 1]);
+	const FREE_MIN = 160; // The least a free one goes to, in pixels
+	const FREE_STEP = 40; // How far an arrow key moves it
 
 	let windowHeight = $state(0);
 	// A press moves this far (in pixels) before it's a drag, so a tap does nothing
 	const DRAG_AFTER = 4;
 	let start: { y: number; height: number } | null = null;
+
+	// The least and most it may be, in pixels, while dragged
+	const least = $derived(free ? FREE_MIN : 64);
+	const most = $derived(
+		free ? Math.max(FREE_MIN, Math.min(max, windowHeight)) : windowHeight * maxSnap
+	);
+	const clamp = (value: number): number => Math.min(Math.max(value, least), most);
+	// The height as it shows: a window that has shrunk since holds it to `most`
+	const real = $derived(free ? Math.min(height ?? current, most) : (height ?? current));
 
 	const snapTo = (fraction: number) => (height = fraction * windowHeight);
 
@@ -40,8 +56,7 @@
 		if (!start) return;
 		if (!dragging && Math.abs(start.y - e.clientY) < DRAG_AFTER) return;
 		dragging = true;
-		const dragged = start.height + (start.y - e.clientY);
-		height = Math.min(Math.max(dragged, 64), windowHeight * maxSnap);
+		height = clamp(start.height + (start.y - e.clientY));
 	};
 
 	// Released, it settles at the nearest size, or below `closeBelow` asks to close (declined, it
@@ -50,6 +65,7 @@
 		start = null;
 		if (!dragging) return;
 		dragging = false;
+		if (free) return; // Where it was left
 		const fraction = (height ?? current) / windowHeight;
 		if (mayClose && fraction < closeBelow && onclose) {
 			height = null;
@@ -63,6 +79,10 @@
 	const onKey = (e: KeyboardEvent) => {
 		if (e.key !== 'ArrowUp' && e.key !== 'ArrowDown') return;
 		e.preventDefault();
+		if (free) {
+			height = clamp(real + (e.key === 'ArrowUp' ? FREE_STEP : -FREE_STEP));
+			return;
+		}
 		const fraction = (height ?? current) / windowHeight;
 		const next =
 			e.key === 'ArrowUp'
@@ -71,19 +91,22 @@
 		if (next !== undefined) snapTo(next);
 	};
 
-	const percent = $derived(
-		windowHeight > 0 ? Math.round(((height ?? current) / windowHeight) * 100) : 0
-	);
+	/** A height as a percentage of the window's. */
+	const percentOf = (value: number): number =>
+		windowHeight > 0 ? Math.round((value / windowHeight) * 100) : 0;
+	const percent = $derived(percentOf(real));
 </script>
 
 <svelte:window bind:innerHeight={windowHeight} />
 
 <!--
 @component
-A bottom sheet's grab handle: dragging it resizes the sheet (`height`, bindable, in pixels), which
-settles on release at the nearest of `snaps` (fractions of the window), or, dragged below
-`closeBelow`, asks to close (`onclose`). It's a vertical slider: ↑ and ↓ step between the sizes,
-and it reports the sheet's real height. Phones only (hidden from `sm`).
+A panel's grab handle, on its top edge: dragging it up makes the panel taller (`height`, bindable, in
+pixels), so the panel should keep its bottom edge in place. On phones (below `sm`) the panel is a
+sheet, which settles on release at the nearest of `snaps` (fractions of the window), or, dragged below
+`closeBelow`, asks to close (`onclose`). A `free` one is for wider windows, and stays where it's left,
+up to `max`. It's a vertical slider: ↑ and ↓ make the panel taller and shorter, and it reports the
+real height.
 -->
 <div
 	role="slider"
@@ -91,10 +114,13 @@ and it reports the sheet's real height. Phones only (hidden from `sm`).
 	aria-label={label}
 	aria-valuenow={percent}
 	aria-valuetext="{percent}% of the screen"
-	aria-valuemin={Math.round(minSnap * 100)}
-	aria-valuemax={Math.round(maxSnap * 100)}
+	aria-valuemin={free ? percentOf(least) : Math.round(minSnap * 100)}
+	aria-valuemax={free ? percentOf(most) : Math.round(maxSnap * 100)}
 	tabindex="0"
-	class="[&:focus-visible>span]:bg-primary-300 flex shrink-0 cursor-grab touch-none justify-center pt-2 pb-1 focus-visible:outline-none sm:hidden"
+	class={[
+		'[&:focus-visible>span]:bg-primary-300 shrink-0 touch-none justify-center pt-2 pb-1 focus-visible:outline-none',
+		free ? 'hidden cursor-ns-resize sm:flex' : 'flex cursor-grab sm:hidden'
+	]}
 	onpointerdown={onDown}
 	onpointermove={onMove}
 	onpointerup={() => release(true)}
