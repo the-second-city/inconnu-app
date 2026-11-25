@@ -26,6 +26,7 @@
 		refetch?: () => Promise<void>; // Brings the saved macro to the page, before `onsaved`
 		onsaved: () => void; // The macro saved
 		dirty?: boolean; // Whether anything differs from where it started, so leaving should ask
+		busy?: boolean; // Whether it's saving, when it can't be left or its pool changed
 		// Collapsed to a strip (the name, the pool, Continue), leaving the sheet clear for picking traits
 		compact?: boolean;
 	}
@@ -37,6 +38,7 @@
 		refetch,
 		onsaved,
 		dirty = $bindable(false),
+		busy = $bindable(false),
 		compact = $bindable(false)
 	}: ComponentProps = $props();
 
@@ -137,6 +139,13 @@
 	const valid = $derived(blocker === null);
 
 	const submit = new BusySubmit();
+	$effect(() => {
+		busy = submit.busy;
+	});
+	let gone = false; // Unmounted, perhaps mid-save
+	$effect(() => () => {
+		gone = true;
+	});
 
 	const save = async (e: SubmitEvent) => {
 		e.preventDefault();
@@ -148,7 +157,7 @@
 			if (outcome.error === undefined) await refetch?.();
 			return outcome;
 		};
-		if (await submit.run(request)) onsaved();
+		if ((await submit.run(request)) && !gone) onsaved();
 	};
 
 	interface Option {

@@ -954,3 +954,44 @@ test('deleting refetches once, after the last delete', async () => {
 	await waitFor(() => expect(invalidate).toHaveBeenCalledOnce());
 	expect(requests()).toHaveLength(2);
 });
+
+test("a macro being saved can't be discarded, or its pool changed, until it's done", async () => {
+	let finish: (response: Response) => void = () => {};
+	fetchMock.mockImplementationOnce(() => new Promise((resolve) => (finish = resolve)));
+	const user = userEvent.setup();
+	const char = withMacros();
+	char.traits.push({ name: 'Dexterity', rating: 2, type: 'attribute', subtraits: [] });
+	renderOwnerPage(char);
+	await user.click(screen.getAllByRole('button', { name: 'Macros' })[0]);
+	await user.click(screen.getByRole('button', { name: 'Add macro' }));
+	const dialog = await screen.findByRole('dialog', { name: 'New Macro' });
+	await user.click(screen.getByRole('button', { name: 'Pick Strength' }));
+	await user.click(within(dialog).getByRole('button', { name: 'Continue' }));
+	await user.type(within(dialog).getByRole('textbox', { name: 'Name' }), 'surge');
+	await user.click(within(dialog).getByRole('button', { name: 'Add Macro' }));
+
+	await user.keyboard('{Escape}');
+	expect(within(dialog).getByRole('button', { name: 'Close macros' })).toBeDisabled();
+	await user.click(screen.getByRole('button', { name: 'Pick Dexterity' }));
+
+	expect(window.confirm).not.toHaveBeenCalled();
+	expect(screen.getByRole('dialog', { name: 'New Macro' })).toBe(dialog);
+	expect(within(dialog).queryByRole('button', { name: 'Continue' })).not.toBeInTheDocument();
+	expect(screen.getByRole('button', { name: 'Pick Dexterity' })).toHaveAttribute(
+		'aria-pressed',
+		'false'
+	);
+
+	finish(new Response(null, { status: 204 }));
+	await screen.findByRole('dialog', { name: 'Macros' });
+	// Nothing's left held: the next macro can be picked and cancelled
+	await user.click(screen.getByRole('button', { name: 'Add macro' }));
+	await screen.findByRole('dialog', { name: 'New Macro' });
+	await user.click(screen.getByRole('button', { name: 'Pick Dexterity' }));
+	expect(screen.getByRole('button', { name: 'Pick Dexterity' })).toHaveAttribute(
+		'aria-pressed',
+		'true'
+	);
+	await user.keyboard('{Escape}');
+	await screen.findByRole('dialog', { name: 'Macros' });
+});

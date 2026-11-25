@@ -67,6 +67,9 @@
 	let target = $state<Macro | null>(null);
 	const inForm = $derived(isFormView(view));
 	let formDirty = $state(false); // The form has input (or changes)
+	let formBusy = $state(false); // The form is saving
+	// A save under way, the form's or the deletions', holds the panel as it is
+	const busy = $derived(submit.busy || (inForm && formBusy));
 	// The new macro form collapsed to a strip at the bottom, so the sheet is clear for picking traits
 	let formCompact = $state(false);
 	const wantsCompact = $derived(inForm && formCompact);
@@ -90,6 +93,13 @@
 	// Picking a trait from the sheet collapses the form, clearing the sheet for the rest (loading
 	// an edited macro's pool doesn't count)
 	const picker = getPoolPicker();
+	$effect(() => {
+		if (!picker) return;
+		picker.locked = inForm && formBusy;
+		return () => {
+			picker.locked = false;
+		};
+	});
 	let picked = 0;
 	$effect(() => {
 		const count = picker?.added ?? 0;
@@ -113,13 +123,14 @@
 	 * list, an edited one's to editing.
 	 */
 	const cancelForm = () => {
-		if (!confirmDiscard()) return;
+		if (busy || !confirmDiscard()) return;
 		leaveForm();
 	};
 
 	/** Leave a form, back where it came from. */
 	const leaveForm = () => {
 		formDirty = false;
+		formBusy = false;
 		view = view === 'modify' ? 'edit' : 'list';
 	};
 
@@ -139,13 +150,13 @@
 
 	/** Cancel editing (Cancel, Escape), asking first if anything's marked. */
 	const cancelEditing = () => {
-		if (submit.busy || !confirmDiscard()) return;
+		if (busy || !confirmDiscard()) return;
 		discardEdits();
 	};
 
 	/** Close the panel (its ✕), asking first if editing has unsaved deletions. */
 	const close = () => {
-		if (submit.busy || !confirmDiscard()) return;
+		if (busy || !confirmDiscard()) return;
 		open = false;
 	};
 
@@ -173,6 +184,7 @@
 			// Whoever closed it has asked already (the ✕, Escape, or the sheet's handle)
 			if (view === 'edit') discardEdits();
 			formDirty = false;
+			formBusy = false;
 			view = 'list';
 		});
 	});
@@ -348,6 +360,7 @@ button).
 				type="button"
 				class="hover:preset-tonal-surface rounded-full p-1 opacity-70 hover:opacity-100"
 				onclick={close}
+				disabled={busy}
 				aria-label="Close macros"
 				title="Close (Esc)"
 			>
@@ -369,6 +382,7 @@ button).
 							{character}
 							macro={view === 'modify' ? (target ?? undefined) : undefined}
 							bind:dirty={formDirty}
+							bind:busy={formBusy}
 							bind:compact={() => compact, (value) => (formCompact = value)}
 							oncancel={cancelForm}
 							{refetch}

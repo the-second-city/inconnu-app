@@ -295,3 +295,15 @@ test('removing a repeated trait, or picking it another way, settles it', () => {
 	picker.clear();
 	expect(picker.repeats).toEqual([]);
 });
+
+test('locked, picking from the sheet does nothing', () => {
+	const picker = new PoolPicker();
+	picker.pick('Strength', null);
+	picker.locked = true;
+
+	picker.pick('Brawl', null);
+	picker.pick('Strength', null);
+
+	expect(picker.picks.map(pickLabel)).toEqual(['Strength']);
+	expect(picker.added).toBe(1);
+});

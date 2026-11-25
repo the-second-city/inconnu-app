@@ -55,6 +55,8 @@ export const isNumber = (pick: Pick): pick is NumberPick => pick.kind === 'numbe
 
 export class PoolPicker {
 	active = $state(false);
+	// Whether the picks are held as they are (the macro's saving them)
+	locked = $state(false);
 	picks: Pick[] = $state([]);
 	// The trait whose specialty menu is open, so only one is
 	open: string | null = $state(null);
@@ -86,6 +88,7 @@ export class PoolPicker {
 	 * removes the trait; picking it another way switches it, keeping its place and sign.
 	 */
 	pick(trait: string, specialty: string | null): void {
+		if (this.locked) return;
 		const picked = this.#trait(trait);
 		if (!picked) {
 			this.picks.push({ kind: 'trait', trait, specialty, negative: false });
