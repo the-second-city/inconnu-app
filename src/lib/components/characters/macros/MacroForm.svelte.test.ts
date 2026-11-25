@@ -254,7 +254,7 @@ test('Pick traits collapses the form to a strip, keeping what was entered', asyn
 	expect(form).toHaveTextContent('surge');
 	expect(form).toHaveTextContent('Click traits on the sheet to build the pool.');
 
-	await user.click(screen.getByRole('button', { name: 'Show details' }));
+	await user.click(screen.getByRole('button', { name: 'Done' }));
 
 	expect(state.compact).toBe(false);
 	expect(nameField()).toHaveValue('surge');
@@ -269,25 +269,18 @@ test("the strip names a macro that's still unnamed", async () => {
 	expect(screen.getByRole('form', { name: 'New macro' })).toHaveTextContent('New Macro');
 });
 
-test('the strip adds the macro', async () => {
+test("the strip's Done returns to the details without adding", async () => {
 	const user = userEvent.setup();
-	const { onsaved } = renderCompactable();
+	const { state, onsaved } = renderCompactable();
 	await user.type(nameField(), 'surge');
 	await user.click(screen.getByRole('button', { name: 'More Rouse Checks' }));
 	await user.click(screen.getByRole('button', { name: 'Pick traits' }));
+	expect(screen.queryByRole('button', { name: 'Add Macro' })).not.toBeInTheDocument();
 
-	await user.click(addButton());
+	await user.click(screen.getByRole('button', { name: 'Done' }));
 
-	expect(fetchMock).toHaveBeenCalledOnce();
-	expect(onsaved).toHaveBeenCalledOnce();
-});
-
-test("the strip's Add waits for a valid macro", async () => {
-	const user = userEvent.setup();
-	renderCompactable();
-	await user.type(nameField(), 'surge');
-
-	await user.click(screen.getByRole('button', { name: 'Pick traits' }));
-
-	expect(addButton()).toBeDisabled(); // No pool and no Rouse Checks
+	expect(state.compact).toBe(false);
+	expect(fetchMock).not.toHaveBeenCalled();
+	expect(onsaved).not.toHaveBeenCalled();
+	expect(addButton()).toBeEnabled();
 });

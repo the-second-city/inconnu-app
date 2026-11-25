@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { ChevronUp, Loader2, Minimize2, Plus, X } from '@lucide/svelte';
+	import { Check, Minimize2, Plus, X } from '@lucide/svelte';
 
 	import { plural } from '$lib';
 
@@ -7,6 +7,7 @@
 	import { FORM_CLASSES } from '$lib/constants/formStyles';
 	import { saveMacros } from '$lib/api/macros';
 	import { BusySubmit } from '$lib/state/busySubmit.svelte';
+	import { getPoolPicker } from '$lib/state/poolPicker.svelte';
 	import { resolvePool } from '$lib/rules/macros';
 	import { isVampiric } from '$lib/rules/vampire';
 	import type { Character, Macro } from '$lib/types';
@@ -20,7 +21,7 @@
 		oncancel: () => void; // Back to the list, discarding the macro
 		onsaved: () => void; // The macro saved; the live update brings it to the list
 		dirty?: boolean; // Whether anything differs from a blank form, so leaving should ask
-		// Collapsed to a strip (the name, the pool, Add), leaving the sheet clear for picking traits
+		// Collapsed to a strip (the name, the pool, Done), leaving the sheet clear for picking traits
 		compact?: boolean;
 	}
 
@@ -46,8 +47,9 @@
 	let stains = $state(false);
 	let hunt = $state(false);
 	let comment = $state('');
-	// Built by clicking traits on the sheet (not yet): the bot's expanded tokens (see `Macro`)
-	const pool: string[] = $state([]);
+	// Picked from the sheet (the page's pool picker), as the bot's expanded tokens (see `Macro`)
+	const picker = getPoolPicker();
+	const pool: string[] = $derived(picker?.tokens(character.traits) ?? []);
 
 	// Vampires roll Hunger, hunt, and Rouse; ghouls Rouse too (taking damage instead); mortals neither
 	const vampiric = $derived(isVampiric(character.splat));
@@ -152,8 +154,8 @@
 @component
 A new macro's form, in the macro panel: its name, then the pool (built by clicking traits on the
 sheet), then its Difficulty, Rouse Checks, options, and comment. Adding saves the character's macros with it.
-`compact` collapses it to a strip (the name, the pool and its dice, and buttons to show the details,
-cancel, and add), so the sheet stays clear while traits are picked; the details are kept.
+`compact` collapses it to a strip (the name, the pool and its dice, Cancel, and Done), so the sheet stays clear while traits are picked; Done returns to the
+details, kept as they were, where the macro is added.
 -->
 <form class="flex flex-col gap-4" onsubmit={save} aria-label="New macro">
 	{#if compact}
@@ -180,40 +182,22 @@ cancel, and add), so the sheet stays clear while traits are picked; the details 
 			<button
 				type="button"
 				class="btn-icon hover:preset-tonal-surface shrink-0"
-				onclick={() => (compact = false)}
-				aria-label="Show details"
-				title="Show details"
-			>
-				<ChevronUp size={18} />
-			</button>
-			<button
-				type="button"
-				class="btn-icon hover:preset-tonal-surface shrink-0"
 				onclick={oncancel}
-				disabled={submit.busy}
 				aria-label="Cancel"
 				title="Cancel"
 			>
 				<X size={18} />
 			</button>
+			<!-- Done with the pool: back to the details, where the macro is added -->
 			<button
-				type="submit"
-				class="btn btn-sm btn-gothic btn-gothic-blood shrink-0"
-				disabled={!valid || submit.busy}
-				aria-busy={submit.busy}
-				aria-label="Add Macro"
+				type="button"
+				class="btn btn-sm btn-gothic btn-gothic-bone shrink-0"
+				onclick={() => (compact = false)}
 			>
-				{#if submit.busy}
-					<Loader2 size={16} class="animate-spin" />
-				{:else}
-					<Plus size={16} />
-				{/if}
-				<span>Add</span>
+				<Check size={16} />
+				<span>Done</span>
 			</button>
 		</div>
-		{#if submit.error}
-			<p class="{FORM_CLASSES.error} card preset-tonal-error p-2" role="alert">{submit.error}</p>
-		{/if}
 	{:else if submit.busy}
 		<BusySpinner label="Adding the macro…" />
 	{:else}

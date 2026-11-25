@@ -54,6 +54,7 @@
 	} from '$lib/components/characters/macros/MacroPanel.svelte';
 	import PremiumModal from '$lib/components/premium/PremiumModal.svelte';
 	import { isSupporter, refusedForPremium, showUpsell, upsell } from '$lib/state/premium.svelte';
+	import { PoolPicker, setPoolPicker } from '$lib/state/poolPicker.svelte';
 
 	interface ComponentProps {
 		character: Character;
@@ -212,6 +213,18 @@
 	let macrosOpen = $state(false);
 	let macroView: MacroPanelView = $state('list');
 	let macrosDirty = $state(false); // Macro editing has unsaved deletions, or a new macro has input
+
+	// A new macro's pool is picked from the sheet: its traits become choices while the form is open.
+	// It lives here, not in the sheet, which a refetch rebuilds
+	const picker = new PoolPicker();
+	setPoolPicker(picker);
+	$effect(() => {
+		const active = macrosOpen && macroView === 'add';
+		untrack(() => {
+			if (picker.active && !active) picker.clear();
+			picker.active = active;
+		});
+	});
 
 	/** Ask before closing the macro panel on unsaved deletions. True when there are none, or the user
 	 * agrees. */

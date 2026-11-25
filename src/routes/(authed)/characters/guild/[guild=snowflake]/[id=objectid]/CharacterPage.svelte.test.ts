@@ -1832,3 +1832,57 @@ test("the strip's Cancel asks about a new macro, and leaving it starts the next 
 	const next = await screen.findByRole('dialog', { name: 'New Macro' });
 	expect(within(next).getByRole('textbox', { name: 'Name' })).toHaveValue('');
 });
+
+test("the New Macro form makes the sheet's traits choices, and picking one collapses it", async () => {
+	const user = userEvent.setup();
+	navigate('/char?macros=panel');
+	renderOwnerPage(withMacros());
+	expect(screen.queryByRole('button', { name: 'Pick Strength' })).not.toBeInTheDocument();
+
+	const dialog = await addMacroForm(user);
+	await user.click(screen.getByRole('button', { name: 'Pick Strength' }));
+
+	expect(screen.getByRole('dialog', { name: 'New Macro' })).toBe(dialog);
+	expect(within(dialog).queryByRole('textbox', { name: 'Name' })).not.toBeInTheDocument();
+	expect(within(dialog).getByRole('form')).toHaveTextContent('Strength');
+	expect(within(dialog).getByRole('form')).toHaveTextContent('2 dice');
+});
+
+test('leaving the New Macro form ends picking and drops the picks', async () => {
+	const user = userEvent.setup();
+	navigate('/char?macros=panel');
+	renderOwnerPage(withMacros());
+	await addMacroForm(user);
+	await user.click(screen.getByRole('button', { name: 'Pick Strength' }));
+
+	await user.keyboard('{Escape}'); // Asks (agreed), then back to the list
+	await screen.findByRole('dialog', { name: 'Macros' });
+	expect(screen.queryByRole('button', { name: 'Pick Strength' })).not.toBeInTheDocument();
+
+	await user.click(screen.getByRole('button', { name: 'Add macro' }));
+	const next = await screen.findByRole('dialog', { name: 'New Macro' });
+	expect(within(next).getByRole('form')).toHaveTextContent(
+		'Click traits on the sheet to build the pool.'
+	);
+	expect(screen.getByRole('button', { name: 'Pick Strength' })).toHaveAttribute(
+		'aria-pressed',
+		'false'
+	);
+});
+
+test('adding sends the picked pool', async () => {
+	const user = userEvent.setup();
+	navigate('/char?macros=panel');
+	renderOwnerPage(withMacros());
+	const dialog = await addMacroForm(user);
+	await user.type(within(dialog).getByRole('textbox', { name: 'Name' }), 'lift_more');
+	await user.click(screen.getByRole('button', { name: 'Pick Strength' }));
+	await user.click(within(dialog).getByRole('button', { name: 'Done' }));
+
+	await user.click(within(dialog).getByRole('button', { name: 'Add Macro' }));
+
+	const body = JSON.parse(fetchMock.mock.calls[0][1]?.body as string) as {
+		macros: { name: string; pool: string[] }[];
+	};
+	expect(body.macros.find((macro) => macro.name === 'lift_more')?.pool).toEqual(['Strength']);
+});

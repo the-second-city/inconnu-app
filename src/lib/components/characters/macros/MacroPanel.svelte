@@ -6,6 +6,7 @@
 
 	import { deleteMacro } from '$lib/api/macros';
 	import { BusySubmit } from '$lib/state/busySubmit.svelte';
+	import { getPoolPicker } from '$lib/state/poolPicker.svelte';
 	import type { Character } from '$lib/types';
 	import BusySpinner from '$lib/components/ui/BusySpinner.svelte';
 	import MacroForm from './MacroForm.svelte';
@@ -61,6 +62,17 @@
 	// A new form starts full
 	$effect(() => {
 		if (view !== 'add') formCompact = false;
+	});
+
+	// Picking a trait from the sheet collapses the form, clearing the sheet for the rest
+	const picker = getPoolPicker();
+	let picked = 0;
+	$effect(() => {
+		const count = picker?.picks.length ?? 0;
+		untrack(() => {
+			if (view === 'add' && count > picked) formCompact = true;
+			picked = count;
+		});
 	});
 	// What leaving would lose: deletions not saved, or a new macro not added
 	const unsaved = $derived(hasChanges || (view === 'add' && formDirty));
