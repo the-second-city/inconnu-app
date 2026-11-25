@@ -12,11 +12,10 @@
 <script lang="ts">
 	import { untrack } from 'svelte';
 	import { fade, fly } from 'svelte/transition';
-	import { SvelteSet } from 'svelte/reactivity';
 	import { Ban, Loader2, Pencil, Plus, SaveCheck, SquareFunction, X, Trash2 } from '@lucide/svelte';
 
-	import { deleteMacro } from '$lib/api/macros';
-	import { BusySubmit } from '$lib/state/busySubmit.svelte';
+	import { FadeSwitch, prefersReducedMotion } from '$lib/state/fadeSwitch.svelte';
+	import { MacroDeletions } from '$lib/state/macroDeletions.svelte';
 	import { getPoolPicker } from '$lib/state/poolPicker.svelte';
 	import type { Character, Macro } from '$lib/types';
 	import BusySpinner from '$lib/components/ui/BusySpinner.svelte';
@@ -46,25 +45,20 @@
 
 	const macros = $derived(character.macros ?? []);
 
-	// Editing: the names of the macros marked for deletion. Nothing is sent until Save.
-	const deleted = new SvelteSet<string>();
-	// The names of macros Save deleted, hidden until a live update brings macros without them, so
-	// they don't reappear in the meantime
-	const removed = new SvelteSet<string>();
+	// Editing's deletions: the macros marked (nothing's sent until Save), and those Save deleted,
+	// hidden until a live update brings macros without them
+	const deletions = new MacroDeletions();
+	const submit = deletions.submit;
 	$effect(() => {
-		const present = new Set(macros.map((macro) => macro.name));
-		untrack(() => {
-			for (const name of removed) if (!present.has(name)) removed.delete(name);
-		});
+		const current = macros;
+		untrack(() => deletions.sync(current));
 	});
-	const submit = new BusySubmit();
-
-	// The macros shown: all of them, less those Save deleted. Editing shows the ones marked for
-	// deletion struck through, so they can be brought back one at a time
-	const shown = $derived(macros.filter((macro) => !removed.has(macro.name)));
-	// Those still standing, less the marked ones
-	const remaining = $derived(shown.filter((macro) => !deleted.has(macro.name)));
-	const hasChanges = $derived(view === 'edit' && deleted.size > 0);
+	// The macros shown (editing shows the marked ones struck through, so each can be brought back),
+	// and those still standing
+	const shown = $derived(deletions.shown(macros));
+	const remaining = $derived(deletions.standing(macros));
+	const marked = $derived(deletions.marked.size);
+	const hasChanges = $derived(view === 'edit' && marked > 0);
 	// The macro being changed, in the modify view
 	let target = $state<Macro | null>(null);
 	const inForm = $derived(isFormView(view));
@@ -75,30 +69,13 @@
 	// The layout shown, a beat behind: switching between the strip and the panel fades the one out,
 	// switches while it's unseen, and fades the other in. The form inside stays mounted throughout
 	// (it holds what's been entered), so they can't overlap. At once without motion, or while closed
-	let compact = $state(false);
-	let fading = $state(false);
-	const FADE = 150;
-	let fadeTimer: ReturnType<typeof setTimeout> | undefined;
-	const reducedMotion = (): boolean =>
-		typeof window.matchMedia === 'function' &&
-		window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+	const layout = new FadeSwitch(false);
 	$effect(() => {
 		const wanted = wantsCompact;
-		untrack(() => {
-			clearTimeout(fadeTimer);
-			if (wanted === compact || !open || reducedMotion()) {
-				compact = wanted;
-				fading = false;
-				return;
-			}
-			fading = true;
-			fadeTimer = setTimeout(() => {
-				compact = wanted;
-				fading = false;
-			}, FADE);
-		});
+		untrack(() => layout.set(wanted, !open || prefersReducedMotion()));
 	});
-	$effect(() => () => clearTimeout(fadeTimer));
+	$effect(() => () => layout.cancel());
+	const compact = $derived(layout.shown);
 	// A new macro starts as the strip, since its pool is the main work (and the sheet should be clear
 	// for it); Continue opens the name and details. An edited macro's form starts full
 	$effect(() => {
@@ -145,15 +122,14 @@
 	/** Change a macro (its Edit button), asking first if deletions are marked, which it discards. */
 	const modify = (macro: Macro) => {
 		if (!confirmDiscard()) return;
-		deleted.clear();
+		deletions.discard();
 		target = macro;
 		view = 'modify';
 	};
 
 	/** Leave editing, restoring the macros marked for deletion. */
 	const discardEdits = () => {
-		deleted.clear();
-		submit.reset();
+		deletions.discard();
 		view = 'list';
 	};
 
@@ -183,10 +159,7 @@
 	// Entering editing starts fresh
 	$effect(() => {
 		if (view !== 'edit') return;
-		untrack(() => {
-			deleted.clear();
-			submit.reset();
-		});
+		untrack(() => deletions.discard());
 	});
 
 	// Closing discards a macro in progress or unsaved deletions, so the panel reopens on the list
@@ -200,28 +173,10 @@
 		});
 	});
 
-	/**
-	 * Save the deletions, one macro at a time: at once, the bot's saves could race, one undoing
-	 * another. Each deleted macro moves from marked to removed. The first failure stops it, leaving
-	 * the rest marked, and says which; otherwise it's back to the list.
-	 */
+	/** Save the deletions (one at a time; see MacroDeletions), then back to the list. */
 	const save = async () => {
 		if (!hasChanges) return;
-		const id = character._id;
-		const done = await submit.run(async () => {
-			for (const name of [...deleted]) {
-				const outcome = await deleteMacro(id, name);
-				if (outcome.error !== undefined) {
-					return { error: `Couldn’t delete ${name}. ${outcome.error}` };
-				}
-				deleted.delete(name);
-				removed.add(name);
-			}
-			return { result: null };
-		});
-		if (!done) return;
-		submit.reset();
-		view = 'list';
+		if (await deletions.save(character._id)) view = 'list';
 	};
 
 	// Just viewing, a click (or tap) anywhere else closes the panel; editing and the forms stay open,
@@ -292,7 +247,7 @@ button).
 			dragging && 'transition-none',
 			// Resized as a sheet (phones only)
 			!compact && sheetHeight !== null && 'max-sm:h-(--sheet-height) max-sm:max-h-none',
-			fading && 'opacity-0',
+			layout.fading && 'opacity-0',
 			compact && 'pool-strip',
 			compact
 				? // A strip along the bottom: the window's width on phones (the floating buttons make
@@ -374,13 +329,13 @@ button).
 						>
 							{#if submit.busy}
 								<Loader2 size={14} class="animate-spin" />
-							{:else if deleted.size > 0}
+							{:else if marked > 0}
 								<Trash2 size={14} />
 							{:else}
 								<SaveCheck size={14} />
 							{/if}
 							<!-- Saving only deletes, so it says how many -->
-							<span>{deleted.size > 0 ? `Delete ${deleted.size}` : 'Save'}</span>
+							<span>{marked > 0 ? `Delete ${marked}` : 'Save'}</span>
 						</button>
 					</div>
 				{/if}
@@ -431,10 +386,10 @@ button).
 								{character}
 								macros={view === 'edit' ? shown : remaining}
 								layout="stack"
-								ondelete={view === 'edit' ? (macro) => deleted.add(macro.name) : undefined}
+								ondelete={view === 'edit' ? (macro) => deletions.marked.add(macro.name) : undefined}
 								onedit={view === 'edit' ? modify : undefined}
-								marked={view === 'edit' ? deleted : undefined}
-								onrestore={(macro) => deleted.delete(macro.name)}
+								marked={view === 'edit' ? deletions.marked : undefined}
+								onrestore={(macro) => deletions.marked.delete(macro.name)}
 							/>
 							{#if view === 'edit' && remaining.length === 0}
 								<p class="text-surface-300 italic">Saving will delete all of the macros.</p>
