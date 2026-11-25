@@ -75,3 +75,26 @@ test("a chip's ✕ removes the trait", async () => {
 	expect(picker.selection('Occult')).toBeUndefined();
 	expect(chips()).toEqual(['Manipulation', 'Obvious Predator']);
 });
+
+test('the first chip has no sign, but still flips', async () => {
+	const user = userEvent.setup();
+	const picker = renderChips();
+	/** Whether a trait's chip shows its sign. */
+	const signed = (trait: string): boolean =>
+		screen.getByRole('button', { name: `Subtract ${trait}` }).querySelector('svg') !== null;
+	expect([signed('Manipulation'), signed('Occult'), signed('Obvious Predator')]).toEqual([
+		false,
+		true,
+		true
+	]);
+
+	await user.click(screen.getByRole('button', { name: 'Subtract Manipulation' }));
+
+	expect(picker.isNegative('Manipulation')).toBe(true);
+	// Occult is first now
+	expect([signed('Occult'), signed('Obvious Predator'), signed('Manipulation')]).toEqual([
+		false,
+		true,
+		true
+	]);
+});

@@ -21,15 +21,18 @@
 
 <!--
 @component
-A pool being picked, as chips in the pool's order: each trait (and its specialty) with its sign.
+A pool being picked, as chips in the pool's order: each trait (and its specialty) with its sign
+(the first has none, unless it's subtracted).
 Clicking the chip flips it between added and subtracted (a flaw, say; never the last one added); its
 ✕ removes it. Subtracted ones go last, in red. One the character lacks (`missing`) is dashed, in
 warning colors.
 -->
 <ul class="flex flex-wrap gap-1.5" aria-label="Pool">
-	{#each picks as pick (pickKey(pick))}
+	{#each picks as pick, i (pickKey(pick))}
 		{@const key = pickKey(pick)}
 		{@const label = pickLabel(pick)}
+		<!-- The first needs no sign, as a pool is written, unless it's subtracted -->
+		{@const signed = i > 0 || pick.negative}
 		{@const lacking = pick.kind === 'trait' && missing.includes(pick.trait)}
 		<li
 			class={[
@@ -45,7 +48,8 @@ warning colors.
 			<button
 				type="button"
 				class={[
-					'group flex items-center gap-1 rounded-l-full py-0.5 pr-0.5 pl-1 enabled:cursor-pointer disabled:cursor-default disabled:opacity-100',
+					'group flex items-center gap-1 rounded-l-full py-0.5 pr-0.5 enabled:cursor-pointer disabled:cursor-default disabled:opacity-100',
+					signed ? 'pl-1' : 'pl-2.5',
 					pick.negative ? 'enabled:hover:bg-error-500/15' : 'enabled:hover:bg-surface-200/10'
 				]}
 				onclick={() => picker.flip(key)}
@@ -59,9 +63,11 @@ warning colors.
 							? `Added: click to subtract ${label}`
 							: 'A pool needs something to add')}
 			>
-				<span class="flex size-4 shrink-0 items-center justify-center group-disabled:opacity-40">
-					{#if pick.negative}<Minus size={12} />{:else}<Plus size={12} />{/if}
-				</span>
+				{#if signed}
+					<span class="flex size-4 shrink-0 items-center justify-center group-disabled:opacity-40">
+						{#if pick.negative}<Minus size={12} />{:else}<Plus size={12} />{/if}
+					</span>
+				{/if}
 				<span class="whitespace-nowrap">
 					{label}{#if pick.kind === 'trait' && pick.specialty}{SPACE}<em class="text-primary-300"
 							>({pick.specialty.split(KEY_DELIMITER).join(', ')})</em
