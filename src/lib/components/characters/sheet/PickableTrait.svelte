@@ -13,9 +13,7 @@
 		type?: string; // A Discipline's subtraits are powers, which add no dice
 		line: Snippet; // The trait's line as the sheet draws it (its name and pips)
 		label?: string; // Its name as the sheet shows it, if not `name` (Blood Potency is Potency)
-		// The line's layout, in place of a row with the name and pips at either end (a tracker's row
-		// spans its card's grid)
-		lineClass?: string;
+		lineClass?: string; // The line's layout (a trait's row, or a tracker's subgrid row)
 	}
 
 	let {
@@ -25,7 +23,7 @@
 		type,
 		line,
 		label = name,
-		lineClass = 'flex w-full flex-wrap items-center justify-between'
+		lineClass = ''
 	}: ComponentProps = $props();
 
 	const id = $props.id();
@@ -136,8 +134,8 @@
 
 	/**
 	 * Over the line, so the menu's first row (the line itself) lands where the line is and the
-	 * specialties open out below it: the row's inset in the menu (its border and padding) is measured,
-	 * not assumed. Near the window's bottom, it moves up to fit.
+	 * specialties open out below it: the row's content's inset in the menu (its border and padding)
+	 * is measured, not assumed. Near the window's bottom, it moves up to fit.
 	 */
 	const place = () => {
 		const base = menuEl?.querySelector<HTMLElement>('[data-base]');
@@ -145,13 +143,13 @@
 		const line = lineEl.getBoundingClientRect();
 		const menu = menuEl.getBoundingClientRect();
 		const row = base.getBoundingClientRect();
-		const insetLeft = row.left - menu.left;
-		const insetRight = menu.right - row.right;
+		// To the row's content, inside its padding, which is where the line's content sits
+		const padding = getComputedStyle(base);
+		const insetLeft = row.left - menu.left + parseFloat(padding.paddingLeft);
+		const insetRight = menu.right - row.right + parseFloat(padding.paddingRight);
+		const insetTop = row.top - menu.top + parseFloat(padding.paddingTop);
 		const margin = 8;
-		const top = Math.min(
-			line.top - (row.top - menu.top),
-			window.innerHeight - margin - menu.height
-		);
+		const top = Math.min(line.top - insetTop, window.innerHeight - margin - menu.height);
 		position = {
 			top: Math.max(margin, top),
 			left: line.left - insetLeft,
@@ -186,14 +184,14 @@ A trait's line while a pool is being picked: the whole line is the choice. Witho
 clicking it picks the trait (or drops it). With them, hovering (or clicking, tapping, or Enter) opens
 a menu over the line, as wide as it: the line itself (the trait without a specialty), then each
 specialty (a Discipline's powers) below it, one at most. Picking the row already picked drops the
-trait. A picked line glows; a subtracted one has a dashed ash ring.
+trait. A picked line glows; a subtracted one has a dashed ash ring (`.trait-line`'s
+`data-highlight`, as a hovered macro's traits show).
 -->
 <button
 	bind:this={lineEl}
 	type="button"
-	class="pick-line text-left {lineClass}"
-	class:picked
-	class:negative
+	class="pick-line trait-line text-left {lineClass}"
+	data-highlight={picked ? (negative ? 'subtracted' : 'added') : undefined}
 	onclick={onLineClick}
 	onpointerenter={onLineEnter}
 	onpointerleave={onLeave}
@@ -264,36 +262,17 @@ trait. A picked line glows; a subtracted one has a dashed ash ring.
 {/snippet}
 
 <style>
-	/* The line as a choice: a faint bone wash on hover, a blood ring once it's picked */
+	/* The line as a choice: a faint bone wash on hover (or with its menu open), unless it's picked,
+	   when .trait-line's ring shows instead */
 	.pick-line {
 		cursor: pointer;
-		border-radius: 0.5rem;
-		padding: 0.15rem 0.4rem;
-		margin: -0.15rem -0.4rem;
-		width: calc(100% + 0.8rem);
-		transition:
-			box-shadow 0.2s ease,
-			background-color 0.2s ease;
 	}
 
-	.pick-line:hover,
-	.pick-line[aria-expanded='true'] {
+	.pick-line:hover:not([data-highlight])::before,
+	.pick-line[aria-expanded='true']:not([data-highlight])::before {
+		opacity: 1;
 		background-color: color-mix(in oklab, var(--color-surface-200) 8%, transparent);
-	}
-
-	.pick-line.picked {
-		background-color: color-mix(in oklab, var(--blood) 18%, transparent);
-		box-shadow:
-			0 0 0 1px color-mix(in oklab, var(--blood-bright) 70%, transparent),
-			0 0 10px color-mix(in oklab, var(--blood-bright) 35%, transparent);
-	}
-
-	/* Subtracted (a flaw, say): a dashed ash ring, no blood */
-	.pick-line.picked.negative {
-		background-color: color-mix(in oklab, var(--color-surface-200) 6%, transparent);
 		box-shadow: none;
-		outline: 1px dashed color-mix(in oklab, var(--color-surface-200) 60%, transparent);
-		outline-offset: -1px;
 	}
 
 	.pick-line:focus {
@@ -305,7 +284,7 @@ trait. A picked line glows; a subtracted one has a dashed ash ring.
 		outline-offset: 2px;
 	}
 
-	/* The line inside the menu sits exactly where the line was: the same padding */
+	/* The line inside the menu: padded as .trait-line's ring is drawn around a line */
 	.menu-base {
 		padding: 0.15rem 0.4rem;
 	}

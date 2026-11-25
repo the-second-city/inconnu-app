@@ -1,8 +1,7 @@
 <script lang="ts">
 	import type { Snippet } from 'svelte';
 
-	import { getPoolPicker } from '$lib/state/poolPicker.svelte';
-	import PickableTrait from './PickableTrait.svelte';
+	import TraitLine from './TraitLine.svelte';
 
 	interface ComponentProps {
 		label: string; // As the sheet shows it
@@ -16,35 +15,26 @@
 	}
 
 	let { label, trait, editing, value, children, class: classes = '' }: ComponentProps = $props();
-
-	// While a pool is being picked, the row is a choice; a hovered macro that rolls it highlights it
-	const picker = getPoolPicker();
-	const pickable = $derived(picker?.active === true && !editing && trait !== undefined);
-	const highlight = $derived(
-		!editing && trait !== undefined ? picker?.highlighted(trait) : undefined
-	);
-	const row = 'col-span-2 grid grid-cols-subgrid gap-2';
 </script>
 
 <!--
 @component
 A row of the sheet's tracker cards (MainTrackers, BloodTrackers): its label and track, spanning the
-card's two columns. While a pool is picked (the PoolPicker from context is active), the whole row
-picks `trait`, as a trait's line does; otherwise it shows a hovered macro's highlight.
+card's two columns (a subgrid), as a TraitLine: a pool's choice while one is picked, and highlighted
+by a hovered macro that rolls it.
 -->
 {#snippet line()}
 	<span>{label}</span>
 	{@render value()}
 {/snippet}
 
-{#if pickable && picker && trait}
-	<PickableTrait {picker} name={trait} {label} subtraits={[]} {line} lineClass="{row} {classes}" />
-{:else}
-	<div
-		class="trait-line {row} {classes}"
-		data-highlight={highlight ? (highlight.negative ? 'subtracted' : 'added') : undefined}
-	>
-		<div>{label}</div>
-		{@render children()}
-	</div>
-{/if}
+<TraitLine
+	{trait}
+	{label}
+	{editing}
+	{line}
+	class="col-span-2 grid grid-cols-subgrid gap-2 {classes}"
+>
+	<div>{label}</div>
+	{@render children()}
+</TraitLine>
