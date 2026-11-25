@@ -25,6 +25,8 @@
 	const maxSnap = $derived(snaps[snaps.length - 1]);
 
 	let windowHeight = $state(0);
+	// A press moves this far (in pixels) before it's a drag, so a tap does nothing
+	const DRAG_AFTER = 4;
 	let start: { y: number; height: number } | null = null;
 
 	const snapTo = (fraction: number) => (height = fraction * windowHeight);
@@ -32,23 +34,24 @@
 	const onDown = (e: PointerEvent) => {
 		(e.currentTarget as HTMLElement).setPointerCapture?.(e.pointerId);
 		start = { y: e.clientY, height: current };
-		dragging = true;
 	};
 
 	const onMove = (e: PointerEvent) => {
 		if (!start) return;
+		if (!dragging && Math.abs(start.y - e.clientY) < DRAG_AFTER) return;
+		dragging = true;
 		const dragged = start.height + (start.y - e.clientY);
 		height = Math.min(Math.max(dragged, 64), windowHeight * maxSnap);
 	};
 
 	// Released, it settles at the nearest size, or below `closeBelow` asks to close (declined, it
-	// settles at the smallest)
-	const onUp = () => {
-		if (!start) return;
+	// settles at the smallest). A cancelled drag (say, the system took the touch) only settles
+	const release = (mayClose: boolean) => {
 		start = null;
+		if (!dragging) return;
 		dragging = false;
-		const fraction = (height ?? 0) / windowHeight;
-		if (fraction < closeBelow && onclose) {
+		const fraction = (height ?? current) / windowHeight;
+		if (mayClose && fraction < closeBelow && onclose) {
 			height = null;
 			if (!onclose()) snapTo(minSnap);
 			return;
@@ -94,8 +97,8 @@ and it reports the sheet's real height. Phones only (hidden from `sm`).
 	class="[&:focus-visible>span]:bg-primary-300 flex shrink-0 cursor-grab touch-none justify-center pt-2 pb-1 focus-visible:outline-none sm:hidden"
 	onpointerdown={onDown}
 	onpointermove={onMove}
-	onpointerup={onUp}
-	onpointercancel={onUp}
+	onpointerup={() => release(true)}
+	onpointercancel={() => release(false)}
 	onkeydown={onKey}
 >
 	<span class="bg-surface-400 h-1 w-10 rounded-full"></span>
