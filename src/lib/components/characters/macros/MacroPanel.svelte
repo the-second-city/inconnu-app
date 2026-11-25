@@ -7,7 +7,7 @@
 	import { untrack } from 'svelte';
 	import { fade, fly } from 'svelte/transition';
 	import { SvelteSet } from 'svelte/reactivity';
-	import { Ban, Loader2, Pencil, Plus, SaveCheck, SquareFunction, X } from '@lucide/svelte';
+	import { Ban, Loader2, Pencil, Plus, SaveCheck, SquareFunction, X, Trash2 } from '@lucide/svelte';
 
 	import { deleteMacro } from '$lib/api/macros';
 	import { BusySubmit } from '$lib/state/busySubmit.svelte';
@@ -58,10 +58,11 @@
 	});
 	const submit = new BusySubmit();
 
-	// The macros still standing: all of them, less those marked or deleted
-	const remaining = $derived(
-		macros.filter((macro) => !deleted.has(macro.name) && !removed.has(macro.name))
-	);
+	// The macros shown: all of them, less those Save deleted. Editing shows the ones marked for
+	// deletion struck through, so they can be brought back one at a time
+	const shown = $derived(macros.filter((macro) => !removed.has(macro.name)));
+	// Those still standing, less the marked ones
+	const remaining = $derived(shown.filter((macro) => !deleted.has(macro.name)));
 	const hasChanges = $derived(view === 'edit' && deleted.size > 0);
 	// The macro being changed, in the modify view
 	let target: Macro | null = $state(null);
@@ -305,10 +306,13 @@ window's right, below the tab row (and the Macros button).
 						>
 							{#if submit.busy}
 								<Loader2 size={14} class="animate-spin" />
+							{:else if deleted.size > 0}
+								<Trash2 size={14} />
 							{:else}
 								<SaveCheck size={14} />
 							{/if}
-							<span>Save</span>
+							<!-- Saving only deletes, so it says how many -->
+							<span>{deleted.size > 0 ? `Delete ${deleted.size}` : 'Save'}</span>
 						</button>
 					</div>
 				{/if}
@@ -349,16 +353,19 @@ window's right, below the tab row (and the Macros button).
 					{#if submit.busy}
 						<BusySpinner label="Saving the macros…" />
 					{:else}
-						{#if remaining.length > 0}
+						{#if shown.length > 0}
 							<MacroList
 								{character}
-								macros={remaining}
+								macros={view === 'edit' ? shown : remaining}
 								layout="stack"
 								ondelete={view === 'edit' ? (macro) => deleted.add(macro.name) : undefined}
 								onedit={view === 'edit' ? modify : undefined}
+								marked={view === 'edit' ? deleted : undefined}
+								onrestore={(macro) => deleted.delete(macro.name)}
 							/>
-						{:else if view === 'edit'}
-							<p class="text-surface-300 italic">Saving will delete all of the macros.</p>
+							{#if view === 'edit' && remaining.length === 0}
+								<p class="text-surface-300 italic">Saving will delete all of the macros.</p>
+							{/if}
 						{:else}
 							<p class="text-surface-300 italic">No macros yet.</p>
 						{/if}

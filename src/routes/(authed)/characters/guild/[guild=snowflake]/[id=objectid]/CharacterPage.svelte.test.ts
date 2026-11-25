@@ -1493,11 +1493,12 @@ const editMacros = async (user: ReturnType<typeof userEvent.setup>): Promise<HTM
 	return screen.findByRole('dialog', { name: 'Edit Macros' });
 };
 
-/** The macro names in the panel. */
+/** The macro names in the panel, less those marked for deletion (which have an Undo). */
 const macroNames = (dialog: HTMLElement): string[] =>
 	within(dialog)
 		.queryAllByRole('article')
-		.map((article) => article.getAttribute('aria-label') ?? '');
+		.map((article) => article.getAttribute('aria-label') ?? '')
+		.filter((name) => !within(dialog).queryByRole('button', { name: `Undo deleting ${name}` }));
 
 test('editing macros swaps Add and Edit for Cancel and Save, and offers to delete each', async () => {
 	const user = userEvent.setup();
@@ -1535,7 +1536,7 @@ test('a deleted macro comes back on Cancel, without saving', async () => {
 
 	await user.click(within(dialog).getByRole('button', { name: 'Delete lift' }));
 	await waitFor(() => expect(macroNames(dialog)).toEqual(['punch']));
-	expect(within(dialog).getByRole('button', { name: 'Save' })).toBeEnabled();
+	expect(within(dialog).getByRole('button', { name: 'Delete 1' })).toBeEnabled();
 
 	await user.click(within(dialog).getByRole('button', { name: 'Cancel' }));
 
@@ -1573,7 +1574,7 @@ test('Save deletes each macro marked, one at a time, hiding them until the live 
 
 	await user.click(within(dialog).getByRole('button', { name: 'Delete lift' }));
 	await user.click(within(dialog).getByRole('button', { name: 'Delete punch' }));
-	await user.click(within(dialog).getByRole('button', { name: 'Save' }));
+	await user.click(within(dialog).getByRole('button', { name: 'Delete 2' }));
 
 	expect(requests()).toEqual([
 		'DELETE /api/characters/id/macros/lift',
@@ -1602,7 +1603,7 @@ test('the deletes wait for each other', async () => {
 	await user.click(within(dialog).getByRole('button', { name: 'Delete lift' }));
 	await user.click(within(dialog).getByRole('button', { name: 'Delete punch' }));
 
-	await user.click(within(dialog).getByRole('button', { name: 'Save' }));
+	await user.click(within(dialog).getByRole('button', { name: 'Delete 2' }));
 	expect(requests()).toHaveLength(1);
 
 	finishFirst(new Response(null, { status: 204 }));
@@ -1617,7 +1618,7 @@ test('a macro already gone counts as deleted', async () => {
 	const dialog = await editMacros(user);
 	await user.click(within(dialog).getByRole('button', { name: 'Delete lift' }));
 
-	await user.click(within(dialog).getByRole('button', { name: 'Save' }));
+	await user.click(within(dialog).getByRole('button', { name: 'Delete 1' }));
 
 	const list = await screen.findByRole('dialog', { name: 'Macros' });
 	await waitFor(() => expect(macroNames(list)).toEqual(['punch']));
@@ -1638,14 +1639,14 @@ test('a failed delete stops there, keeping the rest marked and saying which', as
 		await user.click(within(dialog).getByRole('button', { name: `Delete ${name}` }));
 	}
 
-	await user.click(within(dialog).getByRole('button', { name: 'Save' }));
+	await user.click(within(dialog).getByRole('button', { name: 'Delete 3' }));
 
 	expect(await within(dialog).findByRole('alert')).toHaveTextContent(
 		"Couldn’t delete punch. This character no longer exists, or you're no longer in its server."
 	);
 	expect(requests()).toHaveLength(2);
 	// Still editing, with punch and sneak still marked; Cancel brings them back, but not lift
-	expect(within(dialog).getByRole('button', { name: 'Save' })).toBeEnabled();
+	expect(within(dialog).getByRole('button', { name: 'Delete 2' })).toBeEnabled();
 	await user.click(within(dialog).getByRole('button', { name: 'Cancel' }));
 	const list = await screen.findByRole('dialog', { name: 'Macros' });
 	await waitFor(() => expect(macroNames(list)).toEqual(['punch', 'sneak']));
@@ -1973,7 +1974,7 @@ test('editing a macro with deletions marked asks first, keeping them if declined
 
 	expect(confirm).toHaveBeenCalledWith('Discard your unsaved changes?');
 	expect(screen.getByRole('dialog', { name: 'Edit Macros' })).toBeInTheDocument();
-	expect(within(panel).getByRole('button', { name: 'Save' })).toBeEnabled();
+	expect(within(panel).getByRole('button', { name: 'Delete 1' })).toBeEnabled();
 });
 
 test("hovering a macro in the panel highlights its traits on the sheet, until it's left", async () => {
@@ -2093,4 +2094,25 @@ test("the phone's floating buttons make way while the macro panel is open", asyn
 	expect(screen.getAllByRole('button', { name: 'Edit' })).toHaveLength(1);
 	await user.click(screen.getByRole('button', { name: 'Close macros' }));
 	await waitFor(() => expect(screen.getAllByRole('button', { name: 'Macros' })).toHaveLength(2));
+});
+
+test('a macro marked for deletion stays, struck through, and Undo brings it back', async () => {
+	const user = userEvent.setup();
+	navigate('/char?macros=panel');
+	renderOwnerPage(withMacros());
+	const dialog = await editMacros(user);
+
+	await user.click(within(dialog).getByRole('button', { name: 'Delete lift' }));
+
+	expect(within(dialog).getByRole('article', { name: 'lift' })).toBeInTheDocument();
+	expect(within(dialog).getByText('Will be deleted')).toBeInTheDocument();
+	await waitFor(() =>
+		expect(within(dialog).queryByRole('button', { name: 'Edit lift' })).not.toBeInTheDocument()
+	);
+	expect(within(dialog).getByRole('button', { name: 'Delete 1' })).toBeEnabled();
+
+	await user.click(within(dialog).getByRole('button', { name: 'Undo deleting lift' }));
+
+	expect(macroNames(dialog)).toEqual(['lift', 'punch']);
+	expect(within(dialog).getByRole('button', { name: 'Save' })).toBeDisabled();
 });

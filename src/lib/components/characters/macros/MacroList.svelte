@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { fade, slide } from 'svelte/transition';
-	import { Pencil, Trash2 } from '@lucide/svelte';
+	import { Pencil, Trash2, Undo2 } from '@lucide/svelte';
 
 	import { getPoolPicker } from '$lib/state/poolPicker.svelte';
 	import type { Character, Macro } from '$lib/types';
@@ -12,9 +12,21 @@
 		layout?: 'grid' | 'stack'; // Framed cards in columns (the sheet), or a divided list (a panel)
 		ondelete?: (macro: Macro) => void; // Gives each macro a Delete button (stack layout)
 		onedit?: (macro: Macro) => void; // Gives each macro an Edit button (stack layout)
+		// Macros marked for deletion (by name): struck through, with Undo (`onrestore`) in place of
+		// the other buttons (stack layout)
+		marked?: ReadonlySet<string>;
+		onrestore?: (macro: Macro) => void;
 	}
 
-	let { character, macros, layout = 'grid', ondelete, onedit }: ComponentProps = $props();
+	let {
+		character,
+		macros,
+		layout = 'grid',
+		ondelete,
+		onedit,
+		marked,
+		onrestore
+	}: ComponentProps = $props();
 
 	const shown = $derived(macros ?? character.macros ?? []);
 
@@ -42,7 +54,8 @@
 @component
 A character's macros, in the order the bot keeps them (by name). `grid` frames each in a card, in up
 to three columns, for below the sheet; `stack` divides them with rules, for a narrow panel, where
-`onedit` and `ondelete` add Edit and Delete buttons to each. Hovering a macro lights it and
+`onedit` and `ondelete` add Edit and Delete buttons to each, and `marked` strikes through those
+marked for deletion, with Undo (`onrestore`). Hovering a macro lights it and
 highlights its traits on the sheet. A macro taken out of `macros` slides away.
 -->
 {#if layout === 'grid'}
@@ -60,6 +73,7 @@ highlights its traits on the sheet. A macro taken out of `macros` slides away.
 {:else}
 	<ul class="divide-surface-600 flex flex-col divide-y">
 		{#each shown as macro (macro.name)}
+			{@const doomed = marked?.has(macro.name) ?? false}
 			<li
 				class="hover:bg-surface-200/[0.06] -mx-2 flex items-start gap-2 rounded-md px-2 py-3 transition-colors first:pt-2 last:pb-2"
 				transition:slide={{ duration: 200 }}
@@ -67,9 +81,27 @@ highlights its traits on the sheet. A macro taken out of `macros` slides away.
 				onpointerleave={() => leave(macro)}
 			>
 				<div class="min-w-0 flex-1">
-					<MacroCard {macro} {character} />
+					<div class={['transition-opacity', doomed && 'line-through opacity-45']}>
+						<MacroCard {macro} {character} />
+					</div>
+					{#if doomed}
+						<p class="text-error-300 mt-1 text-xs italic" transition:slide={{ duration: 150 }}>
+							Will be deleted
+						</p>
+					{/if}
 				</div>
-				{#if onedit}
+				{#if doomed}
+					<button
+						type="button"
+						class="hover:preset-tonal-surface -mr-1 shrink-0 rounded-full p-1.5"
+						onclick={() => onrestore?.(macro)}
+						aria-label="Undo deleting {macro.name}"
+						title="Undo"
+						in:fade={{ duration: 200 }}
+					>
+						<Undo2 size={16} />
+					</button>
+				{:else if onedit}
 					<button
 						type="button"
 						class="hover:preset-tonal-surface -mr-1 shrink-0 rounded-full p-1.5"
@@ -81,7 +113,7 @@ highlights its traits on the sheet. A macro taken out of `macros` slides away.
 						<Pencil size={16} />
 					</button>
 				{/if}
-				{#if ondelete}
+				{#if ondelete && !doomed}
 					<button
 						type="button"
 						class="hover:preset-tonal-error text-error-400 -mr-1 shrink-0 rounded-full p-1.5"
