@@ -9,9 +9,9 @@
 		Pencil,
 		SaveCheck,
 		ScrollText,
-		SquareFunction,
 		StarPlus,
-		Timeline
+		Timeline,
+		Zap
 	} from '@lucide/svelte';
 
 	import { andList, cleanName } from '$lib';
@@ -684,7 +684,7 @@
 				? 'The Macros panel is already open'
 				: undefined}
 	>
-		<SquareFunction {size} />
+		<Zap {size} />
 		{#if size < 20}<span>Macros</span>{/if}
 	</button>
 {/snippet}

@@ -12,7 +12,7 @@
 <script lang="ts">
 	import { untrack } from 'svelte';
 	import { fade, fly } from 'svelte/transition';
-	import { Ban, Loader2, Pencil, Plus, SaveCheck, SquareFunction, X, Trash2 } from '@lucide/svelte';
+	import { Ban, Loader2, Pencil, Plus, SaveCheck, X, Trash2, Zap } from '@lucide/svelte';
 
 	import { FadeSwitch, prefersReducedMotion } from '$lib/state/fadeSwitch.svelte';
 	import { MacroDeletions } from '$lib/state/macroDeletions.svelte';
@@ -339,7 +339,7 @@ Macros button), resized by a handle of its own.
 			/>
 		{/if}
 		<header class="border-surface-500 flex items-center gap-2 border-b px-4 py-3" hidden={compact}>
-			<SquareFunction size={18} class="text-primary-400 shrink-0" />
+			<Zap size={18} class="text-primary-400 shrink-0" />
 			<h2
 				id="macro-panel-title"
 				class="font-display grid min-w-0 text-sm tracking-[0.04em] uppercase"
