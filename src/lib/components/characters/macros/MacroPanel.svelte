@@ -206,12 +206,15 @@
 		}
 	};
 
-	const titles: Record<MacroPanelView, string> = {
+	// The panel's name, for screen readers, and its title, which editing shortens so the header's
+	// buttons (Cancel, Delete N) fit on one line beside it
+	const names: Record<MacroPanelView, string> = {
 		list: 'Macros',
 		add: 'New Macro',
 		edit: 'Edit Macros',
 		modify: 'Edit Macro'
 	};
+	const titles: Record<MacroPanelView, string> = { ...names, edit: 'Edit' };
 
 	// Switching views crossfades: the old and new share a grid cell while one fades out and the
 	// other in, so neither waits for the other
@@ -252,14 +255,17 @@ window's right, below the tab row (and the Macros button).
 				: 'inset-x-4 bottom-4 max-h-[60vh] sm:inset-x-auto sm:top-60 sm:right-6 sm:bottom-auto sm:max-h-[calc(100vh-16.5rem)] sm:w-96'
 		]}
 		aria-labelledby={compact ? undefined : 'macro-panel-title'}
-		aria-label={compact ? titles[view] : undefined}
+		aria-label={compact ? names[view] : undefined}
 		transition:fly={{ x: 24, duration: 200 }}
 	>
 		<header class="border-surface-500 flex items-center gap-2 border-b px-4 py-3" hidden={compact}>
 			<SquareFunction size={18} class="text-primary-400 shrink-0" />
 			<h2 id="macro-panel-title" class="font-display grid text-sm tracking-[0.04em] uppercase">
+				<span class="sr-only">{names[view]}</span>
 				{#key view}
-					<span class="col-start-1 row-start-1" transition:fade={crossfade}>{titles[view]}</span>
+					<span class="col-start-1 row-start-1" aria-hidden="true" transition:fade={crossfade}
+						>{titles[view]}</span
+					>
 				{/key}
 			</h2>
 			<div class="ml-auto grid justify-items-end">
