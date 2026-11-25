@@ -1373,20 +1373,26 @@ test('with ?macros=panel, the Macros button opens and closes a panel of them', a
 	await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
 });
 
-test('edit mode closes the macro panel and disables the Macros button until it ends', async () => {
+test('the macro panel and edit mode wait for each other', async () => {
 	const user = userEvent.setup();
 	navigate('/char?macros=panel');
 	renderOwnerPage(withMacro());
 	const toggle = screen.getAllByRole('button', { name: 'Macros' })[0];
 	await user.click(toggle);
 
-	await user.click(editButton('Edit'));
-
+	// While the panel's open, it closes itself: Edit and Macros wait
+	const dialog = screen.getByRole('dialog', { name: 'Macros' });
+	expect(toggle).toBeDisabled();
+	expect(editButton('Edit')).toBeDisabled();
+	await user.click(within(dialog).getByRole('button', { name: 'Close macros' }));
 	await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
+	expect(toggle).toBeEnabled();
+
+	// While editing, Macros waits
+	await user.click(editButton('Edit'));
 	for (const button of screen.getAllByRole('button', { name: 'Macros' })) {
 		expect(button).toBeDisabled();
 	}
-
 	await user.click(editButton('Cancel'));
 	expect(toggle).toBeEnabled();
 });
@@ -1444,7 +1450,7 @@ test('reopening the panel shows the list, not a macro in progress', async () => 
 	await user.click(screen.getByRole('button', { name: 'Add macro' }));
 	await screen.findByRole('dialog', { name: 'New Macro' });
 
-	await user.click(toggle);
+	await user.click(screen.getByRole('button', { name: 'Close macros' }));
 	await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
 	await user.click(toggle);
 
@@ -1678,8 +1684,7 @@ test.each<
 >([
 	['Cancel', (user, dialog) => user.click(within(dialog).getByRole('button', { name: 'Cancel' }))],
 	['Escape', (user) => user.keyboard('{Escape}')],
-	['✕', (user, dialog) => user.click(within(dialog).getByRole('button', { name: 'Close macros' }))],
-	['the Macros button', (user) => user.click(screen.getAllByRole('button', { name: 'Macros' })[0])]
+	['✕', (user, dialog) => user.click(within(dialog).getByRole('button', { name: 'Close macros' }))]
 ])('leaving macro editing with deletions by %s asks first', async (_, leave) => {
 	const user = userEvent.setup();
 	const dialog = await markLift(user);
@@ -1714,23 +1719,6 @@ test("leaving macro editing without changes doesn't ask", async () => {
 	await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
 });
 
-test('editing the character with unsaved macro deletions asks first', async () => {
-	const user = userEvent.setup();
-	const dialog = await markLift(user);
-	vi.mocked(window.confirm).mockReturnValueOnce(false);
-
-	await user.click(editButton('Edit'));
-
-	expect(window.confirm).toHaveBeenCalledWith('Discard your unsaved changes?');
-	expect(screen.getByRole('dialog', { name: 'Edit Macros' })).toBe(dialog);
-	expect(screen.queryByRole('button', { name: 'Save' })).toBeInTheDocument(); // The panel's
-	expect(screen.getAllByRole('button', { name: 'Edit' })[0]).toBeEnabled();
-
-	await user.click(editButton('Edit'));
-	await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
-	expect(editButton('Save')).toBeInTheDocument();
-});
-
 /** Open the new macro form (in ?macros=panel mode), returning the panel. */
 const addMacroForm = async (user: ReturnType<typeof userEvent.setup>): Promise<HTMLElement> => {
 	navigate('/char?macros=panel');
@@ -1745,8 +1733,7 @@ test.each<
 >([
 	['Cancel', (user, dialog) => user.click(within(dialog).getByRole('button', { name: 'Cancel' }))],
 	['Escape', (user) => user.keyboard('{Escape}')],
-	['✕', (user, dialog) => user.click(within(dialog).getByRole('button', { name: 'Close macros' }))],
-	['the Macros button', (user) => user.click(screen.getAllByRole('button', { name: 'Macros' })[0])]
+	['✕', (user, dialog) => user.click(within(dialog).getByRole('button', { name: 'Close macros' }))]
 ])('leaving a new macro with input by %s asks first', async (_, exit) => {
 	const user = userEvent.setup();
 	const dialog = await addMacroForm(user);

@@ -227,16 +227,11 @@
 		});
 	});
 
-	/** Ask before closing the macro panel on unsaved deletions. True when there are none, or the user
-	 * agrees. */
-	const confirmCloseMacros = (): boolean =>
-		!macrosOpen || !macrosDirty || confirm('Discard your unsaved changes?');
-
-	/** Open or close the macro panel, asking before closing it on unsaved deletions. */
-	const toggleMacros = () => {
-		if (macrosOpen && !confirmCloseMacros()) return;
-		macrosOpen = !macrosOpen;
-	};
+	// The Macros button only opens the panel: it's closed from the panel (its ✕, or Escape), which
+	// asks about unsaved macro changes
+	const openMacros = () => (macrosOpen = true);
+	// The panel's Escape and ✕ are how it closes; while it's open, Edit and Macros wait
+	const macrosTitle = 'Close the macros panel first';
 	// Adding and editing macros are for supporters, like the rest of editing
 	const switchMacroView = forSupporters(
 		'Editing macros',
@@ -327,11 +322,8 @@
 	};
 
 	const enterEditMode = () => {
-		// Editing closes the macro panel, which asks first about unsaved macro edits
-		if (!confirmCloseMacros()) return;
 		saveError = null; // A failed save's errors belong to that edit
 		editing = true;
-		macrosOpen = false; // Macros wait for edit mode to end (see the Macros button)
 		seen = null;
 		copy = $state.snapshot(character);
 		baseline = comparable(copy, copy.name);
@@ -553,7 +545,8 @@
 					<button
 						class="btn btn-gothic btn-gothic-bone"
 						onclick={startEditing}
-						disabled={checkingPremium}
+						disabled={checkingPremium || macrosOpen}
+						title={macrosOpen ? macrosTitle : undefined}
 					>
 						<Pencil size={18} />
 						<span>Edit</span>
@@ -640,17 +633,22 @@
 	/>
 </Modal>
 
-<!-- Disabled in edit mode, which closes the panel: macros are saved on their own, and the sheet's
-     clicks there change ratings rather than build a macro's pool -->
+<!-- Opens the panel, and waits while it's open (the panel closes itself). Disabled in edit mode too:
+     macros are saved on their own, and the sheet's clicks there change ratings rather than build a
+     macro's pool -->
 {#snippet macrosToggle(classes: string, size: number)}
 	<button
 		class={classes}
-		onclick={toggleMacros}
-		disabled={editing}
+		onclick={openMacros}
+		disabled={editing || macrosOpen}
 		aria-expanded={macrosOpen}
 		aria-controls="macro-panel"
 		aria-label="Macros"
-		title={editing ? 'Macros wait until you’re done editing' : undefined}
+		title={editing
+			? 'Macros wait until you’re done editing'
+			: macrosOpen
+				? 'The Macros panel is already open'
+				: undefined}
 	>
 		<SquareFunction {size} />
 		{#if size < 20}<span>Macros</span>{/if}
@@ -706,7 +704,8 @@
 					<button
 						class="fab-gothic btn-gothic btn-gothic-bone"
 						onclick={startEditing}
-						disabled={checkingPremium}
+						disabled={checkingPremium || macrosOpen}
+						title={macrosOpen ? macrosTitle : undefined}
 						aria-label="Edit"
 					>
 						<Pencil size={24} />
