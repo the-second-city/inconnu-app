@@ -1024,3 +1024,21 @@ test("the Macros button waits for Edit's premium check, so both can't open", asy
 	expect(await screen.findAllByRole('button', { name: 'Save' })).not.toHaveLength(0);
 	expect(screen.queryByRole('dialog', { name: 'Macros' })).not.toBeInTheDocument();
 });
+
+test("closing the panel during Add's premium check doesn't reopen it on the form", async () => {
+	let answer: (supporter: boolean) => void = () => {};
+	isSupporter.mockImplementationOnce(() => new Promise((resolve) => (answer = resolve)));
+	const user = userEvent.setup();
+	renderOwnerPage(withMacros());
+	const toggle = screen.getAllByRole('button', { name: 'Macros' })[0];
+	await user.click(toggle);
+	await user.click(screen.getByRole('button', { name: 'Add macro' }));
+
+	await user.keyboard('{Escape}');
+	await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
+	answer(true);
+	await waitFor(() => expect(toggle).toBeEnabled());
+	await user.click(toggle);
+
+	expect(screen.getByRole('dialog', { name: 'Macros' })).toBeInTheDocument();
+});

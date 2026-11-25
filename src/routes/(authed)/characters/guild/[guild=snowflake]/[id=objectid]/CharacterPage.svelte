@@ -267,10 +267,9 @@
 	 * refetch shows itself (the error page), and the save stands. */
 	const refetch = (): Promise<void> => invalidate(CHARACTER_DEPENDENCY).catch(() => {});
 	// Adding and editing macros are for supporters, like the rest of editing
-	const switchMacroView = forSupporters(
-		'Editing macros',
-		(next: MacroPanelView) => (macroView = next)
-	);
+	const switchMacroView = forSupporters('Editing macros', (next: MacroPanelView) => {
+		if (macrosOpen) macroView = next; // Unless it was closed during the check
+	});
 
 	// Fresh data for the same character (such as a data refresh) replaces the copy. While it's
 	// being edited, the data waits: Cancel takes it, and Save keeps the edits instead.
