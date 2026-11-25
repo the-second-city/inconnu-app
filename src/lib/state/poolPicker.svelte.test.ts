@@ -317,3 +317,15 @@ test('a pool that is all subtracted keeps its first sign', () => {
 
 	expect(picker.tokens(TRAITS)).toEqual(['-', 'Brawl']);
 });
+
+test("flipping a repeated trait's sign settles it", () => {
+	const picker = new PoolPicker();
+	const char = character([trait('Strength', 'attribute'), trait('Brawl', 'skill')]);
+	picker.load(['Strength', '+', 'Brawl', '-', 'Brawl'], char);
+	expect(picker.repeats).toHaveLength(1);
+
+	picker.flip('Brawl');
+
+	expect(picker.repeats).toEqual([]);
+	expect(picker.tokens(TRAITS)).toEqual(['Strength', '-', 'Brawl']);
+});

@@ -60,7 +60,7 @@ export class PoolPicker {
 	picks: Pick[] = $state([]);
 	// The trait whose specialty menu is open, so only one is
 	open: string | null = $state(null);
-	// The loaded pool's repeated traits, until they're picked another way or removed
+	// The loaded pool's repeated traits, until they're picked another way, flipped, or removed
 	repeats: Repeat[] = $state([]);
 	// How many times a trait was added by picking (not loading), so the panel can collapse to its
 	// strip when one is
@@ -129,6 +129,7 @@ export class PoolPicker {
 		const pick = this.#byKey(key);
 		if (!pick || !this.canFlip(key)) return;
 		this.#replace(pick, { ...pick, negative: !pick.negative });
+		this.#settle(key);
 	}
 
 	/** Drop a pick (by its key: a trait's name, or the number's) from the pool. */

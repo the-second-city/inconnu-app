@@ -35,7 +35,8 @@ export const missingTraits = (terms: PoolTerm[]): string[] =>
 export const repeatNote = ({ trait, kept, dropped, conflict }: Repeat): string => {
 	const named = (specialty: string): string =>
 		`${trait} (${specialty.split(KEY_DELIMITER).join(', ')})`;
-	if (conflict) return `${trait} is both added and subtracted in this pool. Remove it to save.`;
+	if (conflict)
+		return `${trait} is both added and subtracted in this pool. Flip or remove it to save.`;
 	const keeps = kept === null ? 'one' : named(kept);
 	const drops = dropped.length > 0 ? ` and drops ${andList(dropped.map(named))}` : '';
 	return `${trait} is in this pool more than once. Saving keeps ${keeps}${drops}.`;
