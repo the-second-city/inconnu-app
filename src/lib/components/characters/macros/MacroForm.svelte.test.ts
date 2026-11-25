@@ -582,3 +582,17 @@ test('a trait both added and subtracted holds the save until it is removed', asy
 
 	expect(saveButton()).toBeEnabled();
 });
+
+test("a mortal's macro of Rouse Checks alone needs a pool", async () => {
+	const user = userEvent.setup();
+	const macro = existing('hunt');
+	render(MacroForm, {
+		props: { character: character('mortal'), macro, oncancel: vi.fn(), onsaved: vi.fn() },
+		context: poolPickerContext(new PoolPicker())
+	});
+
+	await user.click(screen.getByRole('button', { name: 'More Difficulty' }));
+
+	expect(saveButton()).toBeDisabled();
+	expect(saveButton()).toHaveAccessibleDescription('Needs a pool');
+});

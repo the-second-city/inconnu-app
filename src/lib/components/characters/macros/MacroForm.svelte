@@ -101,8 +101,8 @@
 	const resolved = $derived(resolvePool(pool, character));
 	// The pool has traits the character lacks (from an edited macro), which the bot won't save
 	const lacksTraits = $derived(resolved.terms.some((term) => term.missing !== null));
-	// A macro rolls a pool or makes Rouse Checks (the bot's `check_has_action`)
-	const hasAction = $derived(pool.length > 0 || rouses > 0);
+	// A macro rolls a pool or makes Rouse Checks (the bot's `check_has_action`), which mortals can't
+	const hasAction = $derived(pool.length > 0 || (rousing && rouses > 0));
 	// A pool must add something: all subtracted (say, its last trait removed), it can't roll
 	const addsNothing = $derived(pool.length > 0 && !picker?.adds);
 
@@ -140,7 +140,7 @@
 		if (changedElsewhere) return 'It changed while you were editing';
 		if (trimmedName === '') return 'Needs a name';
 		if (nameError) return 'The name needs fixing';
-		if (!hasAction) return 'Needs a pool or Rouse Checks';
+		if (!hasAction) return rousing ? 'Needs a pool or Rouse Checks' : 'Needs a pool';
 		if (addsNothing) return 'The pool needs something to add';
 		if (lacksTraits) return 'The pool has traits that aren’t on the sheet';
 		if (conflicted) return 'The pool adds and subtracts the same trait';
