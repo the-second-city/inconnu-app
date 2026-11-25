@@ -15,7 +15,11 @@ const invalidate = vi.hoisted(() => vi.fn(async () => {}));
 // The page's beforeNavigate callback, so tests can call it as SvelteKit would
 const navigation = vi.hoisted(() => ({ before: null as ((nav: unknown) => void) | null }));
 vi.mock('$app/state', () => import('$lib/testing/page.svelte'));
-vi.mock('$app/paths', () => ({ resolve: (route: string) => route }));
+// Fills in a route's params, as SvelteKit's resolve() does
+vi.mock('$app/paths', () => ({
+	resolve: (route: string, params: Record<string, string> = {}) =>
+		route.replace(/\[(\w+)(?:=\w+)?\]/g, (param, name: string) => params[name] ?? param)
+}));
 // No busy delay: the save's own promise decides when it's done
 vi.mock('$lib/state/busy', () => ({ atLeast: <T>(work: Promise<T>): Promise<T> => work }));
 vi.mock('$app/navigation', () => ({
@@ -922,7 +926,7 @@ test('saving sends the edits to the API, leaving the refetch to the live update'
 	await saved();
 
 	expect(fetchMock).toHaveBeenCalledWith(
-		'/api/characters/[id=objectid]',
+		'/api/characters/id',
 		expect.objectContaining({ method: 'PATCH' })
 	);
 	expect(sentBody()).toMatchObject({ name: 'Nadiah', health: '......', humanity: 7 });
@@ -1459,4 +1463,357 @@ test('a non-supporter who clicks Add gets the upsell', async () => {
 	await waitFor(() => expect(upsell.open).toBe(true));
 	expect(upsell.feature).toBe('Editing macros');
 	expect(screen.getByRole('dialog', { name: 'Macros' })).toBeInTheDocument();
+});
+
+/** The mortal with two macros, "lift" and "punch". */
+const withMacros = (): Character => {
+	const char = withMacro();
+	const lift = char.macros?.[0];
+	return { ...char, macros: lift ? [lift, { ...lift, name: 'punch' }] : [] };
+};
+
+/** Open the macro panel (in ?macros=panel mode) and switch it to editing, returning the panel. */
+const editMacros = async (user: ReturnType<typeof userEvent.setup>): Promise<HTMLElement> => {
+	await user.click(screen.getAllByRole('button', { name: 'Macros' })[0]);
+	await user.click(screen.getByRole('button', { name: 'Edit macros' }));
+	return screen.findByRole('dialog', { name: 'Edit Macros' });
+};
+
+/** The macro names in the panel. */
+const macroNames = (dialog: HTMLElement): string[] =>
+	within(dialog)
+		.queryAllByRole('article')
+		.map((article) => article.getAttribute('aria-label') ?? '');
+
+test('editing macros swaps Add and Edit for Cancel and Save, and offers to delete each', async () => {
+	const user = userEvent.setup();
+	navigate('/char?macros=panel');
+	renderOwnerPage(withMacros());
+
+	const dialog = await editMacros(user);
+
+	await waitFor(() => {
+		expect(within(dialog).queryByRole('button', { name: 'Add macro' })).not.toBeInTheDocument();
+		expect(within(dialog).queryByRole('button', { name: 'Edit macros' })).not.toBeInTheDocument();
+	});
+	expect(within(dialog).getByRole('button', { name: 'Cancel' })).toBeEnabled();
+	expect(within(dialog).getByRole('button', { name: 'Save' })).toBeDisabled();
+	expect(within(dialog).getByRole('button', { name: 'Delete lift' })).toBeInTheDocument();
+	expect(within(dialog).getByRole('button', { name: 'Delete punch' })).toBeInTheDocument();
+});
+
+test('there is nothing to edit without macros', async () => {
+	const user = userEvent.setup();
+	navigate('/char?macros=panel');
+	renderOwnerPage();
+
+	await user.click(screen.getAllByRole('button', { name: 'Macros' })[0]);
+
+	expect(screen.getByRole('button', { name: 'Add macro' })).toBeInTheDocument();
+	expect(screen.queryByRole('button', { name: 'Edit macros' })).not.toBeInTheDocument();
+});
+
+test('a deleted macro comes back on Cancel, without saving', async () => {
+	const user = userEvent.setup();
+	navigate('/char?macros=panel');
+	renderOwnerPage(withMacros());
+	const dialog = await editMacros(user);
+
+	await user.click(within(dialog).getByRole('button', { name: 'Delete lift' }));
+	await waitFor(() => expect(macroNames(dialog)).toEqual(['punch']));
+	expect(within(dialog).getByRole('button', { name: 'Save' })).toBeEnabled();
+
+	await user.click(within(dialog).getByRole('button', { name: 'Cancel' }));
+
+	const list = await screen.findByRole('dialog', { name: 'Macros' });
+	await waitFor(() => expect(macroNames(list)).toEqual(['lift', 'punch']));
+	// The Delete buttons fade out
+	await waitFor(() =>
+		expect(within(list).queryByRole('button', { name: /^Delete/ })).not.toBeInTheDocument()
+	);
+	expect(fetchMock).not.toHaveBeenCalled();
+});
+
+test('Escape cancels editing macros', async () => {
+	const user = userEvent.setup();
+	navigate('/char?macros=panel');
+	renderOwnerPage(withMacros());
+	const dialog = await editMacros(user);
+	await user.click(within(dialog).getByRole('button', { name: 'Delete lift' }));
+
+	await user.keyboard('{Escape}');
+
+	const list = await screen.findByRole('dialog', { name: 'Macros' });
+	await waitFor(() => expect(macroNames(list)).toEqual(['lift', 'punch']));
+});
+
+/** The requests sent, as "METHOD url". */
+const requests = (): string[] =>
+	fetchMock.mock.calls.map(([url, init]) => `${init?.method ?? 'GET'} ${String(url)}`);
+
+test('Save deletes each macro marked, one at a time, hiding them until the live update', async () => {
+	const user = userEvent.setup();
+	navigate('/char?macros=panel');
+	const { rerender } = renderOwnerPage(withMacros());
+	const dialog = await editMacros(user);
+
+	await user.click(within(dialog).getByRole('button', { name: 'Delete lift' }));
+	await user.click(within(dialog).getByRole('button', { name: 'Delete punch' }));
+	await user.click(within(dialog).getByRole('button', { name: 'Save' }));
+
+	expect(requests()).toEqual([
+		'DELETE /api/characters/id/macros/lift',
+		'DELETE /api/characters/id/macros/punch'
+	]);
+	const list = await screen.findByRole('dialog', { name: 'Macros' });
+	await waitFor(() => expect(macroNames(list)).toEqual([]));
+
+	// A live update from before the deletes still has them: they stay hidden
+	await rerender({ character: withMacros() });
+	expect(macroNames(list)).toEqual([]);
+
+	// The deletes' own update brings macros without them; one made again later shows
+	await rerender({ character: { ...withMacros(), macros: [] } });
+	await rerender({ character: withMacros() });
+	await waitFor(() => expect(macroNames(list)).toEqual(['lift', 'punch']));
+});
+
+test('the deletes wait for each other', async () => {
+	let finishFirst: (response: Response) => void = () => {};
+	fetchMock.mockImplementationOnce(() => new Promise((resolve) => (finishFirst = resolve)));
+	const user = userEvent.setup();
+	navigate('/char?macros=panel');
+	renderOwnerPage(withMacros());
+	const dialog = await editMacros(user);
+	await user.click(within(dialog).getByRole('button', { name: 'Delete lift' }));
+	await user.click(within(dialog).getByRole('button', { name: 'Delete punch' }));
+
+	await user.click(within(dialog).getByRole('button', { name: 'Save' }));
+	expect(requests()).toHaveLength(1);
+
+	finishFirst(new Response(null, { status: 204 }));
+	await waitFor(() => expect(requests()).toHaveLength(2));
+});
+
+test('a macro already gone counts as deleted', async () => {
+	fetchMock.mockResolvedValueOnce(Response.json({ detail: 'Macro not found' }, { status: 404 }));
+	const user = userEvent.setup();
+	navigate('/char?macros=panel');
+	renderOwnerPage(withMacros());
+	const dialog = await editMacros(user);
+	await user.click(within(dialog).getByRole('button', { name: 'Delete lift' }));
+
+	await user.click(within(dialog).getByRole('button', { name: 'Save' }));
+
+	const list = await screen.findByRole('dialog', { name: 'Macros' });
+	await waitFor(() => expect(macroNames(list)).toEqual(['punch']));
+});
+
+test('a failed delete stops there, keeping the rest marked and saying which', async () => {
+	fetchMock
+		.mockResolvedValueOnce(new Response(null, { status: 204 }))
+		.mockResolvedValueOnce(Response.json({ detail: 'Not found' }, { status: 404 }));
+	const user = userEvent.setup();
+	navigate('/char?macros=panel');
+	const char = withMacros();
+	const lift = char.macros?.[0];
+	if (lift) char.macros?.push({ ...lift, name: 'sneak' });
+	renderOwnerPage(char);
+	const dialog = await editMacros(user);
+	for (const name of ['lift', 'punch', 'sneak']) {
+		await user.click(within(dialog).getByRole('button', { name: `Delete ${name}` }));
+	}
+
+	await user.click(within(dialog).getByRole('button', { name: 'Save' }));
+
+	expect(await within(dialog).findByRole('alert')).toHaveTextContent(
+		"Couldn’t delete punch. This character no longer exists, or you're no longer in its server."
+	);
+	expect(requests()).toHaveLength(2);
+	// Still editing, with punch and sneak still marked; Cancel brings them back, but not lift
+	expect(within(dialog).getByRole('button', { name: 'Save' })).toBeEnabled();
+	await user.click(within(dialog).getByRole('button', { name: 'Cancel' }));
+	const list = await screen.findByRole('dialog', { name: 'Macros' });
+	await waitFor(() => expect(macroNames(list)).toEqual(['punch', 'sneak']));
+});
+
+test('a non-supporter who clicks Edit gets the upsell', async () => {
+	const user = userEvent.setup();
+	isSupporter.mockResolvedValue(false);
+	navigate('/char?macros=panel');
+	renderOwnerPage(withMacros());
+	await user.click(screen.getAllByRole('button', { name: 'Macros' })[0]);
+
+	await user.click(screen.getByRole('button', { name: 'Edit macros' }));
+
+	await waitFor(() => expect(upsell.open).toBe(true));
+	expect(upsell.feature).toBe('Editing macros');
+	expect(screen.queryByRole('button', { name: /^Delete/ })).not.toBeInTheDocument();
+});
+
+test('deleting every macro says saving deletes them all', async () => {
+	const user = userEvent.setup();
+	navigate('/char?macros=panel');
+	renderOwnerPage(withMacro());
+	const dialog = await editMacros(user);
+
+	await user.click(within(dialog).getByRole('button', { name: 'Delete lift' }));
+
+	expect(
+		await within(dialog).findByText('Saving will delete all of the macros.')
+	).toBeInTheDocument();
+});
+
+/** Open macro editing on two macros and mark "lift" for deletion, returning the panel. */
+const markLift = async (user: ReturnType<typeof userEvent.setup>): Promise<HTMLElement> => {
+	navigate('/char?macros=panel');
+	renderOwnerPage(withMacros());
+	const dialog = await editMacros(user);
+	await user.click(within(dialog).getByRole('button', { name: 'Delete lift' }));
+	return dialog;
+};
+
+test.each<
+	[string, (user: ReturnType<typeof userEvent.setup>, dialog: HTMLElement) => Promise<void>]
+>([
+	['Cancel', (user, dialog) => user.click(within(dialog).getByRole('button', { name: 'Cancel' }))],
+	['Escape', (user) => user.keyboard('{Escape}')],
+	['✕', (user, dialog) => user.click(within(dialog).getByRole('button', { name: 'Close macros' }))],
+	['the Macros button', (user) => user.click(screen.getAllByRole('button', { name: 'Macros' })[0])]
+])('leaving macro editing with deletions by %s asks first', async (_, leave) => {
+	const user = userEvent.setup();
+	const dialog = await markLift(user);
+	vi.mocked(window.confirm).mockReturnValueOnce(false);
+
+	await leave(user, dialog);
+
+	expect(window.confirm).toHaveBeenCalledWith('Discard your unsaved changes?');
+	// Declined: still editing, lift still marked
+	expect(screen.getByRole('dialog', { name: 'Edit Macros' })).toBe(dialog);
+	expect(macroNames(dialog)).toEqual(['punch']);
+
+	// Agreed: the deletions are discarded
+	await leave(user, dialog);
+	expect(window.confirm).toHaveBeenCalledTimes(2);
+	await waitFor(() =>
+		expect(screen.queryByRole('dialog', { name: 'Edit Macros' })).not.toBeInTheDocument()
+	);
+	expect(fetchMock).not.toHaveBeenCalled();
+});
+
+test("leaving macro editing without changes doesn't ask", async () => {
+	const user = userEvent.setup();
+	navigate('/char?macros=panel');
+	renderOwnerPage(withMacros());
+	const dialog = await editMacros(user);
+
+	await user.click(within(dialog).getByRole('button', { name: 'Cancel' }));
+	await user.click(screen.getByRole('button', { name: 'Close macros' }));
+
+	expect(window.confirm).not.toHaveBeenCalled();
+	await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
+});
+
+test('editing the character with unsaved macro deletions asks first', async () => {
+	const user = userEvent.setup();
+	const dialog = await markLift(user);
+	vi.mocked(window.confirm).mockReturnValueOnce(false);
+
+	await user.click(editButton('Edit'));
+
+	expect(window.confirm).toHaveBeenCalledWith('Discard your unsaved changes?');
+	expect(screen.getByRole('dialog', { name: 'Edit Macros' })).toBe(dialog);
+	expect(screen.queryByRole('button', { name: 'Save' })).toBeInTheDocument(); // The panel's
+	expect(screen.getAllByRole('button', { name: 'Edit' })[0]).toBeEnabled();
+
+	await user.click(editButton('Edit'));
+	await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
+	expect(editButton('Save')).toBeInTheDocument();
+});
+
+/** Open the new macro form (in ?macros=panel mode), returning the panel. */
+const addMacroForm = async (user: ReturnType<typeof userEvent.setup>): Promise<HTMLElement> => {
+	navigate('/char?macros=panel');
+	renderOwnerPage(withMacros());
+	await user.click(screen.getAllByRole('button', { name: 'Macros' })[0]);
+	await user.click(screen.getByRole('button', { name: 'Add macro' }));
+	return screen.findByRole('dialog', { name: 'New Macro' });
+};
+
+test.each<
+	[string, (user: ReturnType<typeof userEvent.setup>, dialog: HTMLElement) => Promise<void>]
+>([
+	['Cancel', (user, dialog) => user.click(within(dialog).getByRole('button', { name: 'Cancel' }))],
+	['Escape', (user) => user.keyboard('{Escape}')],
+	['✕', (user, dialog) => user.click(within(dialog).getByRole('button', { name: 'Close macros' }))],
+	['the Macros button', (user) => user.click(screen.getAllByRole('button', { name: 'Macros' })[0])]
+])('leaving a new macro with input by %s asks first', async (_, exit) => {
+	const user = userEvent.setup();
+	const dialog = await addMacroForm(user);
+	await user.type(within(dialog).getByRole('textbox', { name: 'Name' }), 'feed');
+	vi.mocked(window.confirm).mockReturnValueOnce(false);
+
+	await exit(user, dialog);
+
+	expect(window.confirm).toHaveBeenCalledWith('Discard your unsaved changes?');
+	expect(screen.getByRole('dialog', { name: 'New Macro' })).toBe(dialog);
+	expect(within(dialog).getByRole('textbox', { name: 'Name' })).toHaveValue('feed');
+
+	await exit(user, dialog);
+	await waitFor(() =>
+		expect(screen.queryByRole('dialog', { name: 'New Macro' })).not.toBeInTheDocument()
+	);
+});
+
+test('a toggled option counts as input', async () => {
+	const user = userEvent.setup();
+	const dialog = await addMacroForm(user);
+	await user.click(within(dialog).getByRole('button', { name: 'More Difficulty' }));
+
+	await user.click(within(dialog).getByRole('button', { name: 'Cancel' }));
+
+	expect(window.confirm).toHaveBeenCalledOnce();
+});
+
+test("leaving a blank new macro doesn't ask", async () => {
+	const user = userEvent.setup();
+	const dialog = await addMacroForm(user);
+
+	await user.click(within(dialog).getByRole('button', { name: 'Cancel' }));
+
+	expect(window.confirm).not.toHaveBeenCalled();
+	expect(await screen.findByRole('dialog', { name: 'Macros' })).toBeInTheDocument();
+});
+
+test('leaving the page with unsaved macro deletions asks first', async () => {
+	const user = userEvent.setup();
+	await markLift(user);
+
+	vi.mocked(window.confirm).mockReturnValueOnce(false);
+	expect(leave('link')).toBe(true);
+	expect(window.confirm).toHaveBeenCalledWith('Discard your unsaved changes?');
+
+	// The browser asks for itself when the tab closes or the site's left
+	expect(leave('leave', null)).toBe(true);
+
+	expect(leave('link')).toBe(false); // Agreed
+});
+
+test('leaving the page with a new macro in progress asks first', async () => {
+	const user = userEvent.setup();
+	const dialog = await addMacroForm(user);
+	await user.type(within(dialog).getByRole('textbox', { name: 'Name' }), 'feed');
+
+	vi.mocked(window.confirm).mockReturnValueOnce(false);
+	expect(leave('link')).toBe(true);
+});
+
+test("leaving the page with the macro panel open but nothing unsaved doesn't ask", async () => {
+	const user = userEvent.setup();
+	navigate('/char?macros=panel');
+	renderOwnerPage(withMacros());
+	await editMacros(user);
+
+	expect(leave('link')).toBe(false);
+	expect(window.confirm).not.toHaveBeenCalled();
 });

@@ -211,8 +211,23 @@
 	);
 	let macrosOpen = $state(false);
 	let macroView: MacroPanelView = $state('list');
-	// Adding a macro is for supporters, like the rest of editing
-	const addMacro = forSupporters('Editing macros', () => (macroView = 'add'));
+	let macrosDirty = $state(false); // Macro editing has unsaved deletions, or a new macro has input
+
+	/** Ask before closing the macro panel on unsaved deletions. True when there are none, or the user
+	 * agrees. */
+	const confirmCloseMacros = (): boolean =>
+		!macrosOpen || !macrosDirty || confirm('Discard your unsaved changes?');
+
+	/** Open or close the macro panel, asking before closing it on unsaved deletions. */
+	const toggleMacros = () => {
+		if (macrosOpen && !confirmCloseMacros()) return;
+		macrosOpen = !macrosOpen;
+	};
+	// Adding and editing macros are for supporters, like the rest of editing
+	const switchMacroView = forSupporters(
+		'Editing macros',
+		(next: MacroPanelView) => (macroView = next)
+	);
 
 	// Fresh data for the same character (such as a data refresh) replaces the copy. While it's
 	// being edited, the data waits: Cancel takes it, and Save keeps the edits instead.
@@ -298,6 +313,8 @@
 	};
 
 	const enterEditMode = () => {
+		// Editing closes the macro panel, which asks first about unsaved macro edits
+		if (!confirmCloseMacros()) return;
 		saveError = null; // A failed save's errors belong to that edit
 		editing = true;
 		macrosOpen = false; // Macros wait for edit mode to end (see the Macros button)
@@ -314,12 +331,16 @@
 	/** Ask before discarding unsaved edits. True when there are none, or the user agrees. */
 	const confirmDiscard = (): boolean => !hasChanges || confirm('Discard your unsaved changes?');
 
-	// Leaving the page with unsaved edits asks first. Switching tabs (a hash change on this page)
-	// isn't leaving. For closing the tab, reloading, or leaving the site ("leave"), cancelling has
-	// the browser show its own prompt, as pages can't show theirs there.
+	// Leaving the page with unsaved edits (the character's, or the macro panel's) asks first. Switching
+	// tabs (a hash change on this page) isn't leaving. For closing the tab, reloading, or leaving the
+	// site ("leave"), cancelling has the browser show its own prompt, as pages can't show theirs there.
 	beforeNavigate(({ type, from, to, cancel }) => {
-		if (!hasChanges || (to && from && to.url.pathname === from.url.pathname)) return;
-		if (type === 'leave' || !confirmDiscard()) cancel();
+		const macrosUnsaved = macrosOpen && macrosDirty;
+		if (!(hasChanges || macrosUnsaved) || (to && from && to.url.pathname === from.url.pathname)) {
+			return;
+		}
+		// One question covers both: the character's edits and the macro panel's
+		if (type === 'leave' || !confirm('Discard your unsaved changes?')) cancel();
 	});
 
 	const cancelEditing = () => {
@@ -610,7 +631,7 @@
 {#snippet macrosToggle(classes: string, size: number)}
 	<button
 		class={classes}
-		onclick={() => (macrosOpen = !macrosOpen)}
+		onclick={toggleMacros}
 		disabled={editing}
 		aria-expanded={macrosOpen}
 		aria-controls="macro-panel"
@@ -627,7 +648,8 @@
 		{character}
 		bind:open={macrosOpen}
 		bind:view={macroView}
-		onadd={ownerActions ? addMacro : undefined}
+		bind:dirty={macrosDirty}
+		onswitch={ownerActions ? switchMacroView : undefined}
 	/>
 {/if}
 

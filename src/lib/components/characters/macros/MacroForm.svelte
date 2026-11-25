@@ -17,9 +17,10 @@
 		character: Character;
 		oncancel: () => void; // Back to the list, discarding the macro
 		onsaved: () => void; // The macro saved; the live update brings it to the list
+		dirty?: boolean; // Whether anything differs from a blank form, so leaving should ask
 	}
 
-	let { character, oncancel, onsaved }: ComponentProps = $props();
+	let { character, oncancel, onsaved, dirty = $bindable(false) }: ComponentProps = $props();
 
 	const id = $props.id();
 
@@ -57,6 +58,20 @@
 	// A macro rolls a pool or makes Rouse Checks (the bot's `check_has_action`)
 	const hasAction = $derived(pool.length > 0 || rouses > 0);
 	const valid = $derived(!nameError && !commentError && hasAction);
+
+	// Anything typed, picked, or toggled away from the defaults
+	$effect(() => {
+		dirty =
+			trimmedName !== '' ||
+			comment.trim() !== '' ||
+			difficulty !== 0 ||
+			rouses !== 0 ||
+			!hunger ||
+			hunt ||
+			rerollRouses ||
+			stains ||
+			pool.length > 0;
+	});
 
 	/** The macro as the bot stores it. Options that can't apply are off. */
 	const macro = (): Macro => ({

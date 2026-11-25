@@ -1,25 +1,31 @@
 <script lang="ts">
-	import type { Character } from '$lib/types';
+	import { fade, slide } from 'svelte/transition';
+	import { Trash2 } from '@lucide/svelte';
+
+	import type { Character, Macro } from '$lib/types';
 	import MacroCard from './MacroCard.svelte';
 
 	interface ComponentProps {
 		character: Character;
+		macros?: Macro[]; // The macros to show; the character's by default
 		layout?: 'grid' | 'stack'; // Framed cards in columns (the sheet), or a divided list (a panel)
+		ondelete?: (macro: Macro) => void; // Gives each macro a Delete button (stack layout)
 	}
 
-	let { character, layout = 'grid' }: ComponentProps = $props();
+	let { character, macros, layout = 'grid', ondelete }: ComponentProps = $props();
 
-	const macros = $derived(character.macros ?? []);
+	const shown = $derived(macros ?? character.macros ?? []);
 </script>
 
 <!--
 @component
 A character's macros, in the order the bot keeps them (by name). `grid` frames each in a card, in up
-to three columns, for below the sheet; `stack` divides them with rules, for a narrow panel.
+to three columns, for below the sheet; `stack` divides them with rules, for a narrow panel, where
+`ondelete` adds a Delete button to each. A macro taken out of `macros` slides away.
 -->
 {#if layout === 'grid'}
 	<ul class="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-3">
-		{#each macros as macro (macro.name)}
+		{#each shown as macro (macro.name)}
 			<li class="card panel-gothic min-w-0 px-4 py-3">
 				<MacroCard {macro} {character} />
 			</li>
@@ -27,9 +33,26 @@ to three columns, for below the sheet; `stack` divides them with rules, for a na
 	</ul>
 {:else}
 	<ul class="divide-surface-600 flex flex-col divide-y">
-		{#each macros as macro (macro.name)}
-			<li class="py-3 first:pt-0 last:pb-0">
-				<MacroCard {macro} {character} />
+		{#each shown as macro (macro.name)}
+			<li
+				class="flex items-start gap-2 py-3 first:pt-0 last:pb-0"
+				transition:slide={{ duration: 200 }}
+			>
+				<div class="min-w-0 flex-1">
+					<MacroCard {macro} {character} />
+				</div>
+				{#if ondelete}
+					<button
+						type="button"
+						class="hover:preset-tonal-error text-error-400 -mr-1 shrink-0 rounded-full p-1.5"
+						onclick={() => ondelete(macro)}
+						aria-label="Delete {macro.name}"
+						title="Delete"
+						transition:fade={{ duration: 200 }}
+					>
+						<Trash2 size={16} />
+					</button>
+				{/if}
 			</li>
 		{/each}
 	</ul>
