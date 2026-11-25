@@ -96,3 +96,9 @@ test('the arrow keys move a free one by steps, within its range', async () => {
 	await user.keyboard('{ArrowDown}');
 	expect(state.height).toBe(310);
 });
+
+test('in a window that has shrunk, it reports what fits', () => {
+	const { handle } = renderHandle(true, { current: window.innerHeight * 2 });
+
+	expect(handle).toHaveAttribute('aria-valuenow', '90');
+});

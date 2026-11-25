@@ -298,7 +298,7 @@ Macros button), resized by a handle of its own.
 			'card popover-gothic fixed z-40 flex flex-col transition-[opacity,height] duration-150',
 			dragging && 'transition-none',
 			// Resized as a sheet (phones only)
-			!compact && sheetHeight !== null && 'max-sm:h-(--sheet-height) max-sm:max-h-none',
+			!compact && sheetHeight !== null && 'max-sm:h-(--sheet-height) max-sm:max-h-[90dvh]',
 			!compact &&
 				desktopHeight !== null &&
 				// (No margin, which the page's spacing adds, as it would lift the bottom edge)

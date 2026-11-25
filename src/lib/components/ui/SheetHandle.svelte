@@ -43,7 +43,7 @@
 	);
 	const clamp = (value: number): number => Math.min(Math.max(value, least), most);
 	// The height as it shows: a window that has shrunk since holds it to `most`
-	const real = $derived(free ? Math.min(height ?? current, most) : (height ?? current));
+	const real = $derived(Math.min(height ?? current, most));
 
 	const snapTo = (fraction: number) => (height = fraction * windowHeight);
 
@@ -83,7 +83,7 @@
 			height = clamp(real + (e.key === 'ArrowUp' ? FREE_STEP : -FREE_STEP));
 			return;
 		}
-		const fraction = (height ?? current) / windowHeight;
+		const fraction = real / windowHeight;
 		const next =
 			e.key === 'ArrowUp'
 				? snaps.find((snap) => snap > fraction + 0.01)
@@ -102,7 +102,7 @@
 <!--
 @component
 A panel's grab handle, on its top edge: dragging it up makes the panel taller (`height`, bindable, in
-pixels), so the panel should keep its bottom edge in place. On phones (below `sm`) the panel is a
+pixels), so the panel should keep its bottom edge in place, and hold itself to the window's height. On phones (below `sm`) the panel is a
 sheet, which settles on release at the nearest of `snaps` (fractions of the window), or, dragged below
 `closeBelow`, asks to close (`onclose`). A `free` one is for wider windows, and stays where it's left,
 up to `max`. It's a vertical slider: ↑ and ↓ make the panel taller and shorter, and it reports the
