@@ -7,7 +7,8 @@
 
 import { getContext, setContext } from 'svelte';
 
-import { KEY_DELIMITER, resolvePool } from '$lib/rules/macros';
+import { nameKey } from '$lib/constraints';
+import { KEY_DELIMITER, resolvePool, type PoolTerm } from '$lib/rules/macros';
 import type { Character, Trait } from '$lib/types';
 
 /** A picked trait, its specialty (null for none), and whether it's subtracted (a flaw, say). */
@@ -23,6 +24,17 @@ export interface NumberPick {
 	kind: 'number';
 	dice: number; // More than 0; the sign is `negative`
 	negative: boolean;
+}
+
+/**
+ * A trait a loaded pool has more than once, which is picked once (a Discord-made macro's mistake,
+ * most likely: "Persuasion + Persuasion.Seduction" counts Persuasion twice).
+ */
+export interface Repeat {
+	trait: string;
+	kept: string | null; // The specialty of the term picked (null for none)
+	dropped: string[]; // The other specialties that aren't
+	conflict: boolean; // It's both added and subtracted, so which was meant can't be guessed
 }
 
 /** One term of a pool being picked: a trait, or its one number. */
@@ -46,6 +58,8 @@ export class PoolPicker {
 	picks: Pick[] = $state([]);
 	// The trait whose specialty menu is open, so only one is
 	open: string | null = $state(null);
+	// The loaded pool's repeated traits, until they're picked another way or removed
+	repeats: Repeat[] = $state([]);
 	// How many times a trait was added by picking (not loading), so the panel can collapse to its
 	// strip when one is
 	added = $state(0);
@@ -80,7 +94,13 @@ export class PoolPicker {
 			this.remove(trait);
 		} else {
 			this.#replace(picked, { ...picked, specialty });
+			this.#settle(trait);
 		}
+	}
+
+	/** Forget that a trait was repeated: how it's picked has been chosen since. */
+	#settle(trait: string): void {
+		this.repeats = this.repeats.filter((repeat) => repeat.trait !== trait);
 	}
 
 	/** Put `next` where `pick` is. */
@@ -111,16 +131,17 @@ export class PoolPicker {
 	/** Drop a pick (by its key: a trait's name, or the number's) from the pool. */
 	remove(key: string): void {
 		this.picks = this.picks.filter((pick) => pickKey(pick) !== key);
+		this.#settle(key);
 	}
 
 	/**
 	 * Load a macro's pool (the bot's tokens) to edit it. Traits take the names the character has
 	 * now, so the sheet shows them picked; what the sheet can't pick (numbers, Willpower or Hunger, a
-	 * trait the character lost) loads too, to keep or remove. A trait in the pool twice loads once,
-	 * and its numbers combine into one.
+	 * trait the character lost) loads too, to keep or remove. A trait in the pool twice loads once
+	 * (see `repeats`), and its numbers combine into one.
 	 */
 	load(pool: string[], character: Character): void {
-		this.picks = picksFromPool(pool, character);
+		({ picks: this.picks, repeats: this.repeats } = readPool(pool, character));
 		this.open = null;
 	}
 
@@ -160,6 +181,7 @@ export class PoolPicker {
 	/** Empty the pool and close any menu. */
 	clear(): void {
 		this.picks = [];
+		this.repeats = [];
 		this.open = null;
 	}
 
@@ -194,29 +216,69 @@ export class PoolPicker {
 	}
 }
 
+/** A term's specialties as a pick holds them. */
+const specialtyOf = (term: PoolTerm): string | null =>
+	term.specialties.length > 0 ? term.specialties.join(KEY_DELIMITER) : null;
+
 /**
- * A macro's pool as picks (see `PoolPicker.load`): traits by the sheet's names, numbers combined
- * into one, a trait in it twice once. The sheet highlight reads pools this way too.
+ * Which of a repeated trait's terms to pick: the first with a specialty, else the first. One the
+ * character lacks (a lost specialty) only when there's nothing else.
  */
-export const picksFromPool = (pool: string[], character: Character): Pick[] => {
-	const picks: Pick[] = [];
-	let number = 0;
-	let numbered = false;
-	for (const term of resolvePool(pool, character).terms) {
-		const negative = term.sign === '-';
-		if (term.kind === 'number') {
-			number += (negative ? -1 : 1) * Number(term.name);
-			numbered = true;
-		} else if (!picks.some((pick) => pick.kind === 'trait' && pick.trait === term.name)) {
-			const specialty = term.specialties.length ? term.specialties.join(KEY_DELIMITER) : null;
-			picks.push({ kind: 'trait', trait: term.name, specialty, negative });
-		}
-	}
-	if (numbered && number !== 0) {
-		picks.push({ kind: 'number', dice: Math.abs(number), negative: number < 0 });
-	}
-	return picks;
+const bestTerm = (terms: PoolTerm[]): PoolTerm => {
+	const score = (term: PoolTerm): number =>
+		term.missing !== null ? 0 : term.specialties.length > 0 ? 2 : 1;
+	return terms.reduce((best, term) => (score(term) > score(best) ? term : best));
 };
+
+/**
+ * A macro's pool as picks (see `PoolPicker.load`): traits by the sheet's names, in order, numbers
+ * combined into one, and a trait in it twice once, with what was left out.
+ */
+const readPool = (pool: string[], character: Character): { picks: Pick[]; repeats: Repeat[] } => {
+	const byTrait: Record<string, PoolTerm[]> = {};
+	const order: string[] = [];
+	let number = 0;
+	for (const term of resolvePool(pool, character).terms) {
+		if (term.kind === 'number') {
+			number += (term.sign === '-' ? -1 : 1) * Number(term.name);
+			continue;
+		}
+		const key = nameKey(term.name);
+		if (!Object.hasOwn(byTrait, key)) {
+			byTrait[key] = [];
+			order.push(key);
+		}
+		byTrait[key].push(term);
+	}
+
+	const picks: Pick[] = [];
+	const repeats: Repeat[] = [];
+	for (const key of order) {
+		const terms = byTrait[key];
+		const best = bestTerm(terms);
+		const trait = best.name;
+		const specialty = specialtyOf(best);
+		picks.push({ kind: 'trait', trait, specialty, negative: best.sign === '-' });
+		if (terms.length === 1) continue;
+
+		const others = terms
+			.map(specialtyOf)
+			.filter((other) => other !== null)
+			.filter((other) => other !== specialty);
+		repeats.push({
+			trait,
+			kept: specialty,
+			dropped: others.filter((other, i) => others.indexOf(other) === i),
+			conflict: terms.some((term) => term.sign !== best.sign)
+		});
+	}
+	if (number !== 0) picks.push({ kind: 'number', dice: Math.abs(number), negative: number < 0 });
+	return { picks, repeats };
+};
+
+/** A macro's pool as picks, as `PoolPicker.load` reads it. The sheet highlight reads pools this way. */
+export const picksFromPool = (pool: string[], character: Character): Pick[] =>
+	readPool(pool, character).picks;
 
 const KEY = Symbol('pool-picker');
 

@@ -4,7 +4,7 @@
 
 	import { getConstraints, lengthError, macroNameError } from '$lib/constraints';
 	import { FORM_CLASSES } from '$lib/constants/formStyles';
-	import { saveMacros } from '$lib/api/macros';
+	import { createMacro, updateMacro } from '$lib/api/macros';
 	import { BusySubmit } from '$lib/state/busySubmit.svelte';
 	import { getPoolPicker } from '$lib/state/poolPicker.svelte';
 	import { difficultyName } from '$lib/rules/dice';
@@ -116,6 +116,9 @@
 	$effect(() => {
 		dirty = changed;
 	});
+	// Loading left out a repeated trait, so saving changes the macro, though the user hasn't
+	const repaired = untrack(() => (picker?.repeats.length ?? 0) > 0);
+	const conflicted = $derived(picker?.repeats.some((repeat) => repeat.conflict) ?? false);
 	// Why the macro can't be added (or saved) yet, by the buttons: its own message may be scrolled
 	// out of sight (an empty name's isn't shown at all)
 	const blocker: string | null = $derived.by(() => {
@@ -124,8 +127,9 @@
 		if (!hasAction) return 'Needs a pool or Rouse Checks';
 		if (addsNothing) return 'The pool needs something to add';
 		if (lacksTraits) return 'The pool has traits that aren’t on the sheet';
+		if (conflicted) return 'The pool adds and subtracts the same trait';
 		if (commentError) return 'The comment is too long';
-		if (start && !changed) return 'No changes yet';
+		if (start && !changed && !repaired) return 'No changes yet';
 		return null;
 	});
 	const valid = $derived(blocker === null);
@@ -135,10 +139,10 @@
 	const save = async (e: SubmitEvent) => {
 		e.preventDefault();
 		if (!valid) return;
-		// An edited macro replaces itself (if it's still there), keeping the others
-		const others = (character.macros ?? []).filter((m) => m.name !== start?.name);
-		const macros = [...others, macro()];
-		if (await submit.run(() => saveMacros(character._id, macros))) onsaved();
+		const id = character._id;
+		const saved = macro();
+		const request = () => (start ? updateMacro(id, start.name, saved) : createMacro(id, saved));
+		if (await submit.run(request)) onsaved();
 	};
 
 	interface Option {
@@ -188,10 +192,10 @@
 @component
 A macro's form, in the macro panel, for a new one or (with `macro`) editing one: its name, then the
 pool (built by clicking traits on the sheet), then its Difficulty, Rouse Checks, options, and
-comment. Adding saves the character's macros with it. `compact` collapses it to a strip (the name,
+comment. Adding sends just this macro. `compact` collapses it to a strip (the name,
 the pool and its dice, Cancel, and Continue), so the sheet stays clear while traits are picked;
 Continue opens the details, kept as they were, where the macro is added (or saved). Editing loads
-the macro's pool into the picker, and saving replaces the macro, by its name as it started. An
+the macro's pool into the picker, and saving replaces the macro, found by its name as it started. An
 edit saves once something changed.
 -->
 <form

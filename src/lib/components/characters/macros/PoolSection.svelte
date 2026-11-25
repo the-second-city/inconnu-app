@@ -8,7 +8,14 @@
 	import Stepper from '$lib/components/ui/Stepper.svelte';
 	import DiceCount from './DiceCount.svelte';
 	import PoolChips from './PoolChips.svelte';
-	import { MODIFIER_LIMIT, POOL_HINT, missingTraits, modifierDetail, modifierMin } from './pool';
+	import {
+		MODIFIER_LIMIT,
+		POOL_HINT,
+		missingTraits,
+		modifierDetail,
+		modifierMin,
+		repeatNote
+	} from './pool';
 
 	interface ComponentProps {
 		picker: PoolPicker;
@@ -35,7 +42,7 @@
 @component
 A macro form's Pool: its dice, Pick traits (which collapses the form to its strip), the chips (or a
 hint to click traits on the sheet), what keeps it from saving (traits the character lacks, or
-nothing to add), and the modifier.
+nothing to add), what saving does about repeated traits, and the modifier.
 -->
 <section class="border-surface-500 flex flex-col gap-2 border-y py-3" aria-labelledby="{id}-pool">
 	<div class="flex items-center justify-between">
@@ -62,6 +69,9 @@ nothing to add), and the modifier.
 				: 'them'} to save.
 		</p>
 	{/if}
+	{#each picker.repeats as repeat (repeat.trait)}
+		<p class="text-warning-300 text-sm">{repeatNote(repeat)}</p>
+	{/each}
 	{#if addsNothing}
 		<p class="text-warning-300 text-sm">A pool needs something to add.</p>
 	{/if}

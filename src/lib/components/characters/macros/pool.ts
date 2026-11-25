@@ -3,9 +3,9 @@
  * traits the character lacks.
  */
 
-import { plural } from '$lib';
-import type { PoolTerm } from '$lib/rules/macros';
-import type { PoolPicker } from '$lib/state/poolPicker.svelte';
+import { andList, plural } from '$lib';
+import { KEY_DELIMITER, type PoolTerm } from '$lib/rules/macros';
+import type { PoolPicker, Repeat } from '$lib/state/poolPicker.svelte';
 
 /** What the pool says while it's empty. */
 export const POOL_HINT = 'Click traits on the sheet to build the pool.';
@@ -30,3 +30,13 @@ export const formatModifier = (value: number): string =>
 /** The traits a resolved pool's terms lack (or lack a specialty of), to mark their chips. */
 export const missingTraits = (terms: PoolTerm[]): string[] =>
 	terms.filter((term) => term.missing !== null).map((term) => term.name);
+
+/** What saving does about a trait the macro's pool has more than once. */
+export const repeatNote = ({ trait, kept, dropped, conflict }: Repeat): string => {
+	const named = (specialty: string): string =>
+		`${trait} (${specialty.split(KEY_DELIMITER).join(', ')})`;
+	if (conflict) return `${trait} is both added and subtracted in this pool. Remove it to save.`;
+	const keeps = kept === null ? 'one' : named(kept);
+	const drops = dropped.length > 0 ? ` and drops ${andList(dropped.map(named))}` : '';
+	return `${trait} is in this pool more than once. Saving keeps ${keeps}${drops}.`;
+};

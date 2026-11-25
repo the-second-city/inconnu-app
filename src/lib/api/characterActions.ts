@@ -23,6 +23,9 @@ import type {
 /** An action's outcome: its result, or why it failed, for the user. */
 export type ActionOutcome<T> = { result: T; error?: never } | { result?: never; error: string };
 
+/** The API's 404 detail for a macro the character doesn't have. */
+export const MACRO_MISSING = 'Macro not found';
+
 /** Why an action failed, from its response's status and JSON body (null if it had none). */
 export const actionError = (status: number, json: unknown): string => {
 	const body = json as { detail?: unknown; message?: unknown } | null;
@@ -45,6 +48,7 @@ export const actionError = (status: number, json: unknown): string => {
 		case 403:
 			return "You can't do that for this character.";
 		case 404:
+			if (detail === MACRO_MISSING) return 'This macro no longer exists.';
 			return "This character no longer exists, or you're no longer in its server.";
 		case 503:
 			return 'Inconnu is starting up. Try again in a moment.';
@@ -56,7 +60,7 @@ export const actionError = (status: number, json: unknown): string => {
 
 /** How to send a request to a character's route, when not as a gameplay action. */
 interface SendOptions {
-	method?: 'POST' | 'PATCH' | 'DELETE'; // POST by default; a DELETE sends no body
+	method?: 'POST' | 'PUT' | 'PATCH' | 'DELETE'; // POST by default; a DELETE sends no body
 	feature?: string; // Names it in the upsell, if the API refuses a non-supporter
 	// An answer that isn't OK but counts as done (a null result), say deleting what's already gone
 	succeeds?: (status: number, json: unknown) => boolean;

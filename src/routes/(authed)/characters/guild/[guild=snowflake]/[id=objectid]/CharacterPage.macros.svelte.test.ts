@@ -603,9 +603,11 @@ test('adding sends the picked pool', async () => {
 	await user.click(within(dialog).getByRole('button', { name: 'Add Macro' }));
 
 	const body = JSON.parse(fetchMock.mock.calls[0][1]?.body as string) as {
-		macros: { name: string; pool: string[] }[];
+		name: string;
+		pool: string[];
 	};
-	expect(body.macros.find((macro) => macro.name === 'lift_more')?.pool).toEqual(['Strength']);
+	expect(body.name).toBe('lift_more');
+	expect(body.pool).toEqual(['Strength']);
 });
 
 test('a trait subtracted from the bar is saved with a minus', async () => {
@@ -627,13 +629,11 @@ test('a trait subtracted from the bar is saved with a minus', async () => {
 	await user.click(within(dialog).getByRole('button', { name: 'Add Macro' }));
 
 	const body = JSON.parse(fetchMock.mock.calls[0][1]?.body as string) as {
-		macros: { name: string; pool: string[] }[];
+		name: string;
+		pool: string[];
 	};
-	expect(body.macros.find((macro) => macro.name === 'hunt_mortal')?.pool).toEqual([
-		'Strength',
-		'-',
-		'Obvious Predator'
-	]);
+	expect(body.name).toBe('hunt_mortal');
+	expect(body.pool).toEqual(['Strength', '-', 'Obvious Predator']);
 });
 
 test("a macro's Edit opens its form with its pool picked on the sheet; saving returns to editing", async () => {
@@ -656,12 +656,11 @@ test("a macro's Edit opens its form with its pool picked on the sheet; saving re
 	await user.click(within(dialog).getByRole('button', { name: 'Save Macro' }));
 
 	const body = JSON.parse(fetchMock.mock.calls[0][1]?.body as string) as {
-		macros: { name: string; pool: string[] }[];
+		name: string;
+		pool: string[];
 	};
-	expect(body.macros.map((macro) => [macro.name, macro.pool])).toEqual([
-		['lift', ['Strength', '+', 'Dexterity', '+', '2']],
-		['punch', ['Strength', '+', '2']]
-	]);
+	expect(requests()).toEqual(['PUT /api/characters/id/macros/lift']);
+	expect(body).toMatchObject({ name: 'lift', pool: ['Strength', '+', 'Dexterity', '+', '2'] });
 	await screen.findByRole('dialog', { name: 'Edit Macros' });
 	expect(screen.queryByRole('button', { name: 'Pick Strength' })).not.toBeInTheDocument();
 });
@@ -724,13 +723,11 @@ test('Willpower and Humanity are picked from their trackers, by the names the bo
 	await user.click(within(dialog).getByRole('button', { name: 'Add Macro' }));
 
 	const body = JSON.parse(fetchMock.mock.calls[0][1]?.body as string) as {
-		macros: { name: string; pool: string[] }[];
+		name: string;
+		pool: string[];
 	};
-	expect(body.macros.find((macro) => macro.name === 'resist')?.pool).toEqual([
-		'Willpower',
-		'+',
-		'Humanity'
-	]);
+	expect(body.name).toBe('resist');
+	expect(body.pool).toEqual(['Willpower', '+', 'Humanity']);
 });
 
 test("removing a trait a macro rolls warns which macros won't roll without it", async () => {

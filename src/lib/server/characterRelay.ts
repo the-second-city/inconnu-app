@@ -4,7 +4,7 @@ import { relay, type RelayOptions } from '$lib/server/relay';
 
 /** A character route's endpoint on the Inconnu API, and what its errors say. */
 export interface CharacterRelayOptions extends RelayOptions {
-	method: 'POST' | 'PATCH' | 'DELETE'; // A DELETE has no body
+	method: 'POST' | 'PUT' | 'PATCH' | 'DELETE'; // A DELETE has no body
 	// The path after `/characters/{id}/` (e.g. "rouse"), or null for none; or a function of the
 	// route's params, for a path with more of them (its values encoded)
 	action: string | null | ((params: Record<string, string>) => string);

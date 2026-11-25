@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, expect, test, vi, type Mock } from 'vitest';
 
-import { PATCH } from './+server';
+import { POST } from './+server';
 
 vi.mock('$env/static/private', () => ({ API_KEY: 'test-key', INCONNU_API_URL: 'http://api' }));
 
@@ -8,10 +8,10 @@ const ID = '613d3e4bba8a6a8dc0ee2a09';
 
 let fetchMock: Mock<typeof fetch>;
 
-/** A PATCH request event saving the macros, as the given Discord user (or signed out). */
-const event = (body: string, userId: string | null = '222'): Parameters<typeof PATCH>[0] => {
+/** A POST request event creating a macro, as the given Discord user (or signed out). */
+const event = (body: string, userId: string | null = '222'): Parameters<typeof POST>[0] => {
 	const request = new Request(`http://localhost/api/characters/${ID}/macros`, {
-		method: 'PATCH',
+		method: 'POST',
 		body
 	});
 	const session = userId ? { user: { id: userId } } : null;
@@ -19,7 +19,7 @@ const event = (body: string, userId: string | null = '222'): Parameters<typeof P
 		params: { id: ID },
 		request,
 		locals: { auth: async () => session }
-	} as unknown as Parameters<typeof PATCH>[0];
+	} as unknown as Parameters<typeof POST>[0];
 };
 
 beforeEach(() => {
@@ -33,14 +33,14 @@ afterEach(() => {
 	vi.restoreAllMocks();
 });
 
-test('relays the macros to the API as the signed-in user, and its 204', async () => {
+test('relays the macro to the API as the signed-in user, and its 204', async () => {
 	fetchMock.mockResolvedValueOnce(new Response(null, { status: 204 }));
-	const body = '{"macros":[{"name":"feed","pool":["Strength"]}]}';
+	const body = '{"name":"feed","pool":["Strength"]}';
 
-	const response = await PATCH(event(body));
+	const response = await POST(event(body));
 
 	expect(fetchMock).toHaveBeenCalledWith(`http://api/characters/${ID}/macros`, {
-		method: 'PATCH',
+		method: 'POST',
 		headers: {
 			'Content-Type': 'application/json',
 			Authorization: 'Bearer test-key',
@@ -54,14 +54,14 @@ test('relays the macros to the API as the signed-in user, and its 204', async ()
 });
 
 test('a signed-out viewer gets a 401, without asking the API', async () => {
-	const response = await PATCH(event('{}', null));
+	const response = await POST(event('{}', null));
 
 	expect(response.status).toBe(401);
 	expect(fetchMock).not.toHaveBeenCalled();
 });
 
 test('invalid JSON is a 400', async () => {
-	await expect(PATCH(event('not json'))).rejects.toMatchObject({ status: 400 });
+	await expect(POST(event('not json'))).rejects.toMatchObject({ status: 400 });
 	expect(fetchMock).not.toHaveBeenCalled();
 });
 
@@ -69,7 +69,7 @@ test("the API's errors are relayed", async () => {
 	const detail = [{ loc: ['body'], msg: 'Nadia has no trait named Melee.', type: 'value_error' }];
 	fetchMock.mockResolvedValueOnce(Response.json({ detail }, { status: 422 }));
 
-	const response = await PATCH(event('{}'));
+	const response = await POST(event('{}'));
 
 	expect(response.status).toBe(422);
 	expect(await response.json()).toEqual({ detail });

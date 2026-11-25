@@ -250,3 +250,48 @@ test('the number is a pick of its own kind, flipped and removed by its key', () 
 	expect(picker.modifier).toBe(0);
 	expect(picker.picks.map(pickLabel)).toEqual(['Strength']);
 });
+
+test.each([
+	[['Brawl', '+', 'Brawl.Kindred'], 'Kindred', [], false],
+	[['Brawl.Kindred', '+', 'Brawl'], 'Kindred', [], false],
+	[['Brawl', '+', 'brawl'], null, [], false],
+	[['Brawl.Grappling', '+', 'Brawl.Kindred'], 'Grappling', ['Kindred'], false],
+	[['Brawl.Lost', '+', 'Brawl'], null, ['Lost'], false], // The character lacks it
+	[['Brawl', '-', 'Brawl'], null, [], true]
+])('the repeats in %j load once, as %j', (pool, kept, dropped, conflict) => {
+	const picker = new PoolPicker();
+	const brawl = { ...trait('Brawl', 'skill'), subtraits: ['Grappling', 'Kindred'] };
+
+	picker.load(pool, character([brawl]));
+
+	expect(picker.picks).toEqual([
+		{ kind: 'trait', trait: 'Brawl', specialty: kept, negative: false }
+	]);
+	expect(picker.repeats).toEqual([{ trait: 'Brawl', kept, dropped, conflict }]);
+});
+
+test('a lost trait repeated in another spelling loads once', () => {
+	const picker = new PoolPicker();
+
+	picker.load(['Night Driving', '+', 'nightdriving'], character([]));
+
+	expect(picker.picks).toHaveLength(1);
+});
+
+test('removing a repeated trait, or picking it another way, settles it', () => {
+	const picker = new PoolPicker();
+	const pool = ['Brawl', '+', 'Brawl'];
+	const char = character([trait('Brawl', 'skill')]);
+
+	picker.load(pool, char);
+	picker.pick('Brawl', 'Kindred');
+	expect(picker.repeats).toEqual([]);
+
+	picker.load(pool, char);
+	picker.remove('Brawl');
+	expect(picker.repeats).toEqual([]);
+
+	picker.load(pool, char);
+	picker.clear();
+	expect(picker.repeats).toEqual([]);
+});

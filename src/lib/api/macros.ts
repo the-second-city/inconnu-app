@@ -1,43 +1,49 @@
-/** Saving a character's macros, through the app's API route to the Inconnu API. */
+/**
+ * Saving a character's macros, one at a time, through the app's API routes to the Inconnu API. Each
+ * answers with no content; the character updates through the live update the save triggers.
+ */
 
 import { resolve } from '$app/paths';
-import { postAction, type ActionOutcome } from '$lib/api/characterActions';
+import { MACRO_MISSING, postAction, type ActionOutcome } from '$lib/api/characterActions';
 import type { Macro } from '$lib/types';
 
-/** Sort macros as the bot keeps them: by name, ignoring case. */
-export const sortMacros = (macros: Macro[]): Macro[] =>
-	[...macros].sort((a, b) => a.name.localeCompare(b.name, 'en', { sensitivity: 'base' }));
+const FEATURE = 'Editing macros'; // For the upsell
 
-/**
- * Save a character's macros: the whole list (`{ macros }`), which replaces the character's (so one
- * left out is deleted). The API answers with no content; the character updates through the live
- * update the save triggers.
- */
-export const saveMacros = (characterId: string, macros: Macro[]): Promise<ActionOutcome<null>> =>
+/** One macro's route, by its current name. */
+const macroUrl = (characterId: string, name: string) =>
+	resolve('/api/characters/[id=objectid]/macros/[name=macroname]', { id: characterId, name });
+
+/** Create a macro. The character's other macros aren't checked or changed. */
+export const createMacro = (characterId: string, macro: Macro): Promise<ActionOutcome<null>> =>
 	postAction(
 		resolve('/api/characters/[id=objectid]/macros', { id: characterId }),
-		{ macros: sortMacros(macros) },
-		"Couldn't reach Inconnu to save the macros.",
-		{ method: 'PATCH', feature: 'Editing macros' }
+		macro,
+		"Couldn't reach Inconnu to add the macro.",
+		{ feature: FEATURE }
 	);
-
-/** The API's 404 detail for a macro the character doesn't have. */
-const MISSING = 'Macro not found';
 
 /**
- * Delete one of a character's macros, by name. One already gone (a 404 saying "Macro not found",
- * not the character's own 404) counts as deleted. The API answers with no content; the character
- * updates through the live update.
+ * Replace a macro, by its current name (the new one may differ, which renames it). The others aren't
+ * checked or changed.
+ */
+export const updateMacro = (
+	characterId: string,
+	name: string,
+	macro: Macro
+): Promise<ActionOutcome<null>> =>
+	postAction(macroUrl(characterId, name), macro, "Couldn't reach Inconnu to save the macro.", {
+		method: 'PUT',
+		feature: FEATURE
+	});
+
+/**
+ * Delete a macro, by name. One already gone (a 404 for the macro, not the character's own) counts as
+ * deleted.
  */
 export const deleteMacro = (characterId: string, name: string): Promise<ActionOutcome<null>> =>
-	postAction(
-		resolve('/api/characters/[id=objectid]/macros/[name=macroname]', { id: characterId, name }),
-		undefined,
-		"Couldn't reach Inconnu to delete it.",
-		{
-			method: 'DELETE',
-			feature: 'Editing macros',
-			succeeds: (status, json) =>
-				status === 404 && (json as { detail?: unknown } | null)?.detail === MISSING
-		}
-	);
+	postAction(macroUrl(characterId, name), undefined, "Couldn't reach Inconnu to delete it.", {
+		method: 'DELETE',
+		feature: FEATURE,
+		succeeds: (status, json) =>
+			status === 404 && (json as { detail?: unknown } | null)?.detail === MACRO_MISSING
+	});

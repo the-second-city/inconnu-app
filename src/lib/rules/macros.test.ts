@@ -163,3 +163,12 @@ test.each([
 ])('%s dice read as %j', (dice, label) => {
 	expect(diceLabel(dice)).toBe(label);
 });
+
+test.each([
+	[['3', '-', '-', '2'], '+'],
+	[['3', '+', '-', '2'], '-'],
+	[['3', '-', '+', '2'], '-'],
+	[['3', '-', '+', '-', '2'], '+']
+])("stacked operators in %j combine, as the bot's do", (pool, sign) => {
+	expect(parsePool(pool)[1]).toEqual({ sign, token: '2' });
+});

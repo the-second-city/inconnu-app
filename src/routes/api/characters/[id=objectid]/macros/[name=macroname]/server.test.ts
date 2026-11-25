@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, expect, test, vi, type Mock } from 'vitest';
 
-import { DELETE } from './+server';
+import { DELETE, PUT } from './+server';
 
 vi.mock('$env/static/private', () => ({ API_KEY: 'test-key', INCONNU_API_URL: 'http://api' }));
 
@@ -60,4 +60,25 @@ test("the API's 404 is relayed", async () => {
 
 	expect(response.status).toBe(404);
 	expect(await response.json()).toEqual({ detail: 'Macro not found' });
+});
+
+test('relays an update to the API as the signed-in user, by its current name, and its 204', async () => {
+	fetchMock.mockResolvedValueOnce(new Response(null, { status: 204 }));
+	const body = '{"name":"hunt","pool":["Strength"]}';
+	const base = event('feed');
+	const request = new Request(base.request.url, { method: 'PUT', body });
+
+	const response = await PUT({ ...base, request } as unknown as Parameters<typeof PUT>[0]);
+
+	expect(fetchMock).toHaveBeenCalledWith(`http://api/characters/${ID}/macros/feed`, {
+		method: 'PUT',
+		headers: {
+			'Content-Type': 'application/json',
+			Authorization: 'Bearer test-key',
+			'X-Discord-User-ID': '222'
+		},
+		body,
+		signal: expect.any(AbortSignal)
+	});
+	expect(response.status).toBe(204);
 });

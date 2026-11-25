@@ -22,9 +22,9 @@ export const parsePool = (pool: string[]): PoolPart[] => {
 	const parts: PoolPart[] = [];
 	let sign: PoolPart['sign'] = '+';
 	for (const token of pool) {
-		if (token === '+' || token === '-') {
-			sign = token;
-		} else {
+		if (token === '-') {
+			sign = sign === '-' ? '+' : '-'; // Stacked operators ("3 - - 2") combine, as the bot reads them
+		} else if (token !== '+') {
 			parts.push({ sign, token });
 			sign = '+';
 		}
