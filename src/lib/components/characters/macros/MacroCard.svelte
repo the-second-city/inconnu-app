@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { CircleAlert, Crosshair, DropletOff, Droplets, Target } from '@lucide/svelte';
+	import { CircleAlert, Crosshair, DropletOff, Droplets, Sparkles, Target } from '@lucide/svelte';
 	import type { Component } from 'svelte';
 
 	import { plural } from '$lib';
@@ -36,6 +36,9 @@
 				label: `${plural(macro.rouses, 'Rouse Check', 'Rouse Checks')}${rerolled}${stains}`,
 				tone: 'text-primary-300'
 			});
+		}
+		if (pool.powerBonus > 0) {
+			list.push({ icon: Sparkles, label: `Power Bonus +${pool.powerBonus}` });
 		}
 		if (!macro.hunger) list.push({ icon: DropletOff, label: 'No Hunger' });
 		if (macro.hunt) list.push({ icon: Crosshair, label: 'Hunt', tone: 'text-primary-300' });

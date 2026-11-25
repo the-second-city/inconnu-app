@@ -2,7 +2,7 @@
 import { plural } from '$lib';
 import { nameKey } from '$lib/constraints';
 import { baneSeverity } from '$lib/rules/remorse';
-import { bloodPotency, isVampiric } from '$lib/rules/vampire';
+import { bloodPotency, isVampiric, powerBonus } from '$lib/rules/vampire';
 import type { Character, Macro } from '$lib/types';
 
 /** The separator between a pool token's trait and its specialties ("Brawl.Kindred"). */
@@ -40,12 +40,14 @@ export interface PoolTerm {
 	specialties: string[]; // Specialties, or a Discipline's powers
 	dice: number | null; // What it adds; null when the character lacks it
 	missing: string | null; // The trait or specialty the character lacks
+	discipline: boolean; // A Discipline the character has
 }
 
 /** A macro's pool, resolved against a character's current traits. */
 export interface ResolvedPool {
 	terms: PoolTerm[];
 	dice: number | null; // The total; null when a term can't be resolved
+	powerBonus: number; // The Blood Potency dice in the total, for using a Discipline
 }
 
 /**
@@ -84,7 +86,8 @@ const resolveTerm = (
 			name: token,
 			specialties: [],
 			dice: Number(token),
-			missing: null
+			missing: null,
+			discipline: false
 		};
 	}
 
@@ -100,7 +103,8 @@ const resolveTerm = (
 			name: inherentName,
 			specialties,
 			dice: rating,
-			missing: found ? null : name
+			missing: found ? null : name,
+			discipline: false
 		};
 	}
 
@@ -111,21 +115,24 @@ const resolveTerm = (
 	const missing = specialties.find(
 		(specialty) => !trait.subtraits.some((s) => nameKey(s) === nameKey(specialty))
 	);
-	const bonus = trait.type === 'discipline' ? 0 : specialties.length;
+	const discipline = trait.type === 'discipline';
+	const bonus = discipline ? 0 : specialties.length;
 	return {
 		sign,
 		kind: 'trait',
 		name: trait.name,
 		specialties: named,
 		dice: missing === undefined ? trait.rating + bonus : null,
-		missing: missing ?? null
+		missing: missing ?? null,
+		discipline
 	};
 };
 
 /**
  * A macro's pool, resolved against the character's current traits: each term with its dice, and
- * the total (at least 1, as the bot rolls; an empty pool, a macro that only Rouses, has 0). A term the character no longer has (a removed trait or specialty)
- * has no dice, and neither does the total.
+ * the total (at least 1, as the bot rolls; an empty pool, a macro that only Rouses, has 0). Using a
+ * Discipline, added or subtracted, adds a vampire's power bonus once. A term the character no longer
+ * has (a removed trait or specialty) has no dice, and neither does the total.
  */
 export const resolvePool = (pool: string[], character: Character): ResolvedPool => {
 	const inherent = inherentRatings(character);
@@ -138,8 +145,12 @@ export const resolvePool = (pool: string[], character: Character): ResolvedPool 
 		(sum, term) => sum + (term.sign === '-' ? -1 : 1) * (term.dice ?? 0),
 		0
 	);
+	const disciplined = terms.some((term) => term.discipline);
+	const bonus =
+		disciplined && isVampiric(character.splat) ? powerBonus(bloodPotency(character)) : 0;
 	// The bot always rolls at least one die
-	return { terms, dice: !resolved ? null : terms.length === 0 ? 0 : Math.max(1, total) };
+	const dice = !resolved ? null : terms.length === 0 ? 0 : Math.max(1, total + bonus);
+	return { terms, dice, powerBonus: bonus };
 };
 
 /** The macros whose pools roll a trait (by name, ignoring case and spaces, as the bot matches). */

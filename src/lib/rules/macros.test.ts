@@ -50,7 +50,9 @@ test('two specialties add two dice', () => {
 });
 
 test("a Discipline's powers add no dice", () => {
-	expect(resolvePool(['Strength', '+', 'Potence.Lethal Body'], character(TRAITS)).dice).toBe(6);
+	expect(
+		resolvePool(['Strength', '+', 'Potence.Lethal Body'], character(TRAITS, 'ghoul')).dice
+	).toBe(6);
 });
 
 test('subtracts terms and numbers, never going below 1', () => {
@@ -110,7 +112,7 @@ test('a trait or specialty the character lost leaves the pool without a total', 
 });
 
 test('an empty pool (a Rouse-only macro) has no terms and no dice', () => {
-	expect(resolvePool([], character(TRAITS))).toEqual({ terms: [], dice: 0 });
+	expect(resolvePool([], character(TRAITS))).toEqual({ terms: [], dice: 0, powerBonus: 0 });
 });
 
 /** A macro rolling this pool. */
@@ -172,3 +174,21 @@ test.each([
 ])("stacked operators in %j combine, as the bot's do", (pool, sign) => {
 	expect(parsePool(pool)[1]).toEqual({ sign, token: '2' });
 });
+
+test.each([
+	[['Strength', '+', 'Potence'], 'vampire', 3, 4 + 2 + 1, 1],
+	[['Strength', '+', 'Potence.Lethal Body'], 'vampire', 4, 4 + 2 + 2, 2],
+	[['Strength', '-', 'Potence'], 'vampire', 4, 4 - 2 + 2, 2],
+	[['Potence', '+', 'Potence'], 'vampire', 4, 2 + 2 + 2, 2], // Once a roll
+	[['Strength', '+', 'Potence'], 'thin-blood', 2, 4 + 2 + 1, 1],
+	[['Strength', '+', 'Potence'], 'vampire', 1, 4 + 2, 0],
+	[['Strength', '+', 'Potence'], 'ghoul', 4, 4 + 2, 0],
+	[['Strength', '+', 'Brawl'], 'vampire', 4, 4 + 3, 0]
+] as [string[], Splat, number, number, number][])(
+	'%j for a %s with Blood Potency %i is %i dice, with a power bonus of %i',
+	(pool, splat, potency, dice, powerBonus) => {
+		const char = { ...character(TRAITS, splat), potency };
+
+		expect(resolvePool(pool, char)).toMatchObject({ dice, powerBonus });
+	}
+);

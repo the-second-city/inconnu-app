@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { Minimize2 } from '@lucide/svelte';
 
-	import { orList } from '$lib';
+	import { orList, plural } from '$lib';
 	import { missingLabel, type ResolvedPool } from '$lib/rules/macros';
 	import type { PoolPicker } from '$lib/state/poolPicker.svelte';
 	import type { Trait } from '$lib/types';
@@ -59,6 +59,12 @@ nothing to add), what saving does about repeated traits, and the modifier.
 		<p class="text-surface-300 italic">{POOL_HINT}</p>
 	{:else}
 		<PoolChips {picker} {traits} {missing} />
+	{/if}
+	{#if resolved.powerBonus > 0}
+		<p class="text-surface-300 text-sm">
+			Includes a power bonus of {plural(resolved.powerBonus, 'die', 'dice')}, for using a
+			Discipline.
+		</p>
 	{/if}
 	{#if missingLabels.length > 0}
 		<p class="text-warning-300 text-sm">
