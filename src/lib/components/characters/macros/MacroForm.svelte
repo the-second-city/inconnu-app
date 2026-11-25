@@ -128,7 +128,6 @@
 	$effect(() => {
 		dirty = changed;
 	});
-	// An edit saves once something changed
 	// Why the macro can't be added (or saved) yet, by the buttons: its own message may be scrolled
 	// out of sight (an empty name's isn't shown at all)
 	const blocker: string | null = $derived.by(() => {
@@ -199,11 +198,13 @@
 
 <!--
 @component
-A macro's form, in the macro panel, for a new one or (with `macro`) editing one: its name, then the pool (built by clicking traits on the
-sheet), then its Difficulty, Rouse Checks, options, and comment. Adding saves the character's macros with it.
-`compact` collapses it to a strip (the name, the pool and its dice, Cancel, and Continue), so the sheet stays clear while traits are picked; Continue opens the
-details, kept as they were, where the macro is added (or saved). Editing loads the macro's pool
-into the picker, and saving replaces the macro, by its name as it started.
+A macro's form, in the macro panel, for a new one or (with `macro`) editing one: its name, then the
+pool (built by clicking traits on the sheet), then its Difficulty, Rouse Checks, options, and
+comment. Adding saves the character's macros with it. `compact` collapses it to a strip (the name,
+the pool and its dice, Cancel, and Continue), so the sheet stays clear while traits are picked;
+Continue opens the details, kept as they were, where the macro is added (or saved). Editing loads
+the macro's pool into the picker, and saving replaces the macro, by its name as it started. An
+edit saves once something changed.
 -->
 <!-- The pool's dice, in the strip and by the Pool heading: "?" while a trait is missing, as the
      macro cards show it -->

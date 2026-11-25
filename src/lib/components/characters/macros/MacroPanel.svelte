@@ -1,6 +1,12 @@
 <script module lang="ts">
+	/**
+	 * What the panel shows: the macros, the form for a new one, the macros to edit (delete, or pick
+	 * one to change), or the form for one of them.
+	 */
+	export type MacroPanelView = 'list' | 'add' | 'edit' | 'modify';
+
 	/** Whether the panel's view is a macro's form, where the pool is picked from the sheet. */
-	export const isFormView = (view: string): boolean => view === 'add' || view === 'modify';
+	export const isFormView = (view: MacroPanelView): boolean => view === 'add' || view === 'modify';
 </script>
 
 <script lang="ts">
@@ -16,12 +22,6 @@
 	import BusySpinner from '$lib/components/ui/BusySpinner.svelte';
 	import MacroForm from './MacroForm.svelte';
 	import MacroList from './MacroList.svelte';
-
-	/**
-	 * What the panel shows: the macros, the form for a new one, the macros to edit (delete, or pick
-	 * one to change), or the form for one of them.
-	 */
-	export type MacroPanelView = 'list' | 'add' | 'edit' | 'modify';
 
 	interface ComponentProps {
 		character: Character;
@@ -51,9 +51,9 @@
 	// they don't reappear in the meantime
 	const removed = new SvelteSet<string>();
 	$effect(() => {
-		const names = new Set(macros.map((macro) => macro.name));
+		const present = new Set(macros.map((macro) => macro.name));
 		untrack(() => {
-			for (const name of removed) if (!names.has(name)) removed.delete(name);
+			for (const name of removed) if (!present.has(name)) removed.delete(name);
 		});
 	});
 	const submit = new BusySubmit();
@@ -99,7 +99,7 @@
 	});
 	$effect(() => () => clearTimeout(fadeTimer));
 	// A new macro starts as the strip, since its pool is the main work (and the sheet should be clear
-	// for it); Done opens the name and details. An edited macro's form starts full
+	// for it); Continue opens the name and details. An edited macro's form starts full
 	$effect(() => {
 		const next = view;
 		untrack(() => (formCompact = next === 'add'));
@@ -171,30 +171,34 @@
 	// On phones, the panel is a sheet from the bottom, resized by dragging its handle: released, it
 	// snaps to a third, 60%, or 90% of the window; dragged below a fifth, it closes (asking first,
 	// as its ✕ does). Until it's dragged, it fits its content, up to 60%
-	const SNAPS = [0.35, 0.6, 0.9];
+	const MIN_SNAP = 0.35;
+	const MAX_SNAP = 0.9;
+	const SNAPS = [MIN_SNAP, 0.6, MAX_SNAP];
 	const CLOSE_BELOW = 0.2;
 	let sheetHeight: number | null = $state(null); // In pixels, once dragged
 	let drag: { y: number; height: number } | null = $state(null);
-	const snapTo = (fraction: number) => (sheetHeight = fraction * window.innerHeight);
+	// The window's height and the panel's, as laid out (so the slider's value is real before any drag)
+	let windowHeight = $state(0);
+	let panelHeight = $state(0);
+	const snapTo = (fraction: number) => (sheetHeight = fraction * windowHeight);
 	const onHandleDown = (e: PointerEvent) => {
-		if (!panel) return;
 		(e.currentTarget as HTMLElement).setPointerCapture?.(e.pointerId);
-		drag = { y: e.clientY, height: panel.getBoundingClientRect().height };
+		drag = { y: e.clientY, height: panelHeight };
 	};
 	const onHandleMove = (e: PointerEvent) => {
 		if (!drag) return;
 		const height = drag.height + (drag.y - e.clientY);
-		sheetHeight = Math.min(Math.max(height, 64), window.innerHeight * SNAPS.at(-1)!);
+		sheetHeight = Math.min(Math.max(height, 64), windowHeight * MAX_SNAP);
 	};
 	const onHandleUp = () => {
 		if (!drag) return;
 		drag = null;
-		const fraction = (sheetHeight ?? 0) / window.innerHeight;
+		const fraction = (sheetHeight ?? 0) / windowHeight;
 		if (fraction < CLOSE_BELOW) {
 			sheetHeight = null;
 			close();
 			// Declined: back to the smallest size
-			if (open) snapTo(SNAPS[0]);
+			if (open) snapTo(MIN_SNAP);
 			return;
 		}
 		const nearest = SNAPS.reduce((a, b) =>
@@ -206,8 +210,7 @@
 	const onHandleKey = (e: KeyboardEvent) => {
 		if (e.key !== 'ArrowUp' && e.key !== 'ArrowDown') return;
 		e.preventDefault();
-		const fraction =
-			(sheetHeight ?? panel?.getBoundingClientRect().height ?? 0) / window.innerHeight;
+		const fraction = (sheetHeight ?? panelHeight) / windowHeight;
 		const next =
 			e.key === 'ArrowUp'
 				? SNAPS.find((snap) => snap > fraction + 0.01)
@@ -215,7 +218,7 @@
 		if (next !== undefined) snapTo(next);
 	};
 	const sheetPercent = $derived(
-		sheetHeight === null ? undefined : Math.round((sheetHeight / window.innerHeight) * 100)
+		windowHeight > 0 ? Math.round(((sheetHeight ?? panelHeight) / windowHeight) * 100) : 0
 	);
 
 	// Entering editing starts fresh
@@ -231,7 +234,7 @@
 	$effect(() => {
 		if (open) return;
 		untrack(() => {
-			// Whoever closed it has asked already (the ✕, or the page's Macros button)
+			// Whoever closed it has asked already (the ✕, Escape, or the sheet's handle)
 			if (view === 'edit') discardEdits();
 			formDirty = false;
 			view = 'list';
@@ -262,8 +265,6 @@
 		view = 'list';
 	};
 
-	// Escape backs out of the form or editing, then closes the panel, unless something over it (a
-	// popover or dialog) takes the key first
 	// Just viewing, a click (or tap) anywhere else closes the panel; editing and the forms stay open,
 	// since the sheet is where their pools come from
 	let panel: HTMLElement | undefined = $state();
@@ -272,6 +273,8 @@
 		if (!panel.contains(e.target as Node)) open = false;
 	};
 
+	// Escape backs out of the form or editing, then closes the panel, unless something over it (a
+	// popover or dialog) takes the key first
 	const handleKey = (e: KeyboardEvent) => {
 		if (!open || e.key !== 'Escape' || e.defaultPrevented) return;
 		if (inForm) {
@@ -300,15 +303,21 @@
 	const stacked = 'col-start-1 row-start-1 flex items-center gap-1';
 </script>
 
-<svelte:window onkeydown={handleKey} onpointerdown={handlePointer} />
+<svelte:window
+	bind:innerHeight={windowHeight}
+	onkeydown={handleKey}
+	onpointerdown={handlePointer}
+/>
 
 <!--
 @component
 The macros in a floating panel, opened from a Macros button. It isn't modal: the sheet stays usable
 beside it (it's where a new macro's pool will come from). With `onswitch`, Add switches it to the
 new macro form, and Edit (with macros to edit) to editing: each macro gets Edit and Delete buttons,
-and Cancel and Save replace Add and Edit. A macro's Edit opens its form, which returns to editing. On phones it sits at the bottom, where the floating buttons were (they make way while it's open); wider, at the
-window's right, below the tab row (and the Macros button).
+and Cancel and Save replace Add and Edit. A macro's Edit opens its form, which returns to editing.
+On phones it's a sheet at the bottom, where the floating buttons were (they make way while it's
+open), resized by its handle; wider, at the window's right, below the tab row (and the Macros
+button).
 -->
 {#if compact}
 	<!-- Room at the end of the page, so its last rows can scroll clear of the strip. Phones have the
@@ -319,6 +328,7 @@ window's right, below the tab row (and the Macros button).
 {#if open}
 	<div
 		bind:this={panel}
+		bind:offsetHeight={panelHeight}
 		id="macro-panel"
 		role="dialog"
 		aria-modal="false"
@@ -346,10 +356,10 @@ window's right, below the tab row (and the Macros button).
 				role="slider"
 				aria-orientation="vertical"
 				aria-label="Macros panel height"
-				aria-valuenow={sheetPercent ?? 60}
-				aria-valuetext="{sheetPercent ?? 60}% of the screen"
-				aria-valuemin={Math.round(SNAPS[0] * 100)}
-				aria-valuemax={Math.round(SNAPS.at(-1)! * 100)}
+				aria-valuenow={sheetPercent}
+				aria-valuetext="{sheetPercent}% of the screen"
+				aria-valuemin={Math.round(MIN_SNAP * 100)}
+				aria-valuemax={Math.round(MAX_SNAP * 100)}
 				tabindex="0"
 				class="[&:focus-visible>span]:bg-primary-300 flex shrink-0 cursor-grab touch-none justify-center pt-2 pb-1 focus-visible:outline-none sm:hidden"
 				onpointerdown={onHandleDown}
@@ -463,7 +473,7 @@ window's right, below the tab row (and the Macros button).
 					</div>
 				{/key}
 			{:else}
-				<!-- The list and editing share this: editing adds the Delete buttons -->
+				<!-- The list and editing share this: editing adds the Edit and Delete buttons -->
 				<div
 					class="col-start-1 row-start-1 flex flex-col gap-3"
 					data-list
