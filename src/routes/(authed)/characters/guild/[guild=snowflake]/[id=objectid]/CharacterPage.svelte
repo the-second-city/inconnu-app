@@ -692,51 +692,54 @@
 	<!-- Room at the end of the page, so its last rows can scroll clear of the floating buttons -->
 	<div class={[macroButton && editable ? 'h-40' : 'h-24', 'sm:hidden']} aria-hidden="true"></div>
 
-	<!-- Mobile floating buttons: Macros above the edit buttons -->
-	<div class="fixed right-6 bottom-6 z-40 sm:hidden">
-		<div class="flex flex-col items-end gap-4 p-4">
-			{#if macroButton}
-				{@render macrosToggle('fab-gothic btn-gothic btn-gothic-ash', 24)}
-			{/if}
-			<div class="container mx-auto flex justify-center gap-4">
-				{#if !editable}
-					<!-- No edit buttons -->
-				{:else if editing}
-					<button
-						class="fab-gothic btn-gothic btn-gothic-ash"
-						onclick={cancelEditing}
-						disabled={saving}
-						aria-label="Cancel"
-					>
-						<Ban strokeWidth={2.5} size={22} />
-					</button>
-					<button
-						class="fab-gothic btn-gothic btn-gothic-blood"
-						onclick={saveChanges}
-						disabled={saving || nameError !== null || textTooLong || !hasChanges}
-						aria-busy={saving}
-						aria-label="Save"
-					>
-						{#if saving}
-							<Loader2 strokeWidth={2.5} class="animate-spin" size={24} />
-						{:else}
-							<SaveCheck strokeWidth={2.5} size={24} />
-						{/if}
-					</button>
-				{:else}
-					<button
-						class="fab-gothic btn-gothic btn-gothic-bone"
-						onclick={startEditing}
-						disabled={checkingPremium || macrosOpen}
-						title={macrosOpen ? macrosTitle : undefined}
-						aria-label="Edit"
-					>
-						<Pencil size={24} />
-					</button>
+	<!-- Mobile floating buttons: Macros above the edit buttons. While the macro panel is open they'd
+	     only wait (it closes itself), so they make way for it -->
+	{#if !macrosOpen}
+		<div class="fixed right-6 bottom-6 z-40 sm:hidden" transition:fade={{ duration: 150 }}>
+			<div class="flex flex-col items-end gap-4 p-4">
+				{#if macroButton}
+					{@render macrosToggle('fab-gothic btn-gothic btn-gothic-ash', 24)}
 				{/if}
+				<div class="container mx-auto flex justify-center gap-4">
+					{#if !editable}
+						<!-- No edit buttons -->
+					{:else if editing}
+						<button
+							class="fab-gothic btn-gothic btn-gothic-ash"
+							onclick={cancelEditing}
+							disabled={saving}
+							aria-label="Cancel"
+						>
+							<Ban strokeWidth={2.5} size={22} />
+						</button>
+						<button
+							class="fab-gothic btn-gothic btn-gothic-blood"
+							onclick={saveChanges}
+							disabled={saving || nameError !== null || textTooLong || !hasChanges}
+							aria-busy={saving}
+							aria-label="Save"
+						>
+							{#if saving}
+								<Loader2 strokeWidth={2.5} class="animate-spin" size={24} />
+							{:else}
+								<SaveCheck strokeWidth={2.5} size={24} />
+							{/if}
+						</button>
+					{:else}
+						<button
+							class="fab-gothic btn-gothic btn-gothic-bone"
+							onclick={startEditing}
+							disabled={checkingPremium || macrosOpen}
+							title={macrosOpen ? macrosTitle : undefined}
+							aria-label="Edit"
+						>
+							<Pencil size={24} />
+						</button>
+					{/if}
+				</div>
 			</div>
 		</div>
-	</div>
+	{/if}
 {/if}
 
 <style>

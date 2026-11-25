@@ -2067,3 +2067,19 @@ test('clicking outside the panel closes it while viewing, not while editing or a
 		await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
 	}
 });
+
+test("the phone's floating buttons make way while the macro panel is open", async () => {
+	const user = userEvent.setup();
+	navigate('/char?macros=panel');
+	renderOwnerPage(withMacros());
+	// Wide windows' buttons, and the phone's floating ones
+	expect(screen.getAllByRole('button', { name: 'Macros' })).toHaveLength(2);
+	expect(screen.getAllByRole('button', { name: 'Edit' })).toHaveLength(2);
+
+	await user.click(screen.getAllByRole('button', { name: 'Macros' })[0]);
+
+	await waitFor(() => expect(screen.getAllByRole('button', { name: 'Macros' })).toHaveLength(1));
+	expect(screen.getAllByRole('button', { name: 'Edit' })).toHaveLength(1);
+	await user.click(screen.getByRole('button', { name: 'Close macros' }));
+	await waitFor(() => expect(screen.getAllByRole('button', { name: 'Macros' })).toHaveLength(2));
+});

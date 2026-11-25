@@ -202,9 +202,9 @@ into the picker, and saving replaces the macro, by its name as it started.
 	aria-label={start ? `Edit ${start.name}` : 'New macro'}
 >
 	{#if compact}
-		<div class="flex items-center gap-2">
-			<div class="min-w-0 flex-1">
-				<div class="flex items-baseline gap-2">
+		<div class="flex flex-col gap-1.5">
+			<div class="flex items-center gap-2">
+				<div class="flex min-w-0 flex-1 items-baseline gap-2">
 					<span class="font-display truncate text-sm tracking-[0.04em]">
 						{trimmedName || start?.name || 'New Macro'}
 					</span>
@@ -214,32 +214,31 @@ into the picker, and saving replaces the macro, by its name as it started.
 						</span>
 					{/if}
 				</div>
-				{#if pool.length > 0}
-					{#if picker}<PoolChips {picker} traits={character.traits} {missing} />{/if}
-				{:else}
-					<p class="text-surface-300 text-sm italic">
-						Click traits on the sheet to build the pool.
-					</p>
-				{/if}
+				<button
+					type="button"
+					class="btn-icon hover:preset-tonal-surface shrink-0"
+					onclick={oncancel}
+					aria-label="Cancel"
+					title="Cancel"
+				>
+					<X size={18} />
+				</button>
+				<!-- Done with the pool: back to the details, where the macro is added -->
+				<button
+					type="button"
+					class="btn btn-sm btn-gothic btn-gothic-bone shrink-0"
+					onclick={() => (compact = false)}
+				>
+					<Check size={16} />
+					<span>Done</span>
+				</button>
 			</div>
-			<button
-				type="button"
-				class="btn-icon hover:preset-tonal-surface shrink-0"
-				onclick={oncancel}
-				aria-label="Cancel"
-				title="Cancel"
-			>
-				<X size={18} />
-			</button>
-			<!-- Done with the pool: back to the details, where the macro is added -->
-			<button
-				type="button"
-				class="btn btn-sm btn-gothic btn-gothic-bone shrink-0"
-				onclick={() => (compact = false)}
-			>
-				<Check size={16} />
-				<span>Done</span>
-			</button>
+			<!-- Below, the whole width: many traits wrap here rather than squeezing the buttons -->
+			{#if pool.length > 0}
+				{#if picker}<PoolChips {picker} traits={character.traits} {missing} />{/if}
+			{:else}
+				<p class="text-surface-300 text-sm italic">Click traits on the sheet to build the pool.</p>
+			{/if}
 		</div>
 	{:else if submit.busy}
 		<BusySpinner label={start ? 'Saving the macro…' : 'Adding the macro…'} />

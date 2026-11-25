@@ -224,7 +224,7 @@
 The macros in a floating panel, opened from a Macros button. It isn't modal: the sheet stays usable
 beside it (it's where a new macro's pool will come from). With `onswitch`, Add switches it to the
 new macro form, and Edit (with macros to edit) to editing: each macro gets Edit and Delete buttons,
-and Cancel and Save replace Add and Edit. A macro's Edit opens its form, which returns to editing. On phones it sits above the floating buttons; wider, at the
+and Cancel and Save replace Add and Edit. A macro's Edit opens its form, which returns to editing. On phones it sits at the bottom, where the floating buttons were (they make way while it's open); wider, at the
 window's right, below the tab row (and the Macros button).
 -->
 {#if compact}
@@ -242,9 +242,10 @@ window's right, below the tab row (and the Macros button).
 		class={[
 			'card popover-gothic fixed z-40 flex flex-col',
 			compact
-				? // A strip along the bottom: on phones, clear of the floating buttons at the right
-					'right-28 bottom-6 left-4 sm:right-auto sm:left-1/2 sm:w-[36rem] sm:-translate-x-1/2'
-				: 'inset-x-4 bottom-46 max-h-[60vh] sm:inset-x-auto sm:top-60 sm:right-6 sm:bottom-auto sm:max-h-[calc(100vh-16.5rem)] sm:w-96'
+				? // A strip along the bottom: the window's width on phones (the floating buttons make
+					// way while the panel's open)
+					'inset-x-4 bottom-4 sm:right-auto sm:bottom-6 sm:left-1/2 sm:w-[36rem] sm:-translate-x-1/2'
+				: 'inset-x-4 bottom-4 max-h-[60vh] sm:inset-x-auto sm:top-60 sm:right-6 sm:bottom-auto sm:max-h-[calc(100vh-16.5rem)] sm:w-96'
 		]}
 		aria-labelledby={compact ? undefined : 'macro-panel-title'}
 		aria-label={compact ? titles[view] : undefined}
