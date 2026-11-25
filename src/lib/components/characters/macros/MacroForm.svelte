@@ -1,8 +1,6 @@
 <script lang="ts">
 	import { untrack } from 'svelte';
-	import { Minimize2, Plus, SaveCheck } from '@lucide/svelte';
-
-	import { orList } from '$lib';
+	import { Plus, SaveCheck } from '@lucide/svelte';
 
 	import { getConstraints, lengthError, macroNameError } from '$lib/constraints';
 	import { FORM_CLASSES } from '$lib/constants/formStyles';
@@ -10,16 +8,14 @@
 	import { BusySubmit } from '$lib/state/busySubmit.svelte';
 	import { getPoolPicker } from '$lib/state/poolPicker.svelte';
 	import { difficultyName } from '$lib/rules/dice';
-	import { missingLabel, resolvePool } from '$lib/rules/macros';
+	import { resolvePool } from '$lib/rules/macros';
 	import { isVampiric } from '$lib/rules/vampire';
 	import type { Character, Macro } from '$lib/types';
 	import BusySpinner from '$lib/components/ui/BusySpinner.svelte';
 	import ErrorMessage from '$lib/components/ui/ErrorMessage.svelte';
 	import Stepper from '$lib/components/ui/Stepper.svelte';
-	import DiceCount from './DiceCount.svelte';
-	import PoolChips from './PoolChips.svelte';
+	import PoolSection from './PoolSection.svelte';
 	import PoolStrip from './PoolStrip.svelte';
-	import { MODIFIER_LIMIT, POOL_HINT, modifierDetail, modifierMin } from './pool';
 	import { randomPlaceholder } from './placeholders';
 
 	interface ComponentProps {
@@ -87,11 +83,8 @@
 		lengthError(comment.trim(), constraints().macro_comment_max_length)
 	);
 	const resolved = $derived(resolvePool(pool, character));
-	// Picks the character lacks (from an edited macro), which the bot won't save: the traits, to mark
-	// their chips, and what each lacks, to say so ("Occult (Bahari)" when it's the specialty)
-	const lacking = $derived(resolved.terms.filter((term) => term.missing !== null));
-	const missing = $derived(lacking.map((term) => term.name));
-	const missingLabels = $derived(lacking.map((term) => missingLabel(term) ?? term.name));
+	// The pool has traits the character lacks (from an edited macro), which the bot won't save
+	const lacksTraits = $derived(resolved.terms.some((term) => term.missing !== null));
 	// A macro rolls a pool or makes Rouse Checks (the bot's `check_has_action`)
 	const hasAction = $derived(pool.length > 0 || rouses > 0);
 	// A pool must add something: all subtracted (say, its last trait removed), it can't roll
@@ -129,7 +122,7 @@
 		if (nameError) return 'The name needs fixing';
 		if (!hasAction) return 'Needs a pool or Rouse Checks';
 		if (addsNothing) return 'The pool needs something to add';
-		if (missing.length > 0) return 'The pool has traits that aren’t on the sheet';
+		if (lacksTraits) return 'The pool has traits that aren’t on the sheet';
 		if (commentError) return 'The comment is too long';
 		if (start && !changed) return 'No changes yet';
 		return null;
@@ -211,8 +204,7 @@ edit saves once something changed.
 				{picker}
 				traits={character.traits}
 				title={trimmedName || start?.name || 'New Macro'}
-				dice={resolved.dice}
-				{missing}
+				{resolved}
 				{oncancel}
 				oncontinue={() => (compact = false)}
 			/>
@@ -239,50 +231,9 @@ edit saves once something changed.
 			<!-- Not while it's empty: a new form isn't wrong yet -->
 			<ErrorMessage error={trimmedName ? nameError : null} id="{id}-name-error" />
 		</div>
-		<section
-			class="border-surface-500 flex flex-col gap-2 border-y py-3"
-			aria-labelledby="{id}-pool"
-		>
-			<div class="flex items-center justify-between">
-				<div class="flex items-baseline gap-2">
-					<h3 id="{id}-pool" class="font-display text-sm tracking-[0.04em] uppercase">Pool</h3>
-					{#if pool.length > 0}<DiceCount dice={resolved.dice} />{/if}
-				</div>
-				<button
-					type="button"
-					class="btn btn-sm hover:preset-tonal-surface"
-					onclick={() => (compact = true)}
-				>
-					<Minimize2 size={14} />
-					<span>Pick traits</span>
-				</button>
-			</div>
-			{#if pool.length > 0}
-				{#if picker}<PoolChips {picker} traits={character.traits} {missing} />{/if}
-			{:else}
-				<p class="text-surface-300 italic">{POOL_HINT}</p>
-			{/if}
-			{#if missing.length > 0}
-				<p class="text-warning-300 text-sm">
-					{orList(missingLabels)}
-					{missing.length === 1 ? 'isn’t' : 'aren’t'} on the sheet. Remove {missing.length === 1
-						? 'it'
-						: 'them'} to save.
-				</p>
-			{/if}
-			{#if addsNothing}
-				<p class="text-warning-300 text-sm">A pool needs something to add.</p>
-			{/if}
-			{#if picker}
-				<Stepper
-					label="Modifier"
-					bind:value={() => picker.modifier, (value) => (picker.modifier = value)}
-					min={modifierMin(picker)}
-					max={MODIFIER_LIMIT}
-					detail={modifierDetail(picker.modifier)}
-				/>
-			{/if}
-		</section>
+		{#if picker}
+			<PoolSection {picker} traits={character.traits} {resolved} onpick={() => (compact = true)} />
+		{/if}
 
 		<div class="flex flex-col gap-2">
 			<Stepper

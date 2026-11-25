@@ -3,23 +3,32 @@
 
 	import type { PoolPicker } from '$lib/state/poolPicker.svelte';
 	import { isNumber } from '$lib/state/poolPicker.svelte';
+	import type { ResolvedPool } from '$lib/rules/macros';
 	import type { Trait } from '$lib/types';
 	import Stepper from '$lib/components/ui/Stepper.svelte';
 	import DiceCount from './DiceCount.svelte';
 	import PoolChips from './PoolChips.svelte';
-	import { MODIFIER_LIMIT, POOL_HINT, formatModifier, modifierDetail, modifierMin } from './pool';
+	import {
+		MODIFIER_LIMIT,
+		POOL_HINT,
+		formatModifier,
+		missingTraits,
+		modifierDetail,
+		modifierMin
+	} from './pool';
 
 	interface ComponentProps {
 		picker: PoolPicker;
 		traits: Trait[]; // The character's, for the pool's order
 		title: string; // The macro's name, or "New Macro"
-		dice: number | null; // The pool's dice (null while a trait is missing)
-		missing: string[]; // Picks the character lacks, to mark their chips
+		resolved: ResolvedPool; // The pool, read against the character's traits
 		oncancel: () => void;
 		oncontinue: () => void; // On to the macro's details
 	}
 
-	let { picker, traits, title, dice, missing, oncancel, oncontinue }: ComponentProps = $props();
+	let { picker, traits, title, resolved, oncancel, oncontinue }: ComponentProps = $props();
+
+	const missing = $derived(missingTraits(resolved.terms));
 
 	const empty = $derived(picker.picks.length === 0);
 	// The number has no chip here: the modifier shows it
@@ -37,7 +46,7 @@ there, not squeezing the buttons), and the modifier at the row's end.
 	<div class="flex items-center gap-2">
 		<div class="flex min-w-0 flex-1 items-baseline gap-2">
 			<span class="font-display truncate text-sm tracking-[0.04em]">{title}</span>
-			{#if !empty}<DiceCount {dice} />{/if}
+			{#if !empty}<DiceCount dice={resolved.dice} />{/if}
 		</div>
 		<button
 			type="button"

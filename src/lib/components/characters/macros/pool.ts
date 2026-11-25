@@ -1,6 +1,10 @@
-/** What the macro form's strip and Pool section share: the empty pool's hint, and the modifier. */
+/**
+ * What the macro form's strip and Pool section share: the empty pool's hint, the modifier, and the
+ * traits the character lacks.
+ */
 
 import { plural } from '$lib';
+import type { PoolTerm } from '$lib/rules/macros';
 import { isNumber, type PoolPicker } from '$lib/state/poolPicker.svelte';
 
 /** What the pool says while it's empty. */
@@ -24,3 +28,7 @@ export const modifierDetail = (value: number): string =>
 /** The modifier as the strip shows it: "+2", "−1", "±0". */
 export const formatModifier = (value: number): string =>
 	value > 0 ? `+${value}` : value < 0 ? `−${-value}` : '±0';
+
+/** The traits a resolved pool's terms lack (or lack a specialty of), to mark their chips. */
+export const missingTraits = (terms: PoolTerm[]): string[] =>
+	terms.filter((term) => term.missing !== null).map((term) => term.name);

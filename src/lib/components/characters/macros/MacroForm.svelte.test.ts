@@ -57,7 +57,10 @@ const character = (splat: Splat = 'vampire'): Character => ({
 const renderForm = (splat: Splat = 'vampire') => {
 	const oncancel = vi.fn();
 	const onsaved = vi.fn();
-	render(MacroForm, { character: character(splat), oncancel, onsaved });
+	render(MacroForm, {
+		props: { character: character(splat), oncancel, onsaved },
+		context: poolPickerContext(new PoolPicker()) // The page's, as the panel's form has
+	});
 	return { oncancel, onsaved };
 };
 
