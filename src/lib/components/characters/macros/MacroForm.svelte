@@ -204,6 +204,16 @@ sheet), then its Difficulty, Rouse Checks, options, and comment. Adding saves th
 details, kept as they were, where the macro is added (or saved). Editing loads the macro's pool
 into the picker, and saving replaces the macro, by its name as it started.
 -->
+<!-- The pool's dice, in the strip and by the Pool heading: "?" while a trait is missing, as the
+     macro cards show it -->
+{#snippet dice()}
+	{#if pool.length > 0}
+		<span class="font-display text-primary-300 shrink-0 text-sm tabular-nums">
+			{resolved.dice === null ? '? dice' : plural(resolved.dice, 'die', 'dice')}
+		</span>
+	{/if}
+{/snippet}
+
 <form
 	class="flex flex-col gap-4"
 	onsubmit={save}
@@ -216,11 +226,7 @@ into the picker, and saving replaces the macro, by its name as it started.
 					<span class="font-display truncate text-sm tracking-[0.04em]">
 						{trimmedName || start?.name || 'New Macro'}
 					</span>
-					{#if pool.length > 0 && resolved.dice !== null}
-						<span class="font-display text-primary-300 shrink-0 text-sm tabular-nums">
-							{plural(resolved.dice, 'die', 'dice')}
-						</span>
-					{/if}
+					{@render dice()}
 				</div>
 				<button
 					type="button"
@@ -275,7 +281,10 @@ into the picker, and saving replaces the macro, by its name as it started.
 			aria-labelledby="{id}-pool"
 		>
 			<div class="flex items-center justify-between">
-				<h3 id="{id}-pool" class="font-display text-sm tracking-[0.04em] uppercase">Pool</h3>
+				<div class="flex items-baseline gap-2">
+					<h3 id="{id}-pool" class="font-display text-sm tracking-[0.04em] uppercase">Pool</h3>
+					{@render dice()}
+				</div>
 				<button
 					type="button"
 					class="btn btn-sm hover:preset-tonal-surface"

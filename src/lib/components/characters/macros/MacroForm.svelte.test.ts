@@ -466,3 +466,14 @@ test('an edit without changes says so', () => {
 
 	expect(saveButton()).toHaveAccessibleDescription('No changes yet');
 });
+
+test('the Pool heading counts its dice, "?" while a trait is missing', async () => {
+	const user = userEvent.setup();
+	renderEditing({ ...FEED, pool: ['Strength', '+', 'Melee'] });
+	const pool = screen.getByRole('region', { name: 'Pool' });
+	expect(pool).toHaveTextContent(/^Pool\s*\? dice/);
+
+	await user.click(screen.getByRole('button', { name: 'Remove Melee' }));
+
+	expect(pool).toHaveTextContent(/^Pool\s*3 dice/);
+});
