@@ -212,7 +212,7 @@ trait. A picked line glows; a subtracted one has a dashed ash ring (`.trait-line
 			role="menu"
 			aria-label={name}
 			tabindex="-1"
-			class="card popover-gothic fixed z-50 flex flex-col p-1"
+			class="card popover-gothic fixed z-50 flex max-h-[calc(100dvh-1rem)] flex-col overflow-y-auto overscroll-contain p-1"
 			style:top="{position.top}px"
 			style:left="{position.left}px"
 			style:width={position.width === null ? undefined : `${position.width}px`}
@@ -227,7 +227,7 @@ trait. A picked line glows; a subtracted one has a dashed ash ring (`.trait-line
 				role="menuitemradio"
 				aria-checked={selection === null}
 				aria-label={name}
-				class="menu-base flex w-full flex-wrap items-center justify-between text-left"
+				class="menu-base flex w-full shrink-0 flex-wrap items-center justify-between text-left"
 				class:checked={selection === null}
 				data-base
 				onclick={() => choose(null)}
@@ -247,7 +247,7 @@ trait. A picked line glows; a subtracted one has a dashed ash ring (`.trait-line
 		type="button"
 		role="menuitemradio"
 		aria-checked={checked}
-		class="menu-row flex items-center gap-2 py-1.5 pr-[0.4rem] pl-1 text-left"
+		class="menu-row flex shrink-0 items-center gap-2 py-1.5 pr-[0.4rem] pl-1 text-left"
 		class:checked
 		onclick={() => choose(specialty)}
 	>
