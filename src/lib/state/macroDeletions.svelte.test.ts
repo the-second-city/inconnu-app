@@ -55,3 +55,17 @@ test('the first failure stops the deletes, keeping the rest marked and saying wh
 	expect([...deletions.marked]).toEqual(['hunt', 'lurk']);
 	expect(deletions.submit.error).toBe('Couldn’t delete hunt. Nope.');
 });
+
+test('a marked macro that goes away elsewhere is unmarked, but not mid-save', () => {
+	const deletions = new MacroDeletions();
+	deletions.marked.add('feed');
+	deletions.marked.add('hunt');
+
+	deletions.submit.busy = true;
+	deletions.sync(macros('feed'));
+	expect([...deletions.marked]).toEqual(['feed', 'hunt']);
+
+	deletions.submit.busy = false;
+	deletions.sync(macros('feed'));
+	expect([...deletions.marked]).toEqual(['feed']);
+});

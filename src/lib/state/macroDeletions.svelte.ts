@@ -28,10 +28,15 @@ export class MacroDeletions {
 		return this.shown(macros).filter((macro) => !this.marked.has(macro.name));
 	}
 
-	/** Stop hiding the deleted macros the character's macros no longer have (a live update). */
+	/**
+	 * Catch up with the character's macros (a live update): stop hiding the deleted ones it no longer
+	 * has, and unmark any that went away elsewhere (not mid-save, which unmarks them itself).
+	 */
 	sync(macros: Macro[]): void {
 		const present = macros.map((macro) => macro.name);
 		for (const name of this.removed) if (!present.includes(name)) this.removed.delete(name);
+		if (this.submit.busy) return;
+		for (const name of this.marked) if (!present.includes(name)) this.marked.delete(name);
 	}
 
 	/** Unmark everything, and clear Save's state: back to the macros as they are. */
