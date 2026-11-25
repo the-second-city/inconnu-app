@@ -13,6 +13,7 @@
 	import type { Character, Macro } from '$lib/types';
 	import BusySpinner from '$lib/components/ui/BusySpinner.svelte';
 	import ErrorMessage from '$lib/components/ui/ErrorMessage.svelte';
+	import CheckOption from '$lib/components/ui/CheckOption.svelte';
 	import Stepper from '$lib/components/ui/Stepper.svelte';
 	import PoolSection from './PoolSection.svelte';
 	import PoolStrip from './PoolStrip.svelte';
@@ -250,24 +251,13 @@ edit saves once something changed.
 		{#if options.length > 0}
 			<fieldset class="flex flex-col gap-2">
 				<legend class="sr-only">Options</legend>
-				{#each options as option, i (option.label)}
-					<label
-						class={['flex items-start gap-3', option.disabled ? 'opacity-50' : 'cursor-pointer']}
-					>
-						<input
-							type="checkbox"
-							class="checkbox mt-1"
-							checked={option.checked()}
-							onchange={(e) => option.set(e.currentTarget.checked)}
-							disabled={option.disabled}
-							aria-labelledby="{id}-option-{i}-label"
-							aria-describedby="{id}-option-{i}"
-						/>
-						<span class="flex flex-col leading-tight">
-							<span id="{id}-option-{i}-label">{option.label}</span>
-							<span id="{id}-option-{i}" class="text-surface-300 text-sm">{option.detail}</span>
-						</span>
-					</label>
+				{#each options as option (option.label)}
+					<CheckOption
+						label={option.label}
+						detail={option.detail}
+						bind:checked={option.checked, option.set}
+						disabled={option.disabled}
+					/>
 				{/each}
 			</fieldset>
 		{/if}
