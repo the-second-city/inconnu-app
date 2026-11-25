@@ -356,6 +356,7 @@
 	};
 
 	const enterEditMode = () => {
+		if (macrosOpen) return; // The two exclude each other
 		saveError = null; // A failed save's errors belong to that edit
 		editing = true;
 		seen = null;
@@ -666,14 +667,15 @@
 	/>
 </Modal>
 
-<!-- Opens the panel, and waits while it's open (the panel closes itself). Disabled in edit mode too:
+<!-- Opens the panel, and waits while it's open (the panel closes itself), and during a premium check,
+     which may be about to start edit mode. Disabled in edit mode too:
      macros are saved on their own, and the sheet's clicks there change ratings rather than build a
      macro's pool -->
 {#snippet macrosToggle(classes: string, size: number)}
 	<button
 		class={classes}
 		onclick={openMacros}
-		disabled={editing || macrosOpen}
+		disabled={editing || macrosOpen || checkingPremium}
 		aria-expanded={macrosOpen}
 		aria-controls="macro-panel"
 		aria-label="Macros"

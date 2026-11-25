@@ -1008,3 +1008,19 @@ test("the last macro going away closes a Storyteller's panel, so Edit doesn't wa
 	await rerender({ character: withMacro() });
 	expect(screen.queryByRole('dialog', { name: 'Macros' })).not.toBeInTheDocument();
 });
+
+test("the Macros button waits for Edit's premium check, so both can't open", async () => {
+	let answer: (supporter: boolean) => void = () => {};
+	isSupporter.mockImplementationOnce(() => new Promise((resolve) => (answer = resolve)));
+	const user = userEvent.setup();
+	renderOwnerPage(withMacros());
+	const toggle = screen.getAllByRole('button', { name: 'Macros' })[0];
+
+	await user.click(editButton('Edit'));
+	await user.click(toggle);
+	expect(toggle).toBeDisabled();
+	answer(true);
+
+	expect(await screen.findAllByRole('button', { name: 'Save' })).not.toHaveLength(0);
+	expect(screen.queryByRole('dialog', { name: 'Macros' })).not.toBeInTheDocument();
+});
