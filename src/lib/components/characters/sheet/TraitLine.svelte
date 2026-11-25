@@ -2,6 +2,7 @@
 	import type { Snippet } from 'svelte';
 
 	import { getPoolPicker } from '$lib/state/poolPicker.svelte';
+	import { getSheetHighlight } from '$lib/state/sheetHighlight.svelte';
 	import PickableTrait from './PickableTrait.svelte';
 
 	interface ComponentProps {
@@ -29,9 +30,10 @@
 
 	// While a pool is being picked, the line is a choice; a hovered macro that rolls it highlights it
 	const picker = getPoolPicker();
+	const sheetHighlight = getSheetHighlight();
 	const rollable = $derived(!editing && trait !== undefined);
 	const pickable = $derived(picker?.active === true && rollable);
-	const highlight = $derived(rollable && trait ? picker?.highlighted(trait) : undefined);
+	const highlight = $derived(rollable && trait ? sheetHighlight?.of(trait) : undefined);
 </script>
 
 <!--

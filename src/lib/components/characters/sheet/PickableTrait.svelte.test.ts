@@ -4,6 +4,7 @@ import { expect, test, vi } from 'vitest';
 
 import RatingSelector from './RatingSelector.svelte';
 import { PoolPicker, poolPickerContext } from '$lib/state/poolPicker.svelte';
+import { SheetHighlight, sheetHighlightContext } from '$lib/state/sheetHighlight.svelte';
 
 vi.mock('$lib/constraints', async (original) =>
 	(await import('$lib/testing/constraints')).mockConstraints(original)
@@ -15,24 +16,29 @@ interface Options {
 	type?: string;
 	editing?: boolean;
 	active?: boolean;
+	highlight?: SheetHighlight; // The sheet's highlight of a hovered macro's traits
 }
 
 /**
- * Render a trait's rating (Brawl 3, with specialties, by default) on a sheet with a pool picker,
- * returning the picker.
+ * Render a trait's rating (Brawl 3, with specialties, by default) on a sheet with a pool picker (and
+ * a sheet highlight), returning the picker.
  */
 const renderTrait = ({
 	name = 'Brawl',
 	subtraits = ['Kindred', 'Street Fighting'],
 	type = 'skill',
 	editing = false,
-	active = true
+	active = true,
+	highlight = new SheetHighlight()
 }: Options = {}): PoolPicker => {
 	const picker = new PoolPicker();
 	picker.active = active;
 	render(RatingSelector, {
 		props: { name, rating: 3, subtraits, type, editing, allowsSubtraits: true },
-		context: poolPickerContext(picker)
+		context: new Map<symbol, unknown>([
+			...poolPickerContext(picker),
+			...sheetHighlightContext(highlight)
+		])
 	});
 	return picker;
 };
@@ -201,19 +207,21 @@ test.each([
 	[false, 'added'],
 	[true, 'subtracted']
 ])("a hovered macro's trait is highlighted on the sheet (negative: %s)", async (negative, mark) => {
-	const picker = renderTrait({ active: false });
+	const highlight = new SheetHighlight();
+	renderTrait({ active: false, highlight });
 	expect(plainLine()).not.toHaveAttribute('data-highlight');
 
-	picker.highlight = [{ trait: 'Brawl', specialty: null, negative }];
+	highlight.picks = [{ trait: 'Brawl', specialty: null, negative }];
 
 	await waitFor(() => expect(plainLine()).toHaveAttribute('data-highlight', mark));
-	picker.hide();
+	highlight.hide();
 	await waitFor(() => expect(plainLine()).not.toHaveAttribute('data-highlight'));
 });
 
 test("editing doesn't highlight", () => {
-	const picker = renderTrait({ active: false, editing: true });
-	picker.highlight = [{ trait: 'Brawl', specialty: null, negative: false }];
+	const highlight = new SheetHighlight();
+	renderTrait({ active: false, editing: true, highlight });
+	highlight.picks = [{ trait: 'Brawl', specialty: null, negative: false }];
 
 	expect(document.querySelector('[data-highlight]')).toBeNull();
 });

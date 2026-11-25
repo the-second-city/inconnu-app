@@ -56,6 +56,7 @@
 	import PremiumModal from '$lib/components/premium/PremiumModal.svelte';
 	import { isSupporter, refusedForPremium, showUpsell, upsell } from '$lib/state/premium.svelte';
 	import { PoolPicker, setPoolPicker } from '$lib/state/poolPicker.svelte';
+	import { SheetHighlight, setSheetHighlight } from '$lib/state/sheetHighlight.svelte';
 	import { macrosUsing } from '$lib/rules/macros';
 	import { toaster } from '$lib/state/toaster';
 
@@ -237,6 +238,8 @@
 	// It lives here, not in the sheet, which a refetch rebuilds
 	const picker = new PoolPicker();
 	setPoolPicker(picker);
+	// A hovered macro's traits, shown on the sheet
+	setSheetHighlight(new SheetHighlight());
 	$effect(() => {
 		const active = macrosOpen && isFormView(macroView);
 		untrack(() => {

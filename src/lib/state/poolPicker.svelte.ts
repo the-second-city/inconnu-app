@@ -1,6 +1,5 @@
 /**
- * Picking a pool from the sheet, and showing a hovered macro's traits there (`highlight`): while
- * it's active, each named trait's line is a choice, and a
+ * Picking a pool from the sheet: while it's active, each named trait's line is a choice, and a
  * trait with specialties (or powers) offers them in a menu. Each trait is picked at most once, with
  * at most one specialty, as V5 rolls them. The character page provides it by context (setPoolPicker)
  * and activates it while a macro's pool is being built.
@@ -23,8 +22,6 @@ export class PoolPicker {
 	picks: Pick[] = $state([]);
 	// The trait whose specialty menu is open, so only one is
 	open: string | null = $state(null);
-	// A macro's traits, shown on the sheet while its card is hovered (by `show`)
-	highlight: Pick[] = $state([]);
 	// How many times a trait was added by picking (not loading), so the panel can collapse to its
 	// strip when one is
 	added = $state(0);
@@ -81,23 +78,8 @@ export class PoolPicker {
 	 * and its numbers combine into one.
 	 */
 	load(pool: string[], character: Character): void {
-		this.picks = picksFor(pool, character);
+		this.picks = picksFromPool(pool, character);
 		this.open = null;
-	}
-
-	/** Highlight a macro's traits on the sheet (its card is hovered). */
-	show(pool: string[], character: Character): void {
-		this.highlight = picksFor(pool, character);
-	}
-
-	/** Stop highlighting a macro's traits. */
-	hide(): void {
-		this.highlight = [];
-	}
-
-	/** A trait's highlight: undefined when no hovered macro rolls it. */
-	highlighted(trait: string): Pick | undefined {
-		return this.highlight.find((pick) => pick.trait === trait);
 	}
 
 	/**
@@ -162,8 +144,11 @@ export class PoolPicker {
 /** Whether a pick is the pool's number, not a trait. */
 export const isNumber = (pick: Pick): boolean => isNumberToken(pick.trait);
 
-/** A macro's pool as picks (see `PoolPicker.load`). */
-const picksFor = (pool: string[], character: Character): Pick[] => {
+/**
+ * A macro's pool as picks (see `PoolPicker.load`): traits by the sheet's names, numbers combined
+ * into one, a trait in it twice once. The sheet highlight reads pools this way too.
+ */
+export const picksFromPool = (pool: string[], character: Character): Pick[] => {
 	const picks: Pick[] = [];
 	let number = 0;
 	let numbered = false;

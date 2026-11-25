@@ -3,6 +3,7 @@
 	import { Pencil, Trash2, Undo2 } from '@lucide/svelte';
 
 	import { getPoolPicker } from '$lib/state/poolPicker.svelte';
+	import { getSheetHighlight } from '$lib/state/sheetHighlight.svelte';
 	import type { Character, Macro } from '$lib/types';
 	import MacroCard from './MacroCard.svelte';
 
@@ -21,9 +22,10 @@
 
 	const shown = $derived(macros ?? character.macros ?? []);
 
-	// Hovering a macro shows its traits on the sheet (through the page's pool picker), except while
-	// a pool is being picked there
+	// Hovering a macro shows its traits on the sheet (the page's sheet highlight), except while a
+	// pool is being picked there
 	const picker = getPoolPicker();
+	const highlight = getSheetHighlight();
 	let hovered: string | null = $state(null); // The hovered macro's name
 	const enter = (e: PointerEvent, macro: Macro) => {
 		if (e.pointerType === 'mouse') hovered = macro.name;
@@ -32,12 +34,12 @@
 		if (hovered === macro.name) hovered = null;
 	};
 	$effect(() => {
-		if (!picker || picker.active || hovered === null) return;
+		if (!highlight || picker?.active || hovered === null) return;
 		// The macro as it is now (a live update may change it); one that's gone stops showing
 		const macro = shown.find((m) => m.name === hovered);
 		if (!macro) return;
-		picker.show(macro.pool, character);
-		return () => picker.hide();
+		highlight.show(macro.pool, character);
+		return () => highlight.hide();
 	});
 </script>
 
