@@ -56,31 +56,39 @@ export const actionError = (status: number, json: unknown): string => {
 
 /** How to send a request to a character's route, when not as a gameplay action. */
 interface SendOptions {
-	method?: 'POST' | 'PATCH'; // POST by default
+	method?: 'POST' | 'PATCH' | 'DELETE'; // POST by default; a DELETE sends no body
 	feature?: string; // Names it in the upsell, if the API refuses a non-supporter
+	// An answer that isn't OK but counts as done (a null result), say deleting what's already gone
+	succeeds?: (status: number, json: unknown) => boolean;
 }
 
 /**
- * Send JSON to one of a character's routes (POST, unless `method` says otherwise), returning its
- * result or why it failed. A request that answers 204 (no content) succeeds with a null result. The
- * API refusing a non-supporter also opens the upsell, naming `feature` (gameplay actions by
- * default).
+ * Send JSON to one of a character's routes (POST, unless `method` says otherwise; a DELETE sends no
+ * body), returning its result or why it failed. A request that answers 204 (no content), or that
+ * `succeeds` accepts, succeeds with a null result. The API refusing a non-supporter also opens the
+ * upsell, naming `feature` (gameplay actions by default).
  */
 export const postAction = async <T>(
 	url: string,
 	body: unknown,
 	unreachable: string,
-	{ method = 'POST', feature = 'Using gameplay actions' }: SendOptions = {}
+	{ method = 'POST', feature = 'Using gameplay actions', succeeds }: SendOptions = {}
 ): Promise<ActionOutcome<T>> => {
 	try {
-		const response = await fetch(url, {
-			method,
-			headers: { 'Content-Type': 'application/json' },
-			body: JSON.stringify(body)
-		});
+		const response = await fetch(
+			url,
+			method === 'DELETE'
+				? { method }
+				: {
+						method,
+						headers: { 'Content-Type': 'application/json' },
+						body: JSON.stringify(body)
+					}
+		);
 		if (response.status === 204) return { result: null as T };
 		const json = await response.json().catch(() => null);
 		if (response.ok && json) return { result: json as T };
+		if (succeeds?.(response.status, json)) return { result: null as T };
 		if (refusedForPremium(response.status, json)) showUpsell(feature);
 		return { error: actionError(response.status, json) };
 	} catch {

@@ -1,6 +1,15 @@
 import { afterEach, beforeEach, expect, test, vi, type Mock } from 'vitest';
 
-import { actionError, damage, mend, remorse, rouse, slake, stain } from '$lib/api/characterActions';
+import {
+	actionError,
+	damage,
+	mend,
+	postAction,
+	remorse,
+	rouse,
+	slake,
+	stain
+} from '$lib/api/characterActions';
 import { upsell } from '$lib/state/premium.svelte';
 import type { MendResult, RouseResult } from '$lib/types';
 
@@ -193,4 +202,27 @@ test("other refusals don't open the upsell", async () => {
 	await stain('abc', { amount: 1 });
 
 	expect(upsell.open).toBe(false);
+});
+
+test('a DELETE sends no body', async () => {
+	fetchMock.mockResolvedValueOnce(new Response(null, { status: 204 }));
+
+	expect(await postAction('/api/thing', undefined, 'Unreachable.', { method: 'DELETE' })).toEqual({
+		result: null
+	});
+	expect(fetchMock).toHaveBeenCalledWith('/api/thing', { method: 'DELETE' });
+});
+
+test('an answer `succeeds` accepts is a success, with no result', async () => {
+	const succeeds = (status: number) => status === 404;
+	fetchMock
+		.mockResolvedValueOnce(Response.json({ detail: 'Gone' }, { status: 404 }))
+		.mockResolvedValueOnce(Response.json({ detail: 'Nope' }, { status: 409 }));
+
+	expect(await postAction('/api/thing', {}, 'Unreachable.', { succeeds })).toEqual({
+		result: null
+	});
+	expect(await postAction('/api/thing', {}, 'Unreachable.', { succeeds })).toEqual({
+		error: 'Nope'
+	});
 });
