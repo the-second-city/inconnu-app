@@ -241,6 +241,7 @@ window's right, below the tab row (and the Macros button).
 		aria-modal="false"
 		class={[
 			'card popover-gothic fixed z-40 flex flex-col',
+			compact && 'pool-strip',
 			compact
 				? // A strip along the bottom: the window's width on phones (the floating buttons make
 					// way while the panel's open)
@@ -368,3 +369,18 @@ window's right, below the tab row (and the Macros button).
 		</div>
 	</div>
 {/if}
+
+<style>
+	/* The strip stands out from the sheet it floats over: a blood-tinted panel with a crimson edge
+	   and a faint glow (popover-gothic's fill and border are variables) */
+	.pool-strip {
+		--popover-bg: color-mix(in oklab, var(--blood-dark) 45%, var(--color-surface-900));
+		--popover-border: color-mix(in oklab, var(--blood-bright) 60%, var(--color-surface-400));
+		box-shadow:
+			inset 0 0 0 3px var(--popover-bg),
+			inset 0 0 0 4px color-mix(in oklab, var(--blood-bright) 30%, transparent),
+			0 0 0 1px oklch(0% 0 0 / 0.6),
+			0 0 24px color-mix(in oklab, var(--blood-bright) 25%, transparent),
+			0 20px 40px -12px oklch(0% 0 0 / 0.9);
+	}
+</style>
