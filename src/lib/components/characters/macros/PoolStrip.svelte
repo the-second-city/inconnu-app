@@ -38,8 +38,8 @@
 <!--
 @component
 A macro's pool, collapsed to a strip while its traits are picked from the sheet: the macro's name and
-the pool's dice, Cancel, and Continue to its details ("Skip pool" while it's empty, since a macro of
-Rouse Checks alone needs none); below, the pool's chips across the whole width (many traits wrap
+the pool's dice, Continue to its details ("Skip pool" while it's empty, since a macro of
+Rouse Checks alone needs none), and Cancel (✕); below, the pool's chips across the whole width (many traits wrap
 there, not squeezing the buttons), and the modifier at the row's end.
 -->
 <div class="flex flex-col gap-1.5">
@@ -50,20 +50,21 @@ there, not squeezing the buttons), and the modifier at the row's end.
 		</div>
 		<button
 			type="button"
-			class="btn-icon hover:preset-tonal-surface shrink-0"
-			onclick={oncancel}
-			aria-label="Cancel"
-			title="Cancel"
-		>
-			<X size={18} />
-		</button>
-		<button
-			type="button"
 			class="btn btn-sm btn-gothic btn-gothic-bone shrink-0"
 			onclick={oncontinue}
 		>
 			<span>{empty ? 'Skip pool' : 'Continue'}</span>
 			<ArrowRight size={16} />
+		</button>
+		<!-- At the far right, where the panel's own ✕ is -->
+		<button
+			type="button"
+			class="btn-icon hover:preset-tonal-surface -mr-2 shrink-0"
+			onclick={oncancel}
+			aria-label="Cancel"
+			title="Cancel"
+		>
+			<X size={18} />
 		</button>
 	</div>
 	<div class="flex items-start gap-2">
