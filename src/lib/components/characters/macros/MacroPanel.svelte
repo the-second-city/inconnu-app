@@ -280,7 +280,8 @@ window's right, below the tab row (and the Macros button).
 				<X size={16} />
 			</button>
 		</header>
-		<div class={['grid overflow-y-auto px-4', compact ? 'py-2' : 'py-3']}>
+		<!-- In the strip, a list still fading out (picking straight after Add) stays out of it -->
+		<div class={['grid overflow-y-auto px-4', compact ? 'py-2 [&>[data-list]]:hidden' : 'py-3']}>
 			{#if view === 'add'}
 				<div class="col-start-1 row-start-1" transition:fade={crossfade}>
 					<MacroForm
@@ -296,7 +297,11 @@ window's right, below the tab row (and the Macros button).
 				</div>
 			{:else}
 				<!-- The list and editing share this: editing adds the Delete buttons -->
-				<div class="col-start-1 row-start-1 flex flex-col gap-3" transition:fade={crossfade}>
+				<div
+					class="col-start-1 row-start-1 flex flex-col gap-3"
+					data-list
+					transition:fade={crossfade}
+				>
 					{#if submit.busy}
 						<BusySpinner label="Saving the macros…" />
 					{:else}

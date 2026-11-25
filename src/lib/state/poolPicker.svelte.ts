@@ -10,10 +10,11 @@ import { getContext, setContext } from 'svelte';
 import { KEY_DELIMITER } from '$lib/rules/macros';
 import type { Trait } from '$lib/types';
 
-/** A picked trait, and its specialty (null for none). */
+/** A picked trait, its specialty (null for none), and whether it's subtracted (a flaw, say). */
 export interface Pick {
 	trait: string;
 	specialty: string | null;
+	negative: boolean;
 }
 
 export class PoolPicker {
@@ -27,19 +28,38 @@ export class PoolPicker {
 		return this.picks.find((pick) => pick.trait === trait)?.specialty;
 	}
 
+	/** Whether a picked trait is subtracted. */
+	isNegative(trait: string): boolean {
+		return this.picks.find((pick) => pick.trait === trait)?.negative ?? false;
+	}
+
 	/**
-	 * Pick a trait, with a specialty or none. Picking what's already picked removes the trait;
-	 * picking it another way switches it, keeping its place.
+	 * Pick a trait, with a specialty or none, added to the pool. Picking what's already picked
+	 * removes the trait; picking it another way switches it, keeping its place and sign.
 	 */
 	pick(trait: string, specialty: string | null): void {
 		const index = this.picks.findIndex((pick) => pick.trait === trait);
 		if (index === -1) {
-			this.picks.push({ trait, specialty });
+			this.picks.push({ trait, specialty, negative: false });
 		} else if (this.picks[index].specialty === specialty) {
 			this.picks.splice(index, 1);
 		} else {
-			this.picks[index] = { trait, specialty };
+			this.picks[index] = { ...this.picks[index], specialty };
 		}
+	}
+
+	/** Whether a picked trait's sign can flip: a pool must keep something to add. */
+	canFlip(trait: string): boolean {
+		const pick = this.picks.find((p) => p.trait === trait);
+		if (!pick) return false;
+		return pick.negative || this.picks.some((p) => p !== pick && !p.negative);
+	}
+
+	/** Flip a picked trait between added and subtracted. */
+	flip(trait: string): void {
+		const index = this.picks.findIndex((pick) => pick.trait === trait);
+		if (index === -1 || !this.canFlip(trait)) return;
+		this.picks[index] = { ...this.picks[index], negative: !this.picks[index].negative };
 	}
 
 	/** Drop a trait from the pool. */
@@ -54,19 +74,26 @@ export class PoolPicker {
 	}
 
 	/**
-	 * The pool as a macro stores it: trait keys ("Brawl.Kindred") joined by `+`, attributes first,
-	 * then in the order picked.
+	 * The picks in the pool's order: the added ones (attributes first, then in the order picked),
+	 * then the subtracted ones, as pools are written ("Manipulation + Occult - Obvious Predator").
 	 */
-	tokens(traits: Trait[]): string[] {
+	ordered(traits: Trait[]): Pick[] {
 		const isAttribute = (pick: Pick): boolean =>
 			traits.some((trait) => trait.name === pick.trait && trait.type === 'attribute');
-		const ordered = [
-			...this.picks.filter(isAttribute),
-			...this.picks.filter((pick) => !isAttribute(pick))
+		const added = this.picks.filter((pick) => !pick.negative);
+		return [
+			...added.filter(isAttribute),
+			...added.filter((pick) => !isAttribute(pick)),
+			...this.picks.filter((pick) => pick.negative)
 		];
-		return ordered.flatMap((pick, i) => {
+	}
+
+	/** The pool as a macro stores it: trait keys ("Brawl.Kindred") joined by `+` and `-`. */
+	tokens(traits: Trait[]): string[] {
+		return this.ordered(traits).flatMap((pick, i) => {
 			const key = pick.specialty ? `${pick.trait}${KEY_DELIMITER}${pick.specialty}` : pick.trait;
-			return i === 0 ? [key] : ['+', key];
+			if (i === 0) return [key];
+			return [pick.negative ? '-' : '+', key];
 		});
 	}
 }

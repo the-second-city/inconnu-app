@@ -53,10 +53,11 @@ test("a Discipline's powers add no dice", () => {
 	expect(resolvePool(['Strength', '+', 'Potence.Lethal Body'], character(TRAITS)).dice).toBe(6);
 });
 
-test('subtracts terms and numbers, never going below 0', () => {
+test('subtracts terms and numbers, never going below 1', () => {
 	const pool = character(TRAITS);
 	expect(resolvePool(['Strength', '-', 'Obvious Predator', '+', '1'], pool).dice).toBe(3);
-	expect(resolvePool(['Animal Ken', '-', '5'], pool).dice).toBe(0);
+	expect(resolvePool(['Animal Ken', '-', '5'], pool).dice).toBe(1);
+	expect(resolvePool(['Strength', '-', 'Strength'], pool).dice).toBe(1);
 	expect(resolvePool(['Strength', '-', '2'], pool).terms[1]).toMatchObject({
 		sign: '-',
 		kind: 'number',

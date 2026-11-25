@@ -15,7 +15,7 @@
 	import BusySpinner from '$lib/components/ui/BusySpinner.svelte';
 	import ErrorMessage from '$lib/components/ui/ErrorMessage.svelte';
 	import Stepper from '$lib/components/ui/Stepper.svelte';
-	import PoolText from './PoolText.svelte';
+	import PoolChips from './PoolChips.svelte';
 	import { randomPlaceholder } from './placeholders';
 
 	interface ComponentProps {
@@ -178,7 +178,7 @@ details, kept as they were, where the macro is added.
 					{/if}
 				</div>
 				{#if pool.length > 0}
-					<PoolText terms={resolved.terms} />
+					{#if picker}<PoolChips {picker} traits={character.traits} />{/if}
 				{:else}
 					<p class="text-surface-300 text-sm italic">
 						Click traits on the sheet to build the pool.
@@ -242,7 +242,7 @@ details, kept as they were, where the macro is added.
 				</button>
 			</div>
 			{#if pool.length > 0}
-				<PoolText terms={resolved.terms} />
+				{#if picker}<PoolChips {picker} traits={character.traits} />{/if}
 			{:else}
 				<p class="text-surface-300 italic">Click traits on the sheet to build the pool.</p>
 			{/if}

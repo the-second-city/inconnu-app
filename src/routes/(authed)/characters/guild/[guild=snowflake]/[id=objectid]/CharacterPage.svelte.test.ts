@@ -1886,3 +1886,31 @@ test('adding sends the picked pool', async () => {
 	};
 	expect(body.macros.find((macro) => macro.name === 'lift_more')?.pool).toEqual(['Strength']);
 });
+
+test('a trait subtracted from the bar is saved with a minus', async () => {
+	const user = userEvent.setup();
+	navigate('/char?macros=panel');
+	const char = withMacros();
+	char.traits.push({ name: 'Obvious Predator', rating: 2, type: 'custom', subtraits: [] });
+	renderOwnerPage(char);
+	await user.click(screen.getAllByRole('button', { name: 'Macros' })[0]);
+	await user.click(screen.getByRole('button', { name: 'Add macro' }));
+	const dialog = await screen.findByRole('dialog', { name: 'New Macro' });
+	await user.type(within(dialog).getByRole('textbox', { name: 'Name' }), 'hunt_mortal');
+	await user.click(screen.getByRole('button', { name: 'Pick Strength' }));
+	await user.click(screen.getByRole('button', { name: 'Pick Obvious Predator' }));
+
+	await user.click(within(dialog).getByRole('button', { name: 'Subtract Obvious Predator' }));
+	expect(within(dialog).getByRole('form')).toHaveTextContent('1 die'); // 2 - 2, but the bot rolls at least 1
+	await user.click(within(dialog).getByRole('button', { name: 'Done' }));
+	await user.click(within(dialog).getByRole('button', { name: 'Add Macro' }));
+
+	const body = JSON.parse(fetchMock.mock.calls[0][1]?.body as string) as {
+		macros: { name: string; pool: string[] }[];
+	};
+	expect(body.macros.find((macro) => macro.name === 'hunt_mortal')?.pool).toEqual([
+		'Strength',
+		'-',
+		'Obvious Predator'
+	]);
+});

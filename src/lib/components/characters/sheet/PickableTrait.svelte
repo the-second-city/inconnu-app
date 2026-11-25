@@ -19,6 +19,7 @@
 	const id = $props.id();
 	const selection = $derived(picker.selection(name));
 	const picked = $derived(selection !== undefined);
+	const negative = $derived(picked && picker.isNegative(name));
 	const hasMenu = $derived(subtraits.length > 0);
 	const discipline = $derived(type === 'discipline');
 	const open = $derived(hasMenu && picker.open === name);
@@ -173,13 +174,14 @@ A trait's line while a pool is being picked: the whole line is the choice. Witho
 clicking it picks the trait (or drops it). With them, hovering (or clicking, tapping, or Enter) opens
 a menu over the line, as wide as it: the line itself (the trait without a specialty), then each
 specialty (a Discipline's powers) below it, one at most. Picking the row already picked drops the
-trait. A picked line glows.
+trait. A picked line glows; a subtracted one has a dashed ash ring.
 -->
 <button
 	bind:this={lineEl}
 	type="button"
 	class="pick-line flex w-full flex-wrap items-center justify-between text-left"
 	class:picked
+	class:negative
 	onclick={onLineClick}
 	onpointerenter={onLineEnter}
 	onpointerleave={onLeave}
@@ -272,6 +274,14 @@ trait. A picked line glows.
 		box-shadow:
 			0 0 0 1px color-mix(in oklab, var(--blood-bright) 70%, transparent),
 			0 0 10px color-mix(in oklab, var(--blood-bright) 35%, transparent);
+	}
+
+	/* Subtracted (a flaw, say): a dashed ash ring, no blood */
+	.pick-line.picked.negative {
+		background-color: color-mix(in oklab, var(--color-surface-200) 6%, transparent);
+		box-shadow: none;
+		outline: 1px dashed color-mix(in oklab, var(--color-surface-200) 60%, transparent);
+		outline-offset: -1px;
 	}
 
 	.pick-line:focus {

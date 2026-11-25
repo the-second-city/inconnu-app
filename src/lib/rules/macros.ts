@@ -99,7 +99,7 @@ const resolveTerm = (
 
 /**
  * A macro's pool, resolved against the character's current traits: each term with its dice, and
- * the total (never below 0). A term the character no longer has (a removed trait or specialty)
+ * the total (at least 1, as the bot rolls; an empty pool, a macro that only Rouses, has 0). A term the character no longer has (a removed trait or specialty)
  * has no dice, and neither does the total.
  */
 export const resolvePool = (pool: string[], character: Character): ResolvedPool => {
@@ -120,5 +120,6 @@ export const resolvePool = (pool: string[], character: Character): ResolvedPool 
 		(sum, term) => sum + (term.sign === '-' ? -1 : 1) * (term.dice ?? 0),
 		0
 	);
-	return { terms, dice: resolved ? Math.max(0, total) : null };
+	// The bot always rolls at least one die
+	return { terms, dice: !resolved ? null : terms.length === 0 ? 0 : Math.max(1, total) };
 };

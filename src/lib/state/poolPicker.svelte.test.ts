@@ -30,12 +30,12 @@ test('picking it again the same way drops it; another way switches it in place',
 
 	picker.pick('Brawl', 'Kindred');
 	expect(picker.picks).toEqual([
-		{ trait: 'Brawl', specialty: 'Kindred' },
-		{ trait: 'Potence', specialty: null }
+		{ trait: 'Brawl', specialty: 'Kindred', negative: false },
+		{ trait: 'Potence', specialty: null, negative: false }
 	]);
 
 	picker.pick('Brawl', 'Kindred');
-	expect(picker.picks).toEqual([{ trait: 'Potence', specialty: null }]);
+	expect(picker.picks).toEqual([{ trait: 'Potence', specialty: null, negative: false }]);
 });
 
 test('the tokens put attributes first, then the order picked, joined by +', () => {
@@ -64,9 +64,50 @@ test('remove and clear drop picks; clear closes the menu too', () => {
 	picker.open = 'Brawl';
 
 	picker.remove('Brawl');
-	expect(picker.picks).toEqual([{ trait: 'Strength', specialty: null }]);
+	expect(picker.picks).toEqual([{ trait: 'Strength', specialty: null, negative: false }]);
 
 	picker.clear();
 	expect(picker.picks).toEqual([]);
 	expect(picker.open).toBeNull();
+});
+
+test('a flipped trait is subtracted, after everything added', () => {
+	const picker = new PoolPicker();
+	picker.pick('Brawl', null);
+	picker.pick('Potence', null);
+	picker.pick('Strength', null);
+
+	picker.flip('Brawl');
+
+	expect(picker.isNegative('Brawl')).toBe(true);
+	expect(picker.tokens(TRAITS)).toEqual(['Strength', '+', 'Potence', '-', 'Brawl']);
+
+	picker.flip('Brawl');
+	expect(picker.tokens(TRAITS)).toEqual(['Strength', '+', 'Brawl', '+', 'Potence']);
+});
+
+test("the last trait added can't be subtracted", () => {
+	const picker = new PoolPicker();
+	picker.pick('Brawl', null);
+	expect(picker.canFlip('Brawl')).toBe(false);
+
+	picker.flip('Brawl');
+	expect(picker.isNegative('Brawl')).toBe(false);
+
+	picker.pick('Strength', null);
+	picker.flip('Brawl');
+	expect(picker.canFlip('Strength')).toBe(false);
+	expect(picker.canFlip('Brawl')).toBe(true); // Back to added is always fine
+});
+
+test('switching specialty keeps the sign', () => {
+	const picker = new PoolPicker();
+	picker.pick('Strength', null);
+	picker.pick('Brawl', null);
+	picker.flip('Brawl');
+
+	picker.pick('Brawl', 'Kindred');
+
+	expect(picker.isNegative('Brawl')).toBe(true);
+	expect(picker.selection('Brawl')).toBe('Kindred');
 });

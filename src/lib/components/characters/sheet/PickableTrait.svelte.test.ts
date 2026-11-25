@@ -57,7 +57,7 @@ test('a trait without specialties is picked, and dropped, by clicking its line',
 	expect(button).toHaveAttribute('aria-pressed', 'false');
 
 	await user.click(button);
-	expect(picker.picks).toEqual([{ trait: 'Strength', specialty: null }]);
+	expect(picker.picks).toEqual([{ trait: 'Strength', specialty: null, negative: false }]);
 	expect(button).toHaveAttribute('aria-pressed', 'true');
 
 	await user.click(button);
@@ -97,7 +97,7 @@ test('picking a specialty picks the trait with it; picking it again drops the tr
 	await user.click(line()); // A click (or tap) opens it too
 	await user.click(screen.getByRole('menuitemradio', { name: /Kindred/ }));
 
-	expect(picker.picks).toEqual([{ trait: 'Brawl', specialty: 'Kindred' }]);
+	expect(picker.picks).toEqual([{ trait: 'Brawl', specialty: 'Kindred', negative: false }]);
 	await waitFor(() => expect(screen.queryByRole('menu')).not.toBeInTheDocument());
 
 	await user.click(line());
@@ -114,7 +114,7 @@ test('picking the trait itself picks it without a specialty, switching from one'
 	await user.click(line());
 	await user.click(screen.getByRole('menuitemradio', { name: 'Brawl' }));
 
-	expect(picker.picks).toEqual([{ trait: 'Brawl', specialty: null }]);
+	expect(picker.picks).toEqual([{ trait: 'Brawl', specialty: null, negative: false }]);
 });
 
 test("a Discipline's powers add no dice", async () => {
@@ -155,7 +155,7 @@ test('choosing with the keyboard returns focus to the line', async () => {
 	await waitFor(() => expect(rows[0]).toHaveFocus());
 	await user.keyboard('{ArrowDown}{Enter}');
 
-	expect(picker.picks).toEqual([{ trait: 'Brawl', specialty: 'Kindred' }]);
+	expect(picker.picks).toEqual([{ trait: 'Brawl', specialty: 'Kindred', negative: false }]);
 	expect(line()).toHaveFocus();
 });
 
@@ -177,4 +177,18 @@ test.each([
 	renderTrait(options);
 
 	expect(screen.queryByRole('button', { name: /pick for the pool/ })).not.toBeInTheDocument();
+});
+
+test("a subtracted trait's line is marked as picked, and still drops on a click", async () => {
+	const user = userEvent.setup();
+	const picker = renderTrait({ name: 'Obvious Predator', subtraits: [], type: 'custom' });
+	picker.pick('Strength', null);
+	picker.pick('Obvious Predator', null);
+	picker.flip('Obvious Predator');
+	const button = screen.getByRole('button', { name: 'Pick Obvious Predator' });
+	await waitFor(() => expect(button).toHaveAttribute('aria-pressed', 'true'));
+
+	await user.click(button);
+
+	expect(picker.selection('Obvious Predator')).toBeUndefined();
 });
