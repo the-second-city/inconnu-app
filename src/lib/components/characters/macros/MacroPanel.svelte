@@ -20,6 +20,7 @@
 	import { getPoolPicker } from '$lib/state/poolPicker.svelte';
 	import type { Character, Macro } from '$lib/types';
 	import BusySpinner from '$lib/components/ui/BusySpinner.svelte';
+	import ScrollArea from '$lib/components/ui/ScrollArea.svelte';
 	import ResizeHandles from '$lib/components/ui/ResizeHandles.svelte';
 	import SheetHandle from '$lib/components/ui/SheetHandle.svelte';
 	import MacroForm from './MacroForm.svelte';
@@ -421,11 +422,8 @@ Macros button), until it's dragged by its header or resized from its edges.
 			</button>
 		</header>
 		<!-- In the strip, a list still fading out (picking straight after Add) stays out of it -->
-		<div
-			class={[
-				'grid min-h-0 grow content-start overflow-y-auto px-4',
-				compact ? 'py-2 [&>[data-list]]:hidden' : 'py-3'
-			]}
+		<ScrollArea
+			class={['grid content-start px-4', compact ? 'py-2 [&>[data-list]]:hidden' : 'py-3']}
 		>
 			{#if inForm}
 				{#key formKey}
@@ -476,7 +474,7 @@ Macros button), until it's dragged by its header or resized from its edges.
 					{/if}
 				</div>
 			{/if}
-		</div>
+		</ScrollArea>
 	</div>
 {/if}
 
