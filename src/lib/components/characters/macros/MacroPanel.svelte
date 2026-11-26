@@ -332,12 +332,13 @@ Macros button), until it's dragged by its header or resized from its edges.
 			<!-- On wider windows: its edges and corners resize it -->
 			<ResizeHandles {floating} {panel} label="Resize the macros panel" />
 		{/if}
-		<!-- On wider windows, dragging it moves the panel; double-clicking puts it back. (A pointer's
-		     convenience: it has nothing to focus, and the keyboard resizes it from its corner) -->
+		<!-- On wider windows, dragging it moves the panel (a finger too: it doesn't pan the page);
+		     double-clicking puts it back. (A pointer's convenience: it has nothing to focus, and the
+		     keyboard resizes it from its corner) -->
 		<!-- svelte-ignore a11y_no_static_element_interactions -->
 		<header
 			class={[
-				'border-surface-500 flex items-center gap-2 border-b px-4 py-3 sm:cursor-move',
+				'border-surface-500 flex items-center gap-2 border-b px-4 py-3 sm:cursor-move sm:touch-none',
 				floating.dragging && 'select-none'
 			]}
 			hidden={compact}
