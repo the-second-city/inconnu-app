@@ -6,12 +6,18 @@ export interface Box {
 	height: number;
 }
 
-/** Where it's been put: `height` is null until it's resized, so it fits its content. */
+/**
+ * Where it's been put: `height` is null until it's resized, so it fits its content. Fitting its
+ * content in the window's lower half, it's held by its bottom edge (`bottom`, from the window's),
+ * so it grows up when its content does, not past the window; otherwise `bottom` is null, and it
+ * grows down from `top`.
+ */
 export interface Placement {
 	left: number;
 	top: number;
 	width: number;
 	height: number | null;
+	bottom: number | null;
 }
 
 /** An edge or corner to resize from, by compass point. */
@@ -65,7 +71,8 @@ export const fitPlacement = (p: Placement, b: Bounds): Placement => {
 		width,
 		height,
 		left: clamp(p.left, b.margin, b.width - b.margin - width),
-		top: clamp(p.top, b.margin, b.height - b.margin - (height ?? b.minHeight))
+		top: clamp(p.top, b.margin, b.height - b.margin - (height ?? b.minHeight)),
+		bottom: p.bottom === null ? null : clamp(p.bottom, b.margin, b.height - b.margin - b.minHeight)
 	};
 };
 
@@ -114,7 +121,10 @@ export class FloatingPanel {
 	/** The most it may be tall, while it fits its content: down to the window's bottom margin. */
 	get maxHeight(): number | null {
 		const p = this.placement;
-		return p ? this.windowHeight - this.#limits.margin - p.top : null;
+		if (!p) return null;
+		// Up to the window's top margin when it's held by its bottom edge, else down to the bottom's
+		const edge = p.bottom === null ? p.top : p.bottom;
+		return this.windowHeight - this.#limits.margin - edge;
 	}
 
 	/** Back to wherever its layout puts it. */
@@ -153,7 +163,7 @@ export class FloatingPanel {
 			if (!this.dragging && Math.hypot(ev.clientX - x, ev.clientY - y) < DRAG_AFTER) return;
 			// Moving starts from where it is (moving keeps fitting its content, until it's resized),
 			// and shifts it until it's released
-			if (!this.dragging && !edge) this.#placed = { ...start, height: sized };
+			if (!this.dragging && !edge) this.#placed = { ...start, height: sized, bottom: null };
 			this.dragging = true;
 			// Where the browser predicts the pointer will be when the frame shows, so the panel keeps
 			// up with it (it would otherwise trail by a frame or two)
@@ -163,7 +173,7 @@ export class FloatingPanel {
 		const end = (ev: PointerEvent) => {
 			// Released, it settles where the pointer is, not where it was predicted to go
 			if (this.dragging && ev.type === 'pointerup') follow(ev.clientX, ev.clientY);
-			if (moved) this.#placed = { ...moved, height: sized };
+			if (moved) this.#placed = this.#held(moved, sized);
 			this.#shift = null;
 			this.dragging = false;
 			window.removeEventListener('pointermove', move);
@@ -197,7 +207,20 @@ export class FloatingPanel {
 	 * wider or narrower keeps the height it had (`sized`; null, fitting its content).
 	 */
 	#resized(box: Box, edge: Edge, sized: number | null): Placement {
-		return { ...box, height: edge.includes('n') || edge.includes('s') ? box.height : sized };
+		return this.#held(box, edge.includes('n') || edge.includes('s') ? box.height : sized);
+	}
+
+	/**
+	 * A box's placement with a height (`sized`; null, fitting its content), held by its bottom edge
+	 * when it fits its content in the window's lower half, so it grows up.
+	 */
+	#held(box: Box, sized: number | null): Placement {
+		const low = sized === null && box.top + box.height / 2 > this.windowHeight / 2;
+		return {
+			...box,
+			height: sized,
+			bottom: low ? this.windowHeight - box.top - box.height : null
+		};
 	}
 
 	/** Where the panel is now, as laid out. */

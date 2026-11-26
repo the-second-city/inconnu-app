@@ -39,19 +39,23 @@ test.each<[Edge, number, number, Box]>([
 test('a window that shrinks holds the panel inside it', () => {
 	const small = { ...BOUNDS, width: 600, height: 500 };
 
-	expect(fitPlacement({ ...BOX, height: 600 }, small)).toEqual({
+	expect(fitPlacement({ ...BOX, height: 600, bottom: null }, small)).toEqual({
 		left: 192,
 		top: 8,
 		width: 400,
-		height: 484
+		height: 484,
+		bottom: null
 	});
 	// Fitting its content, it keeps room for its least height
-	expect(fitPlacement({ ...BOX, height: null }, small)).toEqual({
+	expect(fitPlacement({ ...BOX, height: null, bottom: null }, small)).toEqual({
 		left: 192,
 		top: 200,
 		width: 400,
-		height: null
+		height: null,
+		bottom: null
 	});
+	// Held by its bottom edge, it keeps room above for its least height
+	expect(fitPlacement({ ...BOX, height: null, bottom: 400 }, small)?.bottom).toBe(292);
 });
 
 /** A panel element whose laid-out box is `BOX`, and a floating panel in `BOUNDS`'s window. */
@@ -82,19 +86,55 @@ test('dragging moves it (shifted until released), still fitting its content, and
 	window.dispatchEvent(pointer('pointermove', -100, 50));
 	expect(floating.dragging).toBe(true);
 	// While it moves, it's shifted from where it started
-	expect(floating.placement).toEqual({ left: 500, top: 200, width: 400, height: null });
+	expect(floating.placement).toEqual({
+		left: 500,
+		top: 200,
+		width: 400,
+		height: null,
+		bottom: null
+	});
 	expect(floating.shift).toEqual({ x: -100, y: 50 });
 	window.dispatchEvent(pointer('pointerup', -100, 50));
 	expect(floating.shift).toBeNull();
 
 	expect(floating.dragging).toBe(false);
-	expect(floating.placement).toEqual({ left: 400, top: 250, width: 400, height: null });
-	expect(floating.maxHeight).toBe(542);
+	expect(floating.placement).toEqual({
+		left: 400,
+		top: 250,
+		width: 400,
+		height: null,
+		bottom: 150
+	});
+	expect(floating.maxHeight).toBe(642); // Dropped low, it grows up, to the window's top
 	window.dispatchEvent(pointer('pointermove', 0, 0)); // Released, it no longer follows
 	expect(floating.placement?.left).toBe(400);
 
 	floating.reset();
 	expect(floating.placement).toBeNull();
+});
+
+test.each([
+	[-150, null, 742], // Dropped high, it grows down from its top, to the window's bottom
+	[100, 100, 692] // Dropped low, it's held by its bottom edge, growing up to the window's top
+])('moved by %ipx, it’s held from the bottom by %s, up to %ipx tall', (dy, bottom, max) => {
+	const { floating, panel } = setup();
+
+	floating.press(pointer('pointerdown', 0, 0, document.body), panel);
+	window.dispatchEvent(pointer('pointermove', 0, dy));
+	window.dispatchEvent(pointer('pointerup', 0, dy));
+
+	expect(floating.placement?.bottom).toBe(bottom);
+	expect(floating.maxHeight).toBe(max);
+});
+
+test('a resized panel is held by its top, whatever its height', () => {
+	const { floating, panel } = setup();
+
+	floating.press(pointer('pointerdown', 0, 0, document.body), panel, 's');
+	window.dispatchEvent(pointer('pointermove', 0, 100));
+	window.dispatchEvent(pointer('pointerup', 0, 100));
+
+	expect(floating.placement).toMatchObject({ top: 200, height: 500, bottom: null });
 });
 
 test('a press on a button is the button’s', () => {
@@ -114,7 +154,13 @@ test('dragging an edge resizes it, setting its height', () => {
 	window.dispatchEvent(pointer('pointermove', -50, 60));
 	window.dispatchEvent(pointer('pointerup', -50, 60));
 
-	expect(floating.placement).toEqual({ left: 450, top: 200, width: 450, height: 460 });
+	expect(floating.placement).toEqual({
+		left: 450,
+		top: 200,
+		width: 450,
+		height: 460,
+		bottom: null
+	});
 });
 
 test.each<[Edge, number | null]>([
@@ -138,9 +184,21 @@ test('the arrow keys resize it from its bottom right corner', () => {
 
 	expect(key('ArrowRight')).toBe(true);
 	// Only wider, it still fits its content
-	expect(floating.placement).toEqual({ left: 500, top: 200, width: 440, height: null });
+	expect(floating.placement).toEqual({
+		left: 500,
+		top: 200,
+		width: 440,
+		height: null,
+		bottom: null
+	});
 	expect(key('ArrowUp')).toBe(true);
-	expect(floating.placement).toEqual({ left: 500, top: 200, width: 400, height: 360 });
+	expect(floating.placement).toEqual({
+		left: 500,
+		top: 200,
+		width: 400,
+		height: 360,
+		bottom: null
+	});
 	expect(key('Enter')).toBe(false);
 });
 
@@ -156,5 +214,11 @@ test('it follows where the pointer is predicted to be, and settles where it’s 
 	expect(floating.shift).toEqual({ x: -120, y: 60 }); // The last prediction
 	window.dispatchEvent(pointer('pointerup', -100, 50));
 
-	expect(floating.placement).toEqual({ left: 400, top: 250, width: 400, height: null });
+	expect(floating.placement).toEqual({
+		left: 400,
+		top: 250,
+		width: 400,
+		height: null,
+		bottom: 150
+	});
 });

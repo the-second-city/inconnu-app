@@ -293,8 +293,11 @@ Macros button), until it's dragged by its header or resized from its edges.
 			!compact && sheetHeight !== null && 'max-sm:h-(--sheet-height) max-sm:max-h-[90dvh]',
 			// Moved or resized (wider windows only). Moved, it keeps the limit it had where it hung
 			// (so a long list doesn't grow to fill the room a move up made), within the window
+			placed && 'sm:inset-auto! sm:left-(--float-left)! sm:w-(--float-width)!',
+			// Held by its top edge, or (fitting its content, dropped low) its bottom edge, without the
+			// margin the page's spacing adds, which would lift it
 			placed &&
-				'sm:inset-auto! sm:top-(--float-top)! sm:left-(--float-left)! sm:w-(--float-width)!',
+				(placed.bottom === null ? 'sm:top-(--float-top)!' : 'sm:bottom-(--float-bottom)! sm:mb-0!'),
 			placed &&
 				(placed.height === null
 					? 'sm:max-h-[min(var(--float-max),calc(100vh-16.5rem))]!'
@@ -314,6 +317,7 @@ Macros button), until it's dragged by its header or resized from its edges.
 			? `${floating.shift.x}px ${floating.shift.y}px`
 			: undefined}
 		style:--float-top={placed && `${placed.top}px`}
+		style:--float-bottom={placed?.bottom != null ? `${placed.bottom}px` : undefined}
 		style:--float-left={placed && `${placed.left}px`}
 		style:--float-width={placed && `${placed.width}px`}
 		style:--float-height={placed?.height != null ? `${placed.height}px` : undefined}
