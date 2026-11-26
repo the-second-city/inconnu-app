@@ -15,10 +15,12 @@
 	import { Ban, Loader2, Pencil, Plus, SaveCheck, X, Trash2, Zap } from '@lucide/svelte';
 
 	import { FadeSwitch, prefersReducedMotion } from '$lib/state/fadeSwitch.svelte';
+	import { FloatingPanel } from '$lib/state/floatingPanel.svelte';
 	import { MacroDeletions } from '$lib/state/macroDeletions.svelte';
 	import { getPoolPicker } from '$lib/state/poolPicker.svelte';
 	import type { Character, Macro } from '$lib/types';
 	import BusySpinner from '$lib/components/ui/BusySpinner.svelte';
+	import ResizeHandles from '$lib/components/ui/ResizeHandles.svelte';
 	import SheetHandle from '$lib/components/ui/SheetHandle.svelte';
 	import MacroForm from './MacroForm.svelte';
 	import MacroList from './MacroList.svelte';
@@ -173,28 +175,14 @@
 	// Until it's dragged, it fits its content, up to 60%
 	let panelHeight = $state(0); // As laid out, where a drag starts from
 	let sheetHeight: number | null = $state(null); // In pixels, once dragged
-	// On wider windows it hangs below the tab row, fitting its content, until its handle is dragged:
-	// then its bottom edge stays where it was, and its top goes as far up as the site's header
-	let desktopHeight: number | null = $state(null); // In pixels, once dragged
-	let droppedTo = $state(0); // The room below it then, in pixels
-	let windowHeight = $state(0);
-	const DESKTOP_TOP = 240; // Below the tab row: top-60
-	const HEADER_ROOM = 88; // Above it at its tallest
-	const MIN_ROOM = 160 + HEADER_ROOM; // So a window that shrinks can't squeeze it away
-	const desktopBottom = $derived(
-		Math.max(
-			0,
-			Math.min(
-				desktopHeight === null ? windowHeight - DESKTOP_TOP - panelHeight : droppedTo,
-				windowHeight - MIN_ROOM
-			)
-		)
-	);
-	const desktopMax = $derived(windowHeight - desktopBottom - HEADER_ROOM);
-	/** Resize it from its handle, holding its bottom edge where it was. */
-	const resizeDesktop = (height: number | null) => {
-		if (desktopHeight === null) droppedTo = desktopBottom;
-		desktopHeight = height;
+	// On wider windows it hangs below the tab row, fitting its content, until it's dragged by its
+	// header or resized from an edge: then it stays where it's put (double-clicking the header puts it
+	// back)
+	const floating = new FloatingPanel();
+	const placed = $derived(compact ? null : floating.placement);
+	/** Follow a press on the header, which drags the panel (wider windows only). */
+	const pressHeader = (e: PointerEvent) => {
+		if (panel && window.matchMedia?.('(min-width: 40rem)').matches) floating.press(e, panel);
 	};
 	let dragging = $state(false);
 	/** Close from the handle (asking first, as the ✕ does), saying whether it closed. */
@@ -266,7 +254,8 @@
 </script>
 
 <svelte:window
-	bind:innerHeight={windowHeight}
+	bind:innerWidth={floating.windowWidth}
+	bind:innerHeight={floating.windowHeight}
 	onkeydown={handleKey}
 	onpointerdown={handlePointer}
 />
@@ -279,7 +268,7 @@ new macro form, and Edit (with macros to edit) to editing: each macro gets Edit 
 and Cancel and Save replace Add and Edit. A macro's Edit opens its form, which returns to editing.
 On phones it's a sheet at the bottom, where the floating buttons were (they make way while it's
 open), resized by its handle; wider, at the window's right, below the tab row (and the
-Macros button), resized by a handle of its own.
+Macros button), until it's dragged by its header or resized from its edges.
 -->
 {#if compact}
 	<!-- Room at the end of the page, so its last rows can scroll clear of the strip. Phones have the
@@ -296,13 +285,17 @@ Macros button), resized by a handle of its own.
 		aria-modal="false"
 		class={[
 			'card popover-gothic fixed z-40 flex flex-col transition-[opacity,height] duration-150',
-			dragging && 'transition-none',
+			(dragging || floating.dragging) && 'transition-none',
 			// Resized as a sheet (phones only)
 			!compact && sheetHeight !== null && 'max-sm:h-(--sheet-height) max-sm:max-h-[90dvh]',
-			!compact &&
-				desktopHeight !== null &&
-				// (No margin, which the page's spacing adds, as it would lift the bottom edge)
-				'sm:top-auto! sm:bottom-(--desktop-bottom)! sm:mb-0! sm:h-(--desktop-height) sm:max-h-(--desktop-max)!',
+			// Moved or resized (wider windows only). Moved, it keeps the limit it had where it hung
+			// (so a long list doesn't grow to fill the room a move up made), within the window
+			placed &&
+				'sm:inset-auto! sm:top-(--float-top)! sm:left-(--float-left)! sm:w-(--float-width)!',
+			placed &&
+				(placed.height === null
+					? 'sm:max-h-[min(var(--float-max),calc(100vh-16.5rem))]!'
+					: 'sm:h-(--float-height)! sm:max-h-(--float-max)!'),
 			layout.fading && 'opacity-0',
 			compact && 'pool-strip',
 			compact
@@ -314,9 +307,11 @@ Macros button), resized by a handle of its own.
 		aria-labelledby={compact ? undefined : 'macro-panel-title'}
 		aria-label={compact ? names[view] : undefined}
 		style:--sheet-height={sheetHeight === null ? undefined : `${sheetHeight}px`}
-		style:--desktop-height={desktopHeight === null ? undefined : `${desktopHeight}px`}
-		style:--desktop-bottom="{desktopBottom}px"
-		style:--desktop-max="{desktopMax}px"
+		style:--float-top={placed && `${placed.top}px`}
+		style:--float-left={placed && `${placed.left}px`}
+		style:--float-width={placed && `${placed.width}px`}
+		style:--float-height={placed?.height != null ? `${placed.height}px` : undefined}
+		style:--float-max={placed && `${floating.maxHeight}px`}
 		transition:fly={{ x: 24, duration: 200 }}
 	>
 		{#if !compact}
@@ -328,17 +323,23 @@ Macros button), resized by a handle of its own.
 				current={panelHeight}
 				onclose={closeFromHandle}
 			/>
-			<!-- On wider windows: drag to resize it -->
-			<SheetHandle
-				free
-				label="Resize the macros panel"
-				bind:height={() => desktopHeight, resizeDesktop}
-				bind:dragging
-				current={panelHeight}
-				max={desktopMax}
-			/>
+			<!-- On wider windows: its edges and corners resize it -->
+			<ResizeHandles {floating} {panel} label="Resize the macros panel" />
 		{/if}
-		<header class="border-surface-500 flex items-center gap-2 border-b px-4 py-3" hidden={compact}>
+		<!-- On wider windows, dragging it moves the panel; double-clicking puts it back. (A pointer's
+		     convenience: it has nothing to focus, and the keyboard resizes it from its corner) -->
+		<!-- svelte-ignore a11y_no_static_element_interactions -->
+		<header
+			class={[
+				'border-surface-500 flex items-center gap-2 border-b px-4 py-3 sm:cursor-move',
+				floating.dragging && 'select-none'
+			]}
+			hidden={compact}
+			onpointerdown={pressHeader}
+			ondblclick={(e) => {
+				if (!(e.target as Element).closest('button')) floating.reset();
+			}}
+		>
 			<Zap size={18} class="text-primary-400 shrink-0" />
 			<h2
 				id="macro-panel-title"

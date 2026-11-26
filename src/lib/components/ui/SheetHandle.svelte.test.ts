@@ -68,35 +68,6 @@ test('a cancelled drag settles without closing', async () => {
 	expect(state.height).toBeCloseTo(0.35 * window.innerHeight);
 });
 
-test.each([
-	[500, 400, 400], // Up is taller
-	[500, 550, 250],
-	[500, 900, 160], // Never shorter than this
-	[500, 100, 500] // Nor taller than max
-])('a free one dragged from %i to %i stays at %ipx', async (from, to, height) => {
-	const user = userEvent.setup();
-	const { state, onclose, handle } = renderHandle(true, { free: true, max: 500 });
-
-	await press(user, handle, from, to);
-	await user.pointer({ keys: '[/MouseLeft]', target: handle });
-
-	expect(state.height).toBe(height);
-	expect(onclose).not.toHaveBeenCalled();
-});
-
-test('the arrow keys move a free one by steps, within its range', async () => {
-	const user = userEvent.setup();
-	const { state, handle } = renderHandle(true, { free: true, max: 350 });
-	handle.focus();
-
-	await user.keyboard('{ArrowUp}');
-	expect(state.height).toBe(340);
-	await user.keyboard('{ArrowUp}');
-	expect(state.height).toBe(350);
-	await user.keyboard('{ArrowDown}');
-	expect(state.height).toBe(310);
-});
-
 test('in a window that has shrunk, it reports what fits', () => {
 	const { handle } = renderHandle(true, { current: window.innerHeight * 2 });
 
