@@ -76,6 +76,16 @@ export const fitPlacement = (p: Placement, b: Bounds): Placement => {
 	};
 };
 
+/** How far an element's transform moves it, if it has one that only moves it. */
+const transformOffset = (el: Element): { x: number; y: number } => {
+	const transform = getComputedStyle(el).transform;
+	if (!transform || transform === 'none' || typeof DOMMatrixReadOnly === 'undefined') {
+		return { x: 0, y: 0 };
+	}
+	const { e: x, f: y } = new DOMMatrixReadOnly(transform);
+	return { x, y };
+};
+
 // A press moves this far (in pixels) before it's a drag, so a click does nothing
 const DRAG_AFTER = 4;
 // How far an arrow key resizes it
@@ -229,9 +239,13 @@ export class FloatingPanel {
 		};
 	}
 
-	/** Where the panel is now, as laid out. */
+	/**
+	 * Where the panel is now, as laid out: without a transform's offset, like its fly-in's, which a
+	 * press during it would otherwise keep, shifting it when it's placed.
+	 */
 	#box(panel: HTMLElement): Box {
 		const { left, top, width, height } = panel.getBoundingClientRect();
-		return { left, top, width, height };
+		const { x, y } = transformOffset(panel);
+		return { left: left - x, top: top - y, width, height };
 	}
 }

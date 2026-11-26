@@ -1,4 +1,4 @@
-import { expect, test } from 'vitest';
+import { expect, onTestFinished, test, vi } from 'vitest';
 
 import {
 	FloatingPanel,
@@ -63,9 +63,8 @@ const setup = (): { floating: FloatingPanel; panel: HTMLElement } => {
 	const floating = new FloatingPanel({ margin: 8, minWidth: 300, minHeight: 200 });
 	floating.windowWidth = BOUNDS.width;
 	floating.windowHeight = BOUNDS.height;
-	const panel = {
-		getBoundingClientRect: () => BOX
-	} as unknown as HTMLElement;
+	const panel = document.createElement('div');
+	panel.getBoundingClientRect = () => DOMRect.fromRect({ x: BOX.left, y: BOX.top, ...BOX });
 	return { floating, panel };
 };
 
@@ -245,4 +244,31 @@ test('it follows where the pointer is predicted to be, and settles where it’s 
 		height: null,
 		bottom: 150
 	});
+});
+
+test('pressed as it flies in, it’s measured without the fly’s offset', () => {
+	// jsdom has no DOMMatrixReadOnly: this reads a computed matrix(), as browsers give it
+	vi.stubGlobal(
+		'DOMMatrixReadOnly',
+		class {
+			e: number;
+			f: number;
+			constructor(transform: string) {
+				[this.e, this.f] = transform.slice(7, -1).split(',').slice(4).map(Number);
+			}
+		}
+	);
+	onTestFinished(() => {
+		vi.unstubAllGlobals();
+	});
+	const { floating, panel } = setup();
+	panel.style.transform = 'matrix(1, 0, 0, 1, 24, 0)';
+	// Laid out at BOX, it shows 24px to the right
+	panel.getBoundingClientRect = () => DOMRect.fromRect({ x: 524, y: 200, width: 400, height: 400 });
+
+	floating.press(pointer('pointerdown', 0, 0, document.body), panel);
+	window.dispatchEvent(pointer('pointermove', -100, 0));
+	window.dispatchEvent(pointer('pointerup', -100, 0));
+
+	expect(floating.placement?.left).toBe(400);
 });
