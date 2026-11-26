@@ -61,6 +61,9 @@
 	};
 	const onThumbMove = (e: PointerEvent) => {
 		if (!drag || !scroller || track <= thumb) return;
+		// A release it missed (say, let go in another app) ends the drag, rather than leaving the
+		// thumb to follow a pointer with no button held
+		if (e.buttons === 0) return endDrag();
 		scroller.scrollTop = drag.top + ((e.clientY - drag.y) * room) / (track - thumb);
 	};
 	const endDrag = () => (drag = null);
@@ -136,6 +139,7 @@ below its content).
 				onpointermove={onThumbMove}
 				onpointerup={endDrag}
 				onpointercancel={endDrag}
+				onlostpointercapture={endDrag}
 			></div>
 		</div>
 	{/if}

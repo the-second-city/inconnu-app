@@ -73,3 +73,17 @@ test('dragging the thumb scrolls by the same share', async () => {
 
 	expect(scroller.scrollTop).toBeCloseTo(300);
 });
+
+test('a thumb that missed its release stops following the pointer', async () => {
+	const scroller = await renderArea(400, 1000);
+	const thumb = thumbOf(scroller) as HTMLElement;
+
+	// Released elsewhere, where the thumb doesn't hear it, then hovered with no button held
+	await userEvent.setup().pointer([
+		{ keys: '[MouseLeft>]', target: thumb, coords: { clientY: 100 } },
+		{ keys: '[/MouseLeft]', target: document.body },
+		{ target: thumb, coords: { clientY: 200 } }
+	]);
+
+	expect(scroller.scrollTop).toBe(0);
+});
