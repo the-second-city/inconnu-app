@@ -80,14 +80,18 @@
 	// The wheel over the rail scrolls the content, not the page under the panel (not passive, to
 	// stop that)
 	$effect(() => {
-		if (!rail) return;
+		// This rail: by teardown, `rail` is already the next one (or none)
+		const el = rail;
+		if (!el) return;
 		const onWheel = (e: WheelEvent) => {
 			if (!scroller) return;
 			e.preventDefault();
-			scroller.scrollTop += e.deltaMode === 1 ? e.deltaY * 16 : e.deltaY;
+			// In pixels, lines, or pages
+			const unit = [1, 16, scroller.clientHeight][e.deltaMode] ?? 1;
+			scroller.scrollTop += e.deltaY * unit;
 		};
-		rail.addEventListener('wheel', onWheel, { passive: false });
-		return () => rail?.removeEventListener('wheel', onWheel);
+		el.addEventListener('wheel', onWheel, { passive: false });
+		return () => el.removeEventListener('wheel', onWheel);
 	});
 </script>
 

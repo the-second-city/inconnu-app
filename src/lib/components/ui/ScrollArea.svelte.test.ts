@@ -87,3 +87,16 @@ test('a thumb that missed its release stops following the pointer', async () => 
 
 	expect(scroller.scrollTop).toBe(0);
 });
+
+test.each([
+	[0, 30, 30], // Pixels
+	[1, 2, 32], // Lines, of 16px
+	[2, 1, 400] // Pages, the scroller's height
+])('the wheel over the rail (mode %i, %i) scrolls the content %ipx', async (mode, delta, top) => {
+	const scroller = await renderArea(400, 1000);
+	const rail = thumbOf(scroller)?.parentElement as HTMLElement;
+
+	rail.dispatchEvent(new WheelEvent('wheel', { deltaY: delta, deltaMode: mode, cancelable: true }));
+
+	expect(scroller.scrollTop).toBe(top);
+});
