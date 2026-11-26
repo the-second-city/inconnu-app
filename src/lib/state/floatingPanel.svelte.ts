@@ -143,7 +143,7 @@ export class FloatingPanel {
 			const dx = px - x;
 			const dy = py - y;
 			if (edge) {
-				this.#placed = resizeBox(start, edge, dx, dy, this.bounds);
+				this.#placed = this.#resized(resizeBox(start, edge, dx, dy, this.bounds), edge, sized);
 				return;
 			}
 			moved = moveBox(start, dx, dy, this.bounds);
@@ -177,17 +177,27 @@ export class FloatingPanel {
 
 	/** Resize it with the arrow keys (from its bottom right corner), returning whether it did. */
 	key(e: KeyboardEvent, panel: HTMLElement): boolean {
-		const steps: Record<string, [number, number]> = {
-			ArrowLeft: [-KEY_STEP, 0],
-			ArrowRight: [KEY_STEP, 0],
-			ArrowUp: [0, -KEY_STEP],
-			ArrowDown: [0, KEY_STEP]
+		const steps: Record<string, [Edge, number, number]> = {
+			ArrowLeft: ['e', -KEY_STEP, 0],
+			ArrowRight: ['e', KEY_STEP, 0],
+			ArrowUp: ['s', 0, -KEY_STEP],
+			ArrowDown: ['s', 0, KEY_STEP]
 		};
 		const step = steps[e.key];
 		if (!step) return false;
 		e.preventDefault();
-		this.#placed = resizeBox(this.#box(panel), 'se', ...step, this.bounds);
+		const [edge, dx, dy] = step;
+		const box = resizeBox(this.#box(panel), edge, dx, dy, this.bounds);
+		this.#placed = this.#resized(box, edge, this.#placed?.height ?? null);
 		return true;
+	}
+
+	/**
+	 * A resized box's placement: its height is set only by its top or bottom edge, so one only made
+	 * wider or narrower keeps the height it had (`sized`; null, fitting its content).
+	 */
+	#resized(box: Box, edge: Edge, sized: number | null): Placement {
+		return { ...box, height: edge.includes('n') || edge.includes('s') ? box.height : sized };
 	}
 
 	/** Where the panel is now, as laid out. */

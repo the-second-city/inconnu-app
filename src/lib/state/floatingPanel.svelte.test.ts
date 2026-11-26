@@ -117,12 +117,28 @@ test('dragging an edge resizes it, setting its height', () => {
 	expect(floating.placement).toEqual({ left: 450, top: 200, width: 450, height: 460 });
 });
 
+test.each<[Edge, number | null]>([
+	['e', null], // Only wider, it still fits its content
+	['w', null],
+	['s', 460], // Taller, it's that tall
+	['ne', 340]
+])('resized from %s, its height is %s', (edge, height) => {
+	const { floating, panel } = setup();
+
+	floating.press(pointer('pointerdown', 0, 0, document.body), panel, edge);
+	window.dispatchEvent(pointer('pointermove', 50, 60));
+	window.dispatchEvent(pointer('pointerup', 50, 60));
+
+	expect(floating.placement?.height).toBe(height);
+});
+
 test('the arrow keys resize it from its bottom right corner', () => {
 	const { floating, panel } = setup();
 	const key = (key: string) => floating.key(new KeyboardEvent('keydown', { key }), panel);
 
 	expect(key('ArrowRight')).toBe(true);
-	expect(floating.placement).toEqual({ left: 500, top: 200, width: 440, height: 400 });
+	// Only wider, it still fits its content
+	expect(floating.placement).toEqual({ left: 500, top: 200, width: 440, height: null });
 	expect(key('ArrowUp')).toBe(true);
 	expect(floating.placement).toEqual({ left: 500, top: 200, width: 400, height: 360 });
 	expect(key('Enter')).toBe(false);
