@@ -885,6 +885,70 @@ test("on phones, the panel's handle steps its height with the arrow keys", async
 	expect(handle).toHaveAttribute('aria-valuenow', '60');
 });
 
+/**
+ * Open the macro panel in a wide window (where it moves and resizes), laid out at (600, 240), 384
+ * by 400 (jsdom lays nothing out). Returns the panel and its heading, which drags it.
+ */
+const openWide = async (
+	user: ReturnType<typeof userEvent.setup>
+): Promise<{ dialog: HTMLElement; heading: HTMLElement }> => {
+	window.matchMedia = ((query: string) =>
+		({
+			matches: query.includes('min-width'),
+			media: query
+		}) as MediaQueryList) as typeof window.matchMedia;
+	renderOwnerPage(withMacros());
+	await user.click(screen.getAllByRole('button', { name: 'Macros' })[0]);
+	const dialog = screen.getByRole('dialog', { name: 'Macros' });
+	dialog.getBoundingClientRect = () =>
+		DOMRect.fromRect({ x: 600, y: 240, width: 384, height: 400 });
+	return { dialog, heading: within(dialog).getByRole('heading', { name: 'Macros' }) };
+};
+
+/** The panel's placement, as its style gives it: where its top left is, and its size. */
+const placement = (dialog: HTMLElement): Record<string, string> =>
+	Object.fromEntries(
+		['top', 'left', 'width', 'height', 'bottom'].map((name) => [
+			name,
+			dialog.style.getPropertyValue(`--float-${name}`)
+		])
+	);
+
+test('on wider windows, dragging the header moves the panel, and double-clicking puts it back', async () => {
+	const user = userEvent.setup();
+	const { dialog, heading } = await openWide(user);
+	expect(placement(dialog).top).toBe('');
+
+	await user.pointer([
+		{ keys: '[MouseLeft>]', target: heading, coords: { clientX: 700, clientY: 260 } },
+		{ target: heading, coords: { clientX: 600, clientY: 160 } },
+		{ keys: '[/MouseLeft]', target: heading, coords: { clientX: 600, clientY: 160 } }
+	]);
+	// Fitting its content still, so no height
+	expect(placement(dialog)).toEqual({
+		top: '140px',
+		left: '500px',
+		width: '384px',
+		height: '',
+		bottom: ''
+	});
+
+	await user.dblClick(heading);
+	expect(placement(dialog).top).toBe('');
+});
+
+test("on wider windows, the panel's corner resizes it with the arrow keys", async () => {
+	const user = userEvent.setup();
+	const { dialog } = await openWide(user);
+	within(dialog).getByRole('button', { name: 'Resize the macros panel' }).focus();
+
+	await user.keyboard('{ArrowDown}');
+	expect(placement(dialog)).toMatchObject({ top: '240px', width: '384px', height: '440px' });
+	// Narrower (from its laid-out size: jsdom's doesn't follow), it still has the height it was given
+	await user.keyboard('{ArrowLeft}');
+	expect(placement(dialog)).toMatchObject({ width: '344px', height: '440px' });
+});
+
 test("dragging the handle snaps the panel's height, or below a fifth closes it", async () => {
 	const user = userEvent.setup();
 	renderOwnerPage(withMacros());
