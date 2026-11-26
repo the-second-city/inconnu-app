@@ -96,6 +96,7 @@ export class FloatingPanel {
 	// How far a move under way has taken it from its placement: shown as a translation, which the
 	// compositor moves without laying out or repainting the panel, until it's released
 	#shift: { x: number; y: number } | null = $state(null);
+	#pointer: number | null = null; // The pointer dragging it
 	readonly #limits: Omit<Bounds, 'width' | 'height'>;
 
 	constructor(
@@ -137,14 +138,16 @@ export class FloatingPanel {
 	 * edge, resizing it. `panel` is where it starts from. Presses on buttons and fields are theirs.
 	 */
 	press(e: PointerEvent, panel: HTMLElement, edge?: Edge) {
-		if (e.button !== 0) return;
+		// One drag at a time: another finger's press doesn't start a second
+		if (e.button !== 0 || this.#pointer !== null) return;
 		const target = e.target as Element | null;
 		if (!edge && target?.closest('button, a, input, textarea, select, [role="slider"]')) return;
 		e.preventDefault(); // No text selection while dragging
 		// Followed outside the window too, so a release there still ends it
 		(e.currentTarget as Element | null)?.setPointerCapture?.(e.pointerId);
 		const start = this.#box(panel);
-		const { clientX: x, clientY: y } = e;
+		const { clientX: x, clientY: y, pointerId } = e;
+		this.#pointer = pointerId;
 		const sized = this.#placed?.height ?? null;
 		let moved: Box | null = null; // Where a move has taken it
 
@@ -160,6 +163,7 @@ export class FloatingPanel {
 			this.#shift = { x: moved.left - start.left, y: moved.top - start.top };
 		};
 		const move = (ev: PointerEvent) => {
+			if (ev.pointerId !== pointerId) return; // Another finger's
 			if (!this.dragging && Math.hypot(ev.clientX - x, ev.clientY - y) < DRAG_AFTER) return;
 			// Moving starts from where it is (moving keeps fitting its content, until it's resized),
 			// and shifts it until it's released
@@ -171,11 +175,13 @@ export class FloatingPanel {
 			follow(ahead.clientX, ahead.clientY);
 		};
 		const end = (ev: PointerEvent) => {
+			if (ev.pointerId !== pointerId) return;
 			// Released, it settles where the pointer is, not where it was predicted to go
 			if (this.dragging && ev.type === 'pointerup') follow(ev.clientX, ev.clientY);
 			if (moved) this.#placed = this.#held(moved, sized);
 			this.#shift = null;
 			this.dragging = false;
+			this.#pointer = null;
 			window.removeEventListener('pointermove', move);
 			window.removeEventListener('pointerup', end);
 			window.removeEventListener('pointercancel', end);

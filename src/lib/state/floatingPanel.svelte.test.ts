@@ -69,10 +69,17 @@ const setup = (): { floating: FloatingPanel; panel: HTMLElement } => {
 	return { floating, panel };
 };
 
-/** A pointer event at (`x`, `y`), from `target`. */
-const pointer = (type: string, x: number, y: number, target?: EventTarget): PointerEvent => {
+/** A pointer event at (`x`, `y`), from `target`, by pointer `id` (the first finger, say). */
+const pointer = (
+	type: string,
+	x: number,
+	y: number,
+	target?: EventTarget,
+	id = 1
+): PointerEvent => {
 	const e = new MouseEvent(type, { clientX: x, clientY: y, button: 0, cancelable: true });
 	if (target) Object.defineProperty(e, 'target', { value: target });
+	Object.defineProperty(e, 'pointerId', { value: id });
 	return e as PointerEvent;
 };
 
@@ -135,6 +142,23 @@ test('a resized panel is held by its top, whatever its height', () => {
 	window.dispatchEvent(pointer('pointerup', 0, 100));
 
 	expect(floating.placement).toMatchObject({ top: 200, height: 500, bottom: null });
+});
+
+test('another finger can’t end, steer, or restart a drag', () => {
+	const { floating, panel } = setup();
+
+	floating.press(pointer('pointerdown', 0, 0, document.body), panel);
+	window.dispatchEvent(pointer('pointermove', -100, 0));
+	// A second finger presses, moves, and lifts
+	floating.press(pointer('pointerdown', 300, 300, document.body, 2), panel);
+	window.dispatchEvent(pointer('pointermove', 400, 400, undefined, 2));
+	window.dispatchEvent(pointer('pointerup', 400, 400, undefined, 2));
+	expect(floating.dragging).toBe(true);
+	expect(floating.shift).toEqual({ x: -100, y: 0 });
+
+	window.dispatchEvent(pointer('pointerup', -100, 0));
+	expect(floating.dragging).toBe(false);
+	expect(floating.placement?.left).toBe(400);
 });
 
 test('a press on a button is the button’s', () => {
