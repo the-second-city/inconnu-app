@@ -287,6 +287,8 @@ Macros button), until it's dragged by its header or resized from its edges.
 		class={[
 			'card popover-gothic fixed z-40 flex flex-col transition-[opacity,height] duration-150',
 			(dragging || floating.dragging) && 'transition-none',
+			// Its own layer while it moves, so the compositor moves it
+			floating.shift && 'will-change-[translate]',
 			// Resized as a sheet (phones only)
 			!compact && sheetHeight !== null && 'max-sm:h-(--sheet-height) max-sm:max-h-[90dvh]',
 			// Moved or resized (wider windows only). Moved, it keeps the limit it had where it hung
@@ -308,6 +310,9 @@ Macros button), until it's dragged by its header or resized from its edges.
 		aria-labelledby={compact ? undefined : 'macro-panel-title'}
 		aria-label={compact ? names[view] : undefined}
 		style:--sheet-height={sheetHeight === null ? undefined : `${sheetHeight}px`}
+		style:translate={!compact && floating.shift
+			? `${floating.shift.x}px ${floating.shift.y}px`
+			: undefined}
 		style:--float-top={placed && `${placed.top}px`}
 		style:--float-left={placed && `${placed.left}px`}
 		style:--float-width={placed && `${placed.width}px`}

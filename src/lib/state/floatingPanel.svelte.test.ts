@@ -72,7 +72,7 @@ const pointer = (type: string, x: number, y: number, target?: EventTarget): Poin
 	return e as PointerEvent;
 };
 
-test('dragging moves it, still fitting its content, and reset puts it back', () => {
+test('dragging moves it (shifted until released), still fitting its content, and reset puts it back', () => {
 	const { floating, panel } = setup();
 	expect(floating.placement).toBeNull();
 
@@ -81,7 +81,11 @@ test('dragging moves it, still fitting its content, and reset puts it back', () 
 	expect(floating.placement).toBeNull();
 	window.dispatchEvent(pointer('pointermove', -100, 50));
 	expect(floating.dragging).toBe(true);
+	// While it moves, it's shifted from where it started
+	expect(floating.placement).toEqual({ left: 500, top: 200, width: 400, height: null });
+	expect(floating.shift).toEqual({ x: -100, y: 50 });
 	window.dispatchEvent(pointer('pointerup', -100, 50));
+	expect(floating.shift).toBeNull();
 
 	expect(floating.dragging).toBe(false);
 	expect(floating.placement).toEqual({ left: 400, top: 250, width: 400, height: null });
@@ -122,4 +126,19 @@ test('the arrow keys resize it from its bottom right corner', () => {
 	expect(key('ArrowUp')).toBe(true);
 	expect(floating.placement).toEqual({ left: 500, top: 200, width: 400, height: 360 });
 	expect(key('Enter')).toBe(false);
+});
+
+test('it follows where the pointer is predicted to be, and settles where it’s released', () => {
+	const { floating, panel } = setup();
+	const move = pointer('pointermove', -100, 50);
+	Object.defineProperty(move, 'getPredictedEvents', {
+		value: () => [pointer('pointermove', -110, 55), pointer('pointermove', -120, 60)]
+	});
+
+	floating.press(pointer('pointerdown', 0, 0, document.body), panel);
+	window.dispatchEvent(move);
+	expect(floating.shift).toEqual({ x: -120, y: 60 }); // The last prediction
+	window.dispatchEvent(pointer('pointerup', -100, 50));
+
+	expect(floating.placement).toEqual({ left: 400, top: 250, width: 400, height: null });
 });

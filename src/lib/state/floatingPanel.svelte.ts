@@ -86,6 +86,9 @@ export class FloatingPanel {
 	windowWidth = $state(0);
 	windowHeight = $state(0);
 	dragging = $state(false); // Moving or resizing, say to pause a height transition
+	// How far a move under way has taken it from its placement: shown as a translation, which the
+	// compositor moves without laying out or repainting the panel, until it's released
+	#shift: { x: number; y: number } | null = $state(null);
 	readonly #limits: Omit<Bounds, 'width' | 'height'>;
 
 	constructor(
@@ -101,6 +104,11 @@ export class FloatingPanel {
 	/** Where it is, once moved or resized; null for wherever its layout puts it. */
 	get placement(): Placement | null {
 		return this.#placed && fitPlacement(this.#placed, this.bounds);
+	}
+
+	/** How far a move under way has taken it, to show as a translation; null when not moving. */
+	get shift(): { x: number; y: number } | null {
+		return this.#shift;
 	}
 
 	/** The most it may be tall, while it fits its content: down to the window's bottom margin. */
@@ -128,19 +136,35 @@ export class FloatingPanel {
 		const start = this.#box(panel);
 		const { clientX: x, clientY: y } = e;
 		const sized = this.#placed?.height ?? null;
+		let moved: Box | null = null; // Where a move has taken it
 
-		const move = (ev: PointerEvent) => {
-			const dx = ev.clientX - x;
-			const dy = ev.clientY - y;
-			if (!this.dragging && Math.hypot(dx, dy) < DRAG_AFTER) return;
-			this.dragging = true;
-			const box = edge
-				? resizeBox(start, edge, dx, dy, this.bounds)
-				: moveBox(start, dx, dy, this.bounds);
-			// Moving keeps fitting its content, until it's resized
-			this.#placed = { ...box, height: edge ? box.height : sized };
+		/** Put it where a pointer at (`px`, `py`) takes it. */
+		const follow = (px: number, py: number) => {
+			const dx = px - x;
+			const dy = py - y;
+			if (edge) {
+				this.#placed = resizeBox(start, edge, dx, dy, this.bounds);
+				return;
+			}
+			moved = moveBox(start, dx, dy, this.bounds);
+			this.#shift = { x: moved.left - start.left, y: moved.top - start.top };
 		};
-		const end = () => {
+		const move = (ev: PointerEvent) => {
+			if (!this.dragging && Math.hypot(ev.clientX - x, ev.clientY - y) < DRAG_AFTER) return;
+			// Moving starts from where it is (moving keeps fitting its content, until it's resized),
+			// and shifts it until it's released
+			if (!this.dragging && !edge) this.#placed = { ...start, height: sized };
+			this.dragging = true;
+			// Where the browser predicts the pointer will be when the frame shows, so the panel keeps
+			// up with it (it would otherwise trail by a frame or two)
+			const ahead = ev.getPredictedEvents?.().at(-1) ?? ev;
+			follow(ahead.clientX, ahead.clientY);
+		};
+		const end = (ev: PointerEvent) => {
+			// Released, it settles where the pointer is, not where it was predicted to go
+			if (this.dragging && ev.type === 'pointerup') follow(ev.clientX, ev.clientY);
+			if (moved) this.#placed = { ...moved, height: sized };
+			this.#shift = null;
 			this.dragging = false;
 			window.removeEventListener('pointermove', move);
 			window.removeEventListener('pointerup', end);
