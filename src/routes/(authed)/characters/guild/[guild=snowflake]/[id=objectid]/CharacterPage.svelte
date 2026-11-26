@@ -10,10 +10,11 @@
 		SaveCheck,
 		ScrollText,
 		StarPlus,
-		Timeline
+		Timeline,
+		Zap
 	} from '@lucide/svelte';
 
-	import { cleanName } from '$lib';
+	import { andList, cleanName } from '$lib';
 	import {
 		characterNameError,
 		profileLengthErrors,
@@ -21,7 +22,8 @@
 		tooLongFields
 	} from '$lib/constraints';
 
-	import { beforeNavigate, goto } from '$app/navigation';
+	import { beforeNavigate, goto, invalidate } from '$app/navigation';
+	import { CHARACTER_DEPENDENCY } from '$lib/api/liveUpdates';
 	import { resolve } from '$app/paths';
 	import { atLeast } from '$lib/state/busy';
 	import {
@@ -48,8 +50,17 @@
 	import StainModal from '$lib/components/characters/actions/StainModal.svelte';
 	import RemorseModal from '$lib/components/characters/actions/RemorseModal.svelte';
 	import FrenzyModal from '$lib/components/characters/actions/FrenzyModal.svelte';
+	import MacroPanel, {
+		isFormView,
+		type MacroPanelView
+	} from '$lib/components/characters/macros/MacroPanel.svelte';
 	import PremiumModal from '$lib/components/premium/PremiumModal.svelte';
 	import { isSupporter, refusedForPremium, showUpsell, upsell } from '$lib/state/premium.svelte';
+	import { PoolPicker, setPoolPicker } from '$lib/state/poolPicker.svelte';
+	import { prefersReducedMotion } from '$lib/state/fadeSwitch.svelte';
+	import { SheetHighlight, setSheetHighlight } from '$lib/state/sheetHighlight.svelte';
+	import { macrosUsing } from '$lib/rules/macros';
+	import { toaster } from '$lib/state/toaster';
 
 	interface ComponentProps {
 		character: Character;
@@ -196,6 +207,87 @@
 	let frenzyOpen = $state(false);
 	let editing = $state(false);
 
+	// Removing a trait in edit mode that a macro rolls warns which macros won't roll without it (they
+	// stay as they are; Cancel brings the trait back)
+	let editedTraits: string[] | null = null; // The trait names when last checked, while editing
+	$effect(() => {
+		const names = editing ? character.traits.map((trait) => trait.name) : null;
+		untrack(() => {
+			const removed = editedTraits?.filter((name) => !names?.includes(name)) ?? [];
+			editedTraits = names;
+			if (!names) return;
+			for (const trait of removed) {
+				const using = macrosUsing(character.macros ?? [], trait).map((macro) => macro.name);
+				if (using.length === 0) continue;
+				toaster.warning({
+					title: `${trait} is in ${using.length === 1 ? 'a macro' : 'macros'}`,
+					description: `${andList(using)} won’t roll without it.`,
+					duration: 8000
+				});
+			}
+		});
+	});
+
+	// The macros are in a floating panel, opened from a Macros button. The panel can add macros, so
+	// it's there for anyone who may edit them (as in Discord, the owner, or a Storyteller for an SPC),
+	// macros or not
+	const macroButton = $derived(ownerActions || !!character.macros?.length);
+	let macrosOpen = $state(false);
+	let macroView: MacroPanelView = $state('list');
+	let macrosDirty = $state(false); // Macro editing has unsaved deletions, or a new macro has input
+
+	// Without the button there's no panel (a Storyteller's view of a player's last macro going away),
+	// so it isn't open, which would hold Edit
+	$effect(() => {
+		if (macroButton) return;
+		macrosOpen = false;
+		macroView = 'list';
+		macrosDirty = false;
+	});
+
+	// A new macro's pool is picked from the sheet: its traits become choices while the form is open.
+	// It lives here, not in the sheet, which a refetch rebuilds
+	const picker = new PoolPicker();
+	setPoolPicker(picker);
+	// A hovered macro's traits, shown on the sheet
+	setSheetHighlight(new SheetHighlight());
+	const PICKER_FADE = 200; // The rings' fade (`.trait-line::before`)
+	// Leaving clears the picks first, so their rings fade on the lines (as they do on hovering a
+	// macro), and the lines turn back into the sheet's own once they have: the new ones would drop
+	// the rings at once. At once with reduced motion
+	$effect(() => {
+		const active = macrosOpen && isFormView(macroView);
+		return untrack(() => {
+			if (active || !picker.active) {
+				picker.active = active;
+				return;
+			}
+			picker.clear();
+			if (prefersReducedMotion()) {
+				picker.active = false;
+				return;
+			}
+			const timer = setTimeout(() => {
+				picker.clear(); // Anything picked meanwhile
+				picker.active = false;
+			}, PICKER_FADE);
+			return () => clearTimeout(timer);
+		});
+	});
+
+	// The Macros button only opens the panel: it's closed from the panel (its ✕, or Escape), which
+	// asks about unsaved macro changes
+	const openMacros = () => (macrosOpen = true);
+	// The panel's Escape and ✕ are how it closes; while it's open, Edit and Macros wait
+	const macrosTitle = 'Close the macros panel first';
+	/** Refetch the character after a macro save, without waiting for its live update. A failed
+	 * refetch shows itself (the error page), and the save stands. */
+	const refetch = (): Promise<void> => invalidate(CHARACTER_DEPENDENCY).catch(() => {});
+	// Adding and editing macros are for supporters, like the rest of editing
+	const switchMacroView = forSupporters('Editing macros', (next: MacroPanelView) => {
+		if (macrosOpen) macroView = next; // Unless it was closed during the check
+	});
+
 	// Fresh data for the same character (such as a data refresh) replaces the copy. While it's
 	// being edited, the data waits: Cancel takes it, and Save keeps the edits instead.
 	let applied = untrack(() => initialCharacter);
@@ -280,6 +372,7 @@
 	};
 
 	const enterEditMode = () => {
+		if (macrosOpen) return; // The two exclude each other
 		saveError = null; // A failed save's errors belong to that edit
 		editing = true;
 		seen = null;
@@ -295,12 +388,16 @@
 	/** Ask before discarding unsaved edits. True when there are none, or the user agrees. */
 	const confirmDiscard = (): boolean => !hasChanges || confirm('Discard your unsaved changes?');
 
-	// Leaving the page with unsaved edits asks first. Switching tabs (a hash change on this page)
-	// isn't leaving. For closing the tab, reloading, or leaving the site ("leave"), cancelling has
-	// the browser show its own prompt, as pages can't show theirs there.
+	// Leaving the page with unsaved edits (the character's, or the macro panel's) asks first. Switching
+	// tabs (a hash change on this page) isn't leaving. For closing the tab, reloading, or leaving the
+	// site ("leave"), cancelling has the browser show its own prompt, as pages can't show theirs there.
 	beforeNavigate(({ type, from, to, cancel }) => {
-		if (!hasChanges || (to && from && to.url.pathname === from.url.pathname)) return;
-		if (type === 'leave' || !confirmDiscard()) cancel();
+		const macrosUnsaved = macrosOpen && macrosDirty;
+		if (!(hasChanges || macrosUnsaved) || (to && from && to.url.pathname === from.url.pathname)) {
+			return;
+		}
+		// One question covers both: the character's edits and the macro panel's
+		if (type === 'leave' || !confirm('Discard your unsaved changes?')) cancel();
 	});
 
 	const cancelEditing = () => {
@@ -459,11 +556,16 @@
 			{/each}
 			<Tabs.Indicator />
 		</Tabs.List>
-		{#if editable}
-			<!-- Desktop edit buttons, at the end of the tab row (outside the tab list, which
-			     should hold only tabs). The mobile ones float instead. -->
+		{#if editable || macroButton}
+			<!-- Desktop buttons, at the end of the tab row (outside the tab list, which should hold
+			     only tabs). The mobile ones float instead. -->
 			<div class="absolute top-0 right-0 hidden gap-2 sm:flex">
-				{#if editing}
+				{#if macroButton}
+					{@render macrosToggle('btn btn-gothic btn-gothic-ash', 18)}
+				{/if}
+				{#if !editable}
+					<!-- No edit buttons -->
+				{:else if editing}
 					<button
 						class="btn btn-gothic btn-gothic-ash"
 						onclick={cancelEditing}
@@ -493,7 +595,8 @@
 					<button
 						class="btn btn-gothic btn-gothic-bone"
 						onclick={startEditing}
-						disabled={checkingPremium}
+						disabled={checkingPremium || macrosOpen}
+						title={macrosOpen ? macrosTitle : undefined}
 					>
 						<Pencil size={18} />
 						<span>Edit</span>
@@ -580,49 +683,92 @@
 	/>
 </Modal>
 
-{#if editable}
-	<!-- Room at the end of the page, so its last rows can scroll clear of the floating buttons -->
-	<div class="h-24 sm:hidden" aria-hidden="true"></div>
+<!-- Opens the panel, and waits while it's open (the panel closes itself), and during a premium check,
+     which may be about to start edit mode. Disabled in edit mode too:
+     macros are saved on their own, and the sheet's clicks there change ratings rather than build a
+     macro's pool -->
+{#snippet macrosToggle(classes: string, size: number)}
+	<button
+		class={classes}
+		onclick={openMacros}
+		disabled={editing || macrosOpen || checkingPremium}
+		aria-expanded={macrosOpen}
+		aria-controls="macro-panel"
+		aria-label="Macros"
+		title={editing
+			? 'Macros wait until you’re done editing'
+			: macrosOpen
+				? 'The Macros panel is already open'
+				: undefined}
+	>
+		<Zap {size} />
+		{#if size < 20}<span>Macros</span>{/if}
+	</button>
+{/snippet}
 
-	<!-- Mobile floating edit buttons -->
-	<div class="fixed right-6 bottom-6 z-40 sm:hidden">
-		<div class="p-4">
-			<div class="container mx-auto flex justify-center gap-4">
-				{#if editing}
-					<button
-						class="fab-gothic btn-gothic btn-gothic-ash"
-						onclick={cancelEditing}
-						disabled={saving}
-						aria-label="Cancel"
-					>
-						<Ban strokeWidth={2.5} size={22} />
-					</button>
-					<button
-						class="fab-gothic btn-gothic btn-gothic-blood"
-						onclick={saveChanges}
-						disabled={saving || nameError !== null || textTooLong || !hasChanges}
-						aria-busy={saving}
-						aria-label="Save"
-					>
-						{#if saving}
-							<Loader2 strokeWidth={2.5} class="animate-spin" size={24} />
-						{:else}
-							<SaveCheck strokeWidth={2.5} size={24} />
-						{/if}
-					</button>
-				{:else}
-					<button
-						class="fab-gothic btn-gothic btn-gothic-bone"
-						onclick={startEditing}
-						disabled={checkingPremium}
-						aria-label="Edit"
-					>
-						<Pencil size={24} />
-					</button>
+{#if macroButton}
+	<MacroPanel
+		{character}
+		bind:open={macrosOpen}
+		bind:view={macroView}
+		bind:dirty={macrosDirty}
+		onswitch={ownerActions ? switchMacroView : undefined}
+		{refetch}
+	/>
+{/if}
+
+{#if editable || macroButton}
+	<!-- Room at the end of the page, so its last rows can scroll clear of the floating buttons -->
+	<div class={[macroButton && editable ? 'h-40' : 'h-24', 'sm:hidden']} aria-hidden="true"></div>
+
+	<!-- Mobile floating buttons: Macros above the edit buttons. While the macro panel is open they'd
+	     only wait (it closes itself), so they make way for it -->
+	{#if !macrosOpen}
+		<div class="fixed right-6 bottom-6 z-40 sm:hidden" transition:fade={{ duration: 150 }}>
+			<div class="flex flex-col items-end gap-4 p-4">
+				{#if macroButton}
+					{@render macrosToggle('fab-gothic btn-gothic btn-gothic-ash', 24)}
 				{/if}
+				<div class="container mx-auto flex justify-center gap-4">
+					{#if !editable}
+						<!-- No edit buttons -->
+					{:else if editing}
+						<button
+							class="fab-gothic btn-gothic btn-gothic-ash"
+							onclick={cancelEditing}
+							disabled={saving}
+							aria-label="Cancel"
+						>
+							<Ban strokeWidth={2.5} size={22} />
+						</button>
+						<button
+							class="fab-gothic btn-gothic btn-gothic-blood"
+							onclick={saveChanges}
+							disabled={saving || nameError !== null || textTooLong || !hasChanges}
+							aria-busy={saving}
+							aria-label="Save"
+						>
+							{#if saving}
+								<Loader2 strokeWidth={2.5} class="animate-spin" size={24} />
+							{:else}
+								<SaveCheck strokeWidth={2.5} size={24} />
+							{/if}
+						</button>
+					{:else}
+						<button
+							class="fab-gothic btn-gothic btn-gothic-bone"
+							onclick={startEditing}
+							disabled={checkingPremium || macrosOpen}
+							title={macrosOpen ? macrosTitle : undefined}
+							aria-label="Edit"
+						>
+							<Pencil size={24} />
+						</button>
+					{/if}
+				</div>
 			</div>
 		</div>
-	</div>
+	{/if}
 {/if}
 
 <style>

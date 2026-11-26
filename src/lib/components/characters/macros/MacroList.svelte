@@ -1,0 +1,109 @@
+<script lang="ts">
+	import { fade, slide } from 'svelte/transition';
+	import { Pencil, Trash2, Undo2 } from '@lucide/svelte';
+
+	import { getPoolPicker } from '$lib/state/poolPicker.svelte';
+	import { getSheetHighlight } from '$lib/state/sheetHighlight.svelte';
+	import type { Character, Macro } from '$lib/types';
+	import MacroCard from './MacroCard.svelte';
+
+	interface ComponentProps {
+		character: Character;
+		macros?: Macro[]; // The macros to show; the character's by default
+		ondelete?: (macro: Macro) => void; // Gives each macro a Delete button
+		onedit?: (macro: Macro) => void; // Gives each macro an Edit button
+		// Macros marked for deletion (by name): struck through, with Undo (`onrestore`) in place of
+		// the other buttons
+		marked?: ReadonlySet<string>;
+		onrestore?: (macro: Macro) => void;
+	}
+
+	let { character, macros, ondelete, onedit, marked, onrestore }: ComponentProps = $props();
+
+	const shown = $derived(macros ?? character.macros ?? []);
+
+	// Hovering a macro shows its traits on the sheet (the page's sheet highlight), except while a
+	// pool is being picked there
+	const picker = getPoolPicker();
+	const highlight = getSheetHighlight();
+	let hovered: string | null = $state(null); // The hovered macro's name
+	const enter = (e: PointerEvent, macro: Macro) => {
+		if (e.pointerType === 'mouse') hovered = macro.name;
+	};
+	const leave = (macro: Macro) => {
+		if (hovered === macro.name) hovered = null;
+	};
+	$effect(() => {
+		if (!highlight || picker?.active || hovered === null) return;
+		// The macro as it is now (a live update may change it); one that's gone stops showing
+		const macro = shown.find((m) => m.name === hovered);
+		if (!macro) return;
+		highlight.show(macro.pool, character);
+		return () => highlight.hide();
+	});
+</script>
+
+<!--
+@component
+A character's macros, in the order the bot keeps them (by name), divided by rules, for the macro
+panel. `onedit` and `ondelete` add Edit and Delete buttons to each, and `marked` strikes through
+those marked for deletion, with Undo (`onrestore`). Hovering a macro lights it and highlights its
+traits on the sheet. A macro taken out of `macros` slides away.
+-->
+<ul class="divide-surface-600 flex flex-col divide-y">
+	{#each shown as macro (macro.name)}
+		{@const doomed = marked?.has(macro.name) ?? false}
+		<li
+			class="hover:bg-surface-200/[0.06] -mx-2 flex items-start gap-2 rounded-md px-2 py-3 transition-colors first:pt-2 last:pb-2"
+			transition:slide={{ duration: 200 }}
+			onpointerenter={(e) => enter(e, macro)}
+			onpointerleave={() => leave(macro)}
+		>
+			<div class="min-w-0 flex-1">
+				<div class={['transition-opacity', doomed && 'line-through opacity-45']}>
+					<MacroCard {macro} {character} />
+				</div>
+				{#if doomed}
+					<p class="text-error-300 mt-1 text-xs italic" transition:slide={{ duration: 150 }}>
+						Will be deleted
+					</p>
+				{/if}
+			</div>
+			{#if doomed}
+				<button
+					type="button"
+					class="hover:preset-tonal-surface -mr-1 shrink-0 rounded-full p-1.5"
+					onclick={() => onrestore?.(macro)}
+					aria-label="Undo deleting {macro.name}"
+					title="Undo"
+					in:fade={{ duration: 200 }}
+				>
+					<Undo2 size={16} />
+				</button>
+			{:else if onedit}
+				<button
+					type="button"
+					class="hover:preset-tonal-surface -mr-1 shrink-0 rounded-full p-1.5"
+					onclick={() => onedit(macro)}
+					aria-label="Edit {macro.name}"
+					title="Edit"
+					transition:fade={{ duration: 200 }}
+				>
+					<Pencil size={16} />
+				</button>
+			{/if}
+			{#if ondelete && !doomed}
+				<button
+					type="button"
+					class="hover:preset-tonal-error text-error-400 -mr-1 shrink-0 rounded-full p-1.5"
+					onclick={() => ondelete(macro)}
+					aria-label="Delete {macro.name}"
+					title="Delete"
+					transition:fade={{ duration: 200 }}
+				>
+					<Trash2 size={16} />
+				</button>
+			{/if}
+		</li>
+	{/each}
+</ul>

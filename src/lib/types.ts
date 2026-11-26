@@ -22,7 +22,6 @@ export type Trait = {
 	subtraits: string[];
 };
 
-type PoolElem = number | string;
 export type TrackType = 'willpower' | 'health';
 
 /** An inclusive range of allowed values. */
@@ -55,17 +54,34 @@ export interface Constraints {
 	stains: Range;
 	hunger: Record<Splat, Range | null>; // null: the splat doesn't have it
 	potency: Record<Splat, Range | null>;
+	macro_name_pattern: string; // A JS pattern: letters and underscores, with at least one letter
+	macro_name_max_length: number;
+	macro_comment_max_length: number;
+	macro_difficulty: Range;
+	macro_rouses: Range;
+	macro_staining: string[]; // A macro's `staining` values
+	macro_pool_max_tokens: number; // A pool's most tokens: traits, numbers, and operators
+	pool_max: number; // A roll's most dice, and so a pool's largest number
 }
 
-type Macro = {
-	name: string;
-	pool: PoolElem[];
-	keys: PoolElem[];
-	target: number;
-	rote: boolean;
-	hunt: boolean;
+/**
+ * A roll macro. Mirrors the bot's `VCharMacro`.
+ *
+ * `pool` is the bot's expanded pool: trait keys (a trait's name, then any specialties or powers,
+ * joined by `.`: "Brawl.Kindred"), operators (`+`, `-`), and numbers, each a token. It never
+ * holds Hunger, which `hunger` adds instead.
+ */
+export interface Macro {
+	name: string; // Letters and underscores
+	pool: string[]; // Empty when the macro only makes Rouse Checks
+	hunger: boolean; // Rolls the character's current Hunger dice
+	difficulty: number; // The default; 0 for none
+	rouses: number; // Rouse Checks made when it's rolled
+	reroll_rouses: boolean;
+	staining: string; // "apply": the Rouse Checks can Stain (Oblivion); "show" (or "no") otherwise
+	hunt: boolean; // Offers to slake Hunger on a win
 	comment: string | null;
-};
+}
 
 export interface Profile {
 	description: string | null;
@@ -91,6 +107,7 @@ export interface Character {
 	hunger?: number;
 	blood_potency?: number;
 	log?: CharacterLog;
+	macros?: Macro[]; // Sorted by name, ignoring case
 }
 
 /** A Rouse request. Mirrors the bot's `RouseBody`. */

@@ -51,6 +51,16 @@
 	});
 
 	let viewerOpen = $state(false);
+	// The viewer's image stays a moment after closing, through its fade (`fade-panel`, 150ms)
+	let viewerShown = $state(false);
+	$effect(() => {
+		if (viewerOpen) {
+			viewerShown = true;
+			return;
+		}
+		const timer = setTimeout(() => (viewerShown = false), 150);
+		return () => clearTimeout(timer);
+	});
 	// The chosen image, by URL, so fresh data that reorders or removes other images doesn't switch
 	// it. Its index tells duplicates apart, and is the fallback (kept in range) once it's gone.
 	let selectedUrl = $state<string | null>(null);
@@ -270,15 +280,15 @@
 			finalFocusEl={() => thumbnails[viewing] ?? null}
 		>
 			<ClientPortal>
-				<Dialog.Backdrop class="modal-backdrop-gothic fixed inset-0 z-50" />
+				<Dialog.Backdrop class="modal-backdrop-gothic fade-backdrop fixed inset-0 z-50" />
 				<Dialog.Positioner class="fixed inset-0 z-50 flex items-center justify-center p-4">
 					<Dialog.Content
-						class="card bg-surface-100-900 max-w-full p-2 shadow-xl"
+						class="card bg-surface-100-900 fade-panel max-w-full p-2 shadow-xl"
 						aria-label={imageAlt(viewing)}
 						onkeydown={pageImages}
 					>
-						<!-- Only while open: closed dialogs stay in the page, and would fetch the original -->
-						{#if viewerOpen}
+						<!-- Only while open (and fading out): closed dialogs stay in the page, and would fetch the original -->
+						{#if viewerShown}
 							<!-- The panel follows the image, which fits the viewport, less the padding (and the
 							pager, if any). Its height is fixed numbers, not a flex column: a shrunken image
 							in a flex column keeps its natural width, leaving bars on either side. 3rem is the

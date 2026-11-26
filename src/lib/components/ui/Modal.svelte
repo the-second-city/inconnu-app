@@ -40,10 +40,13 @@
 	{closeOnInteractOutside}
 >
 	<ClientPortal>
-		<Dialog.Backdrop class="modal-backdrop-gothic fixed inset-0 z-50" />
+		<Dialog.Backdrop class="modal-backdrop-gothic fade-backdrop fixed inset-0 z-50" />
 		<Dialog.Positioner class="fixed inset-0 z-50 flex items-center justify-center p-4">
 			<Dialog.Content
-				class={['card modal-gothic w-full space-y-4 p-6', size === 'md' ? 'max-w-md' : 'max-w-sm']}
+				class={[
+					'card modal-gothic fade-panel w-full space-y-4 p-6',
+					size === 'md' ? 'max-w-md' : 'max-w-sm'
+				]}
 			>
 				{@render header?.()}
 				<Dialog.Title class={['h5 font-display tracking-[0.02em]', centered && 'text-center']}>

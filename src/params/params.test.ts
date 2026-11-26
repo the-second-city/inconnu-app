@@ -1,6 +1,7 @@
 import { expect, test } from 'vitest';
 
 import { match as filename } from './filename';
+import { match as macroname } from './macroname';
 import { match as objectid } from './objectid';
 import { match as snowflake } from './snowflake';
 import { match as wizardtoken } from './wizardtoken';
@@ -60,3 +61,17 @@ test.each([
 ])('filename rejects %j', (param: string) => {
 	expect(filename(param)).toBe(false);
 });
+
+test.each(['feed', 'Blood_Surge', '_hunt', 'a', 'RtII'])(
+	'macroname accepts %j',
+	(param: string) => {
+		expect(macroname(param)).toBe(true);
+	}
+);
+
+test.each([...TRAVERSALS, 'two words', 'feed-me', 'rouse2', '___', 'é'])(
+	'macroname rejects %j',
+	(param: string) => {
+		expect(macroname(param)).toBe(false);
+	}
+);

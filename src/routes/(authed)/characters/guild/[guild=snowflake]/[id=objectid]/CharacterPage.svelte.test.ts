@@ -1,12 +1,13 @@
-import { render, screen, waitFor, within, type RenderResult } from '@testing-library/svelte';
+import { render, screen, waitFor, within } from '@testing-library/svelte';
 import userEvent from '@testing-library/user-event';
 import { flushSync } from 'svelte';
 import { beforeEach, expect, test, vi } from 'vitest';
 
-import type { Character, Guild } from '$lib/types';
+import type { Character } from '$lib/types';
 import { navigate, page } from '$lib/testing/page.svelte';
 import { TEST_CONSTRAINTS } from '$lib/testing/constraints';
 import CharacterPage from './CharacterPage.svelte';
+import { character, editButton, GUILD, leaveVia, panel, renderPage, saved } from './testing';
 import { upsell } from '$lib/state/premium.svelte';
 
 // SvelteKit's router doesn't run in tests: `page` is reactive state, which `goto` updates
@@ -15,7 +16,11 @@ const invalidate = vi.hoisted(() => vi.fn(async () => {}));
 // The page's beforeNavigate callback, so tests can call it as SvelteKit would
 const navigation = vi.hoisted(() => ({ before: null as ((nav: unknown) => void) | null }));
 vi.mock('$app/state', () => import('$lib/testing/page.svelte'));
-vi.mock('$app/paths', () => ({ resolve: (route: string) => route }));
+// Fills in a route's params, as SvelteKit's resolve() does
+vi.mock('$app/paths', () => ({
+	resolve: (route: string, params: Record<string, string> = {}) =>
+		route.replace(/\[(\w+)(?:=\w+)?\]/g, (param, name: string) => params[name] ?? param)
+}));
 // No busy delay: the save's own promise decides when it's done
 vi.mock('$lib/state/busy', () => ({ atLeast: <T>(work: Promise<T>): Promise<T> => work }));
 vi.mock('$app/navigation', () => ({
@@ -25,6 +30,10 @@ vi.mock('$app/navigation', () => ({
 		navigation.before = callback;
 	}
 }));
+
+// Toasts, so tests can see what was said
+const toaster = vi.hoisted(() => ({ warning: vi.fn() }));
+vi.mock('$lib/state/toaster', () => ({ toaster }));
 
 // The viewer is a supporter unless a test says otherwise
 const isSupporter = vi.hoisted(() => vi.fn(async () => true));
@@ -51,35 +60,10 @@ beforeEach(() => {
 	fetchMock.mockReset().mockResolvedValue(new Response(null, { status: 204 }));
 });
 
-const GUILD: Guild = { id: '111', name: 'Camarilla of Chicago', icon: null, count: null };
-
-/** A mortal with a description and one trait. */
-const character = (): Character => ({
-	_id: 'id',
-	name: 'Nadia',
-	guild: GUILD.id,
-	user: '222',
-	splat: 'mortal',
-	profile: { description: 'Tall and pale.', biography: null, images: [] },
-	health: '......',
-	willpower: '.....',
-	humanity: 7,
-	stains: 0,
-	traits: [{ name: 'Strength', rating: 2, type: 'attribute', subtraits: [] }]
-});
-
-/** Render the character page, with its edit buttons. Returns the render result, whose `rerender`
- * changes its props. */
-const renderPage = (char: Character = character()): RenderResult<typeof CharacterPage> =>
-	render(CharacterPage, {
-		constraints: TEST_CONSTRAINTS,
-		guild: GUILD,
-		character: char,
-		editable: true
-	});
-
-/** The panel for the selected tab. */
-const panel = (): HTMLElement => screen.getByRole('tabpanel');
+/** Navigate away as SvelteKit would, through the page's beforeNavigate. Returns whether the
+ * navigation was cancelled. */
+const leave = (type: string, toPath?: string | null): boolean =>
+	leaveVia(navigation.before, type, toPath);
 
 test('has Sheet and Profile tabs, with Sheet selected', () => {
 	renderPage();
@@ -129,18 +113,6 @@ test('arrow keys move between tabs', async () => {
 
 	await waitFor(() => expect(screen.getByRole('tab', { name: 'Profile' })).toHaveFocus());
 });
-
-/** An edit button (Edit, Save, Cancel). There's a set for desktop and one for mobile, each hidden
- * by CSS at the other's widths; jsdom has no CSS, so this takes the first, the desktop one. */
-const editButton = (name: 'Edit' | 'Save' | 'Cancel'): HTMLElement =>
-	screen.getAllByRole('button', { name })[0];
-
-/** Wait for a save to finish, which leaves edit mode. */
-const saved = async (): Promise<void> => {
-	await waitFor(() =>
-		expect(screen.queryByRole('textbox', { name: 'Character name' })).not.toBeInTheDocument()
-	);
-};
 
 /** The profile description's text box, while editing. */
 const descriptionBox = (): HTMLElement =>
@@ -651,19 +623,6 @@ test.each([
 	expect(editButton('Save')).toBeDisabled();
 });
 
-/** Navigate away as SvelteKit would, through the page's beforeNavigate. Returns whether the
- * navigation was cancelled. */
-const leave = (type: string, toPath: string | null = '/characters'): boolean => {
-	const cancel = vi.fn();
-	navigation.before?.({
-		type,
-		from: { url: new URL('http://localhost/characters/guild/111/id') },
-		to: toPath === null ? null : { url: new URL(`http://localhost${toPath}`) },
-		cancel
-	});
-	return cancel.mock.calls.length > 0;
-};
-
 /** Enter edit mode and make an unsaved change. */
 const makeChange = async (user: ReturnType<typeof userEvent.setup>): Promise<void> => {
 	await user.click(editButton('Edit'));
@@ -922,7 +881,7 @@ test('saving sends the edits to the API, leaving the refetch to the live update'
 	await saved();
 
 	expect(fetchMock).toHaveBeenCalledWith(
-		'/api/characters/[id=objectid]',
+		'/api/characters/id',
 		expect.objectContaining({ method: 'PATCH' })
 	);
 	expect(sentBody()).toMatchObject({ name: 'Nadiah', health: '......', humanity: 7 });

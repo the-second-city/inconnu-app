@@ -141,3 +141,29 @@ export const traitNameError = (
 	if (hunger) return `"${hunger}" can't follow the first word, as rolls read it as Hunger`;
 	return null;
 };
+
+/**
+ * Why a macro name is invalid, or null if it's valid. As the bot's `is_macro_name_valid`: letters
+ * and underscores only, with at least one letter. Names are unique, ignoring case.
+ * @param name - The name, trimmed
+ * @param taken - The character's other macros' names
+ * @param constraints - The bot's constraints
+ * @returns The problem, as a message for the user
+ */
+export const macroNameError = (
+	name: string,
+	taken: string[],
+	constraints: Constraints
+): string | null => {
+	if (!name) return 'Name cannot be empty';
+	const max = constraints.macro_name_max_length;
+	if (codePointLength(name) > max) return `Name must be ${max} characters or less`;
+	if (!new RegExp(constraints.macro_name_pattern).test(name)) {
+		return 'Name can only contain letters and underscores, with at least one letter';
+	}
+	const lower = name.toLowerCase();
+	if (taken.some((other) => other.toLowerCase() === lower)) {
+		return `There's already a macro named ${name}`;
+	}
+	return null;
+};

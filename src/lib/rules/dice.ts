@@ -17,3 +17,25 @@ export const successesLast = (dice: number[]): number[] => [
 	...dice.filter((die) => !isSuccess(die)),
 	...dice.filter(isSuccess)
 ];
+
+/**
+ * Names for Difficulties, 1 and up: V5's (core rules, "Difficulty of Action") to 7, then ours, as
+ * the odds get silly. The last covers everything past it.
+ */
+const DIFFICULTY_NAMES = [
+	'Routine',
+	'Straightforward',
+	'Moderate',
+	'Challenging',
+	'Hard',
+	'Very Hard',
+	'Nearly Impossible',
+	'Uh, sure',
+	'Yeah, right',
+	'How often do you even roll this?',
+	'LOL'
+];
+
+/** A Difficulty's name: "Moderate" for 3, "Nearly Impossible" for 7, "LOL" for 11 or more, "None" for 0. */
+export const difficultyName = (difficulty: number): string =>
+	difficulty <= 0 ? 'None' : DIFFICULTY_NAMES[Math.min(difficulty, DIFFICULTY_NAMES.length) - 1];

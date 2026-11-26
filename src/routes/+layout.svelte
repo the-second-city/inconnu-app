@@ -3,6 +3,7 @@
 	import { page } from '$app/state';
 	import Header from '$lib/components/layout/Header.svelte';
 	import Footer from '$lib/components/layout/Footer.svelte';
+	import Toaster from '$lib/components/ui/Toaster.svelte';
 
 	let { children } = $props();
 
@@ -26,3 +27,5 @@
 
 	<Footer />
 </div>
+
+<Toaster />

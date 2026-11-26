@@ -4,6 +4,7 @@ import { expect, test, vi } from 'vitest';
 
 import type { Character, Splat } from '$lib/types';
 import BloodTrackers from './BloodTrackers.svelte';
+import { PoolPicker, poolPickerContext } from '$lib/state/poolPicker.svelte';
 
 // Constraints come from the character page or wizard; these are the bot's
 vi.mock('$lib/constraints', async (original) =>
@@ -192,4 +193,41 @@ test("the Hunger menu's hover text lists its actions", () => {
 		'title',
 		'Rouse or slake'
 	);
+});
+
+test('while a pool is picked, Blood Potency picks Potency, as the bot rolls it', async () => {
+	const user = userEvent.setup();
+	const picker = new PoolPicker();
+	picker.active = true;
+	render(BloodTrackers, {
+		props: { character: vampire({ potency: 3 }) },
+		context: poolPickerContext(picker)
+	});
+
+	await user.click(screen.getByRole('button', { name: 'Pick Blood Potency' }));
+
+	expect(picker.picks).toEqual([
+		{ kind: 'trait', trait: 'Potency', specialty: null, negative: false }
+	]);
+	expect(screen.getByRole('img', { name: 'Blood Potency 3' })).toBeInTheDocument();
+});
+
+test('while a pool is picked, Hunger and Frenzy show without being buttons', () => {
+	const picker = new PoolPicker();
+	picker.active = true;
+	render(BloodTrackers, {
+		props: {
+			character: vampire({ potency: 3, hunger: 2 }),
+			onRouse: vi.fn(),
+			onSlake: vi.fn(),
+			onFrenzy: vi.fn()
+		},
+		context: poolPickerContext(picker)
+	});
+
+	expect(screen.getAllByRole('img', { name: 'Hunger' })).toHaveLength(2);
+	expect(screen.getByText(/Resist with/)).not.toHaveAttribute('title');
+	expect(screen.getAllByRole('button').map((b) => b.getAttribute('aria-label'))).toEqual([
+		'Pick Blood Potency'
+	]);
 });

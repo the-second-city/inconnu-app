@@ -5,6 +5,7 @@
 	import { insensitiveSort, normalize, straightenApostrophes } from '../../..';
 	import { getConstraints, maxCodeUnits, nameKey, traitNameError } from '$lib/constraints';
 	import ErrorMessage from '$lib/components/ui/ErrorMessage.svelte';
+	import TraitLine from './TraitLine.svelte';
 
 	interface ComponentProps {
 		name?: string;
@@ -92,7 +93,31 @@
 	const circles = $derived(Array.from({ length: max }, (_, i) => i + 1));
 </script>
 
-<div class="flex flex-wrap items-center justify-between">
+{#snippet pips()}
+	<span class="sr-only">{rating} dots</span>
+	{#each circles as circleRating (circleRating)}
+		<span class="rating-circle" class:selected={circleRating <= rating} aria-hidden="true"></span>
+	{/each}
+{/snippet}
+
+{#snippet pickLine()}
+	<span class="flex items-center gap-2">
+		{name}
+		{#if subtraits.length > 0}
+			<span class="badge-icon preset-filled-surface-500">{subtraits.length}</span>
+		{/if}
+	</span>
+	<span class="flex flex-wrap gap-2">{@render pips()}</span>
+{/snippet}
+
+<TraitLine
+	trait={showLabel && name ? name : undefined}
+	{subtraits}
+	{type}
+	{editing}
+	line={pickLine}
+	class="flex flex-wrap items-center justify-between"
+>
 	{#if showLabel && name}
 		{#if enablePopover}
 			<Popover bind:open={showSubtraits} arrow>
@@ -186,14 +211,10 @@
 				></button>
 			{/each}
 		{:else}
-			<span class="sr-only">{rating} dots</span>
-			{#each circles as circleRating (circleRating)}
-				<span class="rating-circle" class:selected={circleRating <= rating} aria-hidden="true"
-				></span>
-			{/each}
+			{@render pips()}
 		{/if}
 	</div>
-</div>
+</TraitLine>
 
 <style lang="postcss">
 	.rating-circle {

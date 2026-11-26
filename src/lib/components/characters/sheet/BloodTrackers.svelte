@@ -6,6 +6,7 @@
 	import { frenzyPool } from '$lib/rules/frenzy';
 	import { bloodPotency } from '$lib/rules/vampire';
 	import { getConstraints } from '$lib/constraints';
+	import { getPoolPicker } from '$lib/state/poolPicker.svelte';
 	import type { Character } from '$lib/types';
 
 	import Card from '$lib/components/ui/Card.svelte';
@@ -15,6 +16,7 @@
 	import PipSelector, { type PipState } from './PipSelector.svelte';
 	import Popover from '$lib/components/ui/Popover.svelte';
 	import { CLICKABLE } from './clickable';
+	import TrackerRow from './TrackerRow.svelte';
 
 	interface ComponentProps {
 		character: Character;
@@ -33,6 +35,10 @@
 		onFrenzy
 	}: ComponentProps = $props();
 
+	// While a pool is being picked, Hunger and Frenzy are only to look at
+	const picker = getPoolPicker();
+	const picking = $derived(picker?.active === true);
+
 	// The dice to resist frenzy with, before any penalty or bonus
 	const resistDice = $derived(frenzyPool(character).total);
 
@@ -42,9 +48,9 @@
 	);
 
 	let showHungerMenu = $state(false);
-	// So the menu doesn't reopen by itself when edit mode ends
+	// So the menu doesn't reopen by itself when edit mode, or picking, ends
 	$effect(() => {
-		if (editing) showHungerMenu = false;
+		if (editing || picking) showHungerMenu = false;
 	});
 
 	/** Close the Hunger menu, then run an action from it. */
@@ -92,16 +98,33 @@
 
 <Card alignment="center" extraClasses="px-2 h-full justify-center">
 	<div class="grid grid-cols-[120px_1fr] items-center gap-2">
-		<div>Blood Potency</div>
-		<!-- The API sends `potency`; `blood_potency` is the wizard's name for it -->
-		<PipSelector
+		<!-- A pool rolls it as Potency, the bot's name -->
+		{#snippet potencyPips()}
+			<PipSelector
+				label="Blood Potency"
+				rating={bloodPotency(character)}
+				max={maxBloodPotency}
+				editing={false}
+				pip={potencyPip}
+			/>
+		{/snippet}
+		<TrackerRow
 			label="Blood Potency"
-			bind:rating={() => bloodPotency(character), (value) => (character.potency = value)}
-			min={minBloodPotency}
-			max={maxBloodPotency}
+			trait="Potency"
 			{editing}
-			pip={potencyPip}
-		/>
+			value={potencyPips}
+			class="items-center"
+		>
+			<!-- The API sends `potency`; `blood_potency` is the wizard's name for it -->
+			<PipSelector
+				label="Blood Potency"
+				bind:rating={() => bloodPotency(character), (value) => (character.potency = value)}
+				min={minBloodPotency}
+				max={maxBloodPotency}
+				{editing}
+				pip={potencyPip}
+			/>
+		</TrackerRow>
 
 		<div>Hunger</div>
 		{#snippet hungerPips()}
@@ -138,8 +161,8 @@
 				{/if}
 			</div>
 		{/snippet}
-		{#if (onRouse || onSlake) && !editing}
-			<!-- Outside edit mode, the drops open the Hunger menu -->
+		{#if (onRouse || onSlake) && !editing && !picking}
+			<!-- Outside edit mode (and picking), the drops open the Hunger menu -->
 			<Popover
 				bind:open={showHungerMenu}
 				trigger={hungerPips}
@@ -155,16 +178,23 @@
 
 		{#if onFrenzy && !editing}
 			<div>Frenzy</div>
-			<button
-				type="button"
-				class={[CLICKABLE, 'flex items-center gap-1.5 text-left']}
-				title="Test for frenzy"
-				onclick={onFrenzy}
-			>
+			{#snippet frenzy()}
 				<Flame size={16} class="text-primary-500" aria-hidden="true" />
 				Resist with {resistDice}
 				{resistDice === 1 ? 'die' : 'dice'}
-			</button>
+			{/snippet}
+			{#if picking}
+				<div class="flex items-center gap-1.5">{@render frenzy()}</div>
+			{:else}
+				<button
+					type="button"
+					class={[CLICKABLE, 'flex items-center gap-1.5 text-left']}
+					title="Test for frenzy"
+					onclick={onFrenzy}
+				>
+					{@render frenzy()}
+				</button>
+			{/if}
 		{/if}
 	</div>
 </Card>

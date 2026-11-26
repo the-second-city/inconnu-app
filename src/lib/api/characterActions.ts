@@ -23,6 +23,9 @@ import type {
 /** An action's outcome: its result, or why it failed, for the user. */
 export type ActionOutcome<T> = { result: T; error?: never } | { result?: never; error: string };
 
+/** The API's 404 detail for a macro the character doesn't have. */
+export const MACRO_MISSING = 'Macro not found';
+
 /** Why an action failed, from its response's status and JSON body (null if it had none). */
 export const actionError = (status: number, json: unknown): string => {
 	const body = json as { detail?: unknown; message?: unknown } | null;
@@ -45,6 +48,7 @@ export const actionError = (status: number, json: unknown): string => {
 		case 403:
 			return "You can't do that for this character.";
 		case 404:
+			if (detail === MACRO_MISSING) return 'This macro no longer exists.';
 			return "This character no longer exists, or you're no longer in its server.";
 		case 503:
 			return 'Inconnu is starting up. Try again in a moment.';
@@ -54,26 +58,42 @@ export const actionError = (status: number, json: unknown): string => {
 	return 'Something went wrong. Try again.';
 };
 
+/** How to send a request to a character's route, when not as a gameplay action. */
+interface SendOptions {
+	method?: 'POST' | 'PUT' | 'PATCH' | 'DELETE'; // POST by default; a DELETE sends no body
+	feature?: string; // Names it in the upsell, if the API refuses a non-supporter
+	// An answer that isn't OK but counts as done (a null result), say deleting what's already gone
+	succeeds?: (status: number, json: unknown) => boolean;
+}
+
 /**
- * POST an action to one of a character's routes, returning its result or why it failed. An action
- * that answers 204 (no content) succeeds with a null result. The API refusing a non-supporter also
- * opens the upsell.
+ * Send JSON to one of a character's routes (POST, unless `method` says otherwise; a DELETE sends no
+ * body), returning its result or why it failed. A request that answers 204 (no content), or that
+ * `succeeds` accepts, succeeds with a null result. The API refusing a non-supporter also opens the
+ * upsell, naming `feature` (gameplay actions by default).
  */
-const postAction = async <T>(
+export const postAction = async <T>(
 	url: string,
 	body: unknown,
-	unreachable: string
+	unreachable: string,
+	{ method = 'POST', feature = 'Using gameplay actions', succeeds }: SendOptions = {}
 ): Promise<ActionOutcome<T>> => {
 	try {
-		const response = await fetch(url, {
-			method: 'POST',
-			headers: { 'Content-Type': 'application/json' },
-			body: JSON.stringify(body)
-		});
+		const response = await fetch(
+			url,
+			method === 'DELETE'
+				? { method }
+				: {
+						method,
+						headers: { 'Content-Type': 'application/json' },
+						body: JSON.stringify(body)
+					}
+		);
 		if (response.status === 204) return { result: null as T };
 		const json = await response.json().catch(() => null);
 		if (response.ok && json) return { result: json as T };
-		if (refusedForPremium(response.status, json)) showUpsell('Using gameplay actions');
+		if (succeeds?.(response.status, json)) return { result: null as T };
+		if (refusedForPremium(response.status, json)) showUpsell(feature);
 		return { error: actionError(response.status, json) };
 	} catch {
 		return { error: unreachable };

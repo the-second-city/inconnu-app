@@ -3,6 +3,7 @@ import { expect, test } from 'vitest';
 import {
 	characterNameError,
 	lengthError,
+	macroNameError,
 	maxCodeUnits,
 	nameKey,
 	profileLengthErrors,
@@ -135,4 +136,36 @@ test('specialties may have reserved names, but not Hunger words', () => {
 test('nameKey drops case and spaces', () => {
 	expect(nameKey('Animal Ken')).toBe('animalken');
 	expect(nameKey('AnimalKen')).toBe('animalken');
+});
+
+/** The macro name pattern's error. */
+const LETTERS = 'Name can only contain letters and underscores, with at least one letter';
+
+test.each<[string, string | null]>([
+	['feed', null],
+	['Blood_Surge', null],
+	['_hunt_', null],
+	['', 'Name cannot be empty'],
+	['a'.repeat(51), 'Name must be 50 characters or less'],
+	['two words', LETTERS],
+	['rouse2', LETTERS],
+	['Ébène', LETTERS],
+	['___', LETTERS]
+])('macro name %j: %s', (name, error) => {
+	expect(macroNameError(name, [], TEST_CONSTRAINTS)).toBe(error);
+});
+
+test('a macro name already taken, ignoring case, is invalid', () => {
+	expect(macroNameError('FEED', ['feed', 'hunt'], TEST_CONSTRAINTS)).toBe(
+		"There's already a macro named FEED"
+	);
+	expect(macroNameError('feeding', ['feed'], TEST_CONSTRAINTS)).toBeNull();
+});
+
+test("a macro name's length is counted in code points", () => {
+	const max = TEST_CONSTRAINTS.macro_name_max_length;
+
+	// Too long in UTF-16 code units only, so its letters are what's wrong
+	expect(macroNameError('🩸'.repeat(max), [], TEST_CONSTRAINTS)).toMatch(/only contain letters/);
+	expect(macroNameError('a'.repeat(max + 1), [], TEST_CONSTRAINTS)).toMatch(/characters or less/);
 });
