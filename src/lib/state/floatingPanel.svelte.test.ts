@@ -203,7 +203,8 @@ test.each<[Edge, number | null]>([
 
 test('the arrow keys resize it from its bottom right corner', () => {
 	const { floating, panel } = setup();
-	const key = (key: string) => floating.key(new KeyboardEvent('keydown', { key }), panel);
+	/** Press a key on the corner, returning whether it resized the panel. */
+	const key = (key: string): boolean => floating.key(new KeyboardEvent('keydown', { key }), panel);
 
 	expect(key('ArrowRight')).toBe(true);
 	// Only wider, it still fits its content
